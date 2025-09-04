@@ -36,10 +36,10 @@
     "@schematics/angular": "^17.2.2",
     "@supabase/supabase-js": "^2.39.6",
     "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.4",
+    "dotenv": "^16.6.1",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1",
+    "rxjs": "^7.8.2",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
