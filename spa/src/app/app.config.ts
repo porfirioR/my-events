@@ -1,4 +1,4 @@
-import { ApplicationConfig, ErrorHandler, isDevMode } from '@angular/core'
+import { ApplicationConfig, ErrorHandler, isDevMode, provideZonelessChangeDetection } from '@angular/core'
 import { provideHttpClient, withInterceptors } from '@angular/common/http'
 import { provideServiceWorker } from '@angular/service-worker'
 import { provideRouter } from '@angular/router'
@@ -16,6 +16,7 @@ import { urlInterceptor } from './interceptors/url.interceptor'
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([
       headerInterceptor,

@@ -1,15 +1,19 @@
 import { Injectable } from '@angular/core'
-import Swal, { SweetAlertIcon, SweetAlertResult } from 'sweetalert2'
+import { SweetAlertIcon, SweetAlertResult } from 'sweetalert2'
 
 @Injectable({
   providedIn: 'root'
 })
 export class AlertService {
 
-  constructor() { }
+  private async getSwal(): Promise<typeof Swal> {
+    const { default: Swal } = await import('sweetalert2');
+    return Swal;
+  }
 
   public showQuestionModal = async (title: string, text: string = '', icon: SweetAlertIcon = 'warning'): Promise<SweetAlertResult<any>> => {
-    const result = await Swal.fire({
+    const swal = await this.getSwal();
+    const result = await swal.fire({
       title,
       text,
       icon: icon,
@@ -27,9 +31,8 @@ export class AlertService {
     return result
   }
 
-
   public showSuccess = (title: string = 'Successful operation'): void => {
-    Swal.mixin({
+    this.getSwal().then(x => x.mixin({
       title,
       toast: true,
       position: 'bottom-end',
@@ -38,14 +41,14 @@ export class AlertService {
       timerProgressBar: true,
       icon: 'success',
       didOpen: (toast: any) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
+        toast.addEventListener('mouseenter', x.stopTimer)
+        toast.addEventListener('mouseleave', x.resumeTimer)
       }
-    }).fire()
+    }).fire())
   }
 
   public showError = (text: string = ''): void => {
-    Swal.fire({
+    this.getSwal().then(x => x.fire({
       title: 'Unsuccessful operation',
       text,
       icon: 'error',
@@ -54,11 +57,11 @@ export class AlertService {
         confirmButton: 'btn btn-outline btn-primary',
       },
       buttonsStyling: false,
-    })
+    }))
   }
 
   public showInfo = (text: string = ''): void => {
-    Swal.fire({
+    this.getSwal().then(x => x.fire({
       title: 'Information',
       text,
       icon: 'info',
@@ -67,6 +70,6 @@ export class AlertService {
         confirmButton: 'btn btn-outline btn-primary',
       },
       buttonsStyling: false
-    })
+    }))
   }
 }
