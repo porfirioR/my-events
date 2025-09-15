@@ -8,4 +8,10 @@ export enum TableEnum {
   Types = 'types',
   Periods = 'periods',
   Currencies = 'currencies',
+  Collaborators = 'collaborators',
+  Transactions = 'transactions',
+  TransactionSplits = 'transactionsplits',
+  Projects = 'projects',
+  ProjectMembers = 'projectmembers',
+  ProjectTransactions = 'projecttransactions'
 }
