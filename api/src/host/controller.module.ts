@@ -15,6 +15,7 @@ import { TasksService } from './services/tasks.service';
 import { PaymentController } from './controllers/payments.controller';
 import { SavingsController } from './controllers/savings.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
+import { CollaboratorsController } from './controllers/collaborators.controller';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ConfigurationController } from './controllers/configuration.controller'
     PaymentController,
     SavingsController,
     ConfigurationController,
+    CollaboratorsController,
   ],
   providers: [
     JwtService,
