@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PaymentAccessService } from '../../access/services';
+import { PaymentAccessService } from '../../access/mail';
 import { PaymentModel } from '../models/payments/payment-model';
 import { PaymentAccessModel } from '../../access/contract/payments/payment-access-model';
 import { CreatePaymentAccessRequest } from '../../access/contract/payments/create-payment-access-request';

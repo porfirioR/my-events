@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { DbContextService } from './db-context.service';
-import { TableEnum, DatabaseColumns } from '../../utility/enums';
-import { CreateEventAccessRequest } from '../contract/events/create-event-access-request';
-import { EventAccessModel } from '../contract/events/event-access-model';
-import { UpdateEventAccessRequest } from '../contract/events/update-event-access-request';
-import { EventEntity } from '../contract/entities/event.entity';
+import { TableEnum, DatabaseColumns } from '../../../utility/enums';
+import { CreateEventAccessRequest } from '../../contract/events/create-event-access-request';
+import { EventAccessModel } from '../../contract/events/event-access-model';
+import { UpdateEventAccessRequest } from '../../contract/events/update-event-access-request';
+import { EventEntity } from '../entities/event.entity';
 
 @Injectable()
 export class EventAccessService {

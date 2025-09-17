@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserAccessService } from '../../access/services';
+import { UserAccessService } from '../../access/mail';
 import { AuthService } from '../../auth/auth.service';
 import { CreateUserAccessRequest } from '../../access/contract/users/create-user-access-request';
 import { UserAccessModel } from '../../access/contract/users/user-access-model';

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { TableEnum, DatabaseColumns } from '../../utility/enums';
+import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { DbContextService } from './db-context.service';
-import { EventAccessModel } from '../contract/events/event-access-model';
-import { EventFollowRequest } from '../contract/event-follows/event-follow-request';
-import { EventEntity } from '../contract/entities/event.entity';
-import { EventFollowEntity } from '../contract/entities/event-follow.entity';
+import { EventAccessModel } from '../../contract/events/event-access-model';
+import { EventFollowRequest } from '../../contract/event-follows/event-follow-request';
+import { EventEntity } from '../entities/event.entity';
+import { EventFollowEntity } from '../entities/event-follow.entity';
 
 @Injectable()
 export class EventFollowAccessService {

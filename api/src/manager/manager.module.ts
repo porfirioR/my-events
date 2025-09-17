@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { EventManagerService, MailManagerService, PaymentManagerService, SavingsManagerService, ConfigurationManagerService, UserManagerService, CollaboratorManagerService } from './services';
-import { AccessModule } from '../access/access.module';
-import { AuthModule } from '../auth/auth.module';
+import { MailModule } from '../access/mail/mail.module';
+import { AuthModule } from '../access/auth/auth.module';
+import { DataModule } from '../access/data/data.module';
 
 @Module({
   imports: [
-    AccessModule,
-    AuthModule
+    MailModule,
+    AuthModule,
+    DataModule
   ],
   controllers: [],
   providers: [

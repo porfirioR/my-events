@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
-import { SUPA_BASE_KEY, SUPA_BASE_URL } from '../../utility/constants';
+import { SUPA_BASE_KEY, SUPA_BASE_URL } from '../../../utility/constants';
 
 @Injectable()
 export class DbContextService {

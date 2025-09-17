@@ -1,22 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { DbContextService } from './db-context.service';
-import { CollaboratorEntity } from '../contract/entities/collaborator.entity';
-import { CollaboratorAccessModel } from '../contract/collaborators/collaborator-access.model';
-import { CreateCollaboratorAccessRequest } from '../contract/collaborators/create-collaborator-access-request';
-import { UpdateCollaboratorAccessRequest } from '../contract/collaborators/update-collaborator-access-request';
-import { TableEnum, DatabaseColumns } from '../../utility/enums';
+import { CollaboratorEntity } from '../entities/collaborator.entity';
+import { TableEnum, DatabaseColumns } from '../../../utility/enums';
+import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, ICollaboratorAccessService, UpdateCollaboratorAccessRequest } from '../../../access/contract/collaborators';
 
 
 @Injectable()
-export class CollaboratorAccessService {
+export class CollaboratorAccessService implements ICollaboratorAccessService{
   private collaboratorContext: SupabaseClient<any, 'public', any>;
 
   constructor(private dbContextService: DbContextService) {
     this.collaboratorContext = this.dbContextService.getConnection();
   }
 
-  // Obtener todos los colaboradores activos de un usuario
   public getMyCollaborators = async (createdByUserId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
@@ -29,7 +26,6 @@ export class CollaboratorAccessService {
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  // Obtener colaboradores internos (sin email)
   public getInternalCollaborators = async (createdByUserId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
@@ -43,7 +39,6 @@ export class CollaboratorAccessService {
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  // Obtener colaboradores externos (con email)
   public getExternalCollaborators = async (createdByUserId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
@@ -57,8 +52,7 @@ export class CollaboratorAccessService {
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  // Obtener un colaborador específico
-  public getMyCollaborator = async (id: number, createdByUserId: number): Promise<CollaboratorAccessModel> => {
+  public getCollaboratorById = async (id: number, createdByUserId: number): Promise<CollaboratorAccessModel> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
@@ -70,7 +64,6 @@ export class CollaboratorAccessService {
     return this.getCollaboratorAccessModel(data);
   };
 
-  // Crear colaborador
   public createCollaborator = async (accessRequest: CreateCollaboratorAccessRequest): Promise<CollaboratorAccessModel> => {
     const collaboratorEntity = this.getEntity(accessRequest);
     
@@ -84,10 +77,8 @@ export class CollaboratorAccessService {
     return this.getCollaboratorAccessModel(data);
   };
 
-  // Actualizar colaborador
   public updateCollaborator = async (accessRequest: UpdateCollaboratorAccessRequest): Promise<CollaboratorAccessModel> => {
-    // Verificar que el colaborador pertenece al usuario
-    const existingCollaborator = await this.getMyCollaborator(accessRequest.id, accessRequest.createdByUserId);
+    const existingCollaborator = await this.getCollaboratorById(accessRequest.id, accessRequest.createdByUserId);
     
     const collaboratorEntity = this.getEntity(accessRequest);
     collaboratorEntity.id = accessRequest.id;
@@ -104,10 +95,8 @@ export class CollaboratorAccessService {
     return this.getCollaboratorAccessModel(data);
   };
 
-  // Desactivar colaborador (soft delete)
   public deactivateCollaborator = async (id: number, createdByUserId: number): Promise<CollaboratorAccessModel> => {
-    // Verificar que el colaborador pertenece al usuario
-    await this.getMyCollaborator(id, createdByUserId);
+    await this.getCollaboratorById(id, createdByUserId);
 
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
@@ -121,7 +110,6 @@ export class CollaboratorAccessService {
     return this.getCollaboratorAccessModel(data);
   };
 
-  // Verificar si se puede eliminar (no está en transacciones)
   public canDeleteCollaborator = async (collaboratorId: number): Promise<boolean> => {
     // Verificar en transactions
     const { data: transactionData, error: transactionError } = await this.collaboratorContext
@@ -133,7 +121,6 @@ export class CollaboratorAccessService {
     if (transactionError) throw new Error(transactionError.message);
     if (transactionData && transactionData.length > 0) return false;
 
-    // Verificar en transactionsplits
     const { data: splitData, error: splitError } = await this.collaboratorContext
       .from(TableEnum.TransactionSplits)
       .select('id')
@@ -143,7 +130,6 @@ export class CollaboratorAccessService {
     if (splitError) throw new Error(splitError.message);
     if (splitData && splitData.length > 0) return false;
 
-    // Verificar en projectmembers
     const { data: memberData, error: memberError } = await this.collaboratorContext
       .from(TableEnum.ProjectMembers)
       .select('id')
@@ -156,7 +142,6 @@ export class CollaboratorAccessService {
     return true;
   };
 
-  // Obtener estadísticas de colaboradores
   public getCollaboratorStats = async (createdByUserId: number) => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)

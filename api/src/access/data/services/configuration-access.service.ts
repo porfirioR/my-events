@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { DbContextService } from './db-context.service';
-import { TableEnum, DatabaseColumns } from '../../utility/enums';
-import { TypeEntity } from '../contract/entities/type.entity';
-import { PeriodEntity } from '../contract/entities/period.entity';
-import { CurrencyEntity } from '../contract/entities/currency.entity';
-import { TypeAccessModel, PeriodAccessModel, CurrencyAccessModel } from '../contract/configurations';
+import { TableEnum, DatabaseColumns } from '../../../utility/enums';
+import { TypeEntity } from '../entities/type.entity';
+import { PeriodEntity } from '../entities/period.entity';
+import { CurrencyEntity } from '../entities/currency.entity';
+import { TypeAccessModel, PeriodAccessModel, CurrencyAccessModel } from '../../contract/configurations';
 
 @Injectable()
 export class ConfigurationAccessService {

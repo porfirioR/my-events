@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { CollaboratorAccessService } from '../../access/services/collaborator-access.service';
+import { Inject, Injectable } from '@nestjs/common';
 import { CollaboratorModel, CreateCollaboratorRequest, UpdateCollaboratorRequest } from '../models/collaborators';
-import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, UpdateCollaboratorAccessRequest } from '../../access/contract/collaborators';
+import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, ICollaboratorAccessService, UpdateCollaboratorAccessRequest } from '../../access/contract/collaborators';
+import { COLLABORATOR_TOKENS } from '../../utility/constants';
 
 
 @Injectable()
 export class CollaboratorManagerService {
-  constructor(private collaboratorAccessService: CollaboratorAccessService) {}
+  constructor(
+    @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
+    private collaboratorAccessService: ICollaboratorAccessService
+  ) {}
 
   // Obtener todos los colaboradores del usuario
   public getMyCollaborators = async (createdByUserId: number): Promise<CollaboratorModel[]> => {
@@ -28,7 +31,7 @@ export class CollaboratorManagerService {
 
   // Obtener un colaborador específico
   public getMyCollaborator = async (id: number, createdByUserId: number): Promise<CollaboratorModel> => {
-    const accessModel = await this.collaboratorAccessService.getMyCollaborator(id, createdByUserId);
+    const accessModel = await this.collaboratorAccessService.getCollaboratorById(id, createdByUserId);
     return this.getModel(accessModel);
   };
 

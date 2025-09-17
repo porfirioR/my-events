@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SavingAccessService } from '../../access/services';
+import { SavingAccessService } from '../../access/mail';
 import { SavingModel } from '../models/savings/saving-model';
 import { SavingAccessModel } from '../../access/contract/savings/saving-access-model';
 import { CreateSavingAccessRequest } from '../../access/contract/savings/create-saving-access-request';

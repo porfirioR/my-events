@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventModel } from '../models/events/event-model';
-import { EventAccessService, EventFollowAccessService } from '../../access/services';
+import { EventAccessService, EventFollowAccessService } from '../../access/mail';
 import { CreateEventRequest } from '../models/events/create-event-request';
 import { UpdateEventRequest } from '../models/events/update-event-request';
 import { CreateEventAccessRequest } from '../../access/contract/events/create-event-access-request';
