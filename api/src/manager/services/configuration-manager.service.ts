@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigurationAccessService } from '../../access/mail';
+import { ConfigurationAccessService } from '../../access/data/services/configuration-access.service';
 import { TypeAccessModel } from '../../access/contract/configurations/type-access-model';
 import { PeriodAccessModel } from '../../access/contract/configurations/period-access-model';
+import { CurrencyAccessModel } from '../../access/contract/configurations/currency-access-model';
 import { Configurations } from '../../utility/enums';
-import { CurrencyAccessModel } from 'src/access/contract/configurations/currency-access-model';
 import { CurrencyModel, PeriodModel, TypeModel } from '../models/configurations';
 
 @Injectable()

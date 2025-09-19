@@ -22,7 +22,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .eq(DatabaseColumns.IsActive, true)
       .order(DatabaseColumns.Name, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
@@ -35,7 +37,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .is(DatabaseColumns.Email, null)
       .order(DatabaseColumns.Name, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
@@ -48,7 +52,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .not(DatabaseColumns.Email, 'is', null)
       .order(DatabaseColumns.Name, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
@@ -60,7 +66,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
     return this.getCollaboratorAccessModel(data);
   };
 
@@ -73,7 +81,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .select()
       .single<CollaboratorEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
     return this.getCollaboratorAccessModel(data);
   };
 
@@ -91,7 +101,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .select()
       .single<CollaboratorEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
     return this.getCollaboratorAccessModel(data);
   };
 
@@ -106,7 +118,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .select()
       .single<CollaboratorEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
     return this.getCollaboratorAccessModel(data);
   };
 
@@ -152,7 +166,9 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
       .eq(DatabaseColumns.IsActive, true);
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
 
     const total = data?.length || 0;
     const internal = data?.filter(item => item.email === null).length || 0;

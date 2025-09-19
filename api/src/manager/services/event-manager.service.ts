@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { EventModel } from '../models/events/event-model';
-import { EventAccessService, EventFollowAccessService } from '../../access/mail';
-import { CreateEventRequest } from '../models/events/create-event-request';
-import { UpdateEventRequest } from '../models/events/update-event-request';
+import { EventAccessService } from '../../access/data/services/event-access.service';
+import { EventFollowAccessService } from '../../access/data/services/event-follow-access.service';
 import { CreateEventAccessRequest } from '../../access/contract/events/create-event-access-request';
 import { EventAccessModel } from '../../access/contract/events/event-access-model';
 import { UpdateEventAccessRequest } from '../../access/contract/events/update-event-access-request';
 import { EventFollowRequest } from '../../access/contract/event-follows/event-follow-request';
+import { EventModel } from '../models/events/event-model';
+import { CreateEventRequest } from '../models/events/create-event-request';
+import { UpdateEventRequest } from '../models/events/update-event-request';
 
 @Injectable()
 export class EventManagerService {

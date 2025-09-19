@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "overrides": {
+    "reflect-metadata": "0.1.14"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -27,6 +30,7 @@
     "@azure/functions": "^3.5.1",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/azure-func-http": "^0.10.0",
+    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^10.4.20",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.4.20",
@@ -36,9 +40,10 @@
     "@schematics/angular": "^17.2.2",
     "@supabase/supabase-js": "^2.57.2",
     "bcrypt": "^6.0.0",
+    "cache-manager": "^7.2.0",
     "dotenv": "^17.2.2",
     "passport-jwt": "^4.0.1",
-    "reflect-metadata": "^0.2.2",
+    "reflect-metadata": "0.1.14",
     "rxjs": "^7.8.2",
     "web-push": "^3.6.7"
   },
@@ -54,8 +59,8 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.0",
     "@types/web-push": "^3.6.3",
-    "@typescript-eslint/eslint-plugin": "^7.1.0",
-    "@typescript-eslint/parser": "^7.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.0.0",

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { MailAccessService, UserAccessService } from '../../access/mail';
-import { ForgotPasswordAccessRequest } from 'src/access/contract/users/forgot-password-access-request';
+import { MailAccessService } from '../../access/mail';
+import { ForgotPasswordAccessRequest } from '../../access/contract/users/forgot-password-access-request';
+import { UserAccessService } from '../../access/data/services/user-access.service';
 import { generateRandomCode } from '../../utility/functions/random-code';
 
 @Injectable()
