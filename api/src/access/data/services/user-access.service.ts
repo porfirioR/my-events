@@ -1,15 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { DbContextService } from '../data/services/db-context.service';
-import { CreateUserAccessRequest } from '../contract/users/create-user-access-request';
-import { UserAccessModel } from '../contract/users/user-access-model';
-import { UserEntity } from '../data/entities/user.entity';
-import { TableEnum, DatabaseColumns } from '../../utility/enums';
-import { ForgotPasswordAccessRequest } from '../contract/users/forgot-password-access-request';
-import { ResetUserAccessRequest } from '../contract/users/reset-user-password-access-request';
-import { WebPushTokenAccessRequest } from '../contract/users/web-push-token-access-request';
-import { WebPushTokenEntity } from '../data/entities/web-push-token.Entity';
-import { WebPushTokenAccessModel } from '../contract/users/web-push-token-access-model';
+import { TableEnum, DatabaseColumns } from '../../../utility/enums';
+import { DbContextService } from '../../data/services/db-context.service';
+
+import { UserEntity } from '../entities/user.entity';
+import { WebPushTokenEntity } from '../entities/web-push-token.Entity';
+import {
+  CreateUserAccessRequest,
+  ForgotPasswordAccessRequest,
+  ResetUserAccessRequest,
+  UserAccessModel,
+  WebPushTokenAccessModel,
+  WebPushTokenAccessRequest
+} from '../../../access/contract/users';
 
 @Injectable()
 export class UserAccessService {

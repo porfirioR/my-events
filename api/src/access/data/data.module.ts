@@ -9,9 +9,11 @@ import { DbContextService } from './services/db-context.service';
 import { ConfigurationAccessService } from './services/configuration-access.service';
 import { COLLABORATOR_TOKENS } from '../../utility/constants';
 import { UtilityModule } from '../../utility/utility.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule,
     UtilityModule
   ],
   controllers: [],
@@ -26,7 +28,7 @@ import { UtilityModule } from '../../utility/utility.module';
     CollaboratorAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
-      useClass: CollaboratorAccessService,
+      useExisting: CollaboratorAccessService,
     }
   ],
   exports: [

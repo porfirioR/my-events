@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { ForgotPasswordAccessRequest } from '../contract/users/forgot-password-access-request';
 import { ConfigService } from '@nestjs/config';
+import { ForgotPasswordAccessRequest } from '../contract/users/forgot-password-access-request';
 import { SPA_URL } from '../../utility/constants';
 
 @Injectable()

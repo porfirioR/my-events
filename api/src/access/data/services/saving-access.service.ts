@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { DbContextService } from '../data/services/db-context.service';
-import { TableEnum, DatabaseColumns } from '../../utility/enums';
-import { SavingEntity } from '../data/entities/saving.entity';
-import { CreateSavingAccessRequest, SavingAccessModel, UpdateSavingAccessRequest } from '../contract/savings';
+import { CreateSavingAccessRequest, SavingAccessModel, UpdateSavingAccessRequest } from '../../contract/savings';
+import { DbContextService } from './db-context.service';
+import { DatabaseColumns, TableEnum } from '../../../utility/enums';
+import { SavingEntity } from '../entities/saving.entity';
 
 @Injectable()
 export class SavingAccessService {

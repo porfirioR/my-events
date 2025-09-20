@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { DbContextService } from '../data/services/db-context.service';
-import { CreatePaymentAccessRequest } from '../contract/payments/create-payment-access-request';
-import { DatabaseColumns, TableEnum } from 'src/utility/enums';
-import { PaymentEntity } from '../data/entities/payment.entity';
-import { PaymentAccessModel } from '../contract/payments/payment-access-model';
-import { UpdatePaymentAccessRequest } from '../contract/payments/update-payment-access-request';
+import { DatabaseColumns, TableEnum } from '../../../utility/enums';
+import { DbContextService } from './db-context.service';
+import { CreatePaymentAccessRequest, PaymentAccessModel, UpdatePaymentAccessRequest } from '../../../access/contract/payments';
+import { PaymentEntity } from '../entities/payment.entity';
 
 @Injectable()
 export class PaymentAccessService {
