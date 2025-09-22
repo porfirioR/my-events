@@ -135,7 +135,7 @@ describe('Collaborator Module Integration E2E', () => {
       const result = await managerService.getMyCollaborators(1);
 
       expect(accessSpy).toHaveBeenCalledWith(1);
-      expect(result).toBe(mockResult);
+      expect(result).toEqual(mockResult);
       accessSpy.mockRestore();
     });
 

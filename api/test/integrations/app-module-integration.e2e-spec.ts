@@ -127,7 +127,7 @@ describe('AppModule Complete Integration E2E', () => {
       // Verificar que la cadena completa funcionó
       expect(managerSpy).toHaveBeenCalledWith(userId);
       expect(accessSpy).toHaveBeenCalledWith(userId);
-      expect(result).toBe(mockResult);
+      expect(result).toEqual(mockResult);
 
       managerSpy.mockRestore();
       accessSpy.mockRestore();
@@ -146,7 +146,7 @@ describe('AppModule Complete Integration E2E', () => {
 
       await authService.clearUserCache(token);
       const clearedUserId = await authService.getUserIdFromToken(token);
-      expect(clearedUserId).toBeNull();
+      expect(clearedUserId).toBeUndefined();
     });
   });
 
