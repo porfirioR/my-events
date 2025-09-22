@@ -9,6 +9,7 @@ import { CollaboratorManagerService } from './../../src/manager/services/collabo
 import { CollaboratorAccessService } from './../../src/access/data/services/collaborator-access.service';
 import { AuthService } from './../../src/access/auth/auth.service';
 import { TasksService } from './../../src/host/services/tasks.service';
+import { COLLABORATOR_TOKENS } from './../../src/utility/constants';
 import { TestHelpers } from '../helpers/test-helpers';
 
 describe('AppModule Complete Integration E2E', () => {
@@ -37,6 +38,7 @@ describe('AppModule Complete Integration E2E', () => {
 
     it('should have all your controllers available through ControllerModule', () => {
       // Verificar que todos los controllers están disponibles
+      //TODO add all controllers
       expect(() => module.get<CollaboratorsController>(CollaboratorsController)).not.toThrow();
       
       const collaboratorsController = module.get<CollaboratorsController>(CollaboratorsController);
@@ -45,6 +47,7 @@ describe('AppModule Complete Integration E2E', () => {
 
     it('should have all your manager services available through ManagerModule', () => {
       // Verificar que todos los manager services están disponibles
+      //TODO add all managers
       expect(() => module.get<CollaboratorManagerService>(CollaboratorManagerService)).not.toThrow();
       
       const collaboratorManager = module.get<CollaboratorManagerService>(CollaboratorManagerService);
@@ -53,6 +56,7 @@ describe('AppModule Complete Integration E2E', () => {
 
     it('should have all your access services available through DataModule', () => {
       // Verificar access services del DataModule
+      //TODO add all access services from DataModule
       expect(() => module.get<CollaboratorAccessService>(CollaboratorAccessService)).not.toThrow();
       
       const collaboratorAccess = module.get<CollaboratorAccessService>(CollaboratorAccessService);
@@ -68,7 +72,7 @@ describe('AppModule Complete Integration E2E', () => {
 
     it('should have TasksService available through ControllerModule', () => {
       expect(() => module.get<TasksService>(TasksService)).not.toThrow();
-      
+
       const tasksService = module.get<TasksService>(TasksService);
       expect(tasksService).toBeInstanceOf(TasksService);
     });
@@ -80,7 +84,6 @@ describe('AppModule Complete Integration E2E', () => {
     const managerService = module.get<CollaboratorManagerService>(CollaboratorManagerService);
     
     // Obtener el access service usando el token en lugar de la clase
-    const { COLLABORATOR_TOKENS } = require('./../../src/utility/constants');
     const accessService = module.get(COLLABORATOR_TOKENS.ACCESS_SERVICE);
 
     // Verificar cadena completa
@@ -90,7 +93,6 @@ describe('AppModule Complete Integration E2E', () => {
 
   it('should verify token-based injection works correctly', () => {
     const managerService = module.get<CollaboratorManagerService>(CollaboratorManagerService);
-    const { COLLABORATOR_TOKENS } = require('./../../src/utility/constants');
     const accessByToken = module.get(COLLABORATOR_TOKENS.ACCESS_SERVICE);
     const accessByClass = module.get<CollaboratorAccessService>(CollaboratorAccessService);
 
@@ -158,8 +160,6 @@ describe('AppModule Complete Integration E2E', () => {
     });
 
     it('should verify your COLLABORATOR_TOKENS configuration', () => {
-      const { COLLABORATOR_TOKENS } = require('./../../src/utility/constants');
-      
       // Verificar que el token provider funciona
       expect(() => module.get(COLLABORATOR_TOKENS.ACCESS_SERVICE)).not.toThrow();
       
