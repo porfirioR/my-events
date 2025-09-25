@@ -3,6 +3,6 @@ export class CreateCollaboratorAccessRequest {
     public name: string,
     public surname: string,
     public email: string | null,
-    public createdByUserId: number
+    public userId: number
   ) {}
 }

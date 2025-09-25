@@ -1,3 +1,4 @@
+import { CurrentUserService } from './host/services/current-user.service';
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { UtilityModule } from './utility/utility.module';

@@ -44,7 +44,7 @@ export class TestHelpers {
       name: string;
       surname: string;
       email: string | null;
-      createdByUserId: number;
+      userId: number;
       isActive: boolean;
       createdDate: Date;
       type: 'INTERNAL' | 'EXTERNAL';
@@ -55,7 +55,7 @@ export class TestHelpers {
       overrides.name ?? 'John',
       overrides.surname ?? 'Doe',
       overrides.email ?? 'john@example.com',
-      overrides.createdByUserId ?? 1,
+      overrides.userId ?? 1,
       overrides.isActive ?? true,
       overrides.createdDate ?? new Date(),
       overrides.type ?? 'INTERNAL'
@@ -68,14 +68,14 @@ export class TestHelpers {
       name: string;
       surname: string;
       email: string | null;
-      createdByUserId: number;
+      userId: number;
     }> = {}
   ): CreateCollaboratorAccessRequest {
     return new CreateCollaboratorAccessRequest(
       overrides.name ?? 'John',
       overrides.surname ?? 'Doe',
       overrides.email ?? 'john@example.com',
-      overrides.createdByUserId ?? 1
+      overrides.userId ?? 1
     );
   }
 
@@ -85,7 +85,7 @@ export class TestHelpers {
       name: string;
       surname: string;
       email: string | null;
-      createdByUserId: number;
+      userId: number;
     }> = {}
   ): UpdateCollaboratorAccessRequest {
     return new UpdateCollaboratorAccessRequest(
@@ -93,7 +93,7 @@ export class TestHelpers {
       overrides.name ?? 'John Updated',
       overrides.surname ?? 'Doe Updated',
       overrides.email ?? 'john.updated@example.com',
-      overrides.createdByUserId ?? 1
+      overrides.userId ?? 1
     );
   }
 
@@ -103,14 +103,14 @@ export class TestHelpers {
       name: string;
       surname: string;
       email: string | null;
-      createdByUserId: number;
+      userId: number;
     }> = {}
   ): CreateCollaboratorRequest {
     return new CreateCollaboratorRequest(
       overrides.name ?? 'John',
       overrides.surname ?? 'Doe',
       overrides.email ?? 'john@example.com',
-      overrides.createdByUserId ?? 1
+      overrides.userId ?? 1
     );
   }
 
@@ -120,7 +120,7 @@ export class TestHelpers {
       name: string;
       surname: string;
       email: string | null;
-      createdByUserId: number;
+      userId: number;
     }> = {}
   ): UpdateCollaboratorRequest {
     return new UpdateCollaboratorRequest(
@@ -128,7 +128,7 @@ export class TestHelpers {
       overrides.name ?? 'John Updated',
       overrides.surname ?? 'Doe Updated',
       overrides.email ?? 'john.updated@example.com',
-      overrides.createdByUserId ?? 1
+      overrides.userId ?? 1
     );
   }
 
@@ -138,14 +138,14 @@ export class TestHelpers {
       name: string;
       surname: string;
       email: string;
-      createdByUserId: number;
+      userId: number;
     }> = {}
   ): CreateCollaboratorApiRequest {
     return {
       name: overrides.name ?? 'John',
       surname: overrides.surname ?? 'Doe',
       email: overrides.email ?? 'john@example.com',
-      createdByUserId: overrides.createdByUserId ?? 1
+      userId: overrides.userId ?? 1
     } as CreateCollaboratorApiRequest;
   }
 
@@ -192,35 +192,31 @@ export class TestHelpers {
       typeof model.name === 'string' &&
       typeof model.surname === 'string' &&
       (typeof model.email === 'string' || model.email === null) &&
-      typeof model.createdByUserId === 'number' &&
+      typeof model.userId === 'number' &&
       typeof model.isActive === 'boolean' &&
-      model.createdDate instanceof Date &&
+      model.dateCreated instanceof Date &&
       (model.type === 'INTERNAL' || model.type === 'EXTERNAL')
     );
   }
 
-  static validateCreateAccessRequest(
-    request: any
-  ): request is CreateCollaboratorAccessRequest {
+  static validateCreateAccessRequest(request: any): request is CreateCollaboratorAccessRequest {
     return (
       request instanceof CreateCollaboratorAccessRequest &&
       typeof request.name === 'string' &&
       typeof request.surname === 'string' &&
       (typeof request.email === 'string' || request.email === null) &&
-      typeof request.createdByUserId === 'number'
+      typeof request.userId === 'number'
     );
   }
 
-  static validateUpdateAccessRequest(
-    request: any
-  ): request is UpdateCollaboratorAccessRequest {
+  static validateUpdateAccessRequest(request: any): request is UpdateCollaboratorAccessRequest {
     return (
       request instanceof UpdateCollaboratorAccessRequest &&
       typeof request.id === 'number' &&
       typeof request.name === 'string' &&
       typeof request.surname === 'string' &&
       (typeof request.email === 'string' || request.email === null) &&
-      typeof request.createdByUserId === 'number'
+      typeof request.userId === 'number'
     );
   }
 
@@ -244,7 +240,7 @@ export class TestHelpers {
       managerRequest.name,
       managerRequest.surname,
       managerRequest.email,
-      managerRequest.createdByUserId
+      managerRequest.userId
     );
   }
 

@@ -1,48 +1,55 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { CollaboratorManagerService } from '../../manager/services';
+import { CurrentUserService } from '../services/current-user.service';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
 import { CollaboratorModel, CreateCollaboratorRequest, UpdateCollaboratorRequest } from '../../manager/models/collaborators';
 import { CreateCollaboratorApiRequest } from '../models/collaborators/create-collaborator-api-request';
 import { UpdateCollaboratorApiRequest } from '../models/collaborators/update-collaborator-api-request';
 
-// import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
-
 @Controller('collaborators')
 @UseGuards(PrivateEndpointGuard)
 export class CollaboratorsController {
-  constructor(private collaboratorManagerService: CollaboratorManagerService) {}
+  constructor(
+    private readonly currentUserService: CurrentUserService,
+    private collaboratorManagerService: CollaboratorManagerService
+  ) {}
 
   // Obtener todos los colaboradores del usuario
-  @Get('my-collaborators/:createdByUserId')
-  async getMyCollaborators(@Param('createdByUserId', ParseIntPipe) createdByUserId: number): Promise<CollaboratorModel[]> {
-    return await this.collaboratorManagerService.getMyCollaborators(createdByUserId);
+  @Get('my-collaborators')
+  async getMyCollaborators(): Promise<CollaboratorModel[]> {
+    const userId = await this.currentUserService.getCurrentUserId()
+    return await this.collaboratorManagerService.getMyCollaborators(userId);
   }
 
   // Obtener colaboradores internos
-  @Get('internal/:createdByUserId')
-  async getInternalCollaborators(@Param('createdByUserId', ParseIntPipe) createdByUserId: number): Promise<CollaboratorModel[]> {
-    return await this.collaboratorManagerService.getInternalCollaborators(createdByUserId);
+  @Get('internal')
+  async getInternalCollaborators(): Promise<CollaboratorModel[]> {
+    const userId = await this.currentUserService.getCurrentUserId()
+    return await this.collaboratorManagerService.getInternalCollaborators(userId);
   }
 
   // Obtener colaboradores externos
-  @Get('external/:createdByUserId')
-  async getExternalCollaborators(@Param('createdByUserId', ParseIntPipe) createdByUserId: number): Promise<CollaboratorModel[]> {
-    return await this.collaboratorManagerService.getExternalCollaborators(createdByUserId);
+  @Get('external')
+  async getExternalCollaborators(): Promise<CollaboratorModel[]> {
+    const userId = await this.currentUserService.getCurrentUserId()
+    return await this.collaboratorManagerService.getExternalCollaborators(userId);
   }
 
   // Obtener un colaborador específico
-  @Get(':id/:createdByUserId')
+  @Get(':id')
   async getMyCollaborator(
     @Param('id', ParseIntPipe) id: number,
-    @Param('createdByUserId', ParseIntPipe) createdByUserId: number
+    
   ): Promise<CollaboratorModel> {
-    return await this.collaboratorManagerService.getMyCollaborator(id, createdByUserId);
+    const userId = await this.currentUserService.getCurrentUserId()
+    return await this.collaboratorManagerService.getMyCollaborator(id, userId);
   }
 
   // Obtener estadísticas
-  @Get('stats/:createdByUserId')
-  async getCollaboratorStats(@Param('createdByUserId', ParseIntPipe) createdByUserId: number) {
-    return await this.collaboratorManagerService.getCollaboratorStats(createdByUserId);
+  @Get('stats')
+  async getCollaboratorStats() {
+    const userId = await this.currentUserService.getCurrentUserId()
+    return await this.collaboratorManagerService.getCollaboratorStats(userId);
   }
 
   // Verificar si se puede eliminar
@@ -51,14 +58,14 @@ export class CollaboratorsController {
     return await this.collaboratorManagerService.canDeleteCollaborator(id);
   }
 
-  // Crear colaborador
+  // Create colaborador
   @Post()
   async createCollaborator(@Body() apiRequest: CreateCollaboratorApiRequest): Promise<CollaboratorModel> {
     const request = new CreateCollaboratorRequest(
       apiRequest.name,
       apiRequest.surname,
       apiRequest.email || null,
-      apiRequest.createdByUserId
+      apiRequest.userId
     );
     return await this.collaboratorManagerService.createCollaborator(request);
   }
@@ -66,23 +73,21 @@ export class CollaboratorsController {
   // Actualizar colaborador
   @Put()
   async updateCollaborator(@Body() apiRequest: UpdateCollaboratorApiRequest): Promise<CollaboratorModel> {
+    const userId = await this.currentUserService.getCurrentUserId()
     const request = new UpdateCollaboratorRequest(
       apiRequest.id,
       apiRequest.name,
       apiRequest.surname,
       apiRequest.email || null,
-      // Nota: createdByUserId se obtiene del colaborador existente en el access service
-      0 // Se sobrescribe en el access service
+      userId
     );
     return await this.collaboratorManagerService.updateCollaborator(request);
   }
 
   // Desactivar colaborador (soft delete)
-  @Delete(':id/:createdByUserId')
-  async deactivateCollaborator(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('createdByUserId', ParseIntPipe) createdByUserId: number
-  ): Promise<CollaboratorModel> {
-    return await this.collaboratorManagerService.deactivateCollaborator(id, createdByUserId);
+  @Delete(':id')
+  async deactivateCollaborator(@Param('id', ParseIntPipe) id: number, ): Promise<CollaboratorModel> {
+    const userId = await this.currentUserService.getCurrentUserId()
+    return await this.collaboratorManagerService.deactivateCollaborator(id, userId);
   }
 }

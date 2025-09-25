@@ -1,4 +1,4 @@
-import { CreateEventApiRequest } from "."
+import { CreateEventApiRequest } from "..";
 
 export class UpdateEventApiRequest implements Omit<CreateEventApiRequest, 'authorId'> {
   constructor(

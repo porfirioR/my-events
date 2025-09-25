@@ -14,11 +14,11 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     this.collaboratorContext = this.dbContextService.getConnection();
   }
 
-  public getMyCollaborators = async (createdByUserId: number): Promise<CollaboratorAccessModel[]> => {
+  public getMyCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
-      .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
+      .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.IsActive, true)
       .order(DatabaseColumns.Name, { ascending: true });
 
@@ -28,11 +28,11 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  public getInternalCollaborators = async (createdByUserId: number): Promise<CollaboratorAccessModel[]> => {
+  public getInternalCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
-      .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
+      .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.IsActive, true)
       .is(DatabaseColumns.Email, null)
       .order(DatabaseColumns.Name, { ascending: true });
@@ -43,11 +43,11 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  public getExternalCollaborators = async (createdByUserId: number): Promise<CollaboratorAccessModel[]> => {
+  public getExternalCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
-      .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
+      .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.IsActive, true)
       .not(DatabaseColumns.Email, 'is', null)
       .order(DatabaseColumns.Name, { ascending: true });
@@ -58,12 +58,12 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  public getCollaboratorById = async (id: number, createdByUserId: number): Promise<CollaboratorAccessModel> => {
+  public getCollaboratorById = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, id)
-      .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
+      .eq(DatabaseColumns.UserId, userId)
       .single();
 
     if (error) {
@@ -88,12 +88,12 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
   };
 
   public updateCollaborator = async (accessRequest: UpdateCollaboratorAccessRequest): Promise<CollaboratorAccessModel> => {
-    const existingCollaborator = await this.getCollaboratorById(accessRequest.id, accessRequest.createdByUserId);
+    const existingCollaborator = await this.getCollaboratorById(accessRequest.id, accessRequest.userId);
     
     const collaboratorEntity = this.getEntity(accessRequest);
     collaboratorEntity.id = accessRequest.id;
-    collaboratorEntity.createdbyuserid = existingCollaborator.createdByUserId;
-    collaboratorEntity.createddate = existingCollaborator.createdDate;
+    collaboratorEntity.userid = existingCollaborator.userId;
+    collaboratorEntity.datecreated = existingCollaborator.dateCreated;
 
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
@@ -107,14 +107,14 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     return this.getCollaboratorAccessModel(data);
   };
 
-  public deactivateCollaborator = async (id: number, createdByUserId: number): Promise<CollaboratorAccessModel> => {
-    await this.getCollaboratorById(id, createdByUserId);
+  public deactivateCollaborator = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
+    await this.getCollaboratorById(id, userId);
 
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .update({ isactive: false })
       .eq(DatabaseColumns.EntityId, id)
-      .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
+      .eq(DatabaseColumns.UserId, userId)
       .select()
       .single<CollaboratorEntity>();
 
@@ -156,14 +156,14 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     return true;
   };
 
-  public getCollaboratorStats = async (createdByUserId: number) => {
+  public getCollaboratorStats = async (userId: number) => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(`
         ${DatabaseColumns.EntityId},
         ${DatabaseColumns.Email}
       `)
-      .eq(DatabaseColumns.CreatedByUserId, createdByUserId)
+      .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.IsActive, true);
 
     if (error) {
@@ -182,15 +182,15 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
   };
 
   // Mappers privados
-  private getCollaboratorAccessModel = (data: any): CollaboratorAccessModel => {
+  private getCollaboratorAccessModel = (data: CollaboratorEntity): CollaboratorAccessModel => {
     return new CollaboratorAccessModel(
       data.id,
       data.name,
       data.surname,
       data.email,
-      data.createdbyuserid,
+      data.userid,
       data.isactive,
-      data.createddate,
+      data.datecreated,
       data.email ? 'EXTERNAL' : 'INTERNAL'
     );
   };
@@ -200,7 +200,7 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
       accessRequest.name,
       accessRequest.surname,
       accessRequest.email,
-      accessRequest.createdByUserId,
+      accessRequest.userId,
       true // isactive siempre true al crear/actualizar
     );
 

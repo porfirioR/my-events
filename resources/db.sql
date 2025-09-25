@@ -41,16 +41,16 @@ CREATE TABLE collaborators (
     name VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(150), -- NULL = colaborador INTERNO, valor = colaborador EXTERNO
-    createdbyuserid INT NOT NULL,
+    userid INT NOT NULL,
     createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (createdbyuserid) REFERENCES users(id)
+    FOREIGN KEY (userid) REFERENCES users(id)
 );
 
 -- Índices para colaboradores
-CREATE INDEX idx_collaborators_userid ON collaborators(createdbyuserid);
+CREATE INDEX idx_collaborators_userid ON collaborators(userid);
 CREATE INDEX idx_collaborators_email ON collaborators(email);
-CREATE INDEX idx_collaborators_useremail ON collaborators(createdbyuserid, email);
-CREATE INDEX idx_collaborators_usertype ON collaborators(createdbyuserid, email);
+CREATE INDEX idx_collaborators_useremail ON collaborators(userid, email);
+CREATE INDEX idx_collaborators_usertype ON collaborators(userid, email);
 
 -- Solicitudes de matching entre colaboradores (solo para externos)
 CREATE TABLE collaboratormatchrequests (
@@ -98,15 +98,15 @@ CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
     description TEXT,
-    createdbyuserid INT NOT NULL,
+    userid INT NOT NULL,
     status projectstatus DEFAULT 'Active',
     createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     finalizeddate TIMESTAMP,
-    FOREIGN KEY (createdbyuserid) REFERENCES users(id)
+    FOREIGN KEY (userid) REFERENCES users(id)
 );
 
 -- Índices para proyectos
-CREATE INDEX idx_projects_createdbyuser ON projects(createdbyuserid);
+CREATE INDEX idx_projects_createdbyuser ON projects(userid);
 CREATE INDEX idx_projects_status ON projects(status);
 
 -- Miembros del proyecto - email NULL para internos, valor para externos

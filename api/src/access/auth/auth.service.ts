@@ -13,9 +13,9 @@ export class AuthService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) { }
 
-  public getToken = async (payload: AuthUserModel): Promise<string> => {
-    const token = await this.jwtService.signAsync({ id: payload.id, email: payload.email })
-    await this.cacheManager.set(`user_${token}`, payload.id, 3600000) // 1 hour in ms
+  public getToken = async (model: AuthUserModel): Promise<string> => {
+    const token = await this.jwtService.signAsync({ id: model.id, email: model.email })
+    await this.cacheManager.set(`user_${token}`, model.id, 3600000) // 1 hour in ms
 
     return token
   }

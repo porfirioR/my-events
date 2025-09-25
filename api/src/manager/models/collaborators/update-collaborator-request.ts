@@ -1,9 +1,13 @@
-export class UpdateCollaboratorRequest {
+import { CreateCollaboratorRequest } from ".";
+
+export class UpdateCollaboratorRequest extends CreateCollaboratorRequest {
   constructor(
     public id: number,
-    public name: string,
-    public surname: string,
-    public email: string | null,
-    public createdByUserId: number
-  ) {}
+    name: string,
+    surname: string,
+    email: string | null,
+    userId: number
+  ) {
+    super(name, surname, email, userId);
+  }
 }

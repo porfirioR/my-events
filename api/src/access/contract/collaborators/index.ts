@@ -1,4 +1,4 @@
-export * from './collaborator-access.model'
-export * from './update-collaborator-access-request'
-export * from './create-collaborator-access-request'
-export * from './collaborator-access.interface'
+export { CollaboratorAccessModel } from './collaborator-access.model';
+export { UpdateCollaboratorAccessRequest } from './update-collaborator-access-request';
+export { CreateCollaboratorAccessRequest } from './create-collaborator-access-request';
+export { ICollaboratorAccessService } from './collaborator-access.interface';

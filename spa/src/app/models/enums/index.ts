@@ -1,1 +1,1 @@
-export * from './configurations.enum'
+export { Configurations } from './configurations.enum'

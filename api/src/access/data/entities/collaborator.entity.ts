@@ -5,8 +5,8 @@ export class CollaboratorEntity {
     public name: string,
     public surname: string,
     public email: string | null,
-    public createdbyuserid: number,
+    public userid: number,
     public isactive: boolean,
-    public createddate?: Date
+    public datecreated?: Date
   ) {}
 }

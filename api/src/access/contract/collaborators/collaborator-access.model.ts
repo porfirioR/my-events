@@ -4,9 +4,9 @@ export class CollaboratorAccessModel {
     public name: string,
     public surname: string,
     public email: string | null,
-    public createdByUserId: number,
+    public userId: number,
     public isActive: boolean,
-    public createdDate: Date,
+    public dateCreated: Date,
     public type: 'INTERNAL' | 'EXTERNAL'
   ) {}
 }

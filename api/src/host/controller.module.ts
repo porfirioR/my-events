@@ -16,6 +16,7 @@ import { PaymentController } from './controllers/payments.controller';
 import { SavingsController } from './controllers/savings.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { CollaboratorsController } from './controllers/collaborators.controller';
+import { CurrentUserService } from './services/current-user.service';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CollaboratorsController } from './controllers/collaborators.controller'
   ],
   providers: [
     JwtService,
+    CurrentUserService,
     ConfigService,
     {
       provide: APP_FILTER,
