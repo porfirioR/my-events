@@ -10,6 +10,7 @@ import { EventApiService, LocalService } from '../../services'
 import { EventViewModel } from '../../models/view/event-view-model'
 import { selectIsLoading } from '../../store/loading/loading.selectors'
 import { loadingActionGroup } from '../../store/loading/loading.actions'
+import { DashboardComponent } from "../dashboard/dashboard.component";
 
 @Component({
   selector: 'app-home',
@@ -20,7 +21,8 @@ import { loadingActionGroup } from '../../store/loading/loading.actions'
     RouterModule,
     EventComponent,
     LoadingSkeletonComponent,
-    EmptyDataComponent
+    EmptyDataComponent,
+    DashboardComponent,
   ]
 })
 export class HomeComponent {

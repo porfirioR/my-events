@@ -6,7 +6,10 @@ import { ControllerModule } from './host/controller.module';
 @Module({
   imports: [
     UtilityModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env'
+    }),
     ControllerModule
   ],
   controllers: [],

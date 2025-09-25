@@ -29,7 +29,7 @@ describe('Collaborator Module Integration E2E', () => {
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          envFilePath: '.env.test',
+          envFilePath: '.env-test',
         }),
         UtilityModule,
         AuthModule,

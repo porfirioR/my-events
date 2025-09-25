@@ -4,19 +4,20 @@
     <app-loading-skeleton/>
     <app-loading-skeleton/>
   } @else {
-    @for (event of eventFollows; track event.id) {
+    <app-dashboard/>
+    <!-- @for (event of eventFollows; track event.id) {
       <app-event [eventModel]="event"/>
     } @empty {
       <app-empty-data />
-    }
+    } -->
   }
   @if (userLoaded) {
     <a
-      class="fixed bottom-0 right-0 m-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow-md"
+      class="fixed bottom-0 right-0 m-4 bg-primary text-white font-bold py-2 px-4 rounded shadow-md"
       [routerLink]="['/create-saving']"
     >
       <i class="fas fa-plus"></i>
-      Add Saving
+      Add Transaction
     </a>
   }
 </main>
