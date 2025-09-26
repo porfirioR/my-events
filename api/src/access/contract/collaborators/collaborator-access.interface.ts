@@ -6,7 +6,7 @@ export interface ICollaboratorAccessService {
  * @param userId - ID del usuario propietario
  * @returns Promise con lista de colaboradores activos
  */
-getMyCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
+getAll(userId: number): Promise<CollaboratorAccessModel[]>;
 
 /**
  * Obtiene colaboradores internos (sin email) de un usuario
@@ -29,7 +29,7 @@ getExternalCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
  * @returns Promise con el colaborador encontrado
  * @throws Error si el colaborador no existe o no pertenece al usuario
  */
-getCollaboratorById(id: number,userId: number): Promise<CollaboratorAccessModel>;
+getById(id: number,userId: number): Promise<CollaboratorAccessModel>;
 
 /**
  * Crea un nuevo colaborador
@@ -48,13 +48,13 @@ createCollaborator(accessRequest: CreateCollaboratorAccessRequest): Promise<Coll
 updateCollaborator(accessRequest: UpdateCollaboratorAccessRequest): Promise<CollaboratorAccessModel>;
 
 /**
- * Desactiva un colaborador (soft delete)
- * @param id - ID del colaborador a desactivar
+ * Desactiva o reactiva un colaborador (soft delete)
+ * @param id - ID del colaborador a (des)activar
  * @param userId - ID del usuario propietario
- * @returns Promise con el colaborador desactivado
+ * @returns Promise con el colaborador (des)activado
  * @throws Error si el colaborador no existe o no pertenece al usuario
  */
-deactivateCollaborator(id: number,userId: number): Promise<CollaboratorAccessModel>;
+changeVisibility(id: number,userId: number): Promise<CollaboratorAccessModel>;
 
 /**
  * Verifica si un colaborador puede ser eliminado

@@ -1,3 +1,56 @@
-<p>
-  upsert-collaborator works!
-</p>
+<section class="flex flex-col items-center justify-center px-6 py-4 mx-auto lg:py-0 mt-6">
+  <section class="w-full bg-base-100 rounded-lg shadow-xl border border-base-300 md:mt-0 sm:max-w-md xl:p-0 transition-all duration-300 hover:shadow-2xl">
+    <main class="px-6 py-4 space-y-4 md:space-y-6 sm:p-8">
+      <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
+        {{title}}
+      </h1>
+      
+      <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
+        <div class="space-y-4">
+          <app-text formControlName="name" type="text" label="Name" id="name" name="name" />
+          <app-text formControlName="surname" type="text" label="Surname" id="surname" name="surname" />
+          <app-text formControlName="email" type="text" label="Email" id="email" name="email" />
+          @if (collaborator) {
+            <div class="pt-2">
+              <app-check-box-input formControlName="isActive" label="Is Active" />
+            </div>
+          }
+        </div>
+        
+        <footer class="flex justify-between items-center pt-6 gap-4">
+          <button
+            type="button"
+            class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="saving"
+            (click)="cancel()"
+          >
+            <i class="fas fa-arrow-left text-sm"></i>
+            Cancel
+          </button>
+          
+          @if (saving) {
+            <button
+              type="button"
+              class="btn btn-primary flex items-center gap-2 loading-btn"
+              [disabled]="saving"
+            >
+              <span class="loading loading-spinner loading-xs"></span>
+              Saving...
+            </button>
+          } @else {
+            <button
+              role="button"
+              type="submit"
+              class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+              [disabled]="formGroup.invalid"
+              [class.btn-disabled]="formGroup.invalid"
+            >
+              <i class="fas fa-cloud-arrow-up text-sm"></i>
+              Save
+            </button>
+          }
+        </footer>
+      </form>
+    </main>
+  </section>
+</section>

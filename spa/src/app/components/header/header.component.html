@@ -1,22 +1,50 @@
-<header class="navbar bg-primary text-primary-content shadow-lg sticky top-0 z-50 md:relative">
+<header class="navbar bg-primary text-primary-content shadow-lg sticky top-0 z-50 md:relative transition-colors duration-300">
   <article class="navbar-start">
     <!-- Mobile menu button -->
     <div class="dropdown">
-      <div tabindex="0" role="button" class="btn btn-ghost">
+      <div tabindex="0" role="button" class="btn btn-ghost hover:bg-primary-focus transition-colors duration-200">
         <i class="fas fa-bars text-xl"></i>
       </div>
-      <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 text-base-content rounded-box w-64">
+      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
         <li class="menu-title">Navigation</li>
-        <li><a [routerLink]="['']"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a></li>
-        <li><a [routerLink]="['collaborators']"><i class="fas fa-users mr-2"></i>Collaborators</a></li>
-        <li><a [routerLink]="['projects']"><i class="fas fa-project-diagram mr-2"></i>Projects</a></li>
-        <li><a [routerLink]="['events']"><i class="fas fa-calendar mr-2"></i>Events</a></li>
-        <li><a [routerLink]="['finance']"><i class="fas fa-wallet mr-2"></i>Finance</a></li>
-        <li><a [routerLink]="['settings']"><i class="fas fa-cogs mr-2"></i>Settings</a></li>
+        <li>
+          <a [routerLink]="['']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="['collaborators']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-users mr-2"></i>Collaborators
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="['projects']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-project-diagram mr-2"></i>Projects
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="['events']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-calendar mr-2"></i>Events
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="['finance']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-wallet mr-2"></i>Finance
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="['settings']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-cogs mr-2"></i>Settings
+          </a>
+        </li>
         <div class="divider"></div>
-        <li><a [routerLink]="['settings']"><i class="fas fa-question-circle mr-2"></i>Help</a></li>
+        <li>
+          <a [routerLink]="['settings']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-question-circle mr-2"></i>Help
+          </a>
+        </li>
         @if (isLogin) {
-          <li><a (click)="logOut()"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
+          <li><a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
         }
       </ul>
     </div>
@@ -37,13 +65,15 @@
         </li>
         <div class=" my-0"></div>
         <li>
-          <a (click)="openProfile()"><i class="fas fa-user mr-2"></i>Profile</a>
+          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="openProfile()"><i class="fas fa-user mr-2"></i>Profile</a>
         </li>
         <li>
-          <a><i class="fas fa-cog mr-2"></i>Settings</a>
+          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <i class="fas fa-cog mr-2"></i>Settings
+          </a>
         </li>
         <li (click)="toggleTheme()">
-          <a>
+          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
             @if (currentTheme == 'light') {
               <i class="fas fa-moon mr-2"></i>Dark Mode
             } @else {
@@ -53,7 +83,11 @@
         </li>
         @if (isLogin) {
           <div class="divider my-1"></div>
-          <li><a (click)="logOut()"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
+          <li>
+            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="logOut()">
+              <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </a>
+          </li>
         }
       </ul>
     </div>

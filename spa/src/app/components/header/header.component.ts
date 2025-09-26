@@ -47,17 +47,11 @@ export class HeaderComponent {
   protected toggleTheme = (): void => {
     const html = document.documentElement;
     const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
-    
+
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
-    
-    this.currentTheme = newTheme;
-  }
 
-  private getCurrentTheme = (): ModeType => {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme') as ModeType | null;
-    return currentTheme ?? 'light';
+    this.currentTheme = newTheme;
   }
 
   private loadSavedTheme = (): void => {

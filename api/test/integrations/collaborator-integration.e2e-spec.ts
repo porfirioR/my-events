@@ -122,9 +122,9 @@ describe('Collaborator Module Integration E2E', () => {
 
   describe('Data Flow Testing', () => {
     it('should verify method availability', () => {
-      expect(typeof controller.getMyCollaborators).toBe('function');
-      expect(typeof managerService.getMyCollaborators).toBe('function');
-      expect(typeof accessService.getMyCollaborators).toBe('function');
+      expect(typeof controller.getAll).toBe('function');
+      expect(typeof managerService.getAll).toBe('function');
+      expect(typeof accessService.getAll).toBe('function');
     });
 
     it('should test service call flow with mocks', async () => {
@@ -132,7 +132,7 @@ describe('Collaborator Module Integration E2E', () => {
       const mockResult = [TestHelpers.createMockCollaboratorAccessModel()];
       accessSpy.mockResolvedValue(mockResult);
 
-      const result = await managerService.getMyCollaborators(1);
+      const result = await managerService.getAll(1);
 
       expect(accessSpy).toHaveBeenCalledWith(1);
       expect(result).toEqual(mockResult);
@@ -163,7 +163,7 @@ describe('Collaborator Module Integration E2E', () => {
       const testError = new Error('Integration test error');
       accessSpy.mockRejectedValue(testError);
 
-      await expect(managerService.getMyCollaborators(1))
+      await expect(managerService.getAll(1))
         .rejects.toThrow('Integration test error');
 
       accessSpy.mockRestore();

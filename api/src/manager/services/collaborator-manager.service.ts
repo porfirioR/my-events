@@ -12,8 +12,8 @@ export class CollaboratorManagerService {
   ) {}
 
   // Obtener todos los colaboradores del usuario
-  public getMyCollaborators = async (userId: number): Promise<CollaboratorModel[]> => {
-    const accessModelList = await this.collaboratorAccessService.getMyCollaborators(userId);
+  public getAll = async (userId: number): Promise<CollaboratorModel[]> => {
+    const accessModelList = await this.collaboratorAccessService.getAll(userId);
     return accessModelList.map(this.getModel);
   };
 
@@ -30,8 +30,8 @@ export class CollaboratorManagerService {
   };
 
   // Obtener un colaborador específico
-  public getMyCollaborator = async (id: number, userId: number): Promise<CollaboratorModel> => {
-    const accessModel = await this.collaboratorAccessService.getCollaboratorById(id, userId);
+  public getById = async (id: number, userId: number): Promise<CollaboratorModel> => {
+    const accessModel = await this.collaboratorAccessService.getById(id, userId);
     return this.getModel(accessModel);
   };
 
@@ -62,9 +62,9 @@ export class CollaboratorManagerService {
     return this.getModel(accessModel);
   };
 
-  // Desactivar colaborador
-  public deactivateCollaborator = async (id: number, userId: number): Promise<CollaboratorModel> => {
-    const accessModel = await this.collaboratorAccessService.deactivateCollaborator(id, userId);
+  // Desactivar/Activar colaborador
+  public changeVisibility = async (id: number, userId: number): Promise<CollaboratorModel> => {
+    const accessModel = await this.collaboratorAccessService.changeVisibility(id, userId);
     return this.getModel(accessModel);
   };
 

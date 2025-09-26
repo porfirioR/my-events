@@ -14,13 +14,12 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     this.collaboratorContext = this.dbContextService.getConnection();
   }
 
-  public getMyCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
+  public getAll = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
-      .eq(DatabaseColumns.IsActive, true)
-      .order(DatabaseColumns.Name, { ascending: true });
+      .order(DatabaseColumns.DateCreated, { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -58,7 +57,7 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  public getCollaboratorById = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
+  public getById = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
@@ -74,7 +73,6 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
 
   public createCollaborator = async (accessRequest: CreateCollaboratorAccessRequest): Promise<CollaboratorAccessModel> => {
     const collaboratorEntity = this.getEntity(accessRequest);
-    
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .insert(collaboratorEntity)
@@ -88,8 +86,7 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
   };
 
   public updateCollaborator = async (accessRequest: UpdateCollaboratorAccessRequest): Promise<CollaboratorAccessModel> => {
-    const existingCollaborator = await this.getCollaboratorById(accessRequest.id, accessRequest.userId);
-    
+    const existingCollaborator = await this.getById(accessRequest.id, accessRequest.userId);
     const collaboratorEntity = this.getEntity(accessRequest);
     collaboratorEntity.id = accessRequest.id;
     collaboratorEntity.userid = existingCollaborator.userId;
@@ -107,12 +104,12 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     return this.getCollaboratorAccessModel(data);
   };
 
-  public deactivateCollaborator = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
-    await this.getCollaboratorById(id, userId);
+  public changeVisibility = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
+    const accessModel = await this.getById(id, userId);
 
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
-      .update({ isactive: false })
+      .update({ isactive: !accessModel.isActive })
       .eq(DatabaseColumns.EntityId, id)
       .eq(DatabaseColumns.UserId, userId)
       .select()

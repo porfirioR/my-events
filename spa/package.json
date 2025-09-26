@@ -28,6 +28,7 @@
     "@ngrx/entity": "^20.0.1",
     "@ngrx/store": "^20.0.1",
     "@ngrx/store-devtools": "^20.0.1",
+    "@tailwindcss/postcss": "^4.1.13",
     "inquirer-autocomplete-prompt": "^3.0.1",
     "rxjs": "~7.8.0",
     "sweetalert2": "^11.15.3",
@@ -40,7 +41,7 @@
     "@ngrx/schematics": "^20.0.1",
     "@types/jasmine": "^5.1.9",
     "autoprefixer": "^10.4.21",
-    "daisyui": "^5.1.6",
+    "daisyui": "^5.1.23",
     "jasmine-core": "^5.10.0",
     "karma": "^6.4.4",
     "karma-chrome-launcher": "~3.2.0",
@@ -48,7 +49,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2"
   }
 }

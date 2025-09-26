@@ -18,8 +18,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api')
   app.enableCors({
     origin: [
-      configService.get<string>(SPA_URL), 
-      configService.get<string>(SPA_URL2)
+      configService.get<string>(SPA_URL),
+      configService.get<string>(SPA_URL2),
     ]
   })
 

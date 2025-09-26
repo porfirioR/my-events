@@ -1,5 +1,5 @@
 import { CreateCollaboratorApiRequest } from "./create-collaborator-api-request";
 
-export type UpdateCollaboratorApiRequest = Omit<CreateCollaboratorApiRequest, 'userId'> & {
+export interface UpdateCollaboratorApiRequest extends CreateCollaboratorApiRequest {
   id: number;
 }

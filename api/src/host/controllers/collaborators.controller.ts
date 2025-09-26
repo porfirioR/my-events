@@ -15,10 +15,10 @@ export class CollaboratorsController {
   ) {}
 
   // Obtener todos los colaboradores del usuario
-  @Get('my-collaborators')
-  async getMyCollaborators(): Promise<CollaboratorModel[]> {
+  @Get()
+  async getAll(): Promise<CollaboratorModel[]> {
     const userId = await this.currentUserService.getCurrentUserId()
-    return await this.collaboratorManagerService.getMyCollaborators(userId);
+    return await this.collaboratorManagerService.getAll(userId);
   }
 
   // Obtener colaboradores internos
@@ -37,12 +37,9 @@ export class CollaboratorsController {
 
   // Obtener un colaborador específico
   @Get(':id')
-  async getMyCollaborator(
-    @Param('id', ParseIntPipe) id: number,
-    
-  ): Promise<CollaboratorModel> {
+  async getCollaboratorById(@Param('id', ParseIntPipe) id: number): Promise<CollaboratorModel> {
     const userId = await this.currentUserService.getCurrentUserId()
-    return await this.collaboratorManagerService.getMyCollaborator(id, userId);
+    return await this.collaboratorManagerService.getById(id, userId);
   }
 
   // Obtener estadísticas
@@ -61,11 +58,12 @@ export class CollaboratorsController {
   // Create colaborador
   @Post()
   async createCollaborator(@Body() apiRequest: CreateCollaboratorApiRequest): Promise<CollaboratorModel> {
+    const userId = await this.currentUserService.getCurrentUserId()
     const request = new CreateCollaboratorRequest(
       apiRequest.name,
       apiRequest.surname,
       apiRequest.email || null,
-      apiRequest.userId
+      userId
     );
     return await this.collaboratorManagerService.createCollaborator(request);
   }
@@ -84,10 +82,10 @@ export class CollaboratorsController {
     return await this.collaboratorManagerService.updateCollaborator(request);
   }
 
-  // Desactivar colaborador (soft delete)
-  @Delete(':id')
-  async deactivateCollaborator(@Param('id', ParseIntPipe) id: number, ): Promise<CollaboratorModel> {
+  // (Des)activar colaborador
+  @Put('change-visibility/:id')
+  async changeVisibility(@Param('id', ParseIntPipe) id: number, ): Promise<CollaboratorModel> {
     const userId = await this.currentUserService.getCurrentUserId()
-    return await this.collaboratorManagerService.deactivateCollaborator(id, userId);
+    return await this.collaboratorManagerService.changeVisibility(id, userId);
   }
 }

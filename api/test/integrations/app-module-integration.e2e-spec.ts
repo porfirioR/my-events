@@ -124,7 +124,7 @@ describe('AppModule Complete Integration E2E', () => {
       accessSpy.mockResolvedValue(mockResult);
 
       const userId = 1;
-      const result = await controller.getMyCollaborators(userId);
+      const result = await controller.getAll(userId);
 
       // Verificar que la cadena completa funcionó
       expect(managerSpy).toHaveBeenCalledWith(userId);
@@ -187,8 +187,8 @@ describe('AppModule Complete Integration E2E', () => {
       accessSpy.mockRejectedValue(appError);
 
       // Error debería propagarse a través de todo el stack real
-      await expect(managerService.getMyCollaborators(1)).rejects.toThrow('Complete stack error test');
-      await expect(controller.getMyCollaborators(1)).rejects.toThrow('Complete stack error test');
+      await expect(managerService.getAll(1)).rejects.toThrow('Complete stack error test');
+      await expect(controller.getAll(1)).rejects.toThrow('Complete stack error test');
 
       accessSpy.mockRestore();
     });
