@@ -19,7 +19,8 @@
             "polyfills": [],
             "tsConfig": "tsconfig.app.json",
             "allowedCommonJsDependencies": [
-              "sweetalert2"
+              "sweetalert2",
+              "daisyui"
             ],
             "assets": [
               "src/favicon.ico",

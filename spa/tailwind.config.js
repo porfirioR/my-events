@@ -2,25 +2,32 @@
 module.exports = {
   content: [
     "./src/**/*.{html,ts}",
+    "./src/**/*.html",
+    "./src/**/*.ts",
+    "./projects/**/*.{html,ts}",
+    "./node_modules/daisyui/dist/**/*.js"
   ],
   theme: {
     extend: {
-      colors: {
-        'fruit-salad': {
-          '50': '#f1f8f2',
-          '100': '#deedde',
-          '200': '#bedcbf',
-          '300': '#93c298',
-          '400': '#57915f',
-          '500': '#448550',
-          '600': '#316a3c',
-          '700': '#275531',
-          '800': '#214429',
-          '900': '#1c3823',
-          '950': '#0f1f13',
-        }
+      fontFamily: {
+        'sans': ['Inter', 'system-ui', 'sans-serif'],
       }
     },
   },
-  plugins: [require("daisyui")],
+  plugins: [
+    require('daisyui')
+  ],
+  daisyui: {
+    themes: [
+      "light",
+      "dark",
+    ],
+    darkTheme: "dark",
+    base: true,
+    styled: true,
+    utils: true,
+    prefix: "",
+    logs: true,
+    themeRoot: ":root",
+  },
 }

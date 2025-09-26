@@ -9,6 +9,8 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { UpsertEventComponent } from './components/upsert-event/upsert-event.component'
 import { eventResolver } from './resolvers/event.resolver'
 import { UpsertSavingComponent } from './components/upsert-saving/upsert-saving.component'
+import { CollaboratorsComponent } from './components/collaborators/collaborators.component'
+import { UpsertCollaboratorComponent } from './components/upsert-collaborator/upsert-collaborator.component'
 
 export const routes: Routes = [
   {
@@ -69,6 +71,17 @@ export const routes: Routes = [
         title: 'Create Saving',
         loadComponent: () => UpsertSavingComponent,
         resolve: { saving: eventResolver }
+      },
+      {
+        path: 'collaborators',
+        title: 'Collaborators',
+        loadComponent: () => CollaboratorsComponent,
+        resolve: { loading: loadingResolver }
+      },
+      {
+        path: 'collaborators/create',
+        title: 'Add Collaborator',
+        loadComponent: () => UpsertCollaboratorComponent,
       },
     ]
   }

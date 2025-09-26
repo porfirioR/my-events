@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core'
 import { Router, RouterModule } from '@angular/router'
 import { ProfileComponent } from "../profile/profile.component"
 import { AlertService, LocalService } from '../../services'
+import { ModeType } from '../../constants'
 
 @Component({
   selector: 'app-header',
@@ -14,7 +15,7 @@ import { AlertService, LocalService } from '../../services'
 })
 export class HeaderComponent {
   @ViewChild(ProfileComponent) profile: ProfileComponent | undefined
-
+  protected currentTheme: ModeType = 'light';
   protected isLogin: boolean = false
 
   constructor(
@@ -23,6 +24,7 @@ export class HeaderComponent {
     private readonly alertService: AlertService,
   ) {
     this.checkLogin()
+    this.loadSavedTheme();
   }
 
   protected openProfile = (): void => {
@@ -40,5 +42,27 @@ export class HeaderComponent {
 
   protected checkLogin = (): void => {
     this.isLogin = !!this.localService.getEmail()
+  }
+
+  protected toggleTheme = (): void => {
+    const html = document.documentElement;
+    const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+    
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    this.currentTheme = newTheme;
+  }
+
+  private getCurrentTheme = (): ModeType => {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme') as ModeType | null;
+    return currentTheme ?? 'light';
+  }
+
+  private loadSavedTheme = (): void => {
+    const savedTheme = localStorage.getItem('theme') as ModeType || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    this.currentTheme = savedTheme;
   }
 }

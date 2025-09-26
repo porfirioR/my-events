@@ -12,9 +12,44 @@
   <meta property="og:site_name" content="My Events"/>
   <meta property="og:type" content="website"/>
   <meta property="og:title" content="My Events"/>
-  <meta name="color-scheme" content="light only">
+  <meta name="color-scheme" content="light dark">
   <meta property="og:description" content="Web application to record events."/>
   <meta property="og:image" content="https://kind-coast-0bf3d7c10.4.azurestaticapps.net/assets/img/my-events.png"/>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.css" rel="stylesheet" type="text/css" />
+  
+  <!-- Script para cargar tema antes de Angular -->
+  <script>
+    (function() {
+      try {
+        // Obtener tema guardado o usar preferencia del sistema
+        const savedTheme = localStorage.getItem('theme');
+        let theme = 'light'; // default
+        
+        if (savedTheme) {
+          // Si hay tema guardado, usarlo
+          theme = savedTheme;
+        } else {
+          // Si no hay tema guardado, detectar preferencia del sistema
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          theme = prefersDark ? 'dark' : 'light';
+        }
+        
+        // Aplicar tema inmediatamente
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Actualizar meta theme-color basado en el tema
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', theme === 'dark' ? '#1f2937' : '#4338CA');
+        }
+        
+      } catch (error) {
+        // En caso de error, usar tema por defecto
+        console.warn('Error loading theme:', error);
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>
