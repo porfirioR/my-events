@@ -3,6 +3,7 @@
     "start:both": "concurrently \"cd ./spa && npm run start\" \"cd ./api && npm run start:debug\""
   },
   "dependencies": {
+    "@ngrx/signals": "^20.0.1",
     "concurrently": "^8.2.2"
   }
 }

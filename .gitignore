@@ -1,3 +1,4 @@
 der.architect~
 api/.env.test
 api/.env-test
+/node_modules

@@ -4,7 +4,6 @@ import { MyEventsComponent } from './components/my-events/my-events.component'
 import { LoginComponent } from './components/login/login.component'
 import { SignupComponent } from './components/signup/signup.component'
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component'
-import { loadingResolver } from './resolvers/loading.resolver'
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component'
 import { UpsertEventComponent } from './components/upsert-event/upsert-event.component'
 import { eventResolver } from './resolvers/event.resolver'
@@ -26,7 +25,6 @@ export const routes: Routes = [
         path: 'my-events',
         title: 'My events',
         loadComponent: () => MyEventsComponent,
-        resolve: { loading: loadingResolver }
       },
       {
         path: 'login',
@@ -76,7 +74,6 @@ export const routes: Routes = [
         path: 'collaborators',
         title: 'Collaborators',
         loadComponent: () => CollaboratorsComponent,
-        resolve: { loading: loadingResolver }
       },
       {
         path: 'collaborators/create',

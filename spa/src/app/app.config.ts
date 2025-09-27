@@ -10,9 +10,9 @@ import { routes } from './app.routes'
 import { headerInterceptor } from './interceptors/header.interceptor'
 import { jwtInterceptor } from './interceptors/jwt.interceptor'
 import { catchErrorInterceptor } from './interceptors/catch-error.interceptor'
-import { metaReducers, reducers } from './store'
 import { CustomErrorHandler } from './errors/custom-error-handler'
 import { urlInterceptor } from './interceptors/url.interceptor'
+import { loadingInterceptor } from './interceptors/loading.interceptor'
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,8 +23,8 @@ export const appConfig: ApplicationConfig = {
       jwtInterceptor,
       catchErrorInterceptor,
       urlInterceptor,
+      loadingInterceptor
     ])),
-    provideStore(reducers, { metaReducers }),
     provideEffects(),
     {
       provide: ErrorHandler,

@@ -4,8 +4,6 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TextComponent } from '../inputs/text/text.component';
 import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
-import { DateInputComponent } from '../inputs/date-input/date-input.component';
-import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { CollaboratorFormGroup } from '../../models/forms/collaborator-form-group';
 import { CollaboratorApiModel } from '../../models/api';
 
@@ -18,9 +16,7 @@ import { CollaboratorApiModel } from '../../models/api';
     RouterModule,
     ReactiveFormsModule,
     TextComponent,
-    TextAreaInputComponent,
     CheckBoxInputComponent,
-    DateInputComponent,
   ]
 })
 export class UpsertCollaboratorComponent implements OnInit {
