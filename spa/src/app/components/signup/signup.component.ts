@@ -1,13 +1,12 @@
 import { Component, inject } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
-import { LoginFormGroup } from '../../models/forms'
+import { debounceTime, tap } from 'rxjs'
 import { CreateUserApiRequest } from '../../models/api'
+import { SignupFormGroup } from '../../models/forms/sign-up-form-group'
 import { AlertService, UserApiService } from '../../services'
 import { TextComponent } from '../inputs/text/text.component'
 import { useAuthStore } from '../../store'
-import { SignupFormGroup } from '../../models/forms/sign-up-form-group'
-import { debounceTime, tap } from 'rxjs'
 
 @Component({
   selector: 'app-signup',
@@ -34,6 +33,10 @@ export class SignupComponent {
       password: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)]),
       repeatPassword: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10), this.checkRepeatPassword()])
     })
+    this.formGroup.controls.password.valueChanges.pipe(
+      debounceTime(100),
+      tap(() => this.formGroup.controls.repeatPassword.updateValueAndValidity())
+    ).subscribe()
   }
 
   protected save = (event: Event): void => {
