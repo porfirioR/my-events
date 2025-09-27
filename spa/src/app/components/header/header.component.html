@@ -43,9 +43,7 @@
             <i class="fas fa-question-circle mr-2"></i>Help
           </a>
         </li>
-        @if (isLogin) {
-          <li><a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
-        }
+        <li><a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
       </ul>
     </div>
   </article>
@@ -60,7 +58,7 @@
       <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
         <li>
           <div class="flex flex-col items-start p-2">
-            <span class="font-bold">John Doe</span>
+            <span class="font-bold">{{currentUserEmail()}}</span>
           </div>
         </li>
         <div class=" my-0"></div>
@@ -81,14 +79,12 @@
             }
           </a>
         </li>
-        @if (isLogin) {
-          <div class="divider my-1"></div>
-          <li>
-            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="logOut()">
-              <i class="fas fa-sign-out-alt mr-2"></i>Logout
-            </a>
-          </li>
-        }
+        <div class="divider my-1"></div>
+        <li>
+          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="logOut()">
+            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          </a>
+        </li>
       </ul>
     </div>
   </article>

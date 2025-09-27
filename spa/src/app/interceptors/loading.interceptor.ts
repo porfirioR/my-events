@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { finalize } from 'rxjs';
-import { useLoadingStore } from '../store/loading/loading.store';
+import { useLoadingStore } from '../store/loading.store';
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingStore =  useLoadingStore()

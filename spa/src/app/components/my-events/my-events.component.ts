@@ -1,8 +1,7 @@
 import { AsyncPipe } from '@angular/common'
 import { Component, computed } from '@angular/core'
 import { RouterModule } from '@angular/router'
-import { Store } from '@ngrx/store'
-import { Observable, first, tap } from 'rxjs'
+import { first, tap } from 'rxjs'
 import { EventComponent } from "../event/event.component"
 import { LoadingSkeletonComponent } from "../loading-skeleton/loading-skeleton.component"
 import { EventApiService, LocalService } from '../../services'
@@ -15,7 +14,6 @@ import { useLoadingStore } from '../../store'
   templateUrl: './my-events.component.html',
   styleUrls: ['./my-events.component.css'],
   imports: [
-    AsyncPipe,
     RouterModule,
     EventComponent,
     LoadingSkeletonComponent,

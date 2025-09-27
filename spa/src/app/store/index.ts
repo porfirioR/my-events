@@ -1,1 +1,3 @@
-export { useLoadingStore } from './loading/loading.store';
+export { useLoadingStore } from './loading.store';
+export { useAuthStore } from './auth.store';
+
