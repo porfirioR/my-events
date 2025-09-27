@@ -6,6 +6,7 @@ import { LoginUserApiRequest } from '../../models/api'
 import { AlertService, UserApiService } from '../../services'
 import { FormErrorsComponent } from '../form-errors/form-errors.component'
 import { useAuthStore } from '../../store'
+import { TextComponent } from '../inputs/text/text.component'
 
 @Component({
   selector: 'app-login',
@@ -15,6 +16,7 @@ import { useAuthStore } from '../../store'
     RouterModule,
     ReactiveFormsModule,
     FormErrorsComponent,
+    TextComponent
   ]
 })
 export class LoginComponent {

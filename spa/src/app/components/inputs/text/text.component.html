@@ -3,7 +3,7 @@
     class="label cursor-pointer justify-start p-0 pb-2" 
     [for]="name"
   >
-    <span class="label-text text-base-content font-medium text-sm transition-colors duration-200">
+    <span class="label-text text-base-content font-medium text-sm transition-colors duration-200 dark:text-white">
       {{label}}
     </span>
   </label>
@@ -16,23 +16,18 @@
     [title]="description"
     [autocomplete]="autocomplete || type === 'password' ? 'on': 'off'"
     [formControl]="$any(ngControl).control"
-    class="input input-bordered w-full bg-base-100 text-base-content placeholder:text-base-content/50 
-      transition-all duration-200 ease-in-out
-      disabled:bg-base-200 disabled:text-base-content/50 disabled:cursor-not-allowed
-      focus:outline-none focus:scale-[1.02]"
+    [disabled]="disabled"
+    class="px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 block w-full rounded-md sm:text-sm focus:ring-1 transition-colors duration-200 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
     [ngClass]="{
-      'input-error border-error focus:border-error focus:ring-2 focus:ring-error/20 text-error': 
+      'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 text-red-600 dark:border-red-400 dark:text-red-400 dark:focus:border-red-400 dark:focus:ring-red-400/20': 
         ngControl.control?.invalid && ngControl.control?.touched,
-      'input-success border-success focus:border-success focus:ring-2 focus:ring-success/20': 
-        ngControl.control?.valid && ngControl.control?.touched && ngControl.control?.value,
-      'border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 hover:border-base-400': 
-        ngControl.control && !ngControl.control.touched,
-      'shadow-lg': 'focus'
+      'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 hover:border-slate-400 dark:border-gray-600 dark:hover:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20': 
+        !ngControl.control?.invalid || !ngControl.control?.touched
     }"
   />
   @if (description && !(ngControl.control?.touched && ngControl.control?.errors)) {
     <div class="mt-2">
-      <span class="text-base-content/70 text-xs italic flex items-center gap-1 transition-colors duration-200">
+      <span class="text-base-content/70 text-xs italic flex items-center gap-1 transition-colors duration-200 dark:text-gray-400">
         <i class="fas fa-info-circle text-info text-xs"></i>
         {{description}}
       </span>

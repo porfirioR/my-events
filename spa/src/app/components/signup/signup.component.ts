@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
 import { LoginFormGroup } from '../../models/forms'
 import { CreateUserApiRequest } from '../../models/api'
 import { AlertService, UserApiService } from '../../services'
 import { TextComponent } from '../inputs/text/text.component'
 import { useAuthStore } from '../../store'
+import { SignupFormGroup } from '../../models/forms/sign-up-form-group'
+import { debounceTime, tap } from 'rxjs'
 
 @Component({
   selector: 'app-signup',
@@ -24,12 +26,13 @@ export class SignupComponent {
   private authStore = useAuthStore();
   protected isLoading = this.authStore.loginLoading;
   protected signupError  = this.authStore.error;
-  protected formGroup: FormGroup<LoginFormGroup>
+  protected formGroup: FormGroup<SignupFormGroup>
 
   constructor() {
-    this.formGroup = new FormGroup<LoginFormGroup>({
+    this.formGroup = new FormGroup<SignupFormGroup>({
       email: new FormControl(null, [Validators.required, Validators.email]),
-      password: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)])
+      password: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)]),
+      repeatPassword: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10), this.checkRepeatPassword()])
     })
   }
 
@@ -41,7 +44,7 @@ export class SignupComponent {
     const request: CreateUserApiRequest = new CreateUserApiRequest(this.formGroup.value.email!, this.formGroup.value.password!)
     this.userApiService.signUpUser(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token);
+        this.authStore.loginSuccess(user.id, user.token, user.email);
         this.alertService.showSuccess(`Welcome ${user.email}`)
         this.router.navigate([''])
       },
@@ -49,5 +52,14 @@ export class SignupComponent {
         this.authStore.loginFailure('Signup failed. Please try again.');
       }
     })
+  }
+
+  private checkRepeatPassword = (): ValidatorFn => {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const repeatPassword = (control as FormControl<string | null>).value
+      if (!repeatPassword) { return null }
+      const isInvalid = !repeatPassword || this.formGroup.controls.password.value !== repeatPassword
+      return isInvalid ? { invalidRepeatPassword: isInvalid } : null
+    }
   }
 }

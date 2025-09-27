@@ -23,6 +23,7 @@ export class TextComponent implements ControlValueAccessor {
   @Input({required: true}) id: string = ''
   @Input({required: true}) name: string = ''
   @Input() autocomplete: AutocompleteType = 'off'
+  @Input() disabled: boolean = true
 
   constructor(@Self() public ngControl: NgControl) {
     this.ngControl.valueAccessor = this

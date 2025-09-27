@@ -44,10 +44,11 @@ export class AppComponent {
   private initializeAuth() {
     const token = this.localService.getJwtToken();
     const userString = this.localService.getUserId();
+    const email = this.localService.getEmail();
 
     if (token && userString) {
       try {
-        this.authStore.restoreSession(userString, token);
+        this.authStore.restoreSession(userString, token, email!);
       } catch (error) {
         this.localService.cleanCredentials();
         this.authStore.logout();
