@@ -1,11 +1,13 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TextComponent } from '../inputs/text/text.component';
 import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
 import { CollaboratorFormGroup } from '../../models/forms/collaborator-form-group';
-import { CollaboratorApiModel } from '../../models/api';
+import { CollaboratorApiModel, CollaboratorApiRequest } from '../../models/api';
+import { useCollaboratorStore, useLoadingStore } from '../../store';
+import { AlertService } from '../../services';
 
 @Component({
   selector: 'app-upsert-collaborator',
@@ -20,54 +22,78 @@ import { CollaboratorApiModel } from '../../models/api';
   ]
 })
 export class UpsertCollaboratorComponent implements OnInit {
+  private router = inject(Router);
+  private alertService = inject(AlertService);
+  private activatedRoute = inject(ActivatedRoute);
+
+  private collaboratorStore = useCollaboratorStore();
+  private loadingStore = useLoadingStore();
+  protected isLoading = this.loadingStore.isLoading;
+  protected selectedCollaborator = this.collaboratorStore.selectedCollaborator;
+
   protected formGroup: FormGroup<CollaboratorFormGroup>
-
-  protected title: string = 'Collaborator'
+  protected isEditMode = false;
   protected collaborator?: CollaboratorApiModel
-  protected saving = false
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly location: Location,
-
-  ) {
-    this.collaborator = this.activatedRoute.snapshot.data['collaborator']
-    this.title = this.collaborator ? 'Update Collaborator' : 'Create Collaborator'
+  constructor() {
     this.formGroup = new FormGroup<CollaboratorFormGroup>({
-      name: new FormControl(this.collaborator?.name ?? null, [Validators.required]),
-      surname: new FormControl(this.collaborator?.surname ?? null, [Validators.required]),
-      email: new FormControl(this.collaborator?.email ?? null, [Validators.email]),
-      isActive: new FormControl(this.collaborator?.isActive ?? false, [Validators.required]),
+      name: new FormControl('', [Validators.required, Validators.minLength(2)]),
+      surname: new FormControl('', [Validators.required, Validators.minLength(2)]),
+      email: new FormControl('', [Validators.email]),
+      isActive: new FormControl(true, [Validators.required]),
     })
-    if (this.collaborator?.type == 'EXTERNAL') {
-      this.formGroup.controls.email.disable()
-    }
+
+    effect(() => {
+      this.collaborator = this.selectedCollaborator();
+      if (this.collaborator && this.isEditMode) {
+        this.formGroup.patchValue({
+          name: this.collaborator.name,
+          surname: this.collaborator.surname,
+          email: this.collaborator.email,
+        });
+        if (this.collaborator?.type == 'EXTERNAL') {
+          this.formGroup.controls.email.disable()
+        }
+      }
+    });
   }
 
   ngOnInit() {
+    const id = this.activatedRoute.snapshot.params['id'];
+    if (id) {
+      this.isEditMode = true;
+      this.collaboratorStore.loadCollaboratorById(+id);
+    } else {
+      this.collaboratorStore.clearSelectedCollaborator();
+    }
   }
 
   protected save = (event?: Event): void => {
     event?.preventDefault()
     if (this.formGroup.invalid) {
+      this.formGroup.markAllAsTouched();
       return
     }
-    this.saving = true
-    this.formGroup.disable()
-    //todo use store, signal
-    // const request$ = this.collaborator ? this.update() : this.create()
-    // request$.subscribe({
-    //   next: () => {
-    //     this.alertService.showSuccess('Event save successfully')
-    //     this.cancel()
-    //   }, error: (e) => {
-    //     this.formGroup.enable()
-    //     this.saving = false
-    //     throw e
-    //   }
-    // })
+
+    const request = new CollaboratorApiRequest(
+      this.formGroup.value.name!,
+      this.formGroup.value.surname!,
+      this.formGroup.value.email,
+      this.selectedCollaborator()?.id.toString() ?? null
+    );
+
+    this.collaboratorStore.upsertCollaborator(request).subscribe({
+      next: () => {
+        this.alertService.showSuccess('Event save successfully')
+        this.exit()
+      }, error: (e) => {
+        this.alertService.showError(request.id ? 'Failed to update collaborator' : 'Failed to create collaborator')
+        this.formGroup.enable()
+        throw e
+      }
+    })
   }
 
-  protected cancel = (): void => this.location.back()
+  protected exit = () => this.router.navigate(['/collaborators']);
 
 }

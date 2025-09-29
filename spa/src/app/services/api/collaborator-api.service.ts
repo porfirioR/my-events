@@ -7,7 +7,7 @@ import { CollaboratorApiModel, CollaboratorApiRequest } from '../../models/api/c
   providedIn: 'root'
 })
 export class CollaboratorApiService {
-  private readonly section: string = 'collaborator'
+  private readonly section: string = 'collaborators'
 
   constructor(private readonly httpClient: HttpClient) { }
 

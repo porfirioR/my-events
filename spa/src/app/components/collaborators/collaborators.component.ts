@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { useCollaboratorStore, useLoadingStore } from '../../store';
+import { AlertService } from '../../services';
 
 @Component({
   selector: 'app-collaborators',
@@ -12,13 +14,23 @@ import { RouterModule } from '@angular/router';
     RouterModule,
   ]
 })
-export class CollaboratorsComponent {
+export class CollaboratorsComponent implements OnInit {
+  private router = inject(Router);
+  private alertService = inject(AlertService);
+
+  private collaboratorStore = useCollaboratorStore();
+  private loadingStore = useLoadingStore();
+
   collaborators: CollaboratorApiModel[] = [];
-  totalCollaborators = 0;
+  totalCollaborators = this.collaboratorStore.totalCount();
   currentPage = 1;
   totalPages = 1;
+  isLoading = this.loadingStore.isLoading;
 
-  // Get initials for avatar
+  ngOnInit() {
+    this.collaboratorStore.loadCollaborators();
+  }
+
   getInitials(name: string, surname: string): string {
     return (name.charAt(0) + surname.charAt(0)).toUpperCase();
   }
@@ -38,14 +50,13 @@ export class CollaboratorsComponent {
 
   // Action methods
   editCollaborator(collaborator: CollaboratorApiModel): void {
-    console.log('Edit collaborator:', collaborator);
-    // Implement edit logic
+    this.collaboratorStore.selectCollaborator(collaborator);
+    this.router.navigate(['/collaborators/edit', collaborator.id]);
   }
 
   toggleCollaboratorStatus(collaborator: CollaboratorApiModel): void {
-    console.log('Toggle status for:', collaborator);
-    // Implement toggle status logic
-    collaborator.isActive = !collaborator.isActive;
+    alert
+    this.collaboratorStore.changeVisibility(collaborator.id);
   }
 
   viewCollaboratorStats(collaborator: CollaboratorApiModel): void {
@@ -84,5 +95,10 @@ export class CollaboratorsComponent {
 
   private loadCollaborators(): void {
     // Implement data loading logic
+  }
+
+  create() {
+    this.collaboratorStore.clearSelectedCollaborator();
+    this.router.navigate(['/collaborators/create']);
   }
 }

@@ -1,52 +1,61 @@
-import { ErrorHandler, Injectable } from '@angular/core'
-import { AlertService, LocalService } from '../services'
-import { Router } from '@angular/router'
+// errors/custom-error-handler.ts
+import { ErrorHandler, Injectable, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { AlertService } from '../services';
+import { useAuthStore } from '../store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomErrorHandler implements ErrorHandler {
-  constructor(
-    private readonly alertService: AlertService,
-    private readonly localService: LocalService,
-    private readonly router: Router
-  ) { }
+  private alertService = inject(AlertService);
+  private router = inject(Router);
+  // ✅ Usar AuthStore en lugar de LocalService
+  private authStore = useAuthStore();
 
   handleError(error: any): void {
-    console.error(error)
+    console.error('Global Error Handler:', error);
 
     if (typeof error === 'string') {
-      this.alertService.showError(error)
-      return
+      this.alertService.showError(error);
+      return;
     } 
 
     if (error && error.error) {
-      error = error.error
+      error = error.error;
+      
       if (error && error.type === 'HandledError') {
-        this.alertService.showError(`${error.status} - ${error.title}`)
+        this.alertService.showError(`${error.status} - ${error.title}`);
       } else if (error && error.status) {
-        let additionalMessage = ''
+        let additionalMessage = '';
+        
         if (error.errors) {
           for(const key in error.errors) {
-            const child = error.errors[key]
-            additionalMessage = `- ${child.join('. ')}`
+            const child = error.errors[key];
+            additionalMessage = `- ${child.join('. ')}`;
           }
         } else if (error.title) {
-          additionalMessage = error.title
+          additionalMessage = error.title;
         } else if (error.message) {
-          if (error.message === 'jwt expired') {
-            this.localService.cleanCredentials()
-            this.alertService.showError(`${error.status} ${additionalMessage}`)
-            this.router.navigate(['login'])
+          // ✅ Manejar JWT expirado con AuthStore
+          if (error.message === 'Invalid Token') {
+            this.authStore.logout();
+            this.alertService.showError('Your session has expired. Please login again.');
+            this.router.navigate(['/login']);
+            return;
           }
-          additionalMessage = error.message
+          additionalMessage = error.message;
         }
-        this.alertService.showError(`${error.status} ${additionalMessage}`)
+        
+        this.alertService.showError(`${error.status} ${additionalMessage}`);
       }
     } else if (error.status === 403 || error.status === 401) {
-      this.alertService.showError(`FORBIDDEN - ${error.message}`)
+      // ✅ Manejar 401/403 con logout
+      this.alertService.showError(`FORBIDDEN - ${error.message}`);
+      this.authStore.logout();
+      this.router.navigate(['/login']);
     } else {
-      this.alertService.showError(`ERROR - ${JSON.stringify(error)}`)
+      this.alertService.showError(`ERROR - ${JSON.stringify(error)}`);
     }
   }
 }

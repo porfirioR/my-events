@@ -15,11 +15,11 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([
+      urlInterceptor,
       headerInterceptor,
       jwtInterceptor,
+      loadingInterceptor,
       catchErrorInterceptor,
-      urlInterceptor,
-      loadingInterceptor
     ])),
     {
       provide: ErrorHandler,
