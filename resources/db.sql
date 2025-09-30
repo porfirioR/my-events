@@ -21,7 +21,7 @@
 -- ===== SCHEMA POSTGRESQL MÍNIMO - SOLO TABLAS =====
 
 -- Tipos ENUM personalizados
-CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'Rejected');
+CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'Rejected', 'EmailNotFound', 'Expired');
 CREATE TYPE projectstatus AS ENUM ('Active', 'Finalized');
 CREATE TYPE transactionstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE approvalstatus AS ENUM ('Pending', 'Approved', 'Rejected');
@@ -57,7 +57,7 @@ CREATE TABLE collaboratormatchrequests (
     id SERIAL PRIMARY KEY,
     requesteruserid INT NOT NULL,
     requestercollaboratorid INT NOT NULL,
-    targetuserid INT NOT NULL,
+    targetuserid INT NULL,
     targetcollaboratoremail VARCHAR(150) NOT NULL,
     status matchstatus DEFAULT 'Pending',
     requesteddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

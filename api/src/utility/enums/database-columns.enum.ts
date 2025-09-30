@@ -17,4 +17,10 @@ export enum DatabaseColumns {
   Surname = 'surname',
   CreatedDate = 'createddate',
   Code = 'code',
+  TargetUserId = "targetuserid",
+  Status = "status",
+  RequestedDate = "requesteddate",
+  RequesterUserId = "requesteruserid",
+  RequesterCollaboratorId = "requestercollaboratorid",
+  TargetCollaboratorEmail = "TargetCollaboratorEmail",
 }

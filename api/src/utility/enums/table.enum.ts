@@ -13,5 +13,7 @@ export enum TableEnum {
   TransactionSplits = 'transactionsplits',
   Projects = 'projects',
   ProjectMembers = 'projectmembers',
-  ProjectTransactions = 'projecttransactions'
+  ProjectTransactions = 'projecttransactions',
+  CollaboratorMatches = 'collaboratormatches',
+  CollaboratorMatchRequests = 'collaboratormatchrequests',
 }

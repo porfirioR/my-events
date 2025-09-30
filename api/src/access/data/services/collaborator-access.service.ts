@@ -91,6 +91,7 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     collaboratorEntity.id = accessRequest.id;
     collaboratorEntity.userid = existingCollaborator.userId;
     collaboratorEntity.datecreated = existingCollaborator.dateCreated;
+    collaboratorEntity.isactive = existingCollaborator.isActive;
 
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
