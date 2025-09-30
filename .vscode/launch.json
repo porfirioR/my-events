@@ -7,6 +7,15 @@
       "request": "attach",
       "port": 9229,
       "preLaunchTask": "func: host start"
+    },
+    {
+      "name": "Debug API",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "localRoot": "${workspaceFolder}/api",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

@@ -11,5 +11,6 @@ export class SavingAccessModel {
     public periodId?: number,
     public totalAmount?: number,
     public numberOfPayment?: number,
+    public customPeriodQuantity?: number,
   ) { }
 }

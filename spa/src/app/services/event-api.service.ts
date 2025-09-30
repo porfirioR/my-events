@@ -1,41 +1,32 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
-import { environment } from '../../environments/environment'
 import { CreateEventApiRequest, EvenApiModel, UpdateEventApiRequest } from '../models/api'
 
 @Injectable({
   providedIn: 'root'
 })
 export class EventApiService {
-  private url: string
+  private readonly section: string = 'events'
 
-  constructor(private readonly httpClient: HttpClient) {
-    this.url = `${environment.baseUrl}events`
-  }
+  constructor(private readonly httpClient: HttpClient) { }
 
-  public getPublicEvents = (): Observable<EvenApiModel[]> => {
-    return this.httpClient.get<EvenApiModel[]>(`${this.url}`)
-  }
+  public getPublicEvents = (): Observable<EvenApiModel[]> =>
+    this.httpClient.get<EvenApiModel[]>(`${this.section}`)
 
-  public getMyEvents = (id: number): Observable<EvenApiModel[]> => {
-    return this.httpClient.get<EvenApiModel[]>(`${this.url}/my-events/${id}`)
-  }
+  public getMyEvents = (id: number): Observable<EvenApiModel[]> =>
+    this.httpClient.get<EvenApiModel[]>(`${this.section}/my-events/${id}`)
 
-  public getMyEvent = (id: number): Observable<EvenApiModel> => {
-    return this.httpClient.get<EvenApiModel>(`${this.url}/${id}`)
-  }
+  public getMyEvent = (id: number): Observable<EvenApiModel> =>
+    this.httpClient.get<EvenApiModel>(`${this.section}/${id}`)
 
-  public getMyEventFollows = (id: number): Observable<EvenApiModel[]> => {
-    return this.httpClient.get<EvenApiModel[]>(`${this.url}/follow/${id}`)
-  }
+  public getMyEventFollows = (id: number): Observable<EvenApiModel[]> =>
+    this.httpClient.get<EvenApiModel[]>(`${this.section}/follow/${id}`)
 
-  public createEvent = (request: CreateEventApiRequest): Observable<EvenApiModel> => {
-    return this.httpClient.post<EvenApiModel>(this.url, request)
-  }
+  public createEvent = (request: CreateEventApiRequest): Observable<EvenApiModel> =>
+    this.httpClient.post<EvenApiModel>(this.section, request)
 
-  public updateEvent = (request: UpdateEventApiRequest): Observable<EvenApiModel> => {
-    return this.httpClient.put<EvenApiModel>(this.url, request)
-  }
+  public updateEvent = (request: UpdateEventApiRequest): Observable<EvenApiModel> =>
+    this.httpClient.put<EvenApiModel>(this.section, request)
 
 }

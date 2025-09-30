@@ -1,23 +1,37 @@
-<fieldset [ngClass]="ngControl.control?.invalid && ngControl.control?.touched ? 'mb-0': 'mb-6'">
-  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" [for]="name">{{label}}</label>
+<fieldset [ngClass]="(ngControl.control?.invalid && ngControl.control?.touched) || description ? 'mb-0': 'mb-6'">
+  <label
+    class="label cursor-pointer justify-start p-0 pb-2" 
+    [for]="name"
+  >
+    <span class="label-text text-base-content font-medium text-sm transition-colors duration-200 dark:text-white">
+      {{label}}
+    </span>
+  </label>
   <input
     [id]="id"
     [name]="name"
     [attr.aria-label]="label"
     [placeholder]="placeholder || label"
     [type]="type"
+    [title]="description"
     [autocomplete]="autocomplete || type === 'password' ? 'on': 'off'"
     [formControl]="$any(ngControl).control"
-    class="px-3 py-2 bg-white border shadow-sm
-      placeholder-slate-400
-      disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200
-      focus:outline-none block w-full rounded-md sm:text-sm
-      disabled:shadow-none"
+    [disabled]="disabled"
+    class="px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 block w-full rounded-md sm:text-sm focus:ring-1 transition-colors duration-200 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
     [ngClass]="{
-      'border-pink-500 focus:border-pink-500 focus:ring-1 ring-pink-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500': ngControl.control?.invalid && ngControl.control?.touched,
-      'focus:border-indigo-500 focus:ring-indigo-500 focus:ring-1': ngControl.control?.valid,
-      'border-slate-300': ngControl.control && !ngControl.control.touched
+      'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 text-red-600 dark:border-red-400 dark:text-red-400 dark:focus:border-red-400 dark:focus:ring-red-400/20': 
+        ngControl.control?.invalid && ngControl.control?.touched,
+      'border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 hover:border-slate-400 dark:border-gray-600 dark:hover:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20': 
+        !ngControl.control?.invalid || !ngControl.control?.touched
     }"
   />
+  @if (description && !(ngControl.control?.touched && ngControl.control?.errors)) {
+    <div class="mt-2">
+      <span class="text-base-content/70 text-xs italic flex items-center gap-1 transition-colors duration-200 dark:text-gray-400">
+        <i class="fas fa-info-circle text-info text-xs"></i>
+        {{description}}
+      </span>
+    </div>
+  }
   <app-form-errors [formControl]="$any(ngControl).control" [label]="label"/>
 </fieldset>

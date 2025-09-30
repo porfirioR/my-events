@@ -2,7 +2,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable, tap } from 'rxjs'
 import { CreateUserApiRequest, ForgotPasswordApiRequest, LoginUserApiRequest, PushTokenApiModel, PushTokenApiRequest, SignApiModel, UserApiModel } from '../models/api'
-import { environment } from '../../environments/environment'
 import { LocalService } from './local.service'
 import { ResetPasswordApiRequest } from '../models/api/reset-password-api-request'
 
@@ -10,22 +9,18 @@ import { ResetPasswordApiRequest } from '../models/api/reset-password-api-reques
   providedIn: 'root'
 })
 export class UserApiService {
-  private url: string
+  private readonly section: string = 'users'
 
   constructor(
     private readonly httpClient: HttpClient,
     private readonly localService: LocalService
-  ) {
-    this.url = `${environment.baseUrl}users`
-  }
+  ) { }
 
-  public getUsers = (): Observable<UserApiModel[]> => {
-    return this.httpClient.get<UserApiModel[]>(`${this.url}`)
-  }
+  public getUsers = (): Observable<UserApiModel[]> =>
+    this.httpClient.get<UserApiModel[]>(`${this.section}`)
 
-  public getByUserId = (id: number): Observable<UserApiModel[]> => {
-    return this.httpClient.get<UserApiModel[]>(`${this.url}/${id}`)
-  }
+  public getByUserId = (id: number): Observable<UserApiModel[]> =>
+    this.httpClient.get<UserApiModel[]>(`${this.section}/${id}`)
 
   public loginUser = (request: CreateUserApiRequest): Observable<SignApiModel> => {
     const credentials = `${request.email}:${request.password}`
@@ -36,28 +31,23 @@ export class UserApiService {
     const httpOptions = {
       headers: headers
     }
-    return this.httpClient.post<SignApiModel>(`${this.url}/login`, null, httpOptions).pipe(tap(this.setInLocaleStorage))
+    return this.httpClient.post<SignApiModel>(`${this.section}/login`, null, httpOptions).pipe(tap(this.setInLocaleStorage))
   }
 
-  public signUpUser = (request: LoginUserApiRequest): Observable<SignApiModel> => {
-    return this.httpClient.post<SignApiModel>(`${this.url}/sign-up`, request).pipe(tap(this.setInLocaleStorage))
-  }
+  public signUpUser = (request: LoginUserApiRequest): Observable<SignApiModel> =>
+    this.httpClient.post<SignApiModel>(`${this.section}/sign-up`, request).pipe(tap(this.setInLocaleStorage))
 
-  public forgotPassword = (request: ForgotPasswordApiRequest): Observable<boolean> => {
-    return this.httpClient.post<boolean>(`${this.url}/forgot-password`, request)
-  }
+  public forgotPassword = (request: ForgotPasswordApiRequest): Observable<boolean> =>
+    this.httpClient.post<boolean>(`${this.section}/forgot-password`, request)
 
-  public resetPassword = (request: ResetPasswordApiRequest): Observable<SignApiModel> => {
-    return this.httpClient.post<SignApiModel>(`${this.url}/reset-password`, request).pipe(tap(this.setInLocaleStorage))
-  }
+  public resetPassword = (request: ResetPasswordApiRequest): Observable<SignApiModel> =>
+    this.httpClient.post<SignApiModel>(`${this.section}/reset-password`, request).pipe(tap(this.setInLocaleStorage))
 
-  public getUserInformation = (userId: number): Observable<unknown> => {
-    return this.httpClient.get<unknown>(`${this.url}/user-information/${userId}`)
-  }
+  public getUserInformation = (userId: number): Observable<unknown> =>
+    this.httpClient.get<unknown>(`${this.section}/user-information/${userId}`)
 
-  public saveToken = (request: PushTokenApiRequest): Observable<PushTokenApiModel> => {
-    return this.httpClient.post<PushTokenApiModel>(`${this.url}/save-token`, request)
-  }
+  public saveToken = (request: PushTokenApiRequest): Observable<PushTokenApiModel> =>
+    this.httpClient.post<PushTokenApiModel>(`${this.section}/save-token`, request)
 
   private setInLocaleStorage = (user: SignApiModel): void => {
     this.localService.setEmail(user.email)

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PaymentAccessService } from '../../access/services';
 import { PaymentModel } from '../models/payments/payment-model';
 import { PaymentAccessModel } from '../../access/contract/payments/payment-access-model';
 import { CreatePaymentAccessRequest } from '../../access/contract/payments/create-payment-access-request';
+import { UpdatePaymentAccessRequest } from '../../access/contract/payments/update-payment-access-request';
 import { CreatePaymentRequest } from '../models/payments/create-payment-request';
 import { UpdatePaymentRequest } from '../models/payments/update-payment-request';
-import { UpdatePaymentAccessRequest } from '../../access/contract/payments/update-payment-access-request';
+import { PaymentAccessService } from '../../access/data/services/payment-access.service';
 
 @Injectable()
 export class PaymentManagerService {

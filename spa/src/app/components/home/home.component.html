@@ -1,22 +1,19 @@
 <main>
-  @if (loading$ | async) {
+  @if (isLoading()) {
     <app-loading-skeleton/>
     <app-loading-skeleton/>
     <app-loading-skeleton/>
   } @else {
-    @for (event of eventFollows; track event.id) {
-      <app-event [eventModel]="event"/>
-    } @empty {
-      <app-empty-data />
-    }
+    <app-header/>
+    <app-dashboard/>
   }
-  @if (userLoaded) {
+  @if (currentUser()) {
     <a
-      class="fixed bottom-0 right-0 m-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow-md"
-      [routerLink]="['/create-event']"
+      class="fixed bottom-0 right-0 m-4 bg-primary text-white font-bold py-2 px-4 rounded shadow-md"
+      [routerLink]="['/create-saving']"
     >
       <i class="fas fa-plus"></i>
-      Add Event
+      Add Transaction
     </a>
   }
 </main>

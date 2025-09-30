@@ -2,7 +2,7 @@
   <table class="table-auto shadow-2xl bg-white rounded-lg" id="principal-table">
     <thead>
       <tr>
-        @for (column of columName; track column) {
+        @for (column of columnName; track column) {
           <th class="bg-sky-200 text-bg-sky-500">{{column}}</th>
         }
       </tr>
@@ -57,7 +57,7 @@
       @for (row of matrix; track row[0]; let odd = $odd) {
         @for (cellData of row; track cellData;) {
           <tr>
-            <td class="bg-sky-200"><b>{{columName[$index]}}</b></td>
+            <td class="bg-sky-200"><b>{{columnName[$index]}}</b></td>
             <td [ngClass]="odd ? 'bg-slate-300' : 'bg-slate-400'">{{cellData}}</td>
           </tr>
         }

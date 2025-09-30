@@ -2,7 +2,7 @@
   <main class="modal-box">
     <h3 class="font-bold text-lg">Hello!</h3>
     @if (hasEmail) {
-      <p class="py-4">Your user id is: {{email}}</p>
+      <p class="py-4">Your user id is: {{userId}}</p>
       <p class="py-4">Your email is: {{email}}</p>
     } @else {
       <p class="py-4">
@@ -29,7 +29,7 @@
     }
     <footer class="modal-action">
       <button
-        class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800"
+        class="cursor-pointer w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800"
         (click)="closeDialog()"
       >
           <i class="fas fa-ban"></i>

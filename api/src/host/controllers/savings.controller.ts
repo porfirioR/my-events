@@ -7,13 +7,13 @@ import { CreateSavingRequest } from '../../manager/models/savings/create-saving-
 import { UpdateSavingRequest } from '../../manager/models/savings/update-saving-request';
 import { UpdateSavingApiRequest } from '../models/savings/update-saving-api-request';
 
-@Controller()
+@Controller('savings')
 @UseGuards(PrivateEndpointGuard)
 export class SavingsController {
   constructor(private savingManagerService: SavingsManagerService) {}
 
   @Get(':authorId/:id')
-  async getMySavingss(@Param('authorId') authorId: number, @Param('id') id: number): Promise<SavingModel[]> {
+  async getMySavings(@Param('authorId') authorId: number, @Param('id') id: number): Promise<SavingModel[]> {
     return await this.savingManagerService.getMySavings(authorId, id);
   }
 
@@ -22,7 +22,6 @@ export class SavingsController {
     const request = new CreateSavingRequest(
       apiRequest.name,
       apiRequest.description,
-      apiRequest.isActive,
       apiRequest.date,
       apiRequest.savingTypeId,
       apiRequest.currencyId,
@@ -30,6 +29,7 @@ export class SavingsController {
       apiRequest.periodId,
       apiRequest.totalAmount,
       apiRequest.numberOfPayment,
+      apiRequest.customPeriodQuantity
     );
     return await this.savingManagerService.createSaving(request);
   }
@@ -48,6 +48,7 @@ export class SavingsController {
       apiRequest.periodId,
       apiRequest.totalAmount,
       apiRequest.numberOfPayment,
+      apiRequest.customPeriodQuantity
     )
     return await this.savingManagerService.updateSaving(request);
   }

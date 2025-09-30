@@ -1,0 +1,123 @@
+import { Injectable } from "@nestjs/common";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { DbContextService } from "./db-context.service";
+import { DatabaseColumns, TableEnum } from "../../../utility/enums";
+import { CollaboratorMatchEntity } from "../entities/collaborator-match.entity";
+import { CollaboratorMatchAccessModel, CreateMatchAccessRequest } from "../../../access/contract/collaborator-matchs";
+
+@Injectable()
+export class CollaboratorMatchAccessService {
+  private matchContext: SupabaseClient<any, 'public', any>;
+
+  constructor(private dbContextService: DbContextService) {
+    this.matchContext = this.dbContextService.getConnection();
+  }
+
+  public getMatchByCollaboratorId = async (collaboratorId: number): Promise<CollaboratorMatchAccessModel | null> => {
+    const { data, error } = await this.matchContext
+      .from(TableEnum.CollaboratorMatches)
+      .select(DatabaseColumns.All)
+      .or(`collaborator1id.eq.${collaboratorId},collaborator2id.eq.${collaboratorId}`)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null; // No rows returned
+      throw new Error(error.message);
+    }
+    
+    return this.getMatchAccessModel(data);
+  };
+
+  public getMatchesByUserId = async (userId: number): Promise<CollaboratorMatchAccessModel[]> => {
+    const { data, error } = await this.matchContext
+      .from(TableEnum.CollaboratorMatches)
+      .select(DatabaseColumns.All)
+      .or(`user1id.eq.${userId},user2id.eq.${userId}`)
+      .order(DatabaseColumns.DateCreated, { ascending: false });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data?.map(this.getMatchAccessModel) || [];
+  };
+
+  public getMatchById = async (matchId: number): Promise<CollaboratorMatchAccessModel | null> => {
+    const { data, error } = await this.matchContext
+      .from(TableEnum.CollaboratorMatches)
+      .select(DatabaseColumns.All)
+      .eq(DatabaseColumns.EntityId, matchId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw new Error(error.message);
+    }
+
+    return this.getMatchAccessModel(data);
+  };
+
+  public createMatch = async (request: CreateMatchAccessRequest): Promise<CollaboratorMatchAccessModel> => {
+    const entity = this.getEntity(request);
+    
+    const { data, error } = await this.matchContext
+      .from(TableEnum.CollaboratorMatches)
+      .insert(entity)
+      .select()
+      .single<CollaboratorMatchEntity>();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return this.getMatchAccessModel(data);
+  };
+
+  public deleteMatch = async (matchId: number): Promise<void> => {
+    const { error } = await this.matchContext
+      .from(TableEnum.CollaboratorMatches)
+      .delete()
+      .eq(DatabaseColumns.EntityId, matchId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  public existsMatch = async (collaborator1Id: number, collaborator2Id: number): Promise<boolean> => {
+    const { data, error } = await this.matchContext
+      .from(TableEnum.CollaboratorMatches)
+      .select('id')
+      .or(`and(collaborator1id.eq.${collaborator1Id},collaborator2id.eq.${collaborator2Id}),and(collaborator1id.eq.${collaborator2Id},collaborator2id.eq.${collaborator1Id})`)
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data?.length || 0) > 0;
+  };
+
+  // Mappers
+  private getMatchAccessModel = (data: CollaboratorMatchEntity): CollaboratorMatchAccessModel => {
+    return {
+      id: data.id,
+      collaborator1Id: data.collaborator1id,
+      collaborator2Id: data.collaborator2id,
+      user1Id: data.user1id,
+      user2Id: data.user2id,
+      email: data.email,
+      createdDate: data.datecreated
+    };
+  };
+
+  private getEntity = (request: CreateMatchAccessRequest): CollaboratorMatchEntity => {
+    return new CollaboratorMatchEntity(
+      request.collaborator1Id,
+      request.collaborator2Id,
+      request.user1Id,
+      request.user2Id,
+      request.email
+    );
+  };
+}

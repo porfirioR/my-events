@@ -1,15 +1,19 @@
-import { inject } from '@angular/core'
-import { HttpInterceptorFn } from '@angular/common/http'
-import { Store } from '@ngrx/store'
-import { catchError, retry } from 'rxjs'
-import { AppState } from '../store'
-import { loadingActionGroup } from '../store/loading/loading.actions'
+import { HttpInterceptorFn } from '@angular/common/http';
+import { catchError, retry, throwError } from 'rxjs';
+import { useLoadingStore } from '../store';
+import { inject } from '@angular/core';
+import { CustomErrorHandler } from '../errors/custom-error-handler';
 
-export const catchErrorInterceptor: HttpInterceptorFn = (request, next) =>  {
-  const store = inject(Store<AppState>)
+export const catchErrorInterceptor: HttpInterceptorFn = (request, next) => {
+  const loadingStore = useLoadingStore();
+  const errorHandler = inject(CustomErrorHandler);
 
-  return next(request).pipe(retry(2), catchError(error => {
-    store.dispatch(loadingActionGroup.loadingFailed())
-    throw error
-  }))
-}
+  return next(request).pipe(
+    retry(2),
+    catchError((error) => {
+      loadingStore.setLoadingFailed();
+      errorHandler.handleError(error);
+      return throwError(() => error);;
+    })
+  );
+};

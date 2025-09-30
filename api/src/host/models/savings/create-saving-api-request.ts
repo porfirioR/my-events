@@ -1,7 +1,6 @@
-export class CreateSavingApiRequest {
+export interface CreateSavingApiRequest {
   name: string
   description: string
-  isActive: boolean
   date: Date
   savingTypeId: number
   currencyId: number
@@ -9,4 +8,5 @@ export class CreateSavingApiRequest {
   periodId?: number
   totalAmount?: number
   numberOfPayment?: number
+  customPeriodQuantity?: number
 }

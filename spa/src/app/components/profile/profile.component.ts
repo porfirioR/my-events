@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { RouterModule } from '@angular/router'
-import { LocalService, UserApiService } from '../../services'
+import { LocalService } from '../../services'
 
 @Component({
   selector: 'app-profile',
@@ -17,8 +17,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   protected userId?: number | null
 
   constructor(
-    private readonly localService: LocalService,
-    private readonly userService: UserApiService
+    private readonly localService: LocalService
   ) { }
 
   ngOnInit(): void {

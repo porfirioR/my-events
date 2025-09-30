@@ -2,7 +2,6 @@ export class CreateSavingRequest {
   constructor(
     public name: string,
     public description: string,
-    public isActive: boolean,
     public date: Date,
     public savingTypeId: number,
     public currencyId: number,
@@ -10,5 +9,6 @@ export class CreateSavingRequest {
     public periodId?: number,
     public totalAmount?: number,
     public numberOfPayment?: number,
+    public customPeriodQuantity?: number
   ) {}
 }

@@ -1,12 +1,4 @@
-import { ActionReducerMap, MetaReducer } from '@ngrx/store'
-import { environment } from '../../environments/environment.development'
-import * as fromLogin from './loading/loading.reducer'
+export { useLoadingStore } from './loading.store';
+export { useAuthStore } from './auth.store';
+export { useCollaboratorStore } from './collaborator.store';
 
-export interface AppState {
-}
-
-export const reducers: ActionReducerMap<AppState> = {
-  [fromLogin.loadingFeatureKey]: fromLogin.loginReducer,
-}
-
-export const metaReducers: MetaReducer<AppState>[] = !environment.production ? [] : []

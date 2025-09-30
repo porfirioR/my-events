@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
-import { EventManagerService, MailManagerService, PaymentManagerService, SavingsManagerService, UserManagerService } from './services';
-import { AccessModule } from '../access/access.module';
-import { AuthModule } from '../auth/auth.module';
+import { EventManagerService, MailManagerService, PaymentManagerService, SavingsManagerService, ConfigurationManagerService, UserManagerService, CollaboratorManagerService } from './services';
+import { MailModule } from '../access/mail/mail.module';
+import { AuthModule } from '../access/auth/auth.module';
+import { DataModule } from '../access/data/data.module';
 
 @Module({
   imports: [
-    AccessModule,
-    AuthModule
+    MailModule,
+    AuthModule,
+    DataModule
   ],
   controllers: [],
   providers: [
@@ -14,14 +16,18 @@ import { AuthModule } from '../auth/auth.module';
     UserManagerService,
     MailManagerService,
     PaymentManagerService,
-    SavingsManagerService
+    SavingsManagerService,
+    ConfigurationManagerService,
+    CollaboratorManagerService,
   ],
   exports: [
     EventManagerService,
     UserManagerService,
     MailManagerService,
     PaymentManagerService,
-    SavingsManagerService
+    SavingsManagerService,
+    ConfigurationManagerService,
+    CollaboratorManagerService,
   ]
 })
 export class ManagerModule {}

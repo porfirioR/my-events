@@ -7,7 +7,7 @@ import { PaymentManagerService } from '../../manager/services';
 import { CreatePaymentRequest } from '../../manager/models/payments/create-payment-request';
 import { UpdatePaymentRequest } from '../../manager/models/payments/update-payment-request';
 
-@Controller()
+@Controller('payments')
 @UseGuards(PrivateEndpointGuard)
 export class PaymentController {
   constructor(private paymentManagerService: PaymentManagerService) {}

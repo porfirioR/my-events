@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { SavingAccessService } from '../../access/services';
 import { SavingModel } from '../models/savings/saving-model';
 import { SavingAccessModel } from '../../access/contract/savings/saving-access-model';
 import { CreateSavingAccessRequest } from '../../access/contract/savings/create-saving-access-request';
+import { UpdateSavingAccessRequest } from '../../access/contract/savings/update-saving-access-request';
+import { SavingAccessService } from '../../access/data/services/saving-access.service';
 import { CreateSavingRequest } from '../models/savings/create-saving-request';
 import { UpdateSavingRequest } from '../models/savings/update-saving-request';
-import { UpdateSavingAccessRequest } from '../../access/contract/savings/update-saving-access-request';
 
 @Injectable()
 export class SavingsManagerService {
@@ -29,7 +29,8 @@ export class SavingsManagerService {
       request.userId,
       request.periodId,
       request.totalAmount,
-      request.numberOfPayment
+      request.numberOfPayment,
+      request.customPeriodQuantity
     )
     const accessModel = await this.savingAccessService.create(accessRequest);
     return this.mapAccessModelToModel(accessModel)
@@ -47,7 +48,8 @@ export class SavingsManagerService {
       request.userId,
       request.periodId,
       request.totalAmount,
-      request.numberOfPayment
+      request.numberOfPayment,
+      request.customPeriodQuantity
     )
     const accessModel = await this.savingAccessService.updateSaving(accessRequest);
     return this.mapAccessModelToModel(accessModel)
@@ -64,7 +66,8 @@ export class SavingsManagerService {
     accessModel.userId,
     accessModel.periodId,
     accessModel.totalAmount,
-    accessModel.numberOfPayment
+    accessModel.numberOfPayment,
+    accessModel.customPeriodQuantity
   )
 
 }

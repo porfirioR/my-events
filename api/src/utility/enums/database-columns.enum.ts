@@ -1,6 +1,7 @@
 export enum DatabaseColumns {
   UserId = 'userid',
   EventId = 'eventid',
+  CollaboratorId = 'collaboratorid',
   IsActive = 'isactive',
   IsPublic = 'ispublic',
   EntityId = 'id',
@@ -11,6 +12,15 @@ export enum DatabaseColumns {
   ExpirationTime = 'expirationtime',
   DateCreated = 'datecreated',
   Password = 'password',
+  All = '*',
+  Name = 'name',
+  Surname = 'surname',
+  CreatedDate = 'createddate',
   Code = 'code',
-  All = '*'
+  TargetUserId = "targetuserid",
+  Status = "status",
+  RequestedDate = "requesteddate",
+  RequesterUserId = "requesteruserid",
+  RequesterCollaboratorId = "requestercollaboratorid",
+  TargetCollaboratorEmail = "TargetCollaboratorEmail",
 }
