@@ -179,6 +179,35 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     };
   };
 
+  public getByEmail = async (email: string): Promise<CollaboratorAccessModel | null> => {
+    const { data, error } = await this.collaboratorContext
+      .from(TableEnum.Collaborators)
+      .select(DatabaseColumns.All)
+      .eq(DatabaseColumns.Email, email)
+      .eq(DatabaseColumns.IsActive, true)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw new Error(error.message);
+    }
+    return this.getCollaboratorAccessModel(data);
+  };
+
+  public getExternalCollaboratorsByEmail = async (email: string): Promise<CollaboratorAccessModel[]> => {
+    const { data, error } = await this.collaboratorContext
+      .from(TableEnum.Collaborators)
+      .select(DatabaseColumns.All)
+      .eq(DatabaseColumns.Email, email)
+      .eq(DatabaseColumns.IsActive, true)
+      .not(DatabaseColumns.Email, 'is', null);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data?.map(this.getCollaboratorAccessModel) || [];
+  };
+
   // Mappers privados
   private getCollaboratorAccessModel = (data: CollaboratorEntity): CollaboratorAccessModel => {
     return new CollaboratorAccessModel(

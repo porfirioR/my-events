@@ -68,4 +68,19 @@ canDeleteCollaborator(collaboratorId: number): Promise<boolean>;
  * @param userId - ID del usuario propietario
  * @returns Promise con estadísticas (total, internos, externos)
  */
-getCollaboratorStats(userId: number): Promise<{ total: number; internal: number; external: number; }>;}
+getCollaboratorStats(userId: number): Promise<{ total: number; internal: number; external: number; }>;
+
+/**
+ * Obtiene un colaborador por email
+ * @param email - Email del colaborador a buscar
+ * @returns Promise con el colaborador encontrado o null si no existe
+ */
+getByEmail(email: string): Promise<CollaboratorAccessModel | null>;
+
+/**
+ * Obtiene un colaborador  external por email
+ * @param email - Email del colaborador a buscar
+ * @returns Promise con el colaborador encontrado o null si no existe
+ */
+getExternalCollaboratorsByEmail(email: string): Promise<CollaboratorAccessModel[]>;
+}

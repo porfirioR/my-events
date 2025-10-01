@@ -1,0 +1,1 @@
+export type MatchStatus = 'matched' | 'pending' | 'email_not_found' | 'unmatched'

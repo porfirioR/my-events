@@ -9,6 +9,7 @@ import { AuthUserModel } from 'src/access/auth/contracts/auth-user-model';
 import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, UpdateCollaboratorAccessRequest } from 'src/access/contract/collaborators';
 import { CreateCollaboratorApiRequest } from 'src/host/models/collaborators/create-collaborator-api-request';
 import { UpdateCollaboratorApiRequest } from 'src/host/models/collaborators/update-collaborator-api-request';
+import { CollaboratorType } from 'src/utility/types';
 
 export class TestHelpers {
   // Auth helpers
@@ -47,7 +48,7 @@ export class TestHelpers {
       userId: number;
       isActive: boolean;
       createdDate: Date;
-      type: 'INTERNAL' | 'EXTERNAL';
+      type: CollaboratorType;
     }> = {}
   ): CollaboratorAccessModel {
     return new CollaboratorAccessModel(

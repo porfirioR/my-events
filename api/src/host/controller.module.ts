@@ -15,8 +15,8 @@ import { EventsController } from './controllers/events.controller';
 import { PaymentController } from './controllers/payments.controller';
 import { SavingsController } from './controllers/savings.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
-import { CollaboratorsController } from './controllers/collaborators.controller';
 import { CurrentUserService } from './services/current-user.service';
+import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController } from './controllers';
 
 @Module({
   imports: [
@@ -30,6 +30,9 @@ import { CurrentUserService } from './services/current-user.service';
     SavingsController,
     ConfigurationController,
     CollaboratorsController,
+    CollaboratorMatchesController,
+    CollaboratorMatchRequestsController,
+    CollaboratorInvitationsController
   ],
   providers: [
     JwtService,

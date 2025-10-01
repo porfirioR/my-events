@@ -4,11 +4,11 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { DbContextService } from './db-context.service';
 import { CollaboratorMatchRequestEntity } from '../entities/collaborator-match-request.entity';
 import { TableEnum, DatabaseColumns, MatchRequestStatus } from '../../../utility/enums';
-import { CollaboratorMatchRequestAccessModel, CreateMatchRequestAccessRequest } from '../../../access/contract/collaborator-match-requests';
+import { CollaboratorMatchRequestAccessModel, CreateMatchRequestAccessRequest, ICollaboratorMatchRequestAccessService } from '../../../access/contract/collaborator-match-requests';
 
 
 @Injectable()
-export class CollaboratorMatchRequestAccessService {
+export class CollaboratorMatchRequestAccessService implements ICollaboratorMatchRequestAccessService {
   private requestContext: SupabaseClient<any, 'public', any>;
 
   constructor(private dbContextService: DbContextService) {
@@ -109,11 +109,7 @@ export class CollaboratorMatchRequestAccessService {
     return this.getRequestAccessModel(data);
   };
 
-  public updateStatus = async (
-    requestId: number,
-    userId: number,
-    status: MatchRequestStatus
-  ): Promise<CollaboratorMatchRequestAccessModel> => {
+  public updateStatus = async (requestId: number, status: MatchRequestStatus, userId?: number): Promise<CollaboratorMatchRequestAccessModel> => {
     const { data, error } = await this.requestContext
       .from(TableEnum.CollaboratorMatchRequests)
       .update({
@@ -199,6 +195,47 @@ export class CollaboratorMatchRequestAccessService {
     if (error) {
       throw new Error(error.message);
     }
+  };
+
+  /**
+   * Verificar si existe una solicitud pendiente BIDIRECCIONAL
+   * Verifica tanto si YO envié al email, como si el email me envió a MÍ
+   */
+  public existsPendingRequestBidirectional = async (
+    myCollaboratorId: number,
+    myEmail: string,
+    targetEmail: string
+  ): Promise<boolean> => {
+    // Caso 1: YO envié una solicitud al targetEmail
+    const { data: sentRequest, error: sentError } = await this.requestContext
+      .from(TableEnum.CollaboratorMatchRequests)
+      .select('id')
+      .eq(DatabaseColumns.RequesterCollaboratorId, myCollaboratorId)
+      .eq(DatabaseColumns.TargetCollaboratorEmail, targetEmail)
+      .in(DatabaseColumns.Status, [MatchRequestStatus.Pending, MatchRequestStatus.EmailNotFound])
+      .limit(1);
+
+    if (sentError) {
+      throw new Error(sentError.message);
+    }
+
+    if (sentRequest && sentRequest.length > 0) {
+      return true; // Ya envié una solicitud
+    }
+
+    // Caso 2: Alguien ME envió una solicitud a MI email
+    const { data: receivedRequest, error: receivedError } = await this.requestContext
+      .from(TableEnum.CollaboratorMatchRequests)
+      .select('id')
+      .eq(DatabaseColumns.TargetCollaboratorEmail, myEmail)
+      .in(DatabaseColumns.Status, [MatchRequestStatus.Pending, MatchRequestStatus.EmailNotFound])
+      .limit(1);
+
+    if (receivedError) {
+      throw new Error(receivedError.message);
+    }
+
+    return receivedRequest && receivedRequest.length > 0; // Recibí una solicitud
   };
 
   // Mappers

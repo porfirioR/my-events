@@ -3,10 +3,10 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { DbContextService } from "./db-context.service";
 import { DatabaseColumns, TableEnum } from "../../../utility/enums";
 import { CollaboratorMatchEntity } from "../entities/collaborator-match.entity";
-import { CollaboratorMatchAccessModel, CreateMatchAccessRequest } from "../../../access/contract/collaborator-matchs";
+import { CollaboratorMatchAccessModel, CreateMatchAccessRequest, ICollaboratorMatchAccessService } from "../../contract/collaborator-match";
 
 @Injectable()
-export class CollaboratorMatchAccessService {
+export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessService {
   private matchContext: SupabaseClient<any, 'public', any>;
 
   constructor(private dbContextService: DbContextService) {
