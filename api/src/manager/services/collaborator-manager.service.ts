@@ -350,7 +350,7 @@ export class CollaboratorManagerService {
    */
   public deleteMatch = async (userId: number, matchId: number): Promise<void> => {
     const match = await this.matchAccessService.getMatchById(matchId);
-    
+
     if (!match) {
       throw new NotFoundException('Match not found');
     }
@@ -367,7 +367,7 @@ export class CollaboratorManagerService {
    * Obtener invitaciones recibidas para un colaborador externo específico
    * Muestra quién invitó a este colaborador por su email
    * 
-   * Ejemplo: 
+   * Ejemplo:
    * - Yo (Porfi) tengo un colaborador externo "Leti" con email leti@gmail.com
    * - Leti (como usuaria) me invitó a mi email
    * - Este método me muestra la invitación de Leti hacia mi colaborador
@@ -541,11 +541,11 @@ export class CollaboratorManagerService {
 
       if (match) {
         enriched.matchStatus = 'matched';
-        
+
         const otherCollabId = match.collaborator1Id === collaborator.id 
           ? match.collaborator2Id 
           : match.collaborator1Id;
-        
+
         const otherUserId = match.user1Id === userId 
           ? match.user2Id 
           : match.user1Id;
