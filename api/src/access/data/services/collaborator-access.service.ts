@@ -87,15 +87,16 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
 
   public updateCollaborator = async (accessRequest: UpdateCollaboratorAccessRequest): Promise<CollaboratorAccessModel> => {
     const existingCollaborator = await this.getById(accessRequest.id, accessRequest.userId);
-    const collaboratorEntity = this.getEntity(accessRequest);
-    collaboratorEntity.id = accessRequest.id;
-    collaboratorEntity.userid = existingCollaborator.userId;
-    collaboratorEntity.datecreated = existingCollaborator.dateCreated;
-    collaboratorEntity.isactive = existingCollaborator.isActive;
+    const entity = this.getEntity(accessRequest);
+    entity.id = accessRequest.id;
+    entity.userid = existingCollaborator.userId;
+    entity.datecreated = existingCollaborator.dateCreated;
+    entity.isactive = existingCollaborator.isActive;
+    entity.email = existingCollaborator.email;
 
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
-      .upsert(collaboratorEntity)
+      .upsert(entity)
       .select()
       .single<CollaboratorEntity>();
 
@@ -226,7 +227,7 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     const entity = new CollaboratorEntity(
       accessRequest.name,
       accessRequest.surname,
-      accessRequest.email,
+      null, // email siempre null al crear/actualizar
       accessRequest.userId,
       true // isactive siempre true al crear/actualizar
     );

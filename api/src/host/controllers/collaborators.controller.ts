@@ -88,7 +88,6 @@ export class CollaboratorsController {
     const request = new CreateCollaboratorRequest(
       apiRequest.name,
       apiRequest.surname,
-      apiRequest.email || null,
       userId
     );
     return await this.collaboratorManagerService.createCollaborator(request);
@@ -101,7 +100,6 @@ export class CollaboratorsController {
       apiRequest.id,
       apiRequest.name,
       apiRequest.surname,
-      apiRequest.email || null,
       userId
     );
     return await this.collaboratorManagerService.updateCollaborator(request);

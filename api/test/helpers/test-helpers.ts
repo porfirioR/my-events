@@ -75,7 +75,6 @@ export class TestHelpers {
     return new CreateCollaboratorAccessRequest(
       overrides.name ?? 'John',
       overrides.surname ?? 'Doe',
-      overrides.email ?? 'john@example.com',
       overrides.userId ?? 1
     );
   }
@@ -93,7 +92,6 @@ export class TestHelpers {
       overrides.id ?? 1,
       overrides.name ?? 'John Updated',
       overrides.surname ?? 'Doe Updated',
-      overrides.email ?? 'john.updated@example.com',
       overrides.userId ?? 1
     );
   }
@@ -110,7 +108,6 @@ export class TestHelpers {
     return new CreateCollaboratorRequest(
       overrides.name ?? 'John',
       overrides.surname ?? 'Doe',
-      overrides.email ?? 'john@example.com',
       overrides.userId ?? 1
     );
   }
@@ -128,7 +125,6 @@ export class TestHelpers {
       overrides.id ?? 1,
       overrides.name ?? 'John Updated',
       overrides.surname ?? 'Doe Updated',
-      overrides.email ?? 'john.updated@example.com',
       overrides.userId ?? 1
     );
   }
@@ -205,7 +201,6 @@ export class TestHelpers {
       request instanceof CreateCollaboratorAccessRequest &&
       typeof request.name === 'string' &&
       typeof request.surname === 'string' &&
-      (typeof request.email === 'string' || request.email === null) &&
       typeof request.userId === 'number'
     );
   }
@@ -216,7 +211,6 @@ export class TestHelpers {
       typeof request.id === 'number' &&
       typeof request.name === 'string' &&
       typeof request.surname === 'string' &&
-      (typeof request.email === 'string' || request.email === null) &&
       typeof request.userId === 'number'
     );
   }
@@ -229,7 +223,6 @@ export class TestHelpers {
     return new CreateCollaboratorRequest(
       apiRequest.name,
       apiRequest.surname,
-      apiRequest.email || null,
       userId
     );
   }
@@ -240,7 +233,6 @@ export class TestHelpers {
     return new CreateCollaboratorAccessRequest(
       managerRequest.name,
       managerRequest.surname,
-      managerRequest.email,
       managerRequest.userId
     );
   }
@@ -252,7 +244,6 @@ export class TestHelpers {
       apiRequest.id,
       apiRequest.name,
       apiRequest.surname,
-      apiRequest.email || null,
       0 // Se sobrescribe en el access service como indica tu comentario
     );
   }

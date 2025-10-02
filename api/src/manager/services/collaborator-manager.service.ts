@@ -50,15 +50,10 @@ export class CollaboratorManagerService {
     const accessRequest = new CreateCollaboratorAccessRequest(
       request.name,
       request.surname,
-      request.email,
       request.userId
     );
 
     const accessModel = await this.collaboratorAccessService.createCollaborator(accessRequest);
-    // Si es colaborador externo, enviar invitación
-    if (accessModel.email) {
-      await this.sendInvitationEmail(accessModel);
-    }
     return this.getModel(accessModel);
   };
 
@@ -68,7 +63,6 @@ export class CollaboratorManagerService {
       request.id,
       request.name,
       request.surname,
-      request.email,
       request.userId
     );
 
@@ -109,7 +103,7 @@ export class CollaboratorManagerService {
       throw new NotFoundException('Collaborator not found');
     }
 
-    // 2. Validar que es colaborador externo
+    // 2. Validar que es colaborador interno
     if (!collaborator.email) {
       throw new BadRequestException('Only external collaborators can be matched');
     }

@@ -5,9 +5,8 @@ export class UpdateCollaboratorRequest extends CreateCollaboratorRequest {
     public id: number,
     name: string,
     surname: string,
-    email: string | null,
     userId: number
   ) {
-    super(name, surname, email, userId);
+    super(name, surname, userId);
   }
 }

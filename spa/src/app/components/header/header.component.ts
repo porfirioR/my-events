@@ -22,7 +22,8 @@ export class HeaderComponent {
   private alertService = inject(AlertService)
   protected currentTheme: ModeType = 'light'
   protected currentUserEmail = this.authStore.currentUserEmail
-  
+  protected isAuthenticated = this.authStore.isAuthenticated;
+
   constructor() {
     this.loadSavedTheme()
   }
