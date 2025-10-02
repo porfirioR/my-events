@@ -1,7 +1,6 @@
 import { Component } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { LoadingSkeletonComponent } from "../loading-skeleton/loading-skeleton.component"
-import { HeaderComponent } from "../header/header.component";
 import { DashboardComponent } from "../dashboard/dashboard.component";
 import { EventViewModel } from '../../models/view/event-view-model'
 import { useAuthStore, useLoadingStore } from '../../store'
@@ -14,7 +13,6 @@ import { useAuthStore, useLoadingStore } from '../../store'
     RouterModule,
     LoadingSkeletonComponent,
     DashboardComponent,
-    HeaderComponent
   ]
 })
 export class HomeComponent {

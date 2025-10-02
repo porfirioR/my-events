@@ -8,7 +8,7 @@ export class CollaboratorModel {
     public email: string | null,
     public userId: number,
     public isActive: boolean,
-    public createdDate: Date,
+    public dateCreated: Date,
     public type: CollaboratorType
   ) {}
 }

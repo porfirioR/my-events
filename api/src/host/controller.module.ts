@@ -29,10 +29,10 @@ import { CollaboratorInvitationsController, CollaboratorMatchesController, Colla
     PaymentController,
     SavingsController,
     ConfigurationController,
-    CollaboratorsController,
     CollaboratorMatchesController,
     CollaboratorMatchRequestsController,
-    CollaboratorInvitationsController
+    CollaboratorInvitationsController,
+    CollaboratorsController,
   ],
   providers: [
     JwtService,

@@ -49,6 +49,10 @@ export class HeaderComponent {
     this.currentTheme = newTheme
   }
 
+  protected closeDropdown = (event: Event): void => {
+    (document.activeElement as HTMLElement)?.blur();
+  }
+
   private loadSavedTheme = (): void => {
     const savedTheme = localStorage.getItem('theme') as ModeType || 'light'
     document.documentElement.setAttribute('data-theme', savedTheme)

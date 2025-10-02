@@ -27,6 +27,9 @@ import { UserAccessService } from './services/user-access.service';
     PaymentAccessService,
     SavingAccessService,
     ConfigurationAccessService,
+    CollaboratorAccessService,
+    CollaboratorMatchAccessService,
+    CollaboratorMatchRequestAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,
@@ -47,7 +50,9 @@ import { UserAccessService } from './services/user-access.service';
     PaymentAccessService,
     SavingAccessService,
     ConfigurationAccessService,
-    COLLABORATOR_TOKENS.ACCESS_SERVICE
+    COLLABORATOR_TOKENS.ACCESS_SERVICE,
+    COLLABORATOR_TOKENS.MATCH_ACCESS_SERVICE,
+    COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE,
   ],
 })
 export class DataModule {}

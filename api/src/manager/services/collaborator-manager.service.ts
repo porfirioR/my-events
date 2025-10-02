@@ -502,7 +502,7 @@ export class CollaboratorManagerService {
       accessModel.user1Id,
       accessModel.user2Id,
       accessModel.email,
-      accessModel.createdDate
+      accessModel.dateCreated
     );
   };
 
@@ -568,7 +568,7 @@ export class CollaboratorManagerService {
         );
 
         if (emailNotFoundRequests.length > 0) {
-          enriched.matchStatus = 'email_not_found';
+          enriched.matchStatus = 'emailnotfound';
           enriched.pendingRequestsCount = emailNotFoundRequests.length;
         } else if (pendingRequests.length > 0) {
           enriched.matchStatus = 'pending';

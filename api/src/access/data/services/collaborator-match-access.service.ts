@@ -107,7 +107,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
       user1Id: data.user1id,
       user2Id: data.user2id,
       email: data.email,
-      createdDate: data.datecreated
+      dateCreated: data.datecreated
     };
   };
 

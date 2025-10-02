@@ -24,12 +24,12 @@ export const CollaboratorStore = signalStore(
   withComputed((store) => ({
     // Colaboradores activos
     activeCollaborators: computed(() => 
-      store.collaborators().filter(c => c.isActive)
+      store.collaborators().filter(x => x.isActive)
     ),
 
     // Colaboradores inactivos
     inactiveCollaborators: computed(() => 
-      store.collaborators().filter(c => !c.isActive)
+      store.collaborators().filter(x => !x.isActive)
     ),
 
     // Colaboradores filtrados por nombre/apellido/email
@@ -45,7 +45,10 @@ export const CollaboratorStore = signalStore(
     }),
 
     // Total de colaboradores
-    totalCount: computed(() => store.collaborators().length)
+    totalCount: computed(() => store.collaborators().length),
+    internalCollaborators: computed(() => store.collaborators().filter(x => x.type == 'INTERNAL')),
+    externalCollaborators: computed(() => store.collaborators().filter(x => x.type == 'EXTERNAL')),
+    allCollaborators: computed(() => store.collaborators()),
   })),
   withMethods((store, collaboratorApiService = inject(CollaboratorApiService)) => ({
     loadCollaborators: rxMethod<void>(

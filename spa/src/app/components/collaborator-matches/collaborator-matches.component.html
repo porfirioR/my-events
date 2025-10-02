@@ -1,0 +1,99 @@
+<section aria-labelledby="matches-heading" class="mb-8">
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
+    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="btn btn-sm btn-ghost btn-circle"
+            [routerLink]="['/collaborators']"
+          >
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          </button>
+          <h2 id="matches-heading" class="text-xl font-semibold text-base-content">
+            Collaborator Matches
+          </h2>
+        </div>
+        <span class="badge badge-primary badge-lg">
+          {{ matches.length }} Total
+        </span>
+      </div>
+    </header>
+
+    <div class="p-6">
+      <ul class="space-y-4" role="list">
+        @for (match of matches; track match.id) {
+          <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+            <article class="flex items-center justify-between">
+              <div class="flex items-center gap-4 flex-grow">
+                <!-- First Collaborator -->
+                <div class="flex items-center gap-3">
+                  <figure class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                    {{ match.collaboratorName?.charAt(0) }}{{ match.collaboratorSurname?.charAt(0) }}
+                  </figure>
+                  <div>
+                    <p class="font-semibold text-base-content">
+                      {{ match.collaboratorName }} {{ match.collaboratorSurname }}
+                    </p>
+                    <p class="text-xs text-base-content/60">Your Collaborator</p>
+                  </div>
+                </div>
+
+                <!-- Connection Icon -->
+                <div class="flex-shrink-0">
+                  <i class="fas fa-handshake text-2xl text-success" aria-hidden="true"></i>
+                </div>
+
+                <!-- Matched Collaborator -->
+                <div class="flex items-center gap-3">
+                  <figure class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-semibold">
+                    {{ match.matchedCollaboratorName?.charAt(0) }}{{ match.matchedCollaboratorSurname?.charAt(0) }}
+                  </figure>
+                  <div>
+                    <p class="font-semibold text-base-content">
+                      {{ match.matchedCollaboratorName }} {{ match.matchedCollaboratorSurname }}
+                    </p>
+                    <p class="text-xs text-base-content/60">Matched Collaborator</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="text-right">
+                  <time [attr.datetime]="match.dateCreated" class="text-xs text-base-content/60">
+                    Matched {{ getFormattedDate(match.dateCreated) }}
+                  </time>
+                </div>
+
+                <!-- Delete Action -->
+                <button
+                  type="button"
+                  class="btn btn-sm btn-ghost btn-circle hover:bg-error/10 hover:text-error"
+                  (click)="deleteMatch(match)"
+                  [attr.aria-label]="'Delete match'"
+                >
+                  <i class="fas fa-trash" aria-hidden="true"></i>
+                </button>
+              </div>
+            </article>
+          </li>
+        }
+
+        <!-- Empty State -->
+        @if (matches.length === 0) {
+          <li class="text-center py-12">
+            <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+              <i class="fas fa-handshake text-2xl text-base-content/50" aria-hidden="true"></i>
+            </figure>
+            <h3 class="text-lg font-medium text-base-content mb-2">No matches yet</h3>
+            <p class="text-base-content/70 mb-4">Start creating match requests to connect your collaborators</p>
+            <button class="btn btn-primary" [routerLink]="['/collaborators']">
+              <i class="fas fa-arrow-left mr-2" aria-hidden="true"></i>
+              Back to Collaborators
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  </article>
+</section>

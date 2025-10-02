@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, effect, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { useCollaboratorStore } from '../../store';
+import { useCollaboratorStore, useLoadingStore } from '../../store';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,10 +10,17 @@ import { useCollaboratorStore } from '../../store';
     RouterModule,
   ]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   private collaboratorStore = useCollaboratorStore();
-  
-  protected totalCollaborators = this.collaboratorStore.totalCount()
-  protected activeCollaborators = this.collaboratorStore.activeCollaborators()
-  protected inactiveCollaborators = this.collaboratorStore.inactiveCollaborators()
+
+  protected totalCollaborators = this.collaboratorStore.totalCount
+  protected activeCollaborators = this.collaboratorStore.activeCollaborators
+  protected inactiveCollaborators = this.collaboratorStore.inactiveCollaborators
+
+  ngOnInit() {
+    if (this.collaboratorStore.totalCount() === 0) {
+      this.collaboratorStore.loadCollaborators();
+    }
+  }
+
 }

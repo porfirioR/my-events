@@ -1,0 +1,1 @@
+export type MatchRequestStatusType = 'Pending' | 'Accepted' | 'rejected' | 'cancelled';

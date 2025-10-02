@@ -2,20 +2,39 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to Node Functions",
       "type": "node",
-      "request": "attach",
-      "port": 9229,
-      "preLaunchTask": "func: host start"
+      "request": "launch",
+      "name": "Debug Backend (API)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:debug"],
+      "cwd": "${workspaceFolder}/api",
+      "console": "integratedTerminal",
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "envFile": "${workspaceFolder}/api/.env"
     },
     {
-      "name": "Debug API",
       "type": "node",
       "request": "attach",
+      "name": "Attach to Running API",
       "port": 9229,
       "restart": true,
-      "localRoot": "${workspaceFolder}/api",
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": ["<node_internals>/**"],
+      "localRoot": "${workspaceFolder}/api"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug Frontend (SPA)",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/spa/src"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack Debug",
+      "configurations": ["Debug Backend (API)", "Debug Frontend (SPA)"],
+      "stopAll": true
     }
   ]
 }

@@ -42,7 +42,7 @@ CREATE TABLE collaborators (
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(150), -- NULL = colaborador INTERNO, valor = colaborador EXTERNO
     userid INT NOT NULL,
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );
 
@@ -80,7 +80,7 @@ CREATE TABLE collaboratormatches (
     user1id INT NOT NULL,
     user2id INT NOT NULL,
     email VARCHAR(150) NOT NULL, -- Email común (ambos colaboradores deben ser externos)
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (collaborator1id) REFERENCES collaborators(id),
     FOREIGN KEY (collaborator2id) REFERENCES collaborators(id),
     FOREIGN KEY (user1id) REFERENCES users(id),
@@ -100,7 +100,7 @@ CREATE TABLE projects (
     description TEXT,
     userid INT NOT NULL,
     status projectstatus DEFAULT 'Active',
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     finalizeddate TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );
@@ -139,7 +139,7 @@ CREATE TABLE projecttransactions (
     amount DECIMAL(10,2) NOT NULL,
     description VARCHAR(255) NOT NULL,
     status transactionstatus DEFAULT 'Pending',
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     approveddate TIMESTAMP,
     FOREIGN KEY (projectid) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (createdbymemberid) REFERENCES projectmembers(id)
@@ -148,7 +148,7 @@ CREATE TABLE projecttransactions (
 -- Índices para project transactions
 CREATE INDEX idx_projecttransactions_projectstatus ON projecttransactions(projectid, status);
 CREATE INDEX idx_projecttransactions_createdbymember ON projecttransactions(createdbymemberid);
-CREATE INDEX idx_projecttransactions_statusdate ON projecttransactions(status, createddate);
+CREATE INDEX idx_projecttransactions_statusdate ON projecttransactions(status, datecreated);
 
 -- Aprobaciones de transacciones
 CREATE TABLE projecttransactionapprovals (

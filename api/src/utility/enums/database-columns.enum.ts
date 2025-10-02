@@ -15,7 +15,6 @@ export enum DatabaseColumns {
   All = '*',
   Name = 'name',
   Surname = 'surname',
-  CreatedDate = 'createddate',
   Code = 'code',
   TargetUserId = "targetuserid",
   Status = "status",

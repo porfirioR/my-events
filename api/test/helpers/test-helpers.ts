@@ -47,7 +47,7 @@ export class TestHelpers {
       email: string | null;
       userId: number;
       isActive: boolean;
-      createdDate: Date;
+      dateCreated: Date;
       type: CollaboratorType;
     }> = {}
   ): CollaboratorAccessModel {
@@ -58,7 +58,7 @@ export class TestHelpers {
       overrides.email ?? 'john@example.com',
       overrides.userId ?? 1,
       overrides.isActive ?? true,
-      overrides.createdDate ?? new Date(),
+      overrides.dateCreated ?? new Date(),
       overrides.type ?? 'INTERNAL'
     );
   }
