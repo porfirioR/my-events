@@ -73,6 +73,14 @@ getCollaboratorStats(userId: number): Promise<{ total: number; internal: number;
 /**
  * Obtiene un colaborador por email
  * @param email - Email del colaborador a buscar
+ * @param userId - ID del usuario propietario
+ * @returns Promise con el colaborador encontrado o null si no existe
+ */
+getMyCollaboratorByEmail(email: string, userId: number): Promise<CollaboratorAccessModel | null>;
+
+/**
+ * Obtiene un colaborador por email
+ * @param email - Email del colaborador a buscar
  * @returns Promise con el colaborador encontrado o null si no existe
  */
 getByEmail(email: string): Promise<CollaboratorAccessModel | null>;
@@ -83,4 +91,6 @@ getByEmail(email: string): Promise<CollaboratorAccessModel | null>;
  * @returns Promise con el colaborador encontrado o null si no existe
  */
 getExternalCollaboratorsByEmail(email: string): Promise<CollaboratorAccessModel[]>;
+assignEmailToCollaborator(collaboratorId: number, email: string, userId: number): Promise<CollaboratorAccessModel>;
+
 }

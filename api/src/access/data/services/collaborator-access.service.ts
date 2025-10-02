@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { DbContextService } from './db-context.service';
 import { CollaboratorEntity } from '../entities/collaborator.entity';
@@ -13,6 +13,24 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
   constructor(private dbContextService: DbContextService) {
     this.collaboratorContext = this.dbContextService.getConnection();
   }
+// En tu CollaboratorAccessService (capa de acceso)
+public assignEmailToCollaborator = async (collaboratorId: number, email: string, userId: number): Promise<CollaboratorAccessModel> => {
+    const existingCollaborator = await this.getById(collaboratorId, userId);
+    const entity = this.getEntityByAccessModel(existingCollaborator);
+    entity.email = email;
+
+    const { data, error } = await this.collaboratorContext
+      .from(TableEnum.Collaborators)
+      .upsert(entity)
+      .select()
+      .single<CollaboratorEntity>();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return this.getCollaboratorAccessModel(data);
+
+};
 
   public getAll = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
@@ -180,6 +198,23 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     };
   };
 
+  public getMyCollaboratorByEmail = async (email: string, userId: number): Promise<CollaboratorAccessModel | null> => {
+    const { data, error } = await this.collaboratorContext
+      .from(TableEnum.Collaborators)
+      .select(DatabaseColumns.All)
+      .eq(DatabaseColumns.Email, email)
+      .eq(DatabaseColumns.UserId, userId)
+      .eq(DatabaseColumns.IsActive, true)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw new Error(error.message);
+    }
+    return this.getCollaboratorAccessModel(data);
+  };
+
+  
   public getByEmail = async (email: string): Promise<CollaboratorAccessModel | null> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
@@ -235,6 +270,20 @@ export class CollaboratorAccessService implements ICollaboratorAccessService{
     if (accessRequest instanceof UpdateCollaboratorAccessRequest) {
       entity.id = accessRequest.id;
     }
+
+    return entity;
+  };
+
+  private getEntityByAccessModel = (accessModel: CollaboratorAccessModel): CollaboratorEntity => {
+    const entity = new CollaboratorEntity(
+      accessModel.name,
+      accessModel.surname,
+      null,
+      accessModel.userId,
+      accessModel.isActive,
+      accessModel.dateCreated
+    );
+    entity.id = accessModel.id;
 
     return entity;
   };

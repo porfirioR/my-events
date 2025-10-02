@@ -114,7 +114,7 @@ export class CollaboratorMatchRequestAccessService implements ICollaboratorMatch
       .from(TableEnum.CollaboratorMatchRequests)
       .update({
         status: status,
-        responsedate: new Date().toISOString()
+        datecreated: new Date().toISOString()
       })
       .eq(DatabaseColumns.EntityId, requestId)
       .eq(DatabaseColumns.TargetUserId, userId)

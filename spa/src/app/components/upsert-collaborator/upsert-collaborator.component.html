@@ -9,8 +9,8 @@
         <div class="space-y-4">
           <app-text formControlName="name" type="text" label="Name" id="name" name="name" [disabled]="isLoading()"/>
           <app-text formControlName="surname" type="text" label="Surname" id="surname" name="surname" [disabled]="isLoading()"/>
-          <app-text formControlName="email" type="text" label="Email" id="email" name="email" [disabled]="isLoading()"/>
           @if (collaborator) {
+            <app-text formControlName="email" type="text" label="Email" id="email" name="email" [disabled]="isLoading()"/>
             <div class="pt-2">
               <app-check-box-input formControlName="isActive" label="Is Active" [disabled]="isLoading()"/>
             </div>

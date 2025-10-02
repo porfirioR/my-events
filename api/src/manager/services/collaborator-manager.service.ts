@@ -103,21 +103,25 @@ export class CollaboratorManagerService {
       throw new NotFoundException('Collaborator not found');
     }
 
-    // 2. Validar que es colaborador interno
-    if (!collaborator.email) {
-      throw new BadRequestException('Only external collaborators can be matched');
+    // 2. Validar que es colaborador INTERNO (sin email)
+    if (collaborator.email) {
+      throw new BadRequestException('This collaborator already has an email assigned. Only internal collaborators (without email) can request matches.');
     }
 
-    // 3. Validar que el email no es el mismo
-    if (collaborator.email.toLowerCase() === request.targetEmail.toLowerCase()) {
-      throw new BadRequestException('Cannot create match request with the same email');
+    // 3. ⭐ VALIDAR QUE EL EMAIL NO ESTÉ ASIGNADO A OTRO COLABORADOR MÍO
+    const myCollaboratorWithEmail = await this.collaboratorAccessService.getMyCollaboratorByEmail(
+      request.targetEmail,
+      userId
+    );
+
+    if (myCollaboratorWithEmail) {
+      throw new BadRequestException('This email is already assigned to another one of your collaborators');
     }
 
     // 4. ⭐ VALIDACIÓN BIDIRECCIONAL ⭐
-    // Verificar que no exista solicitud en NINGUNA dirección (yo->ellos o ellos->yo)
     const existingRequestBidirectional = await this.matchRequestAccessService.existsPendingRequestBidirectional(
       request.collaboratorId,
-      collaborator.email,
+      null, // collaborator.email es null porque es interno
       request.targetEmail
     );
 
@@ -127,7 +131,7 @@ export class CollaboratorManagerService {
       );
     }
 
-    // 5. Buscar si existe un colaborador con ese email
+    // 5. Buscar si existe un colaborador externo con ese email
     const targetCollaborators = await this.collaboratorAccessService.getExternalCollaboratorsByEmail(
       request.targetEmail
     );
@@ -146,14 +150,12 @@ export class CollaboratorManagerService {
       };
 
       matchRequest = await this.matchRequestAccessService.createRequest(requestData);
-
       emailExists = false;
-      message = `Match request created. The email '${request.targetEmail}' is not registered yet. The request will be processed when the user registers.`;
+      message = `Match request created. When a user registers with '${request.targetEmail}', they can accept your match request.`;
 
     } else {
-      // Email existe - tomar el primero
       const targetCollaborator = targetCollaborators[0];
-      
+
       // Verificar que no sea del mismo usuario
       if (targetCollaborator.userId === userId) {
         throw new BadRequestException('Cannot match with your own collaborator');
@@ -177,11 +179,9 @@ export class CollaboratorManagerService {
       };
 
       matchRequest = await this.matchRequestAccessService.createRequest(requestData);
-
       emailExists = true;
       message = `Match request sent to user with email '${request.targetEmail}'`;
 
-      // Enviar notificación al usuario destino
       await this.sendMatchRequestNotification(matchRequest);
     }
 
@@ -222,60 +222,65 @@ export class CollaboratorManagerService {
     return accessModel.map(this.getMatchRequestModel);
   };
 
-  /**
-   * Aceptar solicitud de matching
-   */
-  public acceptMatchRequest = async (userId: number, requestId: number): Promise<CollaboratorMatchModel> => {
-    const request = await this.matchRequestAccessService.getById(requestId, userId);
+/**
+ * Aceptar solicitud de matching
+ */
+public acceptMatchRequest = async (userId: number, requestId: number): Promise<CollaboratorMatchModel> => {
+  const request = await this.matchRequestAccessService.getById(requestId, userId);
 
-    if (!request) {
-      throw new NotFoundException('Match request not found');
-    }
+  if (!request) {
+    throw new NotFoundException('Match request not found');
+  }
 
-    if (request.targetUserId !== userId) {
-      throw new BadRequestException('You are not authorized to accept this request');
-    }
+  if (request.targetUserId !== userId) {
+    throw new BadRequestException('You are not authorized to accept this request');
+  }
 
-    if (request.status !== MatchRequestStatus.Pending) {
-      throw new BadRequestException('This request is not pending');
-    }
+  if (request.status !== MatchRequestStatus.Pending) {
+    throw new BadRequestException('This request is not pending');
+  }
 
-    // Buscar el colaborador objetivo
-    const targetCollaborator = await this.collaboratorAccessService.getByEmail(
-      request.targetCollaboratorEmail
-    );
+  // Verificar que tengo un colaborador externo con ese email
+  const myCollaborator = await this.collaboratorAccessService.getMyCollaboratorByEmail(
+    request.targetCollaboratorEmail,
+    userId,
+  );
 
-    if (!targetCollaborator) {
-      throw new NotFoundException('Target collaborator not found');
-    }
+  if (!myCollaborator) {
+    throw new BadRequestException('You do not have a collaborator with this email');
+  }
 
-    if (targetCollaborator.userId !== userId) {
-      throw new BadRequestException('Target collaborator does not belong to you');
-    }
+  // ⭐ ASIGNAR EMAIL AL COLABORADOR INTERNO (el que hizo la solicitud)
+  // Este colaborador no tenía email, ahora se lo asignamos
+  await this.collaboratorAccessService.assignEmailToCollaborator(
+    request.requesterCollaboratorId,
+    request.targetCollaboratorEmail,
+    userId
+  );
 
-    // Crear el match
-    const matchData: CreateMatchAccessRequest = {
-      collaborator1Id: request.requesterCollaboratorId,
-      collaborator2Id: targetCollaborator.id,
-      user1Id: request.requesterUserId,
-      user2Id: userId,
-      email: request.targetCollaboratorEmail,
-    };
-
-    const match = await this.matchAccessService.createMatch(matchData);
-
-    // Actualizar el request a ACCEPTED
-    await this.matchRequestAccessService.updateStatus(
-      requestId,
-      MatchRequestStatus.Accepted,
-      userId
-    );
-
-    // Notificar al usuario que hizo la solicitud
-    await this.sendMatchAcceptedNotification(match);
-
-    return this.getMatchModel(match);
+  // Crear el match
+  const matchData: CreateMatchAccessRequest = {
+    collaborator1Id: request.requesterCollaboratorId,
+    collaborator2Id: myCollaborator.id,
+    user1Id: request.requesterUserId,
+    user2Id: userId,
+    email: request.targetCollaboratorEmail,
   };
+
+  const match = await this.matchAccessService.createMatch(matchData);
+
+  // Actualizar el request a ACCEPTED
+  await this.matchRequestAccessService.updateStatus(
+    requestId,
+    MatchRequestStatus.Accepted,
+    userId
+  );
+
+  // Notificar al usuario que hizo la solicitud
+  await this.sendMatchAcceptedNotification(match);
+
+  return this.getMatchModel(match);
+};
 
   /**
    * Rechazar solicitud de matching
