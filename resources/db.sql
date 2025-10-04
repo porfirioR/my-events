@@ -221,3 +221,6 @@ CREATE TABLE transactionsplits (
 CREATE INDEX idx_transactionsplits_transactioncollaborator ON transactionsplits(transactionid, collaboratorid);
 CREATE INDEX idx_transactionsplits_collaboratorsettled ON transactionsplits(collaboratorid, issettled);
 CREATE INDEX idx_transactionsplits_payerstatus ON transactionsplits(ispayer, issettled);
+-- Actualizar el tipo ENUM para remover Rejected y Expired
+DROP TYPE IF EXISTS matchstatus CASCADE;
+CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');

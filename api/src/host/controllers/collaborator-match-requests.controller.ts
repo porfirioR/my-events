@@ -58,13 +58,6 @@ export class CollaboratorMatchRequestsController {
     return await this.collaboratorManagerService.acceptMatchRequest(userId, id);
   }
 
-  @Patch(':id/reject')
-  async rejectRequest(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
-    const userId = await this.currentUserService.getCurrentUserId();
-    await this.collaboratorManagerService.rejectMatchRequest(userId, id);
-    return new MessageModel('Match request rejected successfully');
-  }
-
   @Delete(':id')
   async cancelRequest(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
     const userId = await this.currentUserService.getCurrentUserId();

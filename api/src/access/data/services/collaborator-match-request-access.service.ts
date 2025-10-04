@@ -198,44 +198,64 @@ export class CollaboratorMatchRequestAccessService implements ICollaboratorMatch
   };
 
   /**
-   * Verificar si existe una solicitud pendiente BIDIRECCIONAL
-   * Verifica tanto si YO envié al email, como si el email me envió a MÍ
+   * ⭐ NUEVO: Verificar si YA envié una invitación a este email (sin importar el estado)
+   * Esto previene invitar múltiples veces
    */
-  public existsPendingRequestBidirectional = async (
-    myCollaboratorId: number,
-    myEmail: string,
+  public hasEverSentRequest = async (
+    collaboratorId: number,
     targetEmail: string
   ): Promise<boolean> => {
-    // Caso 1: YO envié una solicitud al targetEmail
-    const { data: sentRequest, error: sentError } = await this.requestContext
+    const { data, error } = await this.requestContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select('id')
-      .eq(DatabaseColumns.RequesterCollaboratorId, myCollaboratorId)
+      .eq(DatabaseColumns.RequesterCollaboratorId, collaboratorId)
       .eq(DatabaseColumns.TargetCollaboratorEmail, targetEmail)
-      .in(DatabaseColumns.Status, [MatchRequestStatus.Pending, MatchRequestStatus.EmailNotFound])
       .limit(1);
 
-    if (sentError) {
-      throw new Error(sentError.message);
+    if (error) {
+      throw new Error(error.message);
     }
 
-    if (sentRequest && sentRequest.length > 0) {
-      return true; // Ya envié una solicitud
+    return (data?.length || 0) > 0;
+  };
+
+  /**
+   * ⭐ NUEVO: Verificar si este email ya me envió una invitación pendiente
+   */
+  public hasReceivedPendingInvitation = async (
+    targetEmail: string,
+    myUserId: number
+  ): Promise<boolean> => {
+    // Buscar colaboradores externos míos con ese email
+    const { data: myCollaborators, error: collabError } = await this.requestContext
+      .from(TableEnum.Collaborators)
+      .select('email')
+      .eq(DatabaseColumns.UserId, myUserId)
+      .eq(DatabaseColumns.Email, targetEmail)
+      .limit(1);
+
+    if (collabError) {
+      throw new Error(collabError.message);
     }
 
-    // Caso 2: Alguien ME envió una solicitud a MI email
-    const { data: receivedRequest, error: receivedError } = await this.requestContext
+    if (!myCollaborators || myCollaborators.length === 0) {
+      return false; // No tengo colaborador con ese email
+    }
+
+    // Buscar solicitudes pendientes hacia ese email donde yo soy el target
+    const { data, error } = await this.requestContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select('id')
-      .eq(DatabaseColumns.TargetCollaboratorEmail, myEmail)
-      .in(DatabaseColumns.Status, [MatchRequestStatus.Pending, MatchRequestStatus.EmailNotFound])
+      .eq(DatabaseColumns.TargetCollaboratorEmail, targetEmail)
+      .eq(DatabaseColumns.TargetUserId, myUserId)
+      .eq(DatabaseColumns.Status, MatchRequestStatus.Pending)
       .limit(1);
 
-    if (receivedError) {
-      throw new Error(receivedError.message);
+    if (error) {
+      throw new Error(error.message);
     }
 
-    return receivedRequest && receivedRequest.length > 0; // Recibí una solicitud
+    return (data?.length || 0) > 0;
   };
 
   // Mappers

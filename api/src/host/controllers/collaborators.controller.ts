@@ -15,7 +15,8 @@ import {
   CollaboratorModel, 
   EnrichedCollaboratorModel,
   CreateCollaboratorRequest, 
-  UpdateCollaboratorRequest
+  UpdateCollaboratorRequest,
+  ReceivedMatchRequestModel
 } from '../../manager/models/collaborators';
 import { CreateCollaboratorApiRequest } from '../models/collaborators/create-collaborator-api-request';
 import { UpdateCollaboratorApiRequest } from '../models/collaborators/update-collaborator-api-request';
@@ -116,5 +117,15 @@ export class CollaboratorsController {
     const userId = await this.currentUserService.getCurrentUserId();
     await this.collaboratorManagerService.resendInvitation(userId, id);
     return new MessageModel('Invitation resent successfully');
+  }
+
+  /**
+   * ⭐ NUEVO: Obtener notificaciones al hacer login
+   * GET /api/collaborators/notifications/login
+   */
+  @Get('notifications/login')
+  async getLoginNotifications(): Promise<{ pendingMatchRequests: number; matchRequests: ReceivedMatchRequestModel[];}> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return await this.collaboratorManagerService.getLoginNotifications(userId);
   }
 }

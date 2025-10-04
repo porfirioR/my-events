@@ -88,16 +88,6 @@ export interface ICollaboratorMatchRequestAccessService {
    */
   deleteRequest(requestId: number, userId: number): Promise<void>;
 
-  /**
-   * Verifica si existe una solicitud pendiente bidireccional
-   * @param myCollaboratorId - ID de mi colaborador que envía la solicitud
-   * @param myEmail - Email de mi colaborador (para verificar si recibí solicitudes)
-   * @param targetEmail - Email del colaborador objetivo
-   * @returns Promise con true si existe solicitud en cualquier dirección, false si no existe
-   */
-  existsPendingRequestBidirectional(
-    myCollaboratorId: number,
-    myEmail: string,
-    targetEmail: string
-  ): Promise<boolean>;
+  hasEverSentRequest(collaboratorId: number, targetEmail: string): Promise<boolean>
+  hasReceivedPendingInvitation(targetEmail: string, myUserId: number): Promise<boolean>
 }
