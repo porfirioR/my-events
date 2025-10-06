@@ -4,7 +4,7 @@
       <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
         {{ isEditMode ? 'Edit Collaborator' : 'Create Collaborator' }}
       </h1>
-      
+
       <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
         <div class="space-y-4">
           <app-text formControlName="name" type="text" label="Name" id="name" name="name" [disabled]="isLoading()"/>

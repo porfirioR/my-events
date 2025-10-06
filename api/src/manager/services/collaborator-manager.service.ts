@@ -240,20 +240,23 @@ export class CollaboratorManagerService {
    * Obtener solicitudes de matching recibidas
    */
   public getReceivedMatchRequests = async (userId: number): Promise<ReceivedMatchRequestModel[]> => {
-    const requests = await this.matchRequestAccessService.getReceivedRequests(userId, MatchRequestStatus.Pending);
+  const requests = await this.matchRequestAccessService.getReceivedRequests(userId, MatchRequestStatus.Pending);
 
-    return Promise.all(requests.map(async (req) => {
-      const accessModel = await this.collaboratorAccessService.getById(req.requesterCollaboratorId,req.requesterUserId);
+  return Promise.all(requests.map(async (req) => {
+    const collaborator = await this.collaboratorAccessService.getById(
+      req.requesterCollaboratorId,
+      req.requesterUserId
+    );
 
-      return new ReceivedMatchRequestModel(
-        req.id,
-        req.requesterUserId,
-        req.requesterCollaboratorId,
-        accessModel ? `${accessModel.name} ${accessModel.surname}` : 'Unknown',
-        req.targetCollaboratorEmail,
-        req.requestedDate
-      );
-    }));
+    return new ReceivedMatchRequestModel(
+      req.id,
+      req.requesterUserId,
+      req.requesterCollaboratorId,
+      collaborator ? `${collaborator.name} ${collaborator.surname}` : 'Unknown', // ✅ Nombre completo
+      req.targetCollaboratorEmail,
+      req.requestedDate
+    );
+  }));
   };
 
   /**
@@ -372,7 +375,23 @@ export class CollaboratorManagerService {
    */
   public getUserMatches = async (userId: number): Promise<CollaboratorMatchModel[]> => {
     const accessModelList = await this.matchAccessService.getMatchesByUserId(userId);
-    return accessModelList.map(this.getMatchModel);
+    return Promise.all(accessModelList.map(async (match) => {
+      const collaborator1 = await this.collaboratorAccessService.getById(match.collaborator1Id, match.user1Id);
+      const collaborator2 = await this.collaboratorAccessService.getById(match.collaborator2Id, match.user2Id);
+
+      const baseModel = this.getMatchModel(match);
+
+      // Determinar cuál es "mi" colaborador y cuál es el "matched"
+      const isUser1 = match.user1Id === userId;
+
+      return {
+        ...baseModel,
+        collaboratorName: isUser1 ? collaborator1?.name : collaborator2?.name,
+        collaboratorSurname: isUser1 ? collaborator1?.surname : collaborator2?.surname,
+        matchedCollaboratorName: isUser1 ? collaborator2?.name : collaborator1?.name,
+        matchedCollaboratorSurname: isUser1 ? collaborator2?.surname : collaborator1?.surname,
+      };
+    }));
   };
 
   /**

@@ -21,5 +21,5 @@ export enum DatabaseColumns {
   RequestedDate = "requesteddate",
   RequesterUserId = "requesteruserid",
   RequesterCollaboratorId = "requestercollaboratorid",
-  TargetCollaboratorEmail = "TargetCollaboratorEmail",
+  TargetCollaboratorEmail = "targetcollaboratoremail",
 }

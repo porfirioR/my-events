@@ -35,9 +35,9 @@ export class CollaboratorsComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      if (!this.showEnrichedView) {
-        this.collaborators = this.getCollaborators()
-      }
+      // if (!this.showEnrichedView) {
+        // this.collaborators = this.getCollaborators()
+      // }
     });
   }
   ngOnInit() {

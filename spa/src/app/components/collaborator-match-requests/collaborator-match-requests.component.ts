@@ -1,59 +1,78 @@
+// collaborator-match-requests.component.ts
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
 import { 
   ReceivedMatchRequestModel, 
   CollaboratorMatchRequestModel,
-  CreateMatchRequestApiRequest,
-  CollaboratorApiModel
+  CollaboratorApiModel,
+  CreateMatchRequestRequest
 } from '../../models/api/collaborators';
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
-import { AlertService } from '../../services';
+import { AlertService, HelperService } from '../../services';
 import { useLoadingStore } from '../../store';
+import { TextComponent } from '../inputs/text/text.component';
+import { MatchRequestFormGroup } from '../../models/forms';
+import { SelectInputComponent } from '../inputs/select-input/select-input.component';
+import { KeyValueViewModel } from '../../models/view';
+import { Configurations } from '../../models/enums';
 
 @Component({
   selector: 'app-collaborator-match-requests',
   standalone: true,
   templateUrl: './collaborator-match-requests.component.html',
   styleUrls: ['./collaborator-match-requests.component.css'],
-  imports: [CommonModule, RouterModule, FormsModule]
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    TextComponent,
+    ReactiveFormsModule,
+    SelectInputComponent,
+  ]
 })
 export class CollaboratorMatchRequestsComponent implements OnInit {
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
   private alertService = inject(AlertService);
   private loadingStore = useLoadingStore();
+  private router = inject(Router);
 
   receivedRequests: ReceivedMatchRequestModel[] = [];
   sentRequests: CollaboratorMatchRequestModel[] = [];
-  collaborators: CollaboratorApiModel[] = [];
-  
+  internalCollaborators: CollaboratorApiModel[] = []; // ⭐ CAMBIO: Solo internos
   activeTab: 'received' | 'sent' | 'create' = 'received';
-  isLoading = this.loadingStore.isLoading;
+  protected internalCollaboratorList?: KeyValueViewModel[] = []
+  protected isLoading = this.loadingStore.isLoading;
 
   // Create request form
-  newRequest: CreateMatchRequestApiRequest = {
-    collaboratorId: 0,
-    targetEmail: ''
-  };
+  protected formGroup: FormGroup<MatchRequestFormGroup>
+
+  constructor() {
+    this.formGroup = new FormGroup<MatchRequestFormGroup>({
+      collaboratorId: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)]),
+      targetEmail: new FormControl(null, [Validators.required, Validators.email]),
+    })
+    
+  }
 
   ngOnInit(): void {
     this.loadReceivedRequests();
     this.loadSentRequests();
-    this.loadCollaborators();
+    this.loadInternalCollaborators();
   }
 
   private loadReceivedRequests(): void {
     this.loadingStore.setLoading();
     this.matchRequestApiService.getReceivedRequests().subscribe({
       next: (requests) => {
-        this.receivedRequests = requests.filter(r => r.status === 'PENDING');
+        this.receivedRequests = requests;
         this.loadingStore.setLoadingSuccess();
       },
       error: (error) => {
-        this.alertService.showError('Failed to load received requests');
+        this.alertService.showError(error.error?.message || 'Failed to load received requests');
         this.loadingStore.setLoadingFailed();
       }
     });
@@ -65,45 +84,40 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
         this.sentRequests = requests;
       },
       error: (error) => {
-        this.alertService.showError('Failed to load sent requests');
+        this.alertService.showError(error.error?.message || 'Failed to load sent requests');
       }
     });
   }
 
-  private loadCollaborators(): void {
-    this.collaboratorApiService.getExternalCollaborators().subscribe({
+  private loadInternalCollaborators(): void {
+    this.collaboratorApiService.getInternalCollaborators().subscribe({
       next: (collaborators) => {
-        this.collaborators = collaborators.filter(c => c.isActive);
+        this.internalCollaborators = collaborators.filter(c => c.isActive);
+        this.internalCollaboratorList = HelperService.convertToList(this.internalCollaborators, Configurations.Collaborator)
       },
       error: (error) => {
-        console.error('Failed to load collaborators:', error);
+        console.error('Failed to load internal collaborators:', error);
       }
     });
   }
+
+  protected exit = () => this.router.navigate(['/collaborators']);
 
   acceptRequest(request: ReceivedMatchRequestModel): void {
-    this.matchRequestApiService.acceptRequest(request.id).subscribe({
-      next: (match) => {
-        this.alertService.showSuccess('Match request accepted successfully');
-        this.loadReceivedRequests();
-      },
-      error: (error) => {
-        this.alertService.showError('Failed to accept request');
-      }
-    });
-  }
-
-  rejectRequest(request: ReceivedMatchRequestModel): void {
-    const confirmMsg = `Are you sure you want to reject the request from ${request.senderCollaboratorName} ${request.senderCollaboratorSurname}?`;
+    const confirmMsg = `Accept match request from ${request.requesterCollaboratorName}?`;
     
     if (confirm(confirmMsg)) {
-      this.matchRequestApiService.rejectRequest(request.id).subscribe({
-        next: (response) => {
-          this.alertService.showSuccess(response.message);
+      this.loadingStore.setLoading();
+      this.matchRequestApiService.acceptMatchRequest(request.id).subscribe({
+        next: (match) => {
+          this.alertService.showSuccess('Match request accepted successfully! Collaborator email has been assigned.');
           this.loadReceivedRequests();
+          this.loadSentRequests();
+          this.loadingStore.setLoadingSuccess();
         },
         error: (error) => {
-          this.alertService.showError('Failed to reject request');
+          this.alertService.showError(error.error?.message || 'Failed to accept request');
+          this.loadingStore.setLoadingFailed();
         }
       });
     }
@@ -111,49 +125,52 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
   cancelRequest(request: CollaboratorMatchRequestModel): void {
     const confirmMsg = 'Are you sure you want to cancel this request?';
-    
     if (confirm(confirmMsg)) {
-      this.matchRequestApiService.cancelRequest(request.id).subscribe({
+      this.matchRequestApiService.cancelMatchRequest(request.id).subscribe({
         next: (response) => {
-          this.alertService.showSuccess(response.message);
+          this.alertService.showSuccess(response.message || 'Request cancelled successfully');
           this.loadSentRequests();
         },
         error: (error) => {
-          this.alertService.showError('Failed to cancel request');
+          this.alertService.showError(error.error?.message || 'Failed to cancel request');
         }
       });
     }
   }
 
   createMatchRequest(): void {
-    if (!this.newRequest.collaboratorId || !this.newRequest.targetEmail) {
+    if (this.formGroup.invalid) {
       this.alertService.showInfo('Please fill in all fields');
       return;
     }
 
-    this.matchRequestApiService.createMatchRequest(this.newRequest).subscribe({
+    this.loadingStore.setLoading();
+    const request = new CreateMatchRequestRequest(this.formGroup.value.collaboratorId!, this.formGroup.value.targetEmail!)
+    this.matchRequestApiService.createMatchRequest(request).subscribe({
       next: (response) => {
         this.alertService.showSuccess(response.message);
-        this.newRequest = { collaboratorId: 0, targetEmail: '' };
+        this.formGroup.reset()
         this.activeTab = 'sent';
         this.loadSentRequests();
+        this.loadInternalCollaborators(); // Refrescar la lista
+        this.loadingStore.setLoadingSuccess();
       },
       error: (error) => {
-        this.alertService.showError('Failed to create match request');
+        // ⭐ Mostrar el mensaje de error específico del backend
+        this.alertService.showError(error.error?.message || 'Failed to create match request');
+        this.loadingStore.setLoadingFailed();
       }
     });
   }
 
   getStatusBadgeClass(status: string): string {
-    switch (status) {
+    switch (status.toUpperCase()) {
       case 'PENDING':
         return 'badge-warning';
       case 'ACCEPTED':
         return 'badge-success';
-      case 'REJECTED':
-        return 'badge-error';
-      case 'CANCELLED':
-        return 'badge-ghost';
+      case 'EMAILNOTFOUND':
+        return 'badge-info';
       default:
         return 'badge-ghost';
     }
@@ -164,6 +181,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     const diffTime = Math.abs(now.getTime() - new Date(date).getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
+    if (diffDays === 0) return 'today';
     if (diffDays === 1) return 'yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;

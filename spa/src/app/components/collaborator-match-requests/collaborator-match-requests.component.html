@@ -1,258 +1,239 @@
+<!-- collaborator-match-requests.component.html -->
 <section aria-labelledby="match-requests-heading" class="mb-8">
-  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
-    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <button
-            type="button"
-            class="btn btn-sm btn-ghost btn-circle"
-            [routerLink]="['/collaborators']"
-          >
-            <i class="fas fa-arrow-left" aria-hidden="true"></i>
-          </button>
-          <h2 id="match-requests-heading" class="text-xl font-semibold text-base-content">
-            Match Requests
-          </h2>
-        </div>
+  <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          class="btn btn-sm btn-ghost btn-circle"
+          [routerLink]="['/collaborators']"
+        >
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h2 id="match-requests-heading" class="text-xl font-semibold text-base-content">
+          Match Requests
+        </h2>
       </div>
-    </header>
-
-    <!-- Tabs -->
-    <div class="tabs tabs-boxed bg-base-300 dark:bg-base-200 px-6 py-3">
-      <button
-        type="button"
-        class="tab"
-        [ngClass]="{'tab-active': activeTab === 'received'}"
-        (click)="activeTab = 'received'"
-      >
-        <i class="fas fa-inbox mr-2" aria-hidden="true"></i>
-        Received ({{ receivedRequests.length }})
-      </button>
-      <button
-        type="button"
-        class="tab"
-        [ngClass]="{'tab-active': activeTab === 'sent'}"
-        (click)="activeTab = 'sent'"
-      >
-        <i class="fas fa-paper-plane mr-2" aria-hidden="true"></i>
-        Sent ({{ sentRequests.length }})
-      </button>
-      <button
-        type="button"
-        class="tab"
-        [ngClass]="{'tab-active': activeTab === 'create'}"
-        (click)="activeTab = 'create'"
-      >
-        <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-        Create New
-      </button>
     </div>
+  </header>
 
-    <div class="p-6">
-      <!-- Received Requests Tab -->
-      @if (activeTab === 'received') {
-        <div>
-          <ul class="space-y-4" role="list">
-            @for (request of receivedRequests; track request.id) {
-              <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-                <article class="flex items-center justify-between">
-                  <div class="flex items-center gap-4 flex-grow">
-                    <figure class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
-                      {{ request.senderCollaboratorName.charAt(0) }}{{ request.senderCollaboratorSurname.charAt(0) }}
-                    </figure>
-                    <div class="flex-grow">
-                      <h3 class="font-semibold text-base-content">
-                        {{ request.senderCollaboratorName }} {{ request.senderCollaboratorSurname }}
-                      </h3>
-                      <p class="text-sm text-base-content/70">
-                        @if (request.senderUserEmail) {
-                          {{ request.senderUserEmail }}
-                        }
-                      </p>
-                      <p class="text-xs text-base-content/60">
-                        Sent to: {{ request.receiverEmail }}
-                      </p>
-                      <time [attr.datetime]="request.dateCreated" class="text-xs text-base-content/60">
-                        {{ getFormattedDate(request.dateCreated) }}
+  <!-- Tabs -->
+  <div class="tabs tabs-boxed bg-base-300 dark:bg-base-200 px-6 py-3">
+    <button
+      type="button"
+      class="tab"
+      [ngClass]="{'tab-active': activeTab === 'received'}"
+      (click)="activeTab = 'received'"
+    >
+      <i class="fas fa-inbox mr-2" aria-hidden="true"></i>
+      Received ({{ receivedRequests.length }})
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [ngClass]="{'tab-active': activeTab === 'sent'}"
+      (click)="activeTab = 'sent'"
+    >
+      <i class="fas fa-paper-plane mr-2" aria-hidden="true"></i>
+      Sent ({{ sentRequests.length }})
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [ngClass]="{'tab-active': activeTab === 'create'}"
+      (click)="activeTab = 'create'"
+    >
+      <i class="fas fa-plus mr-2" aria-hidden="true"></i>
+      Create New
+    </button>
+  </div>
+
+  <div class="p-6">
+    <!-- Received Requests Tab -->
+    @if (activeTab === 'received') {
+      <div>
+        <ul class="space-y-4" role="list">
+          @for (request of receivedRequests; track request.id) {
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+              <article class="flex items-center justify-between">
+                <div class="flex items-center gap-4 flex-grow">
+                  <figure class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                    {{ request.requesterCollaboratorName.charAt(0) }}
+                  </figure>
+                  <div class="flex-grow">
+                    <h3 class="font-semibold text-base-content">
+                      {{ request.requesterCollaboratorName }}
+                    </h3>
+                    <p class="text-sm text-base-content/70">
+                      Wants to match with: {{ request.targetCollaboratorEmail }}
+                    </p>
+                    <time [attr.datetime]="request.requestedDate" class="text-xs text-base-content/60">
+                      {{ getFormattedDate(request.requestedDate) }}
+                    </time>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    (click)="acceptRequest(request)"
+                  >
+                    <i class="fas fa-check mr-1" aria-hidden="true"></i>
+                    Accept
+                  </button>
+                </div>
+              </article>
+            </li>
+          }
+
+          @if (receivedRequests.length === 0) {
+            <li class="text-center py-12">
+              <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-inbox text-2xl text-base-content/50" aria-hidden="true"></i>
+              </figure>
+              <h3 class="text-lg font-medium text-base-content mb-2">No pending requests</h3>
+              <p class="text-base-content/70">You don't have any match requests waiting for your response</p>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Sent Requests Tab -->
+    @if (activeTab === 'sent') {
+      <div>
+        <ul class="space-y-4" role="list">
+          @for (request of sentRequests; track request.id) {
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+              <article class="flex items-center justify-between">
+                <div class="flex items-center gap-4 flex-grow">
+                  <figure class="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-semibold">
+                    <i class="fas fa-user" aria-hidden="true"></i>
+                  </figure>
+                  <div class="flex-grow">
+                    <h3 class="font-semibold text-base-content">
+                      Request to: {{ request.targetCollaboratorEmail }}
+                    </h3>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="badge badge-sm" [ngClass]="getStatusBadgeClass(request.status)">
+                        {{ request.status }}
+                      </span>
+                      <time [attr.datetime]="request.requestedDate" class="text-xs text-base-content/60">
+                        {{ getFormattedDate(request.requestedDate) }}
                       </time>
                     </div>
                   </div>
+                </div>
 
-                  <div class="flex items-center gap-2">
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-success"
-                      (click)="acceptRequest(request)"
-                    >
-                      <i class="fas fa-check mr-1" aria-hidden="true"></i>
-                      Accept
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-error btn-outline"
-                      (click)="rejectRequest(request)"
-                    >
-                      <i class="fas fa-times mr-1" aria-hidden="true"></i>
-                      Reject
-                    </button>
-                  </div>
-                </article>
-              </li>
-            }
-
-            @if (receivedRequests.length === 0) {
-              <li class="text-center py-12">
-                <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
-                  <i class="fas fa-inbox text-2xl text-base-content/50" aria-hidden="true"></i>
-                </figure>
-                <h3 class="text-lg font-medium text-base-content mb-2">No pending requests</h3>
-                <p class="text-base-content/70">You don't have any match requests waiting for your response</p>
-              </li>
-            }
-          </ul>
-        </div>
-      }
-
-      <!-- Sent Requests Tab -->
-      @if (activeTab === 'sent') {
-        <div>
-          <ul class="space-y-4" role="list">
-            @for (request of sentRequests; track request.id) {
-              <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-                <article class="flex items-center justify-between">
-                  <div class="flex items-center gap-4 flex-grow">
-                    <figure class="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-semibold">
-                      {{ request.collaboratorName?.charAt(0) }}{{ request.collaboratorSurname?.charAt(0) }}
-                    </figure>
-                    <div class="flex-grow">
-                      <h3 class="font-semibold text-base-content">
-                        {{ request.collaboratorName }} {{ request.collaboratorSurname }}
-                      </h3>
-                      <p class="text-sm text-base-content/70">
-                        Sent to: {{ request.targetEmail }}
-                      </p>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span class="badge badge-sm" [ngClass]="getStatusBadgeClass(request.status)">
-                          {{ request.status }}
-                        </span>
-                        <time [attr.datetime]="request.dateCreated" class="text-xs text-base-content/60">
-                          {{ getFormattedDate(request.dateCreated) }}
-                        </time>
-                      </div>
-                    </div>
-                  </div>
-
-                  @if (request.status === 'PENDING') {
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-error btn-outline"
-                      (click)="cancelRequest(request)"
-                    >
-                      <i class="fas fa-times mr-1" aria-hidden="true"></i>
-                      Cancel
-                    </button>
-                  }
-                </article>
-              </li>
-            }
-
-            @if (sentRequests.length === 0) {
-              <li class="text-center py-12">
-                <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
-                  <i class="fas fa-paper-plane text-2xl text-base-content/50" aria-hidden="true"></i>
-                </figure>
-                <h3 class="text-lg font-medium text-base-content mb-2">No sent requests</h3>
-                <p class="text-base-content/70 mb-4">You haven't sent any match requests yet</p>
-                <button class="btn btn-primary" (click)="activeTab = 'create'">
-                  <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-                  Create Match Request
-                </button>
-              </li>
-            }
-          </ul>
-        </div>
-      }
-
-      <!-- Create New Request Tab -->
-      @if (activeTab === 'create') {
-        <div class="max-w-2xl mx-auto">
-          <form (ngSubmit)="createMatchRequest()" class="space-y-6">
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-semibold">Select Collaborator</span>
-              </label>
-              <select
-                class="select select-bordered w-full"
-                [(ngModel)]="newRequest.collaboratorId"
-                name="collaboratorId"
-                required
-              >
-                <option [value]="0" disabled>Choose a collaborator</option>
-                @for (collaborator of collaborators; track collaborator.id) {
-                  <option [value]="collaborator.id">
-                    {{ collaborator.name }} {{ collaborator.surname }}
-                    @if (collaborator.email) {
-                      ({{ collaborator.email }})
-                    }
-                  </option>
+                @if (request.status === 'Pending' || request.status === 'EmailNotFound') {
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-error btn-outline"
+                    (click)="cancelRequest(request)"
+                  >
+                    <i class="fas fa-times mr-1" aria-hidden="true"></i>
+                    Cancel
+                  </button>
                 }
-              </select>
-              <label class="label">
-                <span class="label-text-alt text-base-content/60">
-                  Select the collaborator you want to match
-                </span>
-              </label>
-            </div>
+              </article>
+            </li>
+          }
 
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-semibold">Target Email</span>
-              </label>
-              <input
-                type="email"
-                class="input input-bordered w-full"
-                [(ngModel)]="newRequest.targetEmail"
-                name="targetEmail"
-                placeholder="collaborator@example.com"
-                required
-              />
-              <label class="label">
-                <span class="label-text-alt text-base-content/60">
-                  Email of the person you want to match with
-                </span>
-              </label>
-            </div>
+          @if (sentRequests.length === 0) {
+            <li class="text-center py-12">
+              <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-paper-plane text-2xl text-base-content/50" aria-hidden="true"></i>
+              </figure>
+              <h3 class="text-lg font-medium text-base-content mb-2">No sent requests</h3>
+              <p class="text-base-content/70 mb-4">You haven't sent any match requests yet</p>
+              <button class="btn btn-primary" (click)="activeTab = 'create'">
+                <i class="fas fa-plus mr-2" aria-hidden="true"></i>
+                Create Match Request
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+    }
 
-            <div class="alert alert-info">
-              <i class="fas fa-info-circle" aria-hidden="true"></i>
-              <div>
-                <h4 class="font-semibold">About Match Requests</h4>
-                <p class="text-sm">
-                  When you create a match request, the target user will receive an invitation to match their collaborator with yours. Once accepted, both collaborators will be connected.
-                </p>
+    <!-- Create New Request Tab - ⭐ ESTILO MEJORADO -->
+    @if (activeTab === 'create') {
+      <div class="flex justify-center">
+        <section class="w-full bg-base-100 rounded-lg shadow-xl border border-base-300 max-w-2xl transition-all duration-300 hover:shadow-2xl">
+          <main class="px-6 py-4 space-y-4 md:space-y-6 sm:p-8">
+            <h3 class="text-xl font-bold leading-tight tracking-tight text-base-content transition-colors duration-300">
+              Create Match Request
+            </h3>
+
+            <form [formGroup]="formGroup" (submit)="createMatchRequest()" class="space-y-4">
+              <div class="space-y-4">
+                <app-select-input
+                  formControlName="collaboratorId"
+                  id="collaboratorId"
+                  label="Internal Collaborator"
+                  name="collaborator"
+                  [list]="internalCollaboratorList"
+                  [disabled]="isLoading()"
+                />
+
+                <app-text
+                  formControlName="targetEmail"
+                  type="email"
+                  placeholder="collaborator@example.com"
+                  autocomplete="email"
+                  label="Target Email"
+                  id="targetEmail"
+                  name="targetEmail"
+                  [disabled]="isLoading()"
+                />
               </div>
-            </div>
 
-            <div class="flex gap-3 justify-end">
-              <button
-                type="button"
-                class="btn btn-ghost"
-                (click)="activeTab = 'sent'"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn btn-primary"
-                [disabled]="!newRequest.collaboratorId || !newRequest.targetEmail"
-              >
-                <i class="fas fa-paper-plane mr-2" aria-hidden="true"></i>
-                Send Request
-              </button>
-            </div>
-          </form>
-        </div>
-      }
-    </div>
-  </article>
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <div>
+                  <h4 class="font-semibold">About Match Requests</h4>
+                  <p class="text-sm">
+                    Only internal collaborators (without email) can send match requests. When accepted, your collaborator will be assigned this email and matched with the target user's collaborator. You can only send one invitation per email.
+                  </p>
+                </div>
+              </div>
+
+              <footer class="flex justify-between items-center pt-6 gap-4">
+                <button
+                  type="button"
+                  class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+                  [disabled]="isLoading()"
+                  (click)="exit()"
+                >
+                  <i class="fas fa-arrow-left text-sm"></i>
+                  Cancel
+                </button>
+
+                @if (isLoading()) {
+                  <button
+                    type="button"
+                    class="btn btn-primary flex items-center gap-2 loading-btn"
+                  >
+                    <span class="loading loading-spinner loading-xs"></span>
+                    Sending...
+                  </button>
+                } @else {
+                  <button
+                    type="submit"
+                    class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+                    [disabled]="formGroup.invalid"
+                    [class.btn-disabled]="formGroup.invalid"
+                  >
+                    <i class="fas fa-paper-plane text-sm"></i>
+                    Send Request
+                  </button>
+                }
+              </footer>
+            </form>
+          </main>
+        </section>
+      </div>
+    }
+  </div>
 </section>

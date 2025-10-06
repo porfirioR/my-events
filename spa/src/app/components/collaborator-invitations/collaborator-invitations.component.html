@@ -1,3 +1,4 @@
+<!-- collaborator-invitations.component.html -->
 <section aria-labelledby="invitations-heading" class="mb-8">
   <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
@@ -30,35 +31,26 @@
       <!-- Summary View -->
       @if (viewMode === 'summary') {
         <ul class="space-y-4" role="list">
-          @for (summary of invitationsSummary; track summary.collaboratorId) {
+          @for (summary of invitationsSummary; track summary.collaborator.id) {
             <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
                 (click)="viewCollaboratorInvitations(summary)">
               <article class="flex items-center justify-between">
                 <div class="flex items-center gap-4 flex-grow">
                   <figure class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
-                    {{ summary.collaboratorName.charAt(0) }}{{ summary.collaboratorSurname.charAt(0) }}
+                    {{ summary.collaborator.name.charAt(0) }}{{ summary.collaborator.surname.charAt(0) }}
                   </figure>
                   <div class="flex-grow">
                     <h3 class="font-semibold text-base-content">
-                      {{ summary.collaboratorName }} {{ summary.collaboratorSurname }}
+                      {{ summary.collaborator.name }} {{ summary.collaborator.surname }}
                     </h3>
+                    <p class="text-sm text-base-content/70">
+                      {{ summary.collaborator.email }}
+                    </p>
                     <div class="flex items-center gap-3 mt-2">
                       <div class="flex items-center gap-1">
-                        <i class="fas fa-clock text-warning text-xs" aria-hidden="true"></i>
+                        <i class="fas fa-envelope text-primary text-xs" aria-hidden="true"></i>
                         <span class="text-sm text-base-content/70">
-                          {{ summary.pendingCount }} Pending
-                        </span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <i class="fas fa-check text-success text-xs" aria-hidden="true"></i>
-                        <span class="text-sm text-base-content/70">
-                          {{ summary.acceptedCount }} Accepted
-                        </span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <i class="fas fa-times text-error text-xs" aria-hidden="true"></i>
-                        <span class="text-sm text-base-content/70">
-                          {{ summary.rejectedCount }} Rejected
+                          {{ summary.invitationsCount }} Total
                         </span>
                       </div>
                     </div>
@@ -68,8 +60,8 @@
                 <div class="flex items-center gap-3">
                   <div class="stats shadow">
                     <div class="stat py-2 px-4">
-                      <div class="stat-value text-2xl">{{ summary.totalCount }}</div>
-                      <div class="stat-desc">Total Invitations</div>
+                      <div class="stat-value text-2xl">{{ summary.invitationsCount }}</div>
+                      <div class="stat-desc">Pending Invitations</div>
                     </div>
                   </div>
                   <i class="fas fa-chevron-right text-base-content/50" aria-hidden="true"></i>
@@ -99,37 +91,38 @@
                 <div class="flex items-start justify-between mb-3">
                   <div class="flex items-center gap-3">
                     <figure class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-semibold">
-                      {{ invitation.senderCollaboratorName.charAt(0) }}{{ invitation.senderCollaboratorSurname.charAt(0) }}
+                      {{ invitation.requesterCollaboratorName.charAt(0) }}
                     </figure>
                     <div>
                       <h3 class="font-semibold text-base-content">
-                        {{ invitation.senderCollaboratorName }} {{ invitation.senderCollaboratorSurname }}
+                        {{ invitation.requesterCollaboratorName }}
                       </h3>
-                      @if (invitation.senderUserEmail) {
-                        <p class="text-sm text-base-content/70">
-                          {{ invitation.senderUserEmail }}
-                        </p>
-                      }
+                      <p class="text-sm text-base-content/70">
+                        Wants to match with: {{ invitation.targetCollaboratorEmail }}
+                      </p>
                     </div>
                   </div>
-                  <span class="badge" [ngClass]="getStatusBadgeClass(invitation.status)">
-                    {{ invitation.status }}
+                  <span class="badge badge-warning">
+                    Pending
                   </span>
                 </div>
 
                 <div class="pl-13">
-                  <div class="flex items-center gap-2 text-sm text-base-content/70">
-                    <i class="fas fa-envelope text-xs" aria-hidden="true"></i>
-                    <span>Sent to: {{ invitation.receiverEmail }}</span>
-                  </div>
-                  <time [attr.datetime]="invitation.dateCreated" class="text-xs text-base-content/60 mt-1 block">
-                    {{ getFormattedDate(invitation.dateCreated) }}
+                  <time [attr.datetime]="invitation.requestedDate" class="text-xs text-base-content/60 mt-1 block">
+                    {{ getFormattedDate(invitation.requestedDate) }}
                   </time>
-                  @if (invitation.dateUpdated !== invitation.dateCreated) {
-                    <time [attr.datetime]="invitation.dateUpdated" class="text-xs text-base-content/60 block">
-                      Updated {{ getFormattedDate(invitation.dateUpdated) }}
-                    </time>
-                  }
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2 mt-3 pl-13">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    (click)="acceptInvitation(invitation)"
+                  >
+                    <i class="fas fa-check mr-1" aria-hidden="true"></i>
+                    Accept
+                  </button>
                 </div>
               </article>
             </li>

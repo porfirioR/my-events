@@ -6,9 +6,9 @@ import {
   UseGuards, 
   ParseIntPipe 
 } from '@nestjs/common';
-import { CollaboratorManagerService } from '../../manager/services';
 import { CurrentUserService } from '../services/current-user.service';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
+import { CollaboratorManagerService } from '../../manager/services';
 import { CollaboratorMatchModel } from '../../manager/models/collaborators';
 import { MessageModel } from '../models/message.model';
 

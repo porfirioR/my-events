@@ -18,14 +18,14 @@
 
       <form class="space-y-4 md:space-y-6" (submit)="save($event)" [formGroup]="formGroup">
         <app-text
-          formControlName="email" 
-          type="email" 
-          placeholder="email@email.com" 
-          autocomplete="email" 
-          label="Your email" 
-          id="email" 
+          formControlName="email"
+          type="email"
+          placeholder="email@email.com"
+          autocomplete="email"
+          label="Your email"
+          id="email"
           name="email"
-          [disabled]="isLoading()" 
+          [disabled]="isLoading()"
         />
         <app-text 
           formControlName="password" 

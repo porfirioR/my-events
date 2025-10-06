@@ -40,16 +40,16 @@ export class CollaboratorMatchesComponent implements OnInit {
   }
 
   deleteMatch(match: CollaboratorMatchModel): void {
-    const confirmMsg = `Are you sure you want to delete this match between ${match.collaboratorName} and ${match.matchedCollaboratorName}?`;
-    
+    const confirmMsg = `Are you sure you want to unmatch these collaborators? This will remove the email from the internal collaborator.`;
+
     if (confirm(confirmMsg)) {
       this.matchApiService.deleteMatch(match.id).subscribe({
         next: (response) => {
-          this.alertService.showSuccess(response.message);
+          this.alertService.showSuccess(response.message || 'Match deleted successfully');
           this.loadMatches();
         },
         error: (error) => {
-          this.alertService.showError('Failed to delete match');
+          this.alertService.showError(error.error?.message || 'Failed to delete match');
         }
       });
     }

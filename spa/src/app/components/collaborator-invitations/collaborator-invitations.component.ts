@@ -1,3 +1,4 @@
+// collaborator-invitations.component.ts
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -8,6 +9,7 @@ import {
 } from '../../models/api/collaborators';
 import { CollaboratorInvitationApiService } from '../../services/api/collaborator-invitation-api.service';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
+import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
 import { AlertService } from '../../services';
 import { useLoadingStore } from '../../store';
 
@@ -21,6 +23,7 @@ import { useLoadingStore } from '../../store';
 export class CollaboratorInvitationsComponent implements OnInit {
   private invitationApiService = inject(CollaboratorInvitationApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
+  private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private alertService = inject(AlertService);
   private loadingStore = useLoadingStore();
   private route = inject(ActivatedRoute);
@@ -87,21 +90,29 @@ export class CollaboratorInvitationsComponent implements OnInit {
   }
 
   viewCollaboratorInvitations(invitation: CollaboratorInvitationModel): void {
-    this.router.navigate(['/collaborators', invitation.collaboratorId, 'invitations']);
+    this.router.navigate(['/collaborators', invitation.collaborator.id, 'invitations']);
   }
 
-  getStatusBadgeClass(status: string): string {
-    switch (status) {
-      case 'PENDING':
-        return 'badge-warning';
-      case 'ACCEPTED':
-        return 'badge-success';
-      case 'REJECTED':
-        return 'badge-error';
-      case 'CANCELLED':
-        return 'badge-ghost';
-      default:
-        return 'badge-ghost';
+  // ⭐ NUEVO: Aceptar invitación desde este componente
+  acceptInvitation(invitation: ReceivedMatchRequestModel): void {
+    const confirmMsg = `Accept match request from ${invitation.requesterCollaboratorName}?`;
+    
+    if (confirm(confirmMsg)) {
+      this.loadingStore.setLoading();
+      this.matchRequestApiService.acceptMatchRequest(invitation.id).subscribe({
+        next: () => {
+          this.alertService.showSuccess('Match request accepted successfully!');
+          // Recargar las invitaciones
+          if (this.selectedCollaborator) {
+            this.loadCollaboratorInvitations(this.selectedCollaborator.id);
+          }
+          this.loadingStore.setLoadingSuccess();
+        },
+        error: (error) => {
+          this.alertService.showError(error.error?.message || 'Failed to accept request');
+          this.loadingStore.setLoadingFailed();
+        }
+      });
     }
   }
 
@@ -110,6 +121,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
     const diffTime = Math.abs(now.getTime() - new Date(date).getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
+    if (diffDays === 0) return 'today';
     if (diffDays === 1) return 'yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
@@ -119,7 +131,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
 
   backToList(): void {
     if (this.viewMode === 'details') {
-      this.router.navigate(['/collaborators']);
+      this.router.navigate(['/collaborators/invitations']);
     }
   }
 }

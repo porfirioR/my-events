@@ -1,10 +1,12 @@
+import { MatchRequestStatus } from "../../../enums";
+
 export interface CollaboratorMatchRequestModel {
   id: number;
-  collaboratorId: number;
-  targetEmail: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
-  dateCreated: Date;
-  dateUpdated: Date;
-  collaboratorName?: string;
-  collaboratorSurname?: string;
+  requesterUserId: number;
+  requesterCollaboratorId: number;
+  targetCollaboratorEmail: string;
+  status: MatchRequestStatus;
+  requestedDate: Date;
+  responseDate?: Date;
+  targetUserId?: number;
 }
