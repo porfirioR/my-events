@@ -1,6 +1,6 @@
 // collaborators.component.ts
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
-import { CollaboratorApiModel, EnrichedCollaboratorApiModel } from '../../models/api';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { useCollaboratorStore, useLoadingStore } from '../../store';
@@ -21,63 +21,30 @@ export class CollaboratorsComponent implements OnInit {
   private router = inject(Router);
   private alertService = inject(AlertService);
   private collaboratorApiService = inject(CollaboratorApiService);
-  private matchRequestApiService = inject(CollaboratorMatchRequestApiService); // ⭐ NUEVO
+  private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
 
   private collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
 
-  protected collaborators: CollaboratorApiModel[] = this.collaboratorStore.collaborators();
-  enrichedCollaborators: EnrichedCollaboratorApiModel[] = [];
-  currentPage = 1;
-  totalPages = 1;
-  isLoading = this.loadingStore.isLoading;
-
-  showEnrichedView = false;
+  protected collaborators: CollaboratorApiModel[] = [];
+  protected isLoading = this.loadingStore.isLoading;
   protected filterType: 'all' | 'unlinked' | 'linked' = 'all';
-  
   protected pendingRequestsCount = signal(0);
 
-  constructor() {
-    effect(() => {
-      if (!this.showEnrichedView) {
-        this.collaborators = this.getCollaborators()
-      }
-    });
-  }
+  // ❌ ELIMINADO: showEnrichedView
+  // ❌ ELIMINADO: enrichedCollaborators
+  // ❌ ELIMINADO: currentPage, totalPages (no hay paginación todavía)
 
   ngOnInit() {
     this.loadCollaborators();
-    this.loadPendingRequestsCount(); // ⭐ NUEVO
+    this.loadPendingRequestsCount();
   }
 
   private loadCollaborators(): void {
-    if (this.showEnrichedView) {
-      this.loadEnrichedCollaborators();
-    } else {
-      this.collaboratorStore.loadCollaborators();
-    }
+    this.collaboratorStore.loadCollaborators();
+    this.collaborators = this.getCollaborators();
   }
 
-  private loadEnrichedCollaborators(): void {
-    this.loadingStore.setLoading();
-
-    const request$ = this.filterType === 'linked' 
-      ? this.collaboratorApiService.getLinkedCollaboratorsEnriched()
-      : this.collaboratorApiService.getAllEnriched();
-
-    request$.subscribe({
-      next: (data) => {
-        this.enrichedCollaborators = data;
-        this.loadingStore.setLoadingSuccess();
-      },
-      error: () => {
-        this.alertService.showError('Failed to load collaborators');
-        this.loadingStore.setLoadingFailed();
-      }
-    });
-  }
-
-  // ⭐ NUEVO: Cargar contador de solicitudes pendientes
   private loadPendingRequestsCount(): void {
     this.matchRequestApiService.getReceivedRequests().subscribe({
       next: (requests) => {
@@ -90,10 +57,9 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
-  toggleView(): void {
-    this.showEnrichedView = !this.showEnrichedView;
-    this.loadCollaborators();
-  }
+  // ❌ ELIMINADO: toggleView()
+  // ❌ ELIMINADO: loadEnrichedCollaborators()
+  // ❌ ELIMINADO: isEnrichedCollaborator()
 
   protected setFilter = (type: 'all' | 'unlinked' | 'linked'): void => {
     this.filterType = type;
@@ -102,10 +68,6 @@ export class CollaboratorsComponent implements OnInit {
 
   getInitials(name: string, surname: string): string {
     return (name.charAt(0) + surname.charAt(0)).toUpperCase();
-  }
-
-  isEnrichedCollaborator(collaborator: CollaboratorApiModel | EnrichedCollaboratorApiModel): collaborator is EnrichedCollaboratorApiModel {
-    return 'pendingInvitations' in collaborator;
   }
 
   getFormattedDate(date: Date): string {
@@ -134,14 +96,6 @@ export class CollaboratorsComponent implements OnInit {
     }
   }
 
-  viewCollaboratorStats(collaborator: CollaboratorApiModel): void {
-    this.router.navigate(['/collaborators', collaborator.id, 'stats']);
-  }
-
-  viewCollaboratorInvitations(collaborator: CollaboratorApiModel): void {
-    this.router.navigate(['/collaborators', collaborator.id, 'invitations']);
-  }
-
   deleteCollaborator(collaborator: CollaboratorApiModel): void {
     this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
       next: (response) => {
@@ -154,7 +108,6 @@ export class CollaboratorsComponent implements OnInit {
 
         const confirmMsg = `Are you sure you want to delete ${collaborator.name} ${collaborator.surname}?`;
         if (confirm(confirmMsg)) {
-          // Call delete method from store or service
           this.alertService.showSuccess('Collaborator deleted successfully');
           this.loadCollaborators();
         }
@@ -181,7 +134,6 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
-  // ⭐ NUEVO: Enviar solicitud de match desde la lista
   sendMatchRequest(collaborator: CollaboratorApiModel): void {
     this.collaboratorStore.selectCollaborator(collaborator);
     this.router.navigate(['/collaborators/match-requests'], { 
@@ -190,20 +142,6 @@ export class CollaboratorsComponent implements OnInit {
         tab: 'create' 
       }
     });
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.loadCollaborators();
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.loadCollaborators();
-    }
   }
 
   create(): void {

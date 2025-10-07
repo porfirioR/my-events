@@ -235,13 +235,13 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   getStatusBadgeClass(status: string): string {
     switch (status.toUpperCase()) {
       case 'PENDING':
-        return 'badge-warning';
+        return 'bg-warning/20 text-warning border-warning/30';
       case 'ACCEPTED':
-        return 'badge-success';
+        return 'bg-success/20 text-success border-success/30';
       case 'EMAILNOTFOUND':
-        return 'badge-info';
+        return 'bg-info/20 text-info border-info/30';
       default:
-        return 'badge-ghost';
+        return 'bg-base-content/20 text-base-content border-base-content/30';
     }
   }
 
