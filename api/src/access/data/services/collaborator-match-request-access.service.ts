@@ -1,4 +1,3 @@
-// collaborator-match-request-access.service.ts
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { DbContextService } from './db-context.service';
@@ -15,11 +14,12 @@ export class CollaboratorMatchRequestAccessService implements ICollaboratorMatch
     this.requestContext = this.dbContextService.getConnection();
   }
 
-  public getReceivedRequests = async (userId: number, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]> => {
+  public getReceivedRequests = async (userId: number, userEmail: string, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]> => {
     let query = this.requestContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
-      .eq(DatabaseColumns.TargetUserId, userId);
+      .not(DatabaseColumns.RequesterUserId, 'eq', userId)
+      .eq(DatabaseColumns.TargetCollaboratorEmail, userEmail);
 
     if (status) {
       query = query.eq(DatabaseColumns.Status, status);
@@ -83,7 +83,7 @@ export class CollaboratorMatchRequestAccessService implements ICollaboratorMatch
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, requestId)
-      .or(`requesteruserid.eq.${userId},targetuserid.eq.${userId}`)
+      .or(`${DatabaseColumns.RequesterUserId}.eq.${userId},${DatabaseColumns.TargetUserId}.eq.${userId},${DatabaseColumns.TargetUserId}.is.null`)
       .single();
 
     if (error) {

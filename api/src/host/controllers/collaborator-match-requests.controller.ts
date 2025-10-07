@@ -42,8 +42,9 @@ export class CollaboratorMatchRequestsController {
 
   @Get('received')
   async getReceivedRequests(): Promise<ReceivedMatchRequestModel[]> {
+    const userEmail = await this.currentUserService.getCurrentUserEmail();
     const userId = await this.currentUserService.getCurrentUserId();
-    return await this.collaboratorManagerService.getReceivedMatchRequests(userId);
+    return await this.collaboratorManagerService.getReceivedMatchRequests(userId, userEmail);
   }
 
   @Get('sent')

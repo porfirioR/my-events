@@ -34,7 +34,7 @@ export class CollaboratorMatchRequestApiService {
 
   // Aceptar solicitud
   public acceptMatchRequest = (requestId: number): Observable<CollaboratorMatchModel> =>
-    this.httpClient.post<CollaboratorMatchModel>(`${this.section}/${requestId}/accept`, {});
+    this.httpClient.patch<CollaboratorMatchModel>(`${this.section}/${requestId}/accept`, {});
 
   // Cancelar solicitud enviada
   public cancelMatchRequest = (requestId: number): Observable<MessageModel> =>

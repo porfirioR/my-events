@@ -5,10 +5,11 @@ export interface ICollaboratorMatchRequestAccessService {
   /**
    * Obtiene las solicitudes de match recibidas por un usuario
    * @param userId - ID del usuario que recibe las solicitudes
+   * @param userEmail - Correo del usuario que recibe las solicitudes
    * @param status - (Opcional) Filtrar por estado de la solicitud
    * @returns Promise con lista de solicitudes recibidas
    */
-  getReceivedRequests(userId: number, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]>;
+  getReceivedRequests(userId: number, userEmail: string, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]>;
 
   /**
    * Obtiene las solicitudes de match enviadas por un usuario

@@ -126,6 +126,7 @@ export class CollaboratorsController {
   @Get('notifications/login')
   async getLoginNotifications(): Promise<{ pendingMatchRequests: number; matchRequests: ReceivedMatchRequestModel[];}> {
     const userId = await this.currentUserService.getCurrentUserId();
-    return await this.collaboratorManagerService.getLoginNotifications(userId);
+    const userEmail = await this.currentUserService.getCurrentUserEmail();
+    return await this.collaboratorManagerService.getLoginNotifications(userId, userEmail);
   }
 }

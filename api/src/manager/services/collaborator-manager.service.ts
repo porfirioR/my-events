@@ -205,12 +205,13 @@ export class CollaboratorManagerService {
     );
   };
 
-  public getLoginNotifications = async (userId: number): Promise<{
+  public getLoginNotifications = async (userId: number, userEmail: string): Promise<{
     pendingMatchRequests: number;
     matchRequests: ReceivedMatchRequestModel[];
   }> => {
     const requests = await this.matchRequestAccessService.getReceivedRequests(
-      userId, 
+      userId,
+      userEmail,
       MatchRequestStatus.Pending
     );
 
@@ -239,8 +240,8 @@ export class CollaboratorManagerService {
   /**
    * Obtener solicitudes de matching recibidas
    */
-  public getReceivedMatchRequests = async (userId: number): Promise<ReceivedMatchRequestModel[]> => {
-  const requests = await this.matchRequestAccessService.getReceivedRequests(userId, MatchRequestStatus.Pending);
+  public getReceivedMatchRequests = async (userId: number, userEmail: string): Promise<ReceivedMatchRequestModel[]> => {
+  const requests = await this.matchRequestAccessService.getReceivedRequests(userId, userEmail, MatchRequestStatus.Pending);
 
   return Promise.all(requests.map(async (req) => {
     const collaborator = await this.collaboratorAccessService.getById(
@@ -277,7 +278,7 @@ export class CollaboratorManagerService {
       throw new NotFoundException('Match request not found');
     }
 
-    if (request.targetUserId !== userId) {
+    if (request.targetUserId !== null && request.targetUserId !== userId) {
       throw new BadRequestException('You are not authorized to accept this request');
     }
 
