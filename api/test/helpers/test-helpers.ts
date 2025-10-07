@@ -59,7 +59,7 @@ export class TestHelpers {
       overrides.userId ?? 1,
       overrides.isActive ?? true,
       overrides.dateCreated ?? new Date(),
-      overrides.type ?? 'INTERNAL'
+      overrides.type ?? 'UNLINKED'
     );
   }
 
@@ -192,7 +192,7 @@ export class TestHelpers {
       typeof model.userId === 'number' &&
       typeof model.isActive === 'boolean' &&
       model.dateCreated instanceof Date &&
-      (model.type === 'INTERNAL' || model.type === 'EXTERNAL')
+      (model.type === 'UNLINKED' || model.type === 'EXTERNAL')
     );
   }
 

@@ -17,11 +17,10 @@
 -- (1, 'Progressive', 'Amounts increase by adding a constant value'),
 -- (2, 'Fixed amount', 'Fixed amount for the duration of the loan'),
 -- (3, 'Total', 'Total amount of the loan');
-
 -- ===== SCHEMA POSTGRESQL MÍNIMO - SOLO TABLAS =====
 
 -- Tipos ENUM personalizados
-CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'Rejected', 'EmailNotFound');
+CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');
 CREATE TYPE projectstatus AS ENUM ('Active', 'Finalized');
 CREATE TYPE transactionstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE approvalstatus AS ENUM ('Pending', 'Approved', 'Rejected');
@@ -42,6 +41,7 @@ CREATE TABLE collaborators (
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(150), -- NULL = colaborador INTERNO, valor = colaborador EXTERNO
     userid INT NOT NULL,
+    isactive BOOLEAN DEFAULT TRUE, -- ⭐ AGREGAR para soft delete
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );
@@ -52,12 +52,12 @@ CREATE INDEX idx_collaborators_email ON collaborators(email);
 CREATE INDEX idx_collaborators_useremail ON collaborators(userid, email);
 CREATE INDEX idx_collaborators_usertype ON collaborators(userid, email);
 
--- Solicitudes de matching entre colaboradores (solo para externos)
+-- Solicitudes de matching entre colaboradores
 CREATE TABLE collaboratormatchrequests (
     id SERIAL PRIMARY KEY,
     requesteruserid INT NOT NULL,
     requestercollaboratorid INT NOT NULL,
-    targetuserid INT NULL,
+    targetuserid INT NULL, -- ✅ NULL permitido cuando email no existe
     targetcollaboratoremail VARCHAR(150) NOT NULL,
     status matchstatus DEFAULT 'Pending',
     requesteddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -71,8 +71,9 @@ CREATE TABLE collaboratormatchrequests (
 -- Índices para match requests
 CREATE INDEX idx_matchrequests_targetstatus ON collaboratormatchrequests(targetuserid, status);
 CREATE INDEX idx_matchrequests_requesterstatus ON collaboratormatchrequests(requesteruserid, status);
+CREATE INDEX idx_matchrequests_email ON collaboratormatchrequests(targetcollaboratoremail);
 
--- Matches aceptados entre colaboradores externos
+-- Matches aceptados entre colaboradores externos (SIN campo email)
 CREATE TABLE collaboratormatches (
     id SERIAL PRIMARY KEY,
     collaborator1id INT NOT NULL,
@@ -92,7 +93,6 @@ CREATE INDEX idx_matches_user1 ON collaboratormatches(user1id);
 CREATE INDEX idx_matches_user2 ON collaboratormatches(user2id);
 CREATE INDEX idx_matches_collaborators ON collaboratormatches(collaborator1id, collaborator2id);
 
-
 -- Tabla de proyectos
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
@@ -109,18 +109,17 @@ CREATE TABLE projects (
 CREATE INDEX idx_projects_createdbyuser ON projects(userid);
 CREATE INDEX idx_projects_status ON projects(status);
 
--- Miembros del proyecto - email NULL para internos, valor para externos
+-- Miembros del proyecto
 CREATE TABLE projectmembers (
     id SERIAL PRIMARY KEY,
     projectid INT NOT NULL,
     userid INT NOT NULL,
     collaboratorid INT NOT NULL,
-    email VARCHAR(150), -- NULL si colaborador interno, valor si externo con match
+    email VARCHAR(150), -- NULL si colaborador interno, valor si externo
     joineddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (projectid) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (collaboratorid) REFERENCES collaborators(id),
-    -- Un colaborador solo puede estar una vez por proyecto
     CONSTRAINT uniqueprojectcollaborator UNIQUE (projectid, collaboratorid)
 );
 
@@ -221,13 +220,3 @@ CREATE TABLE transactionsplits (
 CREATE INDEX idx_transactionsplits_transactioncollaborator ON transactionsplits(transactionid, collaboratorid);
 CREATE INDEX idx_transactionsplits_collaboratorsettled ON transactionsplits(collaboratorid, issettled);
 CREATE INDEX idx_transactionsplits_payerstatus ON transactionsplits(ispayer, issettled);
-
-
--- Actualizar el tipo ENUM para remover Rejected y Expired
-DROP TYPE IF EXISTS matchstatus CASCADE;
-CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');
-ALTER TABLE collaboratormatchrequests 
-DROP CONSTRAINT IF EXISTS uniquerequest;
-
-ALTER TABLE collaboratormatchrequests
-ADD CONSTRAINT uniquerequest UNIQUE (requestercollaboratorid, targetcollaboratoremail);

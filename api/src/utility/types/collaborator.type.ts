@@ -1,1 +1,1 @@
-export type CollaboratorType = 'INTERNAL' | 'EXTERNAL'
+export type CollaboratorType = 'UNLINKED' | 'LINKED'

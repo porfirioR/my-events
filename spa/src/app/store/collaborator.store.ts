@@ -2,7 +2,7 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, tap, switchMap, catchError, of, finalize, throwError } from 'rxjs';
+import { pipe, tap, switchMap, catchError, throwError } from 'rxjs';
 import { CollaboratorApiModel, CollaboratorApiRequest } from '../models/api';
 import { CollaboratorApiService } from '../services/api/collaborator-api.service';
 
@@ -46,8 +46,8 @@ export const CollaboratorStore = signalStore(
 
     // Total de colaboradores
     totalCount: computed(() => store.collaborators().length),
-    internalCollaborators: computed(() => store.collaborators().filter(x => x.type == 'INTERNAL')),
-    externalCollaborators: computed(() => store.collaborators().filter(x => x.type == 'EXTERNAL')),
+    unlinkedCollaborators: computed(() => store.collaborators().filter(x => x.type == 'UNLINKED' && x.isActive)),
+    linkedCollaborators: computed(() => store.collaborators().filter(x => x.type == 'LINKED' && x.isActive)),
     allCollaborators: computed(() => store.collaborators()),
   })),
   withMethods((store, collaboratorApiService = inject(CollaboratorApiService)) => ({

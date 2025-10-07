@@ -5,6 +5,8 @@ export class CollaboratorMatchRequestModel {
     public id: number,
     public requesterUserId: number,
     public requesterCollaboratorId: number,
+    public requesterCollaboratorName: string,
+    public requesterCollaboratorSurname: string,
     public targetCollaboratorEmail: string,
     public status: MatchRequestStatus,
     public requestedDate: Date,

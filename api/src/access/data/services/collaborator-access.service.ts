@@ -45,7 +45,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  public getInternalCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
+  public getUnlinkedCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
@@ -60,7 +60,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
     return data?.map(this.getCollaboratorAccessModel) || [];
   };
 
-  public getExternalCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
+  public getLinkedCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.collaboratorContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
@@ -254,7 +254,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
       data.userid,
       data.isactive,
       data.datecreated,
-      data.email ? 'EXTERNAL' : 'INTERNAL'
+      data.email ? 'LINKED' : 'UNLINKED'
     );
   };
 

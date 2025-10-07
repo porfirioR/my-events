@@ -1,5 +1,5 @@
 // collaborator-match-requests.component.ts
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core'; // ⭐ Agregar signal
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -18,6 +18,7 @@ import { MatchRequestFormGroup } from '../../models/forms';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { KeyValueViewModel } from '../../models/view';
 import { Configurations } from '../../models/enums';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-collaborator-match-requests',
@@ -40,15 +41,17 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   private loadingStore = useLoadingStore();
   private router = inject(Router);
 
-  receivedRequests: ReceivedMatchRequestModel[] = [];
-  sentRequests: CollaboratorMatchRequestModel[] = [];
-  internalCollaborators: CollaboratorApiModel[] = [];
-  externalCollaborators: CollaboratorApiModel[] = []; // ⭐ NUEVO
-  activeTab: 'received' | 'sent' | 'create' = 'received';
+  private externalCollaborators: CollaboratorApiModel[] = [];
+  protected internalCollaborators: CollaboratorApiModel[] = [];
+  protected receivedRequests: ReceivedMatchRequestModel[] = [];
+  protected sentRequests: CollaboratorMatchRequestModel[] = [];
+  protected activeTab: 'received' | 'sent' | 'create' = 'received';
   protected internalCollaboratorList?: KeyValueViewModel[] = [];
+  
+  // ⭐ NUEVO: Estado de carga inicial separado
+  protected initialLoading = signal(true);
   protected isLoading = this.loadingStore.isLoading;
 
-  // ⭐ NUEVO: Para modal de selección de colaborador
   showCollaboratorSelectionModal = false;
   pendingRequestToAccept: ReceivedMatchRequestModel | null = null;
   selectedCollaboratorForAccept: number | null = null;
@@ -64,97 +67,77 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadReceivedRequests();
-    this.loadSentRequests();
-    this.loadInternalCollaborators();
-    this.loadExternalCollaborators(); // ⭐ NUEVO
+    this.loadAllData();
   }
 
-  private loadReceivedRequests(): void {
-    this.loadingStore.setLoading();
-    this.matchRequestApiService.getReceivedRequests().subscribe({
-      next: (requests) => {
-        this.receivedRequests = requests;
-        this.loadingStore.setLoadingSuccess();
-      },
-      error: (error) => {
-        this.alertService.showError(error.error?.message || 'Failed to load received requests');
-        this.loadingStore.setLoadingFailed();
-      }
-    });
-  }
+  private loadAllData(): void {
+    // ⭐ Solo usar loadingStore para acciones del usuario, no para carga inicial
+    const isInitial = this.initialLoading();
+    
+    if (!isInitial) {
+      this.loadingStore.setLoading();
+    }
 
-  private loadSentRequests(): void {
-    this.matchRequestApiService.getSentRequests().subscribe({
-      next: (requests) => {
-        this.sentRequests = requests;
-      },
-      error: (error) => {
-        this.alertService.showError(error.error?.message || 'Failed to load sent requests');
-      }
-    });
-  }
+    forkJoin({
+      received: this.matchRequestApiService.getReceivedRequests(),
+      sent: this.matchRequestApiService.getSentRequests(),
+      internal: this.collaboratorApiService.getUnlinkedCollaborators(),
+      external: this.collaboratorApiService.getLinkedCollaborators()
+    }).subscribe({
+      next: (results) => {
+        this.receivedRequests = results.received;
+        this.sentRequests = results.sent;
+        this.internalCollaborators = results.internal.filter(c => c.isActive);
+        this.externalCollaborators = results.external.filter(c => c.isActive);
 
-  private loadInternalCollaborators(): void {
-    this.collaboratorApiService.getInternalCollaborators().subscribe({
-      next: (collaborators) => {
-        this.internalCollaborators = collaborators.filter(c => c.isActive);
+        // Actualizar listas para selects
         this.internalCollaboratorList = HelperService.convertToList(
           this.internalCollaborators, 
           Configurations.Collaborator
         );
-        // ⭐ Para el modal de aceptación
         this.internalCollaboratorsForAcceptList = this.internalCollaboratorList;
-      },
-      error: (error) => {
-        console.error('Failed to load internal collaborators:', error);
-      }
-    });
-  }
 
-  // ⭐ NUEVO: Cargar colaboradores externos
-  private loadExternalCollaborators(): void {
-    this.collaboratorApiService.getExternalCollaborators().subscribe({
-      next: (collaborators) => {
-        this.externalCollaborators = collaborators.filter(c => c.isActive);
+        if (isInitial) {
+          this.initialLoading.set(false);
+        } else {
+          this.loadingStore.setLoadingSuccess();
+        }
       },
       error: (error) => {
-        console.error('Failed to load external collaborators:', error);
+        this.alertService.showError('Failed to load data');
+        
+        if (isInitial) {
+          this.initialLoading.set(false);
+        } else {
+          this.loadingStore.setLoadingFailed();
+        }
       }
     });
   }
 
   protected exit = () => this.router.navigate(['/collaborators']);
 
-  // ⭐ ACTUALIZADO: Verificar si tiene colaborador con ese email
   acceptRequest(request: ReceivedMatchRequestModel): void {
-    // Verificar si tengo colaborador externo con ese email
     const hasCollaboratorWithEmail = this.externalCollaborators.some(
-      c => c.email?.toLowerCase() === request.targetCollaboratorEmail.toLowerCase()
+      x => x.email?.toLowerCase() === request.requesterUserEmail.toLowerCase()
     );
 
     if (hasCollaboratorWithEmail) {
-      // Ya tengo colaborador, aceptar directamente
       this.acceptDirectly(request);
     } else {
-      // No tengo colaborador, mostrar modal para seleccionar
       this.showCollaboratorSelection(request);
     }
   }
 
-  // ⭐ NUEVO: Aceptar directamente (cuando ya tiene el email)
   private acceptDirectly(request: ReceivedMatchRequestModel): void {
-    const confirmMsg = `Accept match request from ${request.requesterCollaboratorName}?`;
+    const confirmMsg = `Accept match request from ${request.requesterUserEmail}?`;
     
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
       this.matchRequestApiService.acceptMatchRequest(request.id).subscribe({
         next: () => {
           this.alertService.showSuccess('Match request accepted successfully!');
-          this.loadReceivedRequests();
-          this.loadSentRequests();
-          this.loadExternalCollaborators(); // Refrescar externos
-          this.loadingStore.setLoadingSuccess();
+          this.loadAllData();
         },
         error: (error) => {
           this.alertService.showError(error.error?.message || 'Failed to accept request');
@@ -164,8 +147,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     }
   }
 
-  // ⭐ NUEVO: Mostrar modal de selección
-  private showCollaboratorSelection(request: ReceivedMatchRequestModel): void {
+  private showCollaboratorSelection = (request: ReceivedMatchRequestModel): void => {
     if (this.internalCollaborators.length === 0) {
       this.alertService.showError('You need to create an internal collaborator first to accept this invitation.');
       return;
@@ -176,12 +158,13 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     this.showCollaboratorSelectionModal = true;
   }
 
-  // ⭐ NUEVO: Confirmar aceptación con colaborador seleccionado
-  confirmAcceptWithCollaborator(): void {
-    if (!this.selectedCollaboratorForAccept || !this.pendingRequestToAccept) return;
+  protected confirmAcceptWithCollaborator = (): void => {
+    if (!this.selectedCollaboratorForAccept || !this.pendingRequestToAccept) {
+      return;
+    }
 
     this.loadingStore.setLoading();
-    
+
     this.matchRequestApiService.acceptMatchRequestWithCollaborator(
       this.pendingRequestToAccept.id,
       this.selectedCollaboratorForAccept
@@ -191,11 +174,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
         this.showCollaboratorSelectionModal = false;
         this.pendingRequestToAccept = null;
         this.selectedCollaboratorForAccept = null;
-        this.loadReceivedRequests();
-        this.loadSentRequests();
-        this.loadInternalCollaborators(); // El colaborador ahora tiene email
-        this.loadExternalCollaborators(); // Refrescar externos
-        this.loadingStore.setLoadingSuccess();
+        this.loadAllData();
       },
       error: (error) => {
         this.alertService.showError(error.error?.message || 'Failed to accept request');
@@ -204,7 +183,6 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     });
   }
 
-  // ⭐ NUEVO: Cancelar selección de colaborador
   cancelCollaboratorSelection(): void {
     this.showCollaboratorSelectionModal = false;
     this.pendingRequestToAccept = null;
@@ -214,13 +192,15 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   cancelRequest(request: CollaboratorMatchRequestModel): void {
     const confirmMsg = 'Are you sure you want to cancel this request?';
     if (confirm(confirmMsg)) {
+      this.loadingStore.setLoading();
       this.matchRequestApiService.cancelMatchRequest(request.id).subscribe({
         next: (response) => {
           this.alertService.showSuccess(response.message || 'Request cancelled successfully');
-          this.loadSentRequests();
+          this.loadAllData();
         },
         error: (error) => {
           this.alertService.showError(error.error?.message || 'Failed to cancel request');
+          this.loadingStore.setLoadingFailed();
         }
       });
     }
@@ -243,9 +223,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
         this.alertService.showSuccess(response.message);
         this.formGroup.reset();
         this.activeTab = 'sent';
-        this.loadSentRequests();
-        this.loadInternalCollaborators();
-        this.loadingStore.setLoadingSuccess();
+        this.loadAllData();
       },
       error: (error) => {
         this.alertService.showError(error.error?.message || 'Failed to create match request');

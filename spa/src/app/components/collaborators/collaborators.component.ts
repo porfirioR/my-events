@@ -1,10 +1,12 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+// collaborators.component.ts
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { CollaboratorApiModel, EnrichedCollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { useCollaboratorStore, useLoadingStore } from '../../store';
 import { AlertService } from '../../services';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
+import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
 
 @Component({
   selector: 'app-collaborators',
@@ -19,6 +21,7 @@ export class CollaboratorsComponent implements OnInit {
   private router = inject(Router);
   private alertService = inject(AlertService);
   private collaboratorApiService = inject(CollaboratorApiService);
+  private matchRequestApiService = inject(CollaboratorMatchRequestApiService); // ⭐ NUEVO
 
   private collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
@@ -30,18 +33,21 @@ export class CollaboratorsComponent implements OnInit {
   isLoading = this.loadingStore.isLoading;
 
   showEnrichedView = false;
-  protected filterType: 'all' | 'internal' | 'external' = 'all';
-
+  protected filterType: 'all' | 'unlinked' | 'linked' = 'all';
+  
+  protected pendingRequestsCount = signal(0);
 
   constructor() {
     effect(() => {
-      // if (!this.showEnrichedView) {
-        // this.collaborators = this.getCollaborators()
-      // }
+      if (!this.showEnrichedView) {
+        this.collaborators = this.getCollaborators()
+      }
     });
   }
+
   ngOnInit() {
     this.loadCollaborators();
+    this.loadPendingRequestsCount(); // ⭐ NUEVO
   }
 
   private loadCollaborators(): void {
@@ -55,8 +61,8 @@ export class CollaboratorsComponent implements OnInit {
   private loadEnrichedCollaborators(): void {
     this.loadingStore.setLoading();
 
-    const request$ = this.filterType === 'external' 
-      ? this.collaboratorApiService.getExternalCollaboratorsEnriched()
+    const request$ = this.filterType === 'linked' 
+      ? this.collaboratorApiService.getLinkedCollaboratorsEnriched()
       : this.collaboratorApiService.getAllEnriched();
 
     request$.subscribe({
@@ -71,14 +77,27 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
+  // ⭐ NUEVO: Cargar contador de solicitudes pendientes
+  private loadPendingRequestsCount(): void {
+    this.matchRequestApiService.getReceivedRequests().subscribe({
+      next: (requests) => {
+        this.pendingRequestsCount.set(requests.length);
+      },
+      error: (error) => {
+        console.error('Failed to load pending requests count:', error);
+        this.pendingRequestsCount.set(0);
+      }
+    });
+  }
+
   toggleView(): void {
     this.showEnrichedView = !this.showEnrichedView;
     this.loadCollaborators();
   }
 
-  protected setFilter = (type: 'all' | 'internal' | 'external'): void => {
+  protected setFilter = (type: 'all' | 'unlinked' | 'linked'): void => {
     this.filterType = type;
-    this.collaborators = this.getCollaborators()
+    this.collaborators = this.getCollaborators();
   }
 
   getInitials(name: string, surname: string): string {
@@ -162,6 +181,17 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
+  // ⭐ NUEVO: Enviar solicitud de match desde la lista
+  sendMatchRequest(collaborator: CollaboratorApiModel): void {
+    this.collaboratorStore.selectCollaborator(collaborator);
+    this.router.navigate(['/collaborators/match-requests'], { 
+      queryParams: { 
+        collaboratorId: collaborator.id, 
+        tab: 'create' 
+      }
+    });
+  }
+
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -181,20 +211,16 @@ export class CollaboratorsComponent implements OnInit {
     this.router.navigate(['/collaborators/create']);
   }
 
-  viewMatches(): void {
-    this.router.navigate(['/collaborators/matches']);
-  }
-
   viewMatchRequests(): void {
     this.router.navigate(['/collaborators/match-requests']);
   }
 
   private getCollaborators = (): CollaboratorApiModel[] => {
     switch (this.filterType) {
-      case 'internal':
-        return this.collaboratorStore.internalCollaborators();
-      case 'external':
-        return this.collaboratorStore.externalCollaborators();
+      case 'unlinked':
+        return this.collaboratorStore.unlinkedCollaborators();
+      case 'linked':
+        return this.collaboratorStore.linkedCollaborators();
       default:
         return this.collaboratorStore.allCollaborators();
     }

@@ -13,14 +13,14 @@ getAll(userId: number): Promise<CollaboratorAccessModel[]>;
  * @param userId - ID del usuario propietario
  * @returns Promise con lista de colaboradores internos
  */
-getInternalCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
+getUnlinkedCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
 
 /**
  * Obtiene colaboradores externos (con email) de un usuario
  * @param userId - ID del usuario propietario
  * @returns Promise con lista de colaboradores externos
  */
-getExternalCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
+getLinkedCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
 
 /**
  * Obtiene un colaborador específico por ID

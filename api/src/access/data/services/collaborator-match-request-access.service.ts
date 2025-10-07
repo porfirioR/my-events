@@ -109,15 +109,36 @@ export class CollaboratorMatchRequestAccessService implements ICollaboratorMatch
     return this.getRequestAccessModel(data);
   };
 
-  public updateStatus = async (requestId: number, status: MatchRequestStatus, userId?: number): Promise<CollaboratorMatchRequestAccessModel> => {
-    const { data, error } = await this.requestContext
+  // collaborator-match-request-access.service.ts
+
+  public updateStatus = async (
+    requestId: number,
+    status: MatchRequestStatus,
+    userId?: number
+  ): Promise<CollaboratorMatchRequestAccessModel> => {
+    // ⭐ Construir el update dinámicamente
+    const updateData: any = {
+      status: status,
+      responsedate: new Date().toISOString()
+    };
+
+    // ⭐ Si userId se proporciona y no es null, actualizar targetUserId también
+    if (userId) {
+      updateData.targetuserid = userId;
+    }
+
+    let query = this.requestContext
       .from(TableEnum.CollaboratorMatchRequests)
-      .update({
-        status: status,
-        datecreated: new Date().toISOString()
-      })
-      .eq(DatabaseColumns.EntityId, requestId)
-      .eq(DatabaseColumns.TargetUserId, userId)
+      .update(updateData)
+      .eq(DatabaseColumns.EntityId, requestId);
+
+    // ⭐ Solo aplicar filtro de targetUserId si se proporciona
+    if (userId) {
+      // Buscar por requestId donde targetUserId es NULL o igual a userId
+      query = query.or(`${DatabaseColumns.TargetUserId}.is.null,${DatabaseColumns.TargetUserId}.eq.${userId}`);
+    }
+
+    const { data, error } = await query
       .select()
       .single<CollaboratorMatchRequestEntity>();
 

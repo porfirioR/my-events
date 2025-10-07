@@ -102,14 +102,14 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
 
   // Mappers
   private getMatchAccessModel = (data: CollaboratorMatchEntity): CollaboratorMatchAccessModel => {
-    return {
-      id: data.id!,
-      collaborator1Id: data.collaborator1id,
-      collaborator2Id: data.collaborator2id,
-      user1Id: data.user1id,
-      user2Id: data.user2id,
-      dateCreated: data.datecreated!
-    };
+    return new CollaboratorMatchAccessModel(
+      data.id!,
+      data.collaborator1id,
+      data.collaborator2id,
+      data.user1id,
+      data.user2id,
+      data.datecreated
+    );
   };
 
   private getEntity = (request: CreateMatchAccessRequest): CollaboratorMatchEntity => {

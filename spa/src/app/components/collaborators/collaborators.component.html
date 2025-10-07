@@ -1,4 +1,4 @@
-<!-- Collaborators List Section -->
+<!-- collaborators.component.html -->
 <section aria-labelledby="collaborators-heading" class="mb-8">
   <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
@@ -18,48 +18,38 @@
             <button 
               type="button"
               class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType === 'internal'}"
-              (click)="setFilter('internal')"
+              [ngClass]="{'btn-active': filterType === 'unlinked'}"
+              (click)="setFilter('unlinked')"
             >
-              Internal
+              <!-- ⭐ CAMBIO -->
+              <i class="fas fa-unlink mr-1"></i>
+              Unlinked
             </button>
             <button 
               type="button"
               class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType === 'external'}"
-              (click)="setFilter('external')"
+              [ngClass]="{'btn-active': filterType === 'linked'}"
+              (click)="setFilter('linked')"
             >
-              External
+              <!-- ⭐ CAMBIO -->
+              <i class="fas fa-link mr-1"></i>
+              Linked
             </button>
           </div>
 
-          <!-- View Toggle -->
+          <!-- Match Requests (mantener) -->
           <button
             type="button"
-            class="btn btn-sm btn-outline"
-            (click)="toggleView()"
-          >
-            <i class="fas" [ngClass]="showEnrichedView ? 'fa-list' : 'fa-chart-line'" aria-hidden="true"></i>
-            {{ showEnrichedView ? 'Simple View' : 'Enriched View' }}
-          </button>
-
-          <!-- Actions -->
-          <button
-            type="button"
-            class="btn btn-sm btn-outline btn-info"
-            (click)="viewMatches()"
-          >
-            <i class="fas fa-handshake mr-1" aria-hidden="true"></i>
-            Matches
-          </button>
-          
-          <button
-            type="button"
-            class="btn btn-sm btn-outline btn-warning"
+            class="btn btn-sm btn-outline btn-warning relative"
             (click)="viewMatchRequests()"
           >
             <i class="fas fa-envelope mr-1" aria-hidden="true"></i>
             Requests
+            @if (pendingRequestsCount() > 0) {
+              <span class="absolute -top-2 -right-2 badge badge-sm badge-error">
+                {{ pendingRequestsCount() }}
+              </span>
+            }
           </button>
 
           <button
@@ -82,8 +72,7 @@
         </div>
       } @else {
         <ul class="space-y-4" role="list">
-          <!-- Collaborator Item -->
-          @for (collaborator of showEnrichedView ? enrichedCollaborators : collaborators; track collaborator.id) {
+          @for (collaborator of collaborators; track collaborator.id) {
             <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
               <article class="flex items-center">
                 <!-- Avatar Section -->
@@ -91,8 +80,8 @@
                   <div
                     class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md"
                     [ngClass]="{
-                      'bg-blue-500 dark:bg-blue-600': collaborator.type === 'INTERNAL',
-                      'bg-purple-500 dark:bg-purple-600': collaborator.type === 'EXTERNAL'
+                      'bg-gray-500 dark:bg-gray-600': collaborator.type === 'UNLINKED',
+                      'bg-green-500 dark:bg-green-600': collaborator.type === 'LINKED'
                     }"
                   >
                     {{ getInitials(collaborator.name, collaborator.surname) }}
@@ -107,9 +96,11 @@
                     </h3>
                     <p class="text-sm text-base-content/70">
                       @if (collaborator.email) {
+                        <i class="fas fa-envelope mr-1"></i>
                         {{ collaborator.email }}
                       } @else {
-                        No email provided
+                        <i class="fas fa-user mr-1"></i>
+                        No email yet
                       }
                     </p>
                     <time [attr.datetime]="collaborator.dateCreated" class="text-xs text-base-content/60">
@@ -119,6 +110,7 @@
                   
                   <!-- Status and Type Badges -->
                   <div class="flex items-center mt-2 space-x-2 flex-wrap">
+                    <!-- Active/Inactive Badge -->
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
                       [ngClass]="{
                         'bg-success/20 text-success border-success/30': collaborator.isActive,
@@ -135,31 +127,27 @@
                       {{ collaborator.isActive ? 'Active' : 'Inactive' }}
                     </span>
                     
+                    <!-- ⭐ Type Badge ACTUALIZADO -->
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                       [ngClass]="{
-                        'bg-primary/20 text-primary border border-primary/30': collaborator.type === 'INTERNAL',
-                        'bg-secondary/20 text-secondary border border-secondary/30': collaborator.type === 'EXTERNAL'
+                        'bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-700 dark:text-gray-300': collaborator.type === 'UNLINKED',
+                        'bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-300': collaborator.type === 'LINKED'
                       }"
                     >
                       <i class="fas mr-1"
                         [ngClass]="{
-                          'fa-building': collaborator.type === 'INTERNAL',
-                          'fa-users': collaborator.type === 'EXTERNAL'
+                          'fa-unlink': collaborator.type === 'UNLINKED',
+                          'fa-link': collaborator.type === 'LINKED'
                         }" aria-hidden="true"
                       ></i>
-                      {{ collaborator.type | titlecase }}
+                      {{ collaborator.type === 'UNLINKED' ? 'Unlinked' : 'Linked' }}
                     </span>
 
-                    <!-- Enriched View Stats -->
-                    @if (showEnrichedView && isEnrichedCollaborator(collaborator)) {
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/20 text-warning border border-warning/30">
-                        <i class="fas fa-clock mr-1" aria-hidden="true"></i>
-                        {{ collaborator.pendingInvitations }} Pending
-                      </span>
-                      
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/20 text-success border border-success/30">
-                        <i class="fas fa-check mr-1" aria-hidden="true"></i>
-                        {{ collaborator.acceptedMatches }} Matches
+                    <!-- ⭐ NUEVO: Mostrar estado de match para colaboradores linked -->
+                    @if (collaborator.type === 'LINKED') {
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-info/20 text-info border border-info/30">
+                        <i class="fas fa-handshake mr-1" aria-hidden="true"></i>
+                        Matched
                       </span>
                     }
                   </div>
@@ -178,7 +166,7 @@
                       role="menu" [attr.aria-label]="'Action menu for ' + collaborator.name"
                     >
                       <ul role="menubar" class="space-y-1">
-                        <!-- Edit Action -->
+                        <!-- Edit -->
                         <li role="none">
                           <button type="button" (click)="editCollaborator(collaborator)" role="menuitem"
                             class="w-full text-left flex items-center px-3 py-2 text-sm rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
@@ -187,7 +175,18 @@
                           </button>
                         </li>
                         
-                        <!-- Toggle Status Action -->
+                        <!-- ⭐ NUEVO: Send Match Request (solo para UNLINKED) -->
+                        @if (collaborator.type === 'UNLINKED') {
+                          <li role="none">
+                            <button type="button" (click)="sendMatchRequest(collaborator)" role="menuitem"
+                              class="w-full text-left flex items-center px-3 py-2 text-sm rounded-md hover:bg-info/10 hover:text-info transition-colors">
+                              <i class="fas fa-paper-plane mr-3 text-info" aria-hidden="true"></i>
+                              <span>Send Match Request</span>
+                            </button>
+                          </li>
+                        }
+                        
+                        <!-- Toggle Status -->
                         <li role="none">
                           <button type="button" (click)="toggleCollaboratorStatus(collaborator)" role="menuitem"
                             class="w-full text-left flex items-center px-3 py-2 text-sm rounded-md transition-colors"
@@ -207,26 +206,8 @@
                           </button>
                         </li>
                         
-                        <!-- View Invitations Action -->
-                        <li role="none">
-                          <button type="button" (click)="viewCollaboratorInvitations(collaborator)" role="menuitem"
-                            class="w-full text-left flex items-center px-3 py-2 text-sm rounded-md hover:bg-warning/10 hover:text-warning transition-colors">
-                            <i class="fas fa-envelope mr-3 text-warning" aria-hidden="true"></i>
-                            <span>Invitations</span>
-                          </button>
-                        </li>
-                        
-                        <!-- Statistics Action -->
-                        <li role="none">
-                          <button type="button" (click)="viewCollaboratorStats(collaborator)" role="menuitem"
-                            class="w-full text-left flex items-center px-3 py-2 text-sm rounded-md hover:bg-info/10 hover:text-info transition-colors">
-                            <i class="fas fa-chart-bar mr-3 text-info" aria-hidden="true"></i>
-                            <span>Statistics</span>
-                          </button>
-                        </li>
-
-                        <!-- Resend Invitation Action -->
-                        @if (collaborator.email && collaborator.type === 'EXTERNAL') {
+                        <!-- Resend Invitation (solo para LINKED) -->
+                        @if (collaborator.email && collaborator.type === 'LINKED') {
                           <li role="none">
                             <button type="button" (click)="resendInvitation(collaborator)" role="menuitem"
                               class="w-full text-left flex items-center px-3 py-2 text-sm rounded-md hover:bg-info/10 hover:text-info transition-colors">
@@ -235,8 +216,10 @@
                             </button>
                           </li>
                         }
+                        
                         <hr class="divider my-1" role="separator" aria-orientation="horizontal">
-                        <!-- Delete Action -->
+                        
+                        <!-- Delete -->
                         <li role="none">
                           <button type="button" (click)="deleteCollaborator(collaborator)" role="menuitem"
                             class="w-full text-left flex items-center px-3 py-2 text-sm rounded-md hover:bg-error/10 hover:text-error transition-colors">
@@ -253,12 +236,20 @@
           }
 
           <!-- Empty State -->
-          @if ((showEnrichedView ? enrichedCollaborators : collaborators).length === 0) {
+          @if (collaborators.length === 0) {
             <li class="text-center py-12">
               <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                 <i class="fas fa-users text-2xl text-base-content/50" aria-hidden="true"></i>
               </figure>
-              <h3 class="text-lg font-medium text-base-content mb-2">No collaborators yet</h3>
+              <h3 class="text-lg font-medium text-base-content mb-2">
+                @if (filterType === 'unlinked') {
+                  No unlinked collaborators yet
+                } @else if (filterType === 'linked') {
+                  No linked collaborators yet
+                } @else {
+                  No collaborators yet
+                }
+              </h3>
               <p class="text-base-content/70 mb-4">Get started by adding your first collaborator</p>
               <button class="btn btn-primary" (click)="create()">
                 <i class="fas fa-plus mr-2" aria-hidden="true"></i>
@@ -267,28 +258,7 @@
             </li>
           }
         </ul>
-      <!-- Pagination -->
-      @if ((showEnrichedView ? enrichedCollaborators : collaborators).length > 0) {
-        <footer class="mt-6 flex items-center justify-between">
-          <p class="text-sm text-base-content/70">
-            Showing {{ (showEnrichedView ? enrichedCollaborators : collaborators).length }} of {{ collaborators.length }} collaborators
-          </p>
-          @if (totalPages > 1) {
-            <div class="flex space-x-2">
-              <button class="btn btn-sm btn-outline" [disabled]="currentPage === 1" (click)="previousPage()">
-                <i class="fas fa-chevron-left" aria-hidden="true"></i>
-              </button>
-              <span class="flex items-center px-3 py-1 text-sm text-base-content/70">
-                {{ currentPage }} of {{ totalPages }}
-              </span>
-              <button class="btn btn-sm btn-outline" [disabled]="currentPage === totalPages" (click)="nextPage()">
-                <i class="fas fa-chevron-right" aria-hidden="true"></i>
-              </button>
-            </div>
-          }
-        </footer>
       }
-    }
     </div>
   </article>
 </section>

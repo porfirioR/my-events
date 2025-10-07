@@ -42,22 +42,22 @@ export class CollaboratorsController {
     return await this.collaboratorManagerService.getAllEnriched(userId);
   }
 
-  @Get('internal')
-  async getInternalCollaborators(): Promise<CollaboratorModel[]> {
+  @Get('unlinked')
+  async getUnlinkedCollaborators(): Promise<CollaboratorModel[]> {
     const userId = await this.currentUserService.getCurrentUserId();
-    return await this.collaboratorManagerService.getInternalCollaborators(userId);
+    return await this.collaboratorManagerService.getUnlinkedCollaborators(userId);
   }
 
-  @Get('external')
-  async getExternalCollaborators(): Promise<CollaboratorModel[]> {
+  @Get('linked')
+  async getLinkedCollaborators(): Promise<CollaboratorModel[]> {
     const userId = await this.currentUserService.getCurrentUserId();
-    return await this.collaboratorManagerService.getExternalCollaborators(userId);
+    return await this.collaboratorManagerService.getLinkedCollaborators(userId);
   }
 
-  @Get('external/enriched')
-  async getExternalCollaboratorsEnriched(): Promise<EnrichedCollaboratorModel[]> {
+  @Get('linked/enriched')
+  async getLinkedCollaboratorsEnriched(): Promise<EnrichedCollaboratorModel[]> {
     const userId = await this.currentUserService.getCurrentUserId();
-    return await this.collaboratorManagerService.getExternalCollaboratorsEnriched(userId);
+    return await this.collaboratorManagerService.getLinkedCollaboratorsEnriched(userId);
   }
 
   @Get('stats')

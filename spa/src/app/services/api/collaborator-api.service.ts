@@ -18,14 +18,14 @@ export class CollaboratorApiService {
   public getAllEnriched = (): Observable<EnrichedCollaboratorApiModel[]> =>
     this.httpClient.get<EnrichedCollaboratorApiModel[]>(`${this.section}/enriched`);
 
-  public getInternalCollaborators = (): Observable<CollaboratorApiModel[]> =>
-    this.httpClient.get<CollaboratorApiModel[]>(`${this.section}/internal`);
+  public getUnlinkedCollaborators = (): Observable<CollaboratorApiModel[]> =>
+    this.httpClient.get<CollaboratorApiModel[]>(`${this.section}/unlinked`);
 
-  public getExternalCollaborators = (): Observable<CollaboratorApiModel[]> =>
-    this.httpClient.get<CollaboratorApiModel[]>(`${this.section}/external`);
+  public getLinkedCollaborators = (): Observable<CollaboratorApiModel[]> =>
+    this.httpClient.get<CollaboratorApiModel[]>(`${this.section}/linked`);
 
-  public getExternalCollaboratorsEnriched = (): Observable<EnrichedCollaboratorApiModel[]> =>
-    this.httpClient.get<EnrichedCollaboratorApiModel[]>(`${this.section}/external/enriched`);
+  public getLinkedCollaboratorsEnriched = (): Observable<EnrichedCollaboratorApiModel[]> =>
+    this.httpClient.get<EnrichedCollaboratorApiModel[]>(`${this.section}/linked/enriched`);
 
   public getCollaboratorStats = (): Observable<CollaboratorStatsModel> =>
     this.httpClient.get<CollaboratorStatsModel>(`${this.section}/stats`);

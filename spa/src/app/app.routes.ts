@@ -13,7 +13,6 @@ import { CollaboratorsComponent } from './components/collaborators/collaborators
 import { UpsertCollaboratorComponent } from './components/upsert-collaborator/upsert-collaborator.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
-import { CollaboratorMatchesComponent } from './components/collaborator-matches/collaborator-matches.component';
 import { CollaboratorMatchRequestsComponent } from './components/collaborator-match-requests/collaborator-match-requests.component';
 import { CollaboratorInvitationsComponent } from './components/collaborator-invitations/collaborator-invitations.component';
 
@@ -80,12 +79,6 @@ export const routes: Routes = [
         path: 'collaborators/edit/:id',
         title: 'Edit Collaborator',
         loadComponent: () => UpsertCollaboratorComponent,
-        canActivate: [authGuard]
-      },
-      {
-        path: 'collaborators/matches',
-        title: 'Collaborator Matches',
-        loadComponent: () => CollaboratorMatchesComponent,
         canActivate: [authGuard]
       },
       {

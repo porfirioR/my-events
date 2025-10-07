@@ -5,7 +5,7 @@ export class CollaboratorMatchModel {
     public collaborator2Id: number,
     public user1Id: number,
     public user2Id: number,
-    public dateCreated: Date,
+    public dateCreated?: Date,
     public collaboratorName?: string,
     public collaboratorSurname?: string,
     public matchedCollaboratorName?: string,
