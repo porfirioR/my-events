@@ -1,3 +1,5 @@
+// access/data/services/collaborator-match-access.service.ts
+
 import { Injectable } from "@nestjs/common";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { DbContextService } from "./db-context.service";
@@ -21,7 +23,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null; // No rows returned
+      if (error.code === 'PGRST116') return null;
       throw new Error(error.message);
     }
     
@@ -101,13 +103,12 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
   // Mappers
   private getMatchAccessModel = (data: CollaboratorMatchEntity): CollaboratorMatchAccessModel => {
     return {
-      id: data.id,
+      id: data.id!,
       collaborator1Id: data.collaborator1id,
       collaborator2Id: data.collaborator2id,
       user1Id: data.user1id,
       user2Id: data.user2id,
-      email: data.email,
-      dateCreated: data.datecreated
+      dateCreated: data.datecreated!
     };
   };
 
@@ -116,8 +117,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
       request.collaborator1Id,
       request.collaborator2Id,
       request.user1Id,
-      request.user2Id,
-      request.email
+      request.user2Id
     );
   };
 }

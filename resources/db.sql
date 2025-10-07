@@ -21,7 +21,7 @@
 -- ===== SCHEMA POSTGRESQL MÍNIMO - SOLO TABLAS =====
 
 -- Tipos ENUM personalizados
-CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'Rejected', 'EmailNotFound', 'Expired');
+CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'Rejected', 'EmailNotFound');
 CREATE TYPE projectstatus AS ENUM ('Active', 'Finalized');
 CREATE TYPE transactionstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE approvalstatus AS ENUM ('Pending', 'Approved', 'Rejected');
@@ -65,7 +65,7 @@ CREATE TABLE collaboratormatchrequests (
     FOREIGN KEY (requesteruserid) REFERENCES users(id),
     FOREIGN KEY (requestercollaboratorid) REFERENCES collaborators(id),
     FOREIGN KEY (targetuserid) REFERENCES users(id),
-    CONSTRAINT uniquerequest UNIQUE (requestercollaboratorid, targetuserid, targetcollaboratoremail)
+    CONSTRAINT uniquerequest UNIQUE (requestercollaboratorid, targetcollaboratoremail)
 );
 
 -- Índices para match requests
@@ -79,7 +79,6 @@ CREATE TABLE collaboratormatches (
     collaborator2id INT NOT NULL,
     user1id INT NOT NULL,
     user2id INT NOT NULL,
-    email VARCHAR(150) NOT NULL, -- Email común (ambos colaboradores deben ser externos)
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (collaborator1id) REFERENCES collaborators(id),
     FOREIGN KEY (collaborator2id) REFERENCES collaborators(id),
@@ -89,9 +88,10 @@ CREATE TABLE collaboratormatches (
 );
 
 -- Índices para matches
-CREATE INDEX idx_matches_user1email ON collaboratormatches(user1id, email);
-CREATE INDEX idx_matches_user2email ON collaboratormatches(user2id, email);
-CREATE INDEX idx_matches_emailusers ON collaboratormatches(email, user1id, user2id);
+CREATE INDEX idx_matches_user1 ON collaboratormatches(user1id);
+CREATE INDEX idx_matches_user2 ON collaboratormatches(user2id);
+CREATE INDEX idx_matches_collaborators ON collaboratormatches(collaborator1id, collaborator2id);
+
 
 -- Tabla de proyectos
 CREATE TABLE projects (
@@ -221,6 +221,13 @@ CREATE TABLE transactionsplits (
 CREATE INDEX idx_transactionsplits_transactioncollaborator ON transactionsplits(transactionid, collaboratorid);
 CREATE INDEX idx_transactionsplits_collaboratorsettled ON transactionsplits(collaboratorid, issettled);
 CREATE INDEX idx_transactionsplits_payerstatus ON transactionsplits(ispayer, issettled);
+
+
 -- Actualizar el tipo ENUM para remover Rejected y Expired
 DROP TYPE IF EXISTS matchstatus CASCADE;
 CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');
+ALTER TABLE collaboratormatchrequests 
+DROP CONSTRAINT IF EXISTS uniquerequest;
+
+ALTER TABLE collaboratormatchrequests
+ADD CONSTRAINT uniquerequest UNIQUE (requestercollaboratorid, targetcollaboratoremail);

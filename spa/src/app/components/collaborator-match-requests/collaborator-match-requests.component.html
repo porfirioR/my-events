@@ -237,3 +237,75 @@
     }
   </div>
 </section>
+@if (showCollaboratorSelectionModal) {
+  <div class="modal modal-open">
+    <div class="modal-box max-w-md">
+      <h3 class="font-bold text-lg mb-4">Select a Collaborator</h3>
+
+      <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle"></i>
+        <div class="text-sm">
+          <p class="font-semibold">You don't have a collaborator with this email yet</p>
+          <p class="mt-1">
+            Email: <strong>{{ pendingRequestToAccept?.targetCollaboratorEmail }}</strong>
+          </p>
+          <p class="mt-2">
+            Select one of your internal collaborators to assign this email and accept the match request.
+          </p>
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-semibold">Choose an Internal Collaborator</span>
+        </label>
+        <select 
+          class="select select-bordered w-full"
+          [(ngModel)]="selectedCollaboratorForAccept">
+          <option [value]="null" disabled>-- Select a collaborator --</option>
+          @for (collab of internalCollaboratorsForAcceptList; track collab.key) {
+            <option [value]="collab.key">
+              {{ collab.value }}
+            </option>
+          }
+        </select>
+        <div class="label flex flex-col items-start">
+          <span class="label-text-alt text-base-content/60">
+            This collaborator will receive the email:
+          </span>
+          <div class="label-text-alt text-base-content/60">
+            {{ pendingRequestToAccept?.targetCollaboratorEmail }}
+          </div>
+        </div>
+      </div>
+
+      @if (internalCollaborators.length === 0) {
+        <div class="alert alert-warning mt-4">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>You need to create an internal collaborator first.</span>
+        </div>
+      }
+
+      <div class="modal-action">
+        <button 
+          class="btn btn-ghost" 
+          (click)="cancelCollaboratorSelection()"
+          [disabled]="isLoading()">
+          Cancel
+        </button>
+        <button 
+          class="btn btn-primary"
+          [disabled]="!selectedCollaboratorForAccept || isLoading()"
+          (click)="confirmAcceptWithCollaborator()">
+          @if (isLoading()) {
+            <span class="loading loading-spinner loading-xs"></span>
+            Processing...
+          } @else {
+            <i class="fas fa-check mr-2"></i>
+            Accept & Assign
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -18,8 +18,8 @@ export class CollaboratorMatchRequestAccessService implements ICollaboratorMatch
     let query = this.requestContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
-      .not(DatabaseColumns.RequesterUserId, 'eq', userId)
-      .eq(DatabaseColumns.TargetCollaboratorEmail, userEmail);
+      .eq(DatabaseColumns.TargetCollaboratorEmail, userEmail)
+      .neq(DatabaseColumns.RequesterUserId, userId);
 
     if (status) {
       query = query.eq(DatabaseColumns.Status, status);

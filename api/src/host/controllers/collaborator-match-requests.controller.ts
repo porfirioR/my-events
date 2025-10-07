@@ -54,9 +54,16 @@ export class CollaboratorMatchRequestsController {
   }
 
   @Patch(':id/accept')
-  async acceptRequest(@Param('id', ParseIntPipe) id: number): Promise<CollaboratorMatchModel> {
+  async acceptRequest(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { collaboratorId?: number } // ⭐ Opcional: ID del colaborador a asignar
+  ): Promise<CollaboratorMatchModel> {
     const userId = await this.currentUserService.getCurrentUserId();
-    return await this.collaboratorManagerService.acceptMatchRequest(userId, id);
+    return await this.collaboratorManagerService.acceptMatchRequest(
+      userId, 
+      id, 
+      body.collaboratorId // Pasar el ID del colaborador
+    );
   }
 
   @Delete(':id')

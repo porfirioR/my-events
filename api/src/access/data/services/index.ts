@@ -7,6 +7,6 @@ export {  } from './event-access.service';
 export {  } from './event-follow-access.service';
 export {  } from './payment-access.service';
 export {  } from './saving-access.service';
-export {  } from './user-access.service';
+export { UserAccessService } from './user-access.service';
 export {  } from './';
 export {  } from './';

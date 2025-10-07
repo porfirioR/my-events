@@ -5,7 +5,6 @@ export class CollaboratorMatchAccessModel {
     public collaborator2Id: number,
     public user1Id: number,
     public user2Id: number,
-    public email: string,
     public dateCreated: Date,
   ) { }
 }
