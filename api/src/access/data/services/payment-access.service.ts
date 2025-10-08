@@ -1,21 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
-import { DbContextService } from './db-context.service';
 import { CreatePaymentAccessRequest, PaymentAccessModel, UpdatePaymentAccessRequest } from '../../../access/contract/payments';
 import { PaymentEntity } from '../entities/payment.entity';
+import { BaseAccessService, DbContextService } from '.';
 
 @Injectable()
-export class PaymentAccessService {
-  private eventContext: SupabaseClient<any, 'public', any>;
+export class PaymentAccessService extends BaseAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.eventContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
   public create = async (accessRequest: CreatePaymentAccessRequest): Promise<PaymentAccessModel> => {
     const eventEntity = this.mapAccessRequestToEntity(accessRequest);
-    const event  = await this.eventContext
+    const event  = await this.dbContext
       .from(TableEnum.Payments)
       .insert(eventEntity)
       .select()
@@ -25,7 +23,7 @@ export class PaymentAccessService {
   };
 
   public getMyPayments = async (authorId: number, id: number): Promise<PaymentAccessModel[]> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Payments)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.AuthorId, authorId)
@@ -37,7 +35,7 @@ export class PaymentAccessService {
 
   public updatePayment = async (accessRequest: UpdatePaymentAccessRequest): Promise<PaymentAccessModel> => {
     const eventEntity = this.mapAccessRequestToEntity(accessRequest);
-    const event = await this.eventContext
+    const event = await this.dbContext
       .from(TableEnum.Payments)
       .upsert(eventEntity)
       .select()

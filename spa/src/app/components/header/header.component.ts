@@ -22,7 +22,8 @@ export class HeaderComponent {
   private alertService = inject(AlertService)
   protected currentTheme: ModeType = 'light'
   protected currentUserEmail = this.authStore.currentUserEmail
-  
+  protected isAuthenticated = this.authStore.isAuthenticated;
+
   constructor() {
     this.loadSavedTheme()
   }
@@ -47,6 +48,10 @@ export class HeaderComponent {
     localStorage.setItem('theme', newTheme)
 
     this.currentTheme = newTheme
+  }
+
+  protected closeDropdown = (event: Event): void => {
+    (document.activeElement as HTMLElement)?.blur();
   }
 
   private loadSavedTheme = (): void => {

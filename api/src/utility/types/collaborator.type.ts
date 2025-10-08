@@ -1,0 +1,1 @@
+export type CollaboratorType = 'UNLINKED' | 'LINKED'

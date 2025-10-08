@@ -4,7 +4,6 @@ import { Router, RouterModule } from '@angular/router'
 import { LoginFormGroup } from '../../models/forms'
 import { LoginUserApiRequest } from '../../models/api'
 import { AlertService, UserApiService } from '../../services'
-import { FormErrorsComponent } from '../form-errors/form-errors.component'
 import { useAuthStore } from '../../store'
 import { TextComponent } from '../inputs/text/text.component'
 
@@ -15,7 +14,6 @@ import { TextComponent } from '../inputs/text/text.component'
   imports: [
     RouterModule,
     ReactiveFormsModule,
-    FormErrorsComponent,
     TextComponent
   ]
 })

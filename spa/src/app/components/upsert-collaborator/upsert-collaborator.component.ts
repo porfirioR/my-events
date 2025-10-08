@@ -42,6 +42,7 @@ export class UpsertCollaboratorComponent implements OnInit {
       email: new FormControl('', [Validators.email]),
       isActive: new FormControl(true, [Validators.required]),
     })
+    this.formGroup.controls.email.disable()
 
     effect(() => {
       this.collaborator = this.selectedCollaborator();
@@ -51,9 +52,6 @@ export class UpsertCollaboratorComponent implements OnInit {
           surname: this.collaborator.surname,
           email: this.collaborator.email,
         });
-        if (this.collaborator?.type == 'EXTERNAL') {
-          this.formGroup.controls.email.disable()
-        }
       }
     });
   }

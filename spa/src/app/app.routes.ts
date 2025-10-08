@@ -13,6 +13,8 @@ import { CollaboratorsComponent } from './components/collaborators/collaborators
 import { UpsertCollaboratorComponent } from './components/upsert-collaborator/upsert-collaborator.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { CollaboratorMatchRequestsComponent } from './components/collaborator-match-requests/collaborator-match-requests.component';
+import { CollaboratorInvitationsComponent } from './components/collaborator-invitations/collaborator-invitations.component';
 
 export const routes: Routes = [
   {
@@ -60,6 +62,7 @@ export const routes: Routes = [
         resolve: { saving: eventResolver },
         canActivate: [authGuard]
       },
+      // 🆕 Rutas de Collaborators
       {
         path: 'collaborators',
         title: 'Collaborators',
@@ -72,6 +75,39 @@ export const routes: Routes = [
         loadComponent: () => UpsertCollaboratorComponent,
         canActivate: [authGuard]
       },
+      {
+        path: 'collaborators/edit/:id',
+        title: 'Edit Collaborator',
+        loadComponent: () => UpsertCollaboratorComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path: 'collaborators/match-requests',
+        title: 'Match Requests',
+        loadComponent: () => CollaboratorMatchRequestsComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path: 'collaborators/invitations',
+        title: 'Invitations Summary',
+        loadComponent: () => CollaboratorInvitationsComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path: 'collaborators/:collaboratorId/invitations',
+        title: 'Collaborator Invitations',
+        loadComponent: () => CollaboratorInvitationsComponent,
+        canActivate: [authGuard]
+      },
+      // Opcional: Si creas el componente de stats
+      // {
+      //   path: 'collaborators/:collaboratorId/stats',
+      //   title: 'Collaborator Statistics',
+      //   loadComponent: () => import('./components/collaborators/collaborator-stats.component').then(m => m.CollaboratorStatsComponent),
+      //   canActivate: [authGuard]
+      // },
+      
+      // Rutas de autenticación (guest)
       {
         path: 'login',
         title: 'Login',

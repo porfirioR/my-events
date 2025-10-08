@@ -1,22 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { DbContextService } from './db-context.service';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
-import { TypeEntity } from '../entities/type.entity';
-import { PeriodEntity } from '../entities/period.entity';
-import { CurrencyEntity } from '../entities/currency.entity';
 import { TypeAccessModel, PeriodAccessModel, CurrencyAccessModel } from '../../contract/configurations';
+import { BaseAccessService, DbContextService } from '.';
+import { CurrencyEntity, PeriodEntity, TypeEntity } from '../entities';
 
 @Injectable()
-export class ConfigurationAccessService {
-  private eventContext: SupabaseClient<any, 'public', any>;
+export class ConfigurationAccessService extends BaseAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.eventContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
   public getTypes = async (): Promise<TypeAccessModel[]> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Types)
       .select(DatabaseColumns.All)
     if (error) throw new Error(error.message);
@@ -24,7 +20,7 @@ export class ConfigurationAccessService {
   };
 
   public getPeriods = async (): Promise<PeriodAccessModel[]> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Periods)
       .select(DatabaseColumns.All)
     if (error) throw new Error(error.message);
@@ -32,7 +28,7 @@ export class ConfigurationAccessService {
   };
 
   public getCurrencies = async (): Promise<CurrencyAccessModel[]> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Currencies)
       .select(DatabaseColumns.All)
     if (error) throw new Error(error.message);

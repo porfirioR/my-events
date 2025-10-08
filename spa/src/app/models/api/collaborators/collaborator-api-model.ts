@@ -7,6 +7,6 @@ export interface CollaboratorApiModel {
   email: string | null
   userId: number
   isActive: boolean
-  createdDate: Date
+  dateCreated: Date
   type: CollaboratorType
 }

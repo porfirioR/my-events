@@ -1,22 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
-import { DbContextService } from './db-context.service';
 import { EventAccessModel } from '../../contract/events/event-access-model';
 import { EventFollowRequest } from '../../contract/event-follows/event-follow-request';
-import { EventEntity } from '../entities/event.entity';
-import { EventFollowEntity } from '../entities/event-follow.entity';
+import { BaseAccessService, DbContextService } from '.';
+import { EventEntity, EventFollowEntity } from '../entities';
 
 @Injectable()
-export class EventFollowAccessService {
-  private eventContext: SupabaseClient<any, 'public', any>;
+export class EventFollowAccessService extends BaseAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.eventContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
   public getEventFollows = async (userId: number): Promise<EventAccessModel[]> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.EventFollows)
       .select(
         `userid,
@@ -38,7 +35,7 @@ export class EventFollowAccessService {
 
   public createEventFollow = async (accessRequest: EventFollowRequest): Promise<boolean> => {
     const entity = this.getEntity(accessRequest)
-    const event  = await this.eventContext
+    const event  = await this.dbContext
       .from(TableEnum.EventFollows)
       .insert(entity);
     if (event.error) throw new Error(event.error.message);
@@ -46,7 +43,7 @@ export class EventFollowAccessService {
   };
 
   public deleteEventFollow = async (accessRequest: EventFollowRequest): Promise<boolean> => {
-    const eventFollow = await this.eventContext
+    const eventFollow = await this.dbContext
       .from(TableEnum.EventFollows)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, accessRequest.userId)
@@ -54,7 +51,7 @@ export class EventFollowAccessService {
       .single();
     if (eventFollow.error) throw new Error(eventFollow.error.message);
 
-    const deleteEventFollow = await this.eventContext
+    const deleteEventFollow = await this.dbContext
       .from(TableEnum.EventFollows)
       .delete()
       .eq(DatabaseColumns.EntityId, eventFollow.data.Id);
@@ -63,7 +60,7 @@ export class EventFollowAccessService {
   };
   
   public checkExistEventFollows = async (accessRequest: EventFollowRequest): Promise<boolean> => {
-    const { count, error } = await this.eventContext
+    const { count, error } = await this.dbContext
       .from(TableEnum.EventFollows)
       .select(DatabaseColumns.All, {count: 'exact', head: true})
       .eq(DatabaseColumns.UserId, accessRequest.userId)

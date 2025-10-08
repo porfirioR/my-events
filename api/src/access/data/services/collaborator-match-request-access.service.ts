@@ -1,25 +1,23 @@
-// collaborator-match-request-access.service.ts
 import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { DbContextService } from './db-context.service';
-import { CollaboratorMatchRequestEntity } from '../entities/collaborator-match-request.entity';
 import { TableEnum, DatabaseColumns, MatchRequestStatus } from '../../../utility/enums';
-import { CollaboratorMatchRequestAccessModel, CreateMatchRequestAccessRequest } from '../../../access/contract/collaborator-match-requests';
+import { CollaboratorMatchRequestAccessModel, CreateMatchRequestAccessRequest, ICollaboratorMatchRequestAccessService } from '../../../access/contract/collaborator-match-requests';
+import { BaseAccessService, DbContextService } from '.';
+import { CollaboratorMatchRequestEntity } from '../entities';
 
 
 @Injectable()
-export class CollaboratorMatchRequestAccessService {
-  private requestContext: SupabaseClient<any, 'public', any>;
+export class CollaboratorMatchRequestAccessService extends BaseAccessService implements ICollaboratorMatchRequestAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.requestContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
-  public getReceivedRequests = async (userId: number, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]> => {
-    let query = this.requestContext
+  public getReceivedRequests = async (userId: number, userEmail: string, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]> => {
+    let query = this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
-      .eq(DatabaseColumns.TargetUserId, userId);
+      .eq(DatabaseColumns.TargetCollaboratorEmail, userEmail)
+      .neq(DatabaseColumns.RequesterUserId, userId);
 
     if (status) {
       query = query.eq(DatabaseColumns.Status, status);
@@ -34,11 +32,8 @@ export class CollaboratorMatchRequestAccessService {
     return data?.map(this.getRequestAccessModel) || [];
   };
 
-  public getSentRequests = async (
-    userId: number,
-    status?: MatchRequestStatus
-  ): Promise<CollaboratorMatchRequestAccessModel[]> => {
-    let query = this.requestContext
+  public getSentRequests = async (userId: number, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]> => {
+    let query = this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.RequesterUserId, userId);
@@ -60,7 +55,7 @@ export class CollaboratorMatchRequestAccessService {
     collaboratorId: number,
     status?: MatchRequestStatus
   ): Promise<CollaboratorMatchRequestAccessModel[]> => {
-    let query = this.requestContext
+    let query = this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.RequesterCollaboratorId, collaboratorId);
@@ -79,11 +74,11 @@ export class CollaboratorMatchRequestAccessService {
   };
 
   public getById = async (requestId: number, userId: number): Promise<CollaboratorMatchRequestAccessModel> => {
-    const { data, error } = await this.requestContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, requestId)
-      .or(`requesteruserid.eq.${userId},targetuserid.eq.${userId}`)
+      .or(`${DatabaseColumns.RequesterUserId}.eq.${userId},${DatabaseColumns.TargetUserId}.eq.${userId},${DatabaseColumns.TargetUserId}.is.null`)
       .single();
 
     if (error) {
@@ -96,7 +91,7 @@ export class CollaboratorMatchRequestAccessService {
   public createRequest = async (request: CreateMatchRequestAccessRequest): Promise<CollaboratorMatchRequestAccessModel> => {
     const entity = this.getEntity(request);
 
-    const { data, error } = await this.requestContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .insert(entity)
       .select()
@@ -111,17 +106,32 @@ export class CollaboratorMatchRequestAccessService {
 
   public updateStatus = async (
     requestId: number,
-    userId: number,
-    status: MatchRequestStatus
+    status: MatchRequestStatus,
+    userId?: number
   ): Promise<CollaboratorMatchRequestAccessModel> => {
-    const { data, error } = await this.requestContext
+    //Construir el update dinámicamente
+    const updateData: any = {
+      status: status,
+      responsedate: new Date().toISOString()
+    };
+
+    //Si userId se proporciona y no es null, actualizar targetUserId también
+    if (userId) {
+      updateData.targetuserid = userId;
+    }
+
+    let query = this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
-      .update({
-        status: status,
-        responsedate: new Date().toISOString()
-      })
-      .eq(DatabaseColumns.EntityId, requestId)
-      .eq(DatabaseColumns.TargetUserId, userId)
+      .update(updateData)
+      .eq(DatabaseColumns.EntityId, requestId);
+
+    //Solo aplicar filtro de targetUserId si se proporciona
+    if (userId) {
+      // Buscar por requestId donde targetUserId es NULL o igual a userId
+      query = query.or(`${DatabaseColumns.TargetUserId}.is.null,${DatabaseColumns.TargetUserId}.eq.${userId}`);
+    }
+
+    const { data, error } = await query
       .select()
       .single<CollaboratorMatchRequestEntity>();
 
@@ -134,7 +144,7 @@ export class CollaboratorMatchRequestAccessService {
 
   //TODO update this method from update to upsert
   public updateTargetUser = async (requestId: number, targetUserId: number): Promise<CollaboratorMatchRequestAccessModel> => {
-    const { data, error } = await this.requestContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .update({
         targetuserid: targetUserId,
@@ -155,7 +165,7 @@ export class CollaboratorMatchRequestAccessService {
     collaboratorId: number,
     targetEmail: string
   ): Promise<boolean> => {
-    const { data, error } = await this.requestContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select('id')
       .eq(DatabaseColumns.RequesterCollaboratorId, collaboratorId)
@@ -171,7 +181,7 @@ export class CollaboratorMatchRequestAccessService {
   };
 
   public getRequestsByEmail = async (email: string, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]> => {
-    let query = this.requestContext
+    let query = this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.TargetCollaboratorEmail, email);
@@ -190,7 +200,7 @@ export class CollaboratorMatchRequestAccessService {
   };
 
   public deleteRequest = async (requestId: number, userId: number): Promise<void> => {
-    const { error } = await this.requestContext
+    const { error } = await this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .delete()
       .eq(DatabaseColumns.EntityId, requestId)
@@ -199,6 +209,67 @@ export class CollaboratorMatchRequestAccessService {
     if (error) {
       throw new Error(error.message);
     }
+  };
+
+  /**
+   * Verificar si YA envié una invitación a este email (sin importar el estado)
+   * Esto previene invitar múltiples veces
+   */
+  public hasEverSentRequest = async (
+    collaboratorId: number,
+    targetEmail: string
+  ): Promise<boolean> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.CollaboratorMatchRequests)
+      .select('id')
+      .eq(DatabaseColumns.RequesterCollaboratorId, collaboratorId)
+      .eq(DatabaseColumns.TargetCollaboratorEmail, targetEmail)
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data?.length || 0) > 0;
+  };
+
+  /**
+   * Verificar si este email ya me envió una invitación pendiente
+   */
+  public hasReceivedPendingInvitation = async (
+    targetEmail: string,
+    myUserId: number
+  ): Promise<boolean> => {
+    // Buscar colaboradores externos míos con ese email
+    const { data: myCollaborators, error: collabError } = await this.dbContext
+      .from(TableEnum.Collaborators)
+      .select('email')
+      .eq(DatabaseColumns.UserId, myUserId)
+      .eq(DatabaseColumns.Email, targetEmail)
+      .limit(1);
+
+    if (collabError) {
+      throw new Error(collabError.message);
+    }
+
+    if (!myCollaborators || myCollaborators.length === 0) {
+      return false; // No tengo colaborador con ese email
+    }
+
+    // Buscar solicitudes pendientes hacia ese email donde yo soy el target
+    const { data, error } = await this.dbContext
+      .from(TableEnum.CollaboratorMatchRequests)
+      .select('id')
+      .eq(DatabaseColumns.TargetCollaboratorEmail, targetEmail)
+      .eq(DatabaseColumns.TargetUserId, myUserId)
+      .eq(DatabaseColumns.Status, MatchRequestStatus.Pending)
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data?.length || 0) > 0;
   };
 
   // Mappers

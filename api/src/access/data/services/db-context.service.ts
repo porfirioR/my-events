@@ -5,12 +5,15 @@ import { SUPA_BASE_KEY, SUPA_BASE_URL } from '../../../utility/constants';
 
 @Injectable()
 export class DbContextService {
-  constructor(private readonly configService: ConfigService) {}
+  private dbClient: SupabaseClient<any, 'public', any>;
 
-  public getConnection = (): SupabaseClient<any, 'public', any> => {
-    const url = this.configService.get<string>(SUPA_BASE_URL)
-    const key = this.configService.get<string>(SUPA_BASE_KEY)
-    const dbClient = createClient(url, key);
-    return dbClient;
-  };
+  constructor(private readonly configService: ConfigService) {
+    const url = this.configService.get<string>(SUPA_BASE_URL);
+    const key = this.configService.get<string>(SUPA_BASE_KEY);
+    this.dbClient = createClient(url, key);
+  }
+
+  public getConnection(): SupabaseClient<any, 'public', any> {
+    return this.dbClient;
+  }
 }

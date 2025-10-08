@@ -5,11 +5,13 @@ import { environment } from '../environments/environment'
 import { LocalService, UserApiService } from './services'
 import { PushTokenApiRequest } from './models/api'
 import { useAuthStore } from './store'
+import { HeaderComponent } from "./components/header/header.component";
 
 @Component({
   selector: 'app-root',
   imports: [
-    RouterOutlet
+    RouterOutlet,
+    HeaderComponent
 ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'

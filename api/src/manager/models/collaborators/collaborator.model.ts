@@ -1,3 +1,5 @@
+import { CollaboratorType } from "../../../utility/types";
+
 export class CollaboratorModel {
   constructor(
     public id: number,
@@ -6,7 +8,7 @@ export class CollaboratorModel {
     public email: string | null,
     public userId: number,
     public isActive: boolean,
-    public createdDate: Date,
-    public type: 'INTERNAL' | 'EXTERNAL'
+    public dateCreated: Date,
+    public type: CollaboratorType
   ) {}
 }

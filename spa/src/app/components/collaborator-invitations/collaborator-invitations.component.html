@@ -1,0 +1,143 @@
+<section aria-labelledby="invitations-heading" class="mb-8">
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
+    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="btn btn-sm btn-ghost btn-circle"
+            (click)="backToList()"
+          >
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          </button>
+          <div>
+            <h2 id="invitations-heading" class="text-xl font-semibold text-base-content">
+              @if (viewMode === 'summary') {
+                Invitations Summary
+              } @else {
+                Invitations for {{ selectedCollaborator?.name }} {{ selectedCollaborator?.surname }}
+              }
+            </h2>
+            @if (viewMode === 'details' && selectedCollaborator?.email) {
+              <p class="text-sm text-base-content/70">{{ selectedCollaborator?.email || '' }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-6">
+      <!-- Summary View -->
+      @if (viewMode === 'summary') {
+        <ul class="space-y-4" role="list">
+          @for (summary of invitationsSummary; track summary.collaborator.id) {
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
+                (click)="viewCollaboratorInvitations(summary)">
+              <article class="flex items-center justify-between">
+                <div class="flex items-center gap-4 flex-grow">
+                  <figure class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                    {{ summary.collaborator.name.charAt(0) }}{{ summary.collaborator.surname.charAt(0) }}
+                  </figure>
+                  <div class="flex-grow">
+                    <h3 class="font-semibold text-base-content">
+                      {{ summary.collaborator.name }} {{ summary.collaborator.surname }}
+                    </h3>
+                    <p class="text-sm text-base-content/70">
+                      {{ summary.collaborator.email }}
+                    </p>
+                    <div class="flex items-center gap-3 mt-2">
+                      <div class="flex items-center gap-1">
+                        <i class="fas fa-envelope text-primary text-xs" aria-hidden="true"></i>
+                        <span class="text-sm text-base-content/70">
+                          {{ summary.invitationsCount }} Total
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <div class="stats shadow">
+                    <div class="stat py-2 px-4">
+                      <div class="stat-value text-2xl">{{ summary.invitationsCount }}</div>
+                      <div class="stat-desc">Pending Invitations</div>
+                    </div>
+                  </div>
+                  <i class="fas fa-chevron-right text-base-content/50" aria-hidden="true"></i>
+                </div>
+              </article>
+            </li>
+          }
+
+          @if (invitationsSummary.length === 0) {
+            <li class="text-center py-12">
+              <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-envelope text-2xl text-base-content/50" aria-hidden="true"></i>
+              </figure>
+              <h3 class="text-lg font-medium text-base-content mb-2">No invitations yet</h3>
+              <p class="text-base-content/70">Your collaborators haven't received any invitations</p>
+            </li>
+          }
+        </ul>
+      }
+
+      <!-- Details View -->
+      @if (viewMode === 'details') {
+        <ul class="space-y-4" role="list">
+          @for (invitation of selectedCollaboratorInvitations; track invitation.id) {
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+              <article>
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <figure class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-semibold">
+                      {{ invitation.requesterCollaboratorName.charAt(0) }}
+                    </figure>
+                    <div>
+                      <h3 class="font-semibold text-base-content">
+                        {{ invitation.requesterCollaboratorName }}
+                      </h3>
+                      <p class="text-sm text-base-content/70">
+                        Wants to match with: {{ invitation.targetCollaboratorEmail }}
+                      </p>
+                    </div>
+                  </div>
+                  <span class="badge badge-warning">
+                    Pending
+                  </span>
+                </div>
+
+                <div class="pl-13">
+                  <time [attr.datetime]="invitation.requestedDate" class="text-xs text-base-content/60 mt-1 block">
+                    {{ getFormattedDate(invitation.requestedDate) }}
+                  </time>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2 mt-3 pl-13">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    (click)="acceptInvitation(invitation)"
+                  >
+                    <i class="fas fa-check mr-1" aria-hidden="true"></i>
+                    Accept
+                  </button>
+                </div>
+              </article>
+            </li>
+          }
+
+          @if (selectedCollaboratorInvitations.length === 0) {
+            <li class="text-center py-12">
+              <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-envelope-open text-2xl text-base-content/50" aria-hidden="true"></i>
+              </figure>
+              <h3 class="text-lg font-medium text-base-content mb-2">No invitations</h3>
+              <p class="text-base-content/70">This collaborator hasn't received any invitations yet</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </article>
+</section>

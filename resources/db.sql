@@ -17,11 +17,10 @@
 -- (1, 'Progressive', 'Amounts increase by adding a constant value'),
 -- (2, 'Fixed amount', 'Fixed amount for the duration of the loan'),
 -- (3, 'Total', 'Total amount of the loan');
-
 -- ===== SCHEMA POSTGRESQL MÍNIMO - SOLO TABLAS =====
 
 -- Tipos ENUM personalizados
-CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'Rejected', 'EmailNotFound', 'Expired');
+CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');
 CREATE TYPE projectstatus AS ENUM ('Active', 'Finalized');
 CREATE TYPE transactionstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE approvalstatus AS ENUM ('Pending', 'Approved', 'Rejected');
@@ -42,7 +41,8 @@ CREATE TABLE collaborators (
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(150), -- NULL = colaborador INTERNO, valor = colaborador EXTERNO
     userid INT NOT NULL,
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isactive BOOLEAN DEFAULT TRUE, --AGREGAR para soft delete
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );
 
@@ -52,12 +52,12 @@ CREATE INDEX idx_collaborators_email ON collaborators(email);
 CREATE INDEX idx_collaborators_useremail ON collaborators(userid, email);
 CREATE INDEX idx_collaborators_usertype ON collaborators(userid, email);
 
--- Solicitudes de matching entre colaboradores (solo para externos)
+-- Solicitudes de matching entre colaboradores
 CREATE TABLE collaboratormatchrequests (
     id SERIAL PRIMARY KEY,
     requesteruserid INT NOT NULL,
     requestercollaboratorid INT NOT NULL,
-    targetuserid INT NULL,
+    targetuserid INT NULL, -- ✅ NULL permitido cuando email no existe
     targetcollaboratoremail VARCHAR(150) NOT NULL,
     status matchstatus DEFAULT 'Pending',
     requesteddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -65,22 +65,22 @@ CREATE TABLE collaboratormatchrequests (
     FOREIGN KEY (requesteruserid) REFERENCES users(id),
     FOREIGN KEY (requestercollaboratorid) REFERENCES collaborators(id),
     FOREIGN KEY (targetuserid) REFERENCES users(id),
-    CONSTRAINT uniquerequest UNIQUE (requestercollaboratorid, targetuserid, targetcollaboratoremail)
+    CONSTRAINT uniquerequest UNIQUE (requestercollaboratorid, targetcollaboratoremail)
 );
 
 -- Índices para match requests
 CREATE INDEX idx_matchrequests_targetstatus ON collaboratormatchrequests(targetuserid, status);
 CREATE INDEX idx_matchrequests_requesterstatus ON collaboratormatchrequests(requesteruserid, status);
+CREATE INDEX idx_matchrequests_email ON collaboratormatchrequests(targetcollaboratoremail);
 
--- Matches aceptados entre colaboradores externos
+-- Matches aceptados entre colaboradores externos (SIN campo email)
 CREATE TABLE collaboratormatches (
     id SERIAL PRIMARY KEY,
     collaborator1id INT NOT NULL,
     collaborator2id INT NOT NULL,
     user1id INT NOT NULL,
     user2id INT NOT NULL,
-    email VARCHAR(150) NOT NULL, -- Email común (ambos colaboradores deben ser externos)
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (collaborator1id) REFERENCES collaborators(id),
     FOREIGN KEY (collaborator2id) REFERENCES collaborators(id),
     FOREIGN KEY (user1id) REFERENCES users(id),
@@ -89,9 +89,9 @@ CREATE TABLE collaboratormatches (
 );
 
 -- Índices para matches
-CREATE INDEX idx_matches_user1email ON collaboratormatches(user1id, email);
-CREATE INDEX idx_matches_user2email ON collaboratormatches(user2id, email);
-CREATE INDEX idx_matches_emailusers ON collaboratormatches(email, user1id, user2id);
+CREATE INDEX idx_matches_user1 ON collaboratormatches(user1id);
+CREATE INDEX idx_matches_user2 ON collaboratormatches(user2id);
+CREATE INDEX idx_matches_collaborators ON collaboratormatches(collaborator1id, collaborator2id);
 
 -- Tabla de proyectos
 CREATE TABLE projects (
@@ -100,7 +100,7 @@ CREATE TABLE projects (
     description TEXT,
     userid INT NOT NULL,
     status projectstatus DEFAULT 'Active',
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     finalizeddate TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );
@@ -109,18 +109,17 @@ CREATE TABLE projects (
 CREATE INDEX idx_projects_createdbyuser ON projects(userid);
 CREATE INDEX idx_projects_status ON projects(status);
 
--- Miembros del proyecto - email NULL para internos, valor para externos
+-- Miembros del proyecto
 CREATE TABLE projectmembers (
     id SERIAL PRIMARY KEY,
     projectid INT NOT NULL,
     userid INT NOT NULL,
     collaboratorid INT NOT NULL,
-    email VARCHAR(150), -- NULL si colaborador interno, valor si externo con match
+    email VARCHAR(150), -- NULL si colaborador interno, valor si externo
     joineddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (projectid) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (collaboratorid) REFERENCES collaborators(id),
-    -- Un colaborador solo puede estar una vez por proyecto
     CONSTRAINT uniqueprojectcollaborator UNIQUE (projectid, collaboratorid)
 );
 
@@ -139,7 +138,7 @@ CREATE TABLE projecttransactions (
     amount DECIMAL(10,2) NOT NULL,
     description VARCHAR(255) NOT NULL,
     status transactionstatus DEFAULT 'Pending',
-    createddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     approveddate TIMESTAMP,
     FOREIGN KEY (projectid) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (createdbymemberid) REFERENCES projectmembers(id)
@@ -148,7 +147,7 @@ CREATE TABLE projecttransactions (
 -- Índices para project transactions
 CREATE INDEX idx_projecttransactions_projectstatus ON projecttransactions(projectid, status);
 CREATE INDEX idx_projecttransactions_createdbymember ON projecttransactions(createdbymemberid);
-CREATE INDEX idx_projecttransactions_statusdate ON projecttransactions(status, createddate);
+CREATE INDEX idx_projecttransactions_statusdate ON projecttransactions(status, datecreated);
 
 -- Aprobaciones de transacciones
 CREATE TABLE projecttransactionapprovals (

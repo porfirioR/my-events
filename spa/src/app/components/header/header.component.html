@@ -1,92 +1,94 @@
 <header class="navbar bg-primary text-primary-content shadow-lg sticky top-0 z-50 md:relative transition-colors duration-300">
-  <article class="navbar-start">
-    <!-- Mobile menu button -->
-    <div class="dropdown">
-      <div tabindex="0" role="button" class="btn btn-ghost hover:bg-primary-focus transition-colors duration-200">
-        <i class="fas fa-bars text-xl"></i>
-      </div>
-      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
-        <li class="menu-title">Navigation</li>
-        <li>
-          <a [routerLink]="['']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
-          </a>
-        </li>
-        <li>
-          <a [routerLink]="['collaborators']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-users mr-2"></i>Collaborators
-          </a>
-        </li>
-        <li>
-          <a [routerLink]="['projects']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-project-diagram mr-2"></i>Projects
-          </a>
-        </li>
-        <li>
-          <a [routerLink]="['events']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-calendar mr-2"></i>Events
-          </a>
-        </li>
-        <li>
-          <a [routerLink]="['finance']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-wallet mr-2"></i>Finance
-          </a>
-        </li>
-        <li>
-          <a [routerLink]="['settings']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-cogs mr-2"></i>Settings
-          </a>
-        </li>
-        <div class="divider"></div>
-        <li>
-          <a [routerLink]="['settings']" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-question-circle mr-2"></i>Help
-          </a>
-        </li>
-        <li><a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
-      </ul>
-    </div>
-  </article>
-  <article class="navbar-end">
-    <!-- User Profile -->
-    <div class="dropdown dropdown-end">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-circle flex items-center justify-center">
-        <div class="w-10 rounded-full">
-          <i class="fas fa-user-circle text-2xl"></i>
+  @if (isAuthenticated()) {
+    <article class="navbar-start">
+      <!-- Mobile menu button -->
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn btn-ghost hover:bg-primary-focus transition-colors duration-200">
+          <i class="fas fa-bars text-xl"></i>
         </div>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
+          <li class="menu-title">Navigation</li>
+          <li>
+            <a [routerLink]="['']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['collaborators']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-users mr-2"></i>Collaborators
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['projects']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-project-diagram mr-2"></i>Projects
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['events']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-calendar mr-2"></i>Events
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['finance']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-wallet mr-2"></i>Finance
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-cogs mr-2"></i>Settings
+            </a>
+          </li>
+          <div class="divider"></div>
+          <li>
+            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-question-circle mr-2"></i>Help
+            </a>
+          </li>
+          <li><a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
+        </ul>
       </div>
-      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
-        <li>
-          <div class="flex flex-col items-start p-2">
-            <span class="font-bold">{{currentUserEmail()}}</span>
+    </article>
+    <article class="navbar-end">
+      <!-- User Profile -->
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle flex items-center justify-center">
+          <div class="w-10 rounded-full">
+            <i class="fas fa-user-circle text-2xl"></i>
           </div>
-        </li>
-        <div class=" my-0"></div>
-        <li>
-          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="openProfile()"><i class="fas fa-user mr-2"></i>Profile</a>
-        </li>
-        <li>
-          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            <i class="fas fa-cog mr-2"></i>Settings
-          </a>
-        </li>
-        <li (click)="toggleTheme()">
-          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-            @if (currentTheme == 'light') {
-              <i class="fas fa-moon mr-2"></i>Dark Mode
-            } @else {
-              <i class="fas fa-sun mr-2"></i>Light Mode
-            }
-          </a>
-        </li>
-        <div class="divider my-1"></div>
-        <li>
-          <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="logOut()">
-            <i class="fas fa-sign-out-alt mr-2"></i>Logout
-          </a>
-        </li>
-      </ul>
-    </div>
-  </article>
+        </div>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
+          <li>
+            <div class="flex flex-col items-start p-2">
+              <span class="font-bold">{{currentUserEmail()}}</span>
+            </div>
+          </li>
+          <div class=" my-0"></div>
+          <li>
+            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="openProfile()"><i class="fas fa-user mr-2"></i>Profile</a>
+          </li>
+          <li>
+            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-cog mr-2"></i>Settings
+            </a>
+          </li>
+          <li (click)="toggleTheme()">
+            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              @if (currentTheme == 'light') {
+                <i class="fas fa-moon mr-2"></i>Dark Mode
+              } @else {
+                <i class="fas fa-sun mr-2"></i>Light Mode
+              }
+            </a>
+          </li>
+          <div class="divider my-1"></div>
+          <li>
+            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="logOut()">
+              <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </article>
+  }
 </header>
 <app-profile />

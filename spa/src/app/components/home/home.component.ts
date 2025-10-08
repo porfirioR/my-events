@@ -1,10 +1,10 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { LoadingSkeletonComponent } from "../loading-skeleton/loading-skeleton.component"
-import { HeaderComponent } from "../header/header.component";
 import { DashboardComponent } from "../dashboard/dashboard.component";
 import { EventViewModel } from '../../models/view/event-view-model'
 import { useAuthStore, useLoadingStore } from '../../store'
+import { NotificationService } from '../../services';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +14,6 @@ import { useAuthStore, useLoadingStore } from '../../store'
     RouterModule,
     LoadingSkeletonComponent,
     DashboardComponent,
-    HeaderComponent
   ]
 })
 export class HomeComponent {
@@ -24,6 +23,12 @@ export class HomeComponent {
   protected isLoading = this.loadingStore.isLoading;
   protected currentUser = this.authStore.currentUser;
   protected userLoaded = this.authStore.isLoggedIn;
+  protected notificationService = inject(NotificationService);
 
-  constructor() { }
+  constructor() {
+    // Cargar notificaciones si el usuario está logueado
+    // if (this.currentUser()) {
+    //   this.notificationService.loadNotifications();
+    // }
+  }
 }

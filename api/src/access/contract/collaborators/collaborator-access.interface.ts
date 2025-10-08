@@ -13,14 +13,14 @@ getAll(userId: number): Promise<CollaboratorAccessModel[]>;
  * @param userId - ID del usuario propietario
  * @returns Promise con lista de colaboradores internos
  */
-getInternalCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
+getUnlinkedCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
 
 /**
  * Obtiene colaboradores externos (con email) de un usuario
  * @param userId - ID del usuario propietario
  * @returns Promise con lista de colaboradores externos
  */
-getExternalCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
+getLinkedCollaborators(userId: number): Promise<CollaboratorAccessModel[]>;
 
 /**
  * Obtiene un colaborador específico por ID
@@ -68,4 +68,29 @@ canDeleteCollaborator(collaboratorId: number): Promise<boolean>;
  * @param userId - ID del usuario propietario
  * @returns Promise con estadísticas (total, internos, externos)
  */
-getCollaboratorStats(userId: number): Promise<{ total: number; internal: number; external: number; }>;}
+getCollaboratorStats(userId: number): Promise<{ total: number; internal: number; external: number; }>;
+
+/**
+ * Obtiene un colaborador por email
+ * @param email - Email del colaborador a buscar
+ * @param userId - ID del usuario propietario
+ * @returns Promise con el colaborador encontrado o null si no existe
+ */
+getMyCollaboratorByEmail(email: string, userId: number): Promise<CollaboratorAccessModel | null>;
+
+/**
+ * Obtiene un colaborador por email
+ * @param email - Email del colaborador a buscar
+ * @returns Promise con el colaborador encontrado o null si no existe
+ */
+getByEmail(email: string): Promise<CollaboratorAccessModel | null>;
+
+/**
+ * Obtiene un colaborador  external por email
+ * @param email - Email del colaborador a buscar
+ * @returns Promise con el colaborador encontrado o null si no existe
+ */
+getExternalCollaboratorsByEmail(email: string): Promise<CollaboratorAccessModel[]>;
+assignEmailToCollaborator(collaboratorId: number, email: string, userId: number): Promise<CollaboratorAccessModel>;
+
+}

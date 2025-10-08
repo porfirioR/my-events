@@ -9,6 +9,7 @@ import { AuthUserModel } from 'src/access/auth/contracts/auth-user-model';
 import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, UpdateCollaboratorAccessRequest } from 'src/access/contract/collaborators';
 import { CreateCollaboratorApiRequest } from 'src/host/models/collaborators/create-collaborator-api-request';
 import { UpdateCollaboratorApiRequest } from 'src/host/models/collaborators/update-collaborator-api-request';
+import { CollaboratorType } from 'src/utility/types';
 
 export class TestHelpers {
   // Auth helpers
@@ -46,8 +47,8 @@ export class TestHelpers {
       email: string | null;
       userId: number;
       isActive: boolean;
-      createdDate: Date;
-      type: 'INTERNAL' | 'EXTERNAL';
+      dateCreated: Date;
+      type: CollaboratorType;
     }> = {}
   ): CollaboratorAccessModel {
     return new CollaboratorAccessModel(
@@ -57,8 +58,8 @@ export class TestHelpers {
       overrides.email ?? 'john@example.com',
       overrides.userId ?? 1,
       overrides.isActive ?? true,
-      overrides.createdDate ?? new Date(),
-      overrides.type ?? 'INTERNAL'
+      overrides.dateCreated ?? new Date(),
+      overrides.type ?? 'UNLINKED'
     );
   }
 
@@ -74,7 +75,6 @@ export class TestHelpers {
     return new CreateCollaboratorAccessRequest(
       overrides.name ?? 'John',
       overrides.surname ?? 'Doe',
-      overrides.email ?? 'john@example.com',
       overrides.userId ?? 1
     );
   }
@@ -92,7 +92,6 @@ export class TestHelpers {
       overrides.id ?? 1,
       overrides.name ?? 'John Updated',
       overrides.surname ?? 'Doe Updated',
-      overrides.email ?? 'john.updated@example.com',
       overrides.userId ?? 1
     );
   }
@@ -109,7 +108,6 @@ export class TestHelpers {
     return new CreateCollaboratorRequest(
       overrides.name ?? 'John',
       overrides.surname ?? 'Doe',
-      overrides.email ?? 'john@example.com',
       overrides.userId ?? 1
     );
   }
@@ -127,7 +125,6 @@ export class TestHelpers {
       overrides.id ?? 1,
       overrides.name ?? 'John Updated',
       overrides.surname ?? 'Doe Updated',
-      overrides.email ?? 'john.updated@example.com',
       overrides.userId ?? 1
     );
   }
@@ -195,7 +192,7 @@ export class TestHelpers {
       typeof model.userId === 'number' &&
       typeof model.isActive === 'boolean' &&
       model.dateCreated instanceof Date &&
-      (model.type === 'INTERNAL' || model.type === 'EXTERNAL')
+      (model.type === 'UNLINKED' || model.type === 'EXTERNAL')
     );
   }
 
@@ -204,7 +201,6 @@ export class TestHelpers {
       request instanceof CreateCollaboratorAccessRequest &&
       typeof request.name === 'string' &&
       typeof request.surname === 'string' &&
-      (typeof request.email === 'string' || request.email === null) &&
       typeof request.userId === 'number'
     );
   }
@@ -215,7 +211,6 @@ export class TestHelpers {
       typeof request.id === 'number' &&
       typeof request.name === 'string' &&
       typeof request.surname === 'string' &&
-      (typeof request.email === 'string' || request.email === null) &&
       typeof request.userId === 'number'
     );
   }
@@ -228,7 +223,6 @@ export class TestHelpers {
     return new CreateCollaboratorRequest(
       apiRequest.name,
       apiRequest.surname,
-      apiRequest.email || null,
       userId
     );
   }
@@ -239,7 +233,6 @@ export class TestHelpers {
     return new CreateCollaboratorAccessRequest(
       managerRequest.name,
       managerRequest.surname,
-      managerRequest.email,
       managerRequest.userId
     );
   }
@@ -251,7 +244,6 @@ export class TestHelpers {
       apiRequest.id,
       apiRequest.name,
       apiRequest.surname,
-      apiRequest.email || null,
       0 // Se sobrescribe en el access service como indica tu comentario
     );
   }

@@ -4,6 +4,5 @@ export class CreateMatchAccessRequest {
     public collaborator2Id: number,
     public user1Id: number,
     public user2Id: number,
-    public email: string,
   ) { }
 }
