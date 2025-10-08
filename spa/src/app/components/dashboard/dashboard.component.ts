@@ -1,6 +1,6 @@
-import { Component, effect, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { useCollaboratorStore, useLoadingStore } from '../../store';
+import { useCollaboratorStore } from '../../store';
 
 @Component({
   selector: 'app-dashboard',

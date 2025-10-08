@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseColumns, TableEnum } from "../../../utility/enums";
-import { CollaboratorMatchEntity } from "../entities/collaborator-match.entity";
 import { CollaboratorMatchAccessModel, CreateMatchAccessRequest, ICollaboratorMatchAccessService } from "../../contract/collaborator-match";
 import { BaseAccessService, DbContextService } from ".";
+import { CollaboratorMatchEntity } from "../entities";
 
 @Injectable()
 export class CollaboratorMatchAccessService extends BaseAccessService implements ICollaboratorMatchAccessService {

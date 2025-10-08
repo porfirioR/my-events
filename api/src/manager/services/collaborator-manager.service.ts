@@ -110,7 +110,7 @@ export class CollaboratorManagerService {
       throw new BadRequestException('This collaborator is already linked. Only unlinked collaborators can request matches.');
     }
 
-    // 3. ⭐ VALIDAR QUE EL EMAIL NO ESTÉ ASIGNADO A OTRO COLABORADOR MÍO
+    // 3.VALIDAR QUE EL EMAIL NO ESTÉ ASIGNADO A OTRO COLABORADOR MÍO
     const myCollaboratorWithEmail = await this.collaboratorAccessService.getMyCollaboratorByEmail(
       request.targetEmail,
       userId
@@ -120,7 +120,7 @@ export class CollaboratorManagerService {
       throw new BadRequestException('This email is already assigned to another one of your collaborators');
     }
 
-    // 4. ⭐ VALIDAR QUE NO HAYA INVITADO ANTES (INCLUSO SI FUE ACEPTADA/RECHAZADA)
+    // 4.VALIDAR QUE NO HAYA INVITADO ANTES (INCLUSO SI FUE ACEPTADA/RECHAZADA)
     const existingRequest = await this.matchRequestAccessService.hasEverSentRequest(
       request.collaboratorId,
       request.targetEmail
@@ -132,7 +132,7 @@ export class CollaboratorManagerService {
       );
     }
 
-    // 5. ⭐ VALIDACIÓN BIDIRECCIONAL - Verificar si YA ME INVITARON
+    // 5.VALIDACIÓN BIDIRECCIONAL - Verificar si YA ME INVITARON
     const receivedInvitation = await this.matchRequestAccessService.hasReceivedPendingInvitation(
       request.targetEmail,
       userId
@@ -223,7 +223,7 @@ export class CollaboratorManagerService {
         req.requesterUserId
       );
 
-      // ⭐ Obtener el email del usuario solicitante
+      //Obtener el email del usuario solicitante
       const requesterUser = (await this.userAccessService.getUsers()).find(x => x.id === req.requesterUserId);
       const requesterUserEmail = requesterUser?.email || 'Unknown';
 
@@ -231,7 +231,7 @@ export class CollaboratorManagerService {
         req.id,
         req.requesterUserId,
         req.requesterCollaboratorId,
-        requesterUserEmail, // ⭐ Email del usuario que invita
+        requesterUserEmail, //Email del usuario que invita
         collaborator ? `${collaborator.name} ${collaborator.surname}` : 'Unknown',
         req.targetCollaboratorEmail,
         req.requestedDate
@@ -251,13 +251,13 @@ export class CollaboratorManagerService {
     const requests = await this.matchRequestAccessService.getReceivedRequests(userId, userEmail, MatchRequestStatus.Pending);
 
     return Promise.all(requests.map(async (req) => {
-      // ⭐ Obtener el colaborador del solicitante
+      //Obtener el colaborador del solicitante
       const collaborator = await this.collaboratorAccessService.getById(
         req.requesterCollaboratorId,
         req.requesterUserId
       );
 
-      // ⭐ Obtener el email del usuario solicitante
+      //Obtener el email del usuario solicitante
       const requesterUser = (await this.userAccessService.getUsers()).find(x => x.id === req.requesterUserId);
       const requesterUserEmail = requesterUser?.email || 'Unknown';
 
@@ -265,7 +265,7 @@ export class CollaboratorManagerService {
         req.id,
         req.requesterUserId,
         req.requesterCollaboratorId,
-        requesterUserEmail, // ⭐ Email del usuario que invita
+        requesterUserEmail, //Email del usuario que invita
         collaborator ? `${collaborator.name} ${collaborator.surname}` : 'Unknown',
         req.targetCollaboratorEmail,
         req.requestedDate
@@ -279,7 +279,7 @@ export class CollaboratorManagerService {
   public getSentMatchRequests = async (userId: number): Promise<CollaboratorMatchRequestModel[]> => {
     const requests = await this.matchRequestAccessService.getSentRequests(userId);
 
-    // ⭐ Enriquecer con información del colaborador
+    //Enriquecer con información del colaborador
     return Promise.all(requests.map(async (req) => {
       const collaborator = await this.collaboratorAccessService.getById(
         req.requesterCollaboratorId,
@@ -290,8 +290,8 @@ export class CollaboratorManagerService {
         req.id,
         req.requesterUserId,
         req.requesterCollaboratorId,
-        collaborator?.name || 'Unknown', // ⭐ Nombre del colaborador
-        collaborator?.surname || '', // ⭐ Apellido del colaborador
+        collaborator?.name || 'Unknown', //Nombre del colaborador
+        collaborator?.surname || '', //Apellido del colaborador
         req.targetCollaboratorEmail,
         req.status,
         req.requestedDate,
@@ -317,7 +317,7 @@ export class CollaboratorManagerService {
       throw new NotFoundException('Match request not found');
     }
 
-    // ⭐ CAMBIO: Validación más flexible
+    //CAMBIO: Validación más flexible
     if (request.targetUserId !== null && request.targetUserId !== userId) {
       throw new BadRequestException('You are not authorized to accept this request');
     }
@@ -393,7 +393,7 @@ export class CollaboratorManagerService {
 
     const match = await this.matchAccessService.createMatch(matchData);
 
-    // ⭐ AHORA el update funcionará porque targetUserId ya tiene valor
+    //AHORA el update funcionará porque targetUserId ya tiene valor
     await this.matchRequestAccessService.updateStatus(
       requestId,
       MatchRequestStatus.Accepted,
@@ -405,7 +405,7 @@ export class CollaboratorManagerService {
     return this.getMatchModel(match);
   };
 
-// ⭐ Actualizar getMatchModel
+//Actualizar getMatchModel
 private getMatchModel = (accessModel: CollaboratorMatchAccessModel): CollaboratorMatchModel => {
   return new CollaboratorMatchModel(
     accessModel.id,
@@ -417,7 +417,7 @@ private getMatchModel = (accessModel: CollaboratorMatchAccessModel): Collaborato
   );
 };
 
-// ⭐ Actualizar enrichCollaboratorWithMatchInfo
+//Actualizar enrichCollaboratorWithMatchInfo
 private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAccessModel, userId: number): Promise<EnrichedCollaboratorModel> => {
   const enriched = new EnrichedCollaboratorModel(
     collaborator.id,
@@ -447,7 +447,7 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
       enriched.matchedWith = {
         userId: otherUserId,
         collaboratorId: otherCollabId,
-        email: collaborator.email // ⭐ Usar el email del colaborador
+        email: collaborator.email //Usar el email del colaborador
       };
     } else {
       const pendingRequests = await this.matchRequestAccessService.getRequestsByCollaborator(
@@ -595,7 +595,7 @@ public getInvitationsForCollaborator = async (userId: number, collaboratorId: nu
       req.requesterUserId
     );
 
-    // ⭐ Obtener el email del usuario solicitante
+    //Obtener el email del usuario solicitante
     const requesterUser = (await this.userAccessService.getUsers()).find(x => x.id === req.requesterUserId);
     const requesterUserEmail = requesterUser?.email || 'Unknown';
 
@@ -603,7 +603,7 @@ public getInvitationsForCollaborator = async (userId: number, collaboratorId: nu
       req.id,
       req.requesterUserId,
       req.requesterCollaboratorId,
-      requesterUserEmail, // ⭐ Email del usuario que invita
+      requesterUserEmail, //Email del usuario que invita
       requesterCollab ? `${requesterCollab.name} ${requesterCollab.surname}` : 'Unknown',
       req.targetCollaboratorEmail,
       req.requestedDate

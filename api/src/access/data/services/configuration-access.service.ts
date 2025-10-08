@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
-import { TypeEntity } from '../entities/type.entity';
-import { PeriodEntity } from '../entities/period.entity';
-import { CurrencyEntity } from '../entities/currency.entity';
 import { TypeAccessModel, PeriodAccessModel, CurrencyAccessModel } from '../../contract/configurations';
 import { BaseAccessService, DbContextService } from '.';
+import { CurrencyEntity, PeriodEntity, TypeEntity } from '../entities';
 
 @Injectable()
 export class ConfigurationAccessService extends BaseAccessService {

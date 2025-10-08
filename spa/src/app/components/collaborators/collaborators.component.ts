@@ -1,4 +1,3 @@
-// collaborators.component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
@@ -31,46 +30,21 @@ export class CollaboratorsComponent implements OnInit {
   protected filterType: 'all' | 'unlinked' | 'linked' = 'all';
   protected pendingRequestsCount = signal(0);
 
-  // ❌ ELIMINADO: showEnrichedView
-  // ❌ ELIMINADO: enrichedCollaborators
-  // ❌ ELIMINADO: currentPage, totalPages (no hay paginación todavía)
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadCollaborators();
     this.loadPendingRequestsCount();
   }
-
-  private loadCollaborators(): void {
-    this.collaboratorStore.loadCollaborators();
-    this.collaborators = this.getCollaborators();
-  }
-
-  private loadPendingRequestsCount(): void {
-    this.matchRequestApiService.getReceivedRequests().subscribe({
-      next: (requests) => {
-        this.pendingRequestsCount.set(requests.length);
-      },
-      error: (error) => {
-        console.error('Failed to load pending requests count:', error);
-        this.pendingRequestsCount.set(0);
-      }
-    });
-  }
-
-  // ❌ ELIMINADO: toggleView()
-  // ❌ ELIMINADO: loadEnrichedCollaborators()
-  // ❌ ELIMINADO: isEnrichedCollaborator()
 
   protected setFilter = (type: 'all' | 'unlinked' | 'linked'): void => {
     this.filterType = type;
     this.collaborators = this.getCollaborators();
   }
 
-  getInitials(name: string, surname: string): string {
+  protected getInitials(name: string, surname: string): string {
     return (name.charAt(0) + surname.charAt(0)).toUpperCase();
   }
 
-  getFormattedDate(date: Date): string {
+  protected getFormattedDate(date: Date): string {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - new Date(date).getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -82,12 +56,12 @@ export class CollaboratorsComponent implements OnInit {
     return `${Math.floor(diffDays / 365)} years ago`;
   }
 
-  editCollaborator(collaborator: CollaboratorApiModel): void {
+  protected editCollaborator(collaborator: CollaboratorApiModel): void {
     this.collaboratorStore.selectCollaborator(collaborator);
     this.router.navigate(['/collaborators/edit', collaborator.id]);
   }
 
-  toggleCollaboratorStatus(collaborator: CollaboratorApiModel): void {
+  protected toggleCollaboratorStatus(collaborator: CollaboratorApiModel): void {
     const action = collaborator.isActive ? 'deactivate' : 'activate';
     const confirmMsg = `Are you sure you want to ${action} ${collaborator.name} ${collaborator.surname}?`;
 
@@ -96,7 +70,7 @@ export class CollaboratorsComponent implements OnInit {
     }
   }
 
-  deleteCollaborator(collaborator: CollaboratorApiModel): void {
+  protected deleteCollaborator(collaborator: CollaboratorApiModel): void {
     this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
       next: (response) => {
         if (!response.canDelete) {
@@ -118,7 +92,7 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
-  resendInvitation(collaborator: CollaboratorApiModel): void {
+  protected resendInvitation(collaborator: CollaboratorApiModel): void {
     if (!collaborator.email) {
       this.alertService.showInfo('This collaborator has no email address');
       return;
@@ -134,7 +108,7 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
-  sendMatchRequest(collaborator: CollaboratorApiModel): void {
+  protected sendMatchRequest(collaborator: CollaboratorApiModel): void {
     this.collaboratorStore.selectCollaborator(collaborator);
     this.router.navigate(['/collaborators/match-requests'], { 
       queryParams: { 
@@ -144,12 +118,12 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
-  create(): void {
+  protected create(): void {
     this.collaboratorStore.clearSelectedCollaborator();
     this.router.navigate(['/collaborators/create']);
   }
 
-  viewMatchRequests(): void {
+  protected viewMatchRequests(): void {
     this.router.navigate(['/collaborators/match-requests']);
   }
 
@@ -162,5 +136,22 @@ export class CollaboratorsComponent implements OnInit {
       default:
         return this.collaboratorStore.allCollaborators();
     }
+  }
+
+  private loadCollaborators(): void {
+    this.collaboratorStore.loadCollaborators();
+    this.collaborators = this.getCollaborators();
+  }
+
+  private loadPendingRequestsCount(): void {
+    this.matchRequestApiService.getReceivedRequests().subscribe({
+      next: (requests) => {
+        this.pendingRequestsCount.set(requests.length);
+      },
+      error: (error) => {
+        console.error('Failed to load pending requests count:', error);
+        this.pendingRequestsCount.set(0);
+      }
+    });
   }
 }

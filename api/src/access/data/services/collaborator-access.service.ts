@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CollaboratorEntity } from '../entities/collaborator.entity';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, ICollaboratorAccessService, UpdateCollaboratorAccessRequest } from '../../../access/contract/collaborators';
 import { BaseAccessService, DbContextService } from '.';
+import { CollaboratorEntity } from '../entities';
 
 
 @Injectable()

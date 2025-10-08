@@ -3,8 +3,8 @@ import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { CreateEventAccessRequest } from '../../contract/events/create-event-access-request';
 import { EventAccessModel } from '../../contract/events/event-access-model';
 import { UpdateEventAccessRequest } from '../../contract/events/update-event-access-request';
-import { EventEntity } from '../entities/event.entity';
 import { BaseAccessService, DbContextService } from '.';
+import { EventEntity } from '../entities';
 
 @Injectable()
 export class EventAccessService extends BaseAccessService {

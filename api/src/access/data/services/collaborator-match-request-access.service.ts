@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CollaboratorMatchRequestEntity } from '../entities/collaborator-match-request.entity';
 import { TableEnum, DatabaseColumns, MatchRequestStatus } from '../../../utility/enums';
 import { CollaboratorMatchRequestAccessModel, CreateMatchRequestAccessRequest, ICollaboratorMatchRequestAccessService } from '../../../access/contract/collaborator-match-requests';
 import { BaseAccessService, DbContextService } from '.';
+import { CollaboratorMatchRequestEntity } from '../entities';
 
 
 @Injectable()
@@ -32,10 +32,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
     return data?.map(this.getRequestAccessModel) || [];
   };
 
-  public getSentRequests = async (
-    userId: number,
-    status?: MatchRequestStatus
-  ): Promise<CollaboratorMatchRequestAccessModel[]> => {
+  public getSentRequests = async (userId: number, status?: MatchRequestStatus): Promise<CollaboratorMatchRequestAccessModel[]> => {
     let query = this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
       .select(DatabaseColumns.All)
@@ -112,13 +109,13 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
     status: MatchRequestStatus,
     userId?: number
   ): Promise<CollaboratorMatchRequestAccessModel> => {
-    // ⭐ Construir el update dinámicamente
+    //Construir el update dinámicamente
     const updateData: any = {
       status: status,
       responsedate: new Date().toISOString()
     };
 
-    // ⭐ Si userId se proporciona y no es null, actualizar targetUserId también
+    //Si userId se proporciona y no es null, actualizar targetUserId también
     if (userId) {
       updateData.targetuserid = userId;
     }
@@ -128,7 +125,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .update(updateData)
       .eq(DatabaseColumns.EntityId, requestId);
 
-    // ⭐ Solo aplicar filtro de targetUserId si se proporciona
+    //Solo aplicar filtro de targetUserId si se proporciona
     if (userId) {
       // Buscar por requestId donde targetUserId es NULL o igual a userId
       query = query.or(`${DatabaseColumns.TargetUserId}.is.null,${DatabaseColumns.TargetUserId}.eq.${userId}`);

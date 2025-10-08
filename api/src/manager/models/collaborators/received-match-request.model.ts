@@ -1,6 +1,3 @@
-/**
- * Modelo de solicitud de matching recibida
- */
 export class ReceivedMatchRequestModel {
   constructor(
     public id: number,

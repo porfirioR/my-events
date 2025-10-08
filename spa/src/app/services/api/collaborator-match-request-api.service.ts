@@ -28,7 +28,7 @@ export class CollaboratorMatchRequestApiService {
   public getSentRequests = (): Observable<CollaboratorMatchRequestModel[]> =>
     this.httpClient.get<CollaboratorMatchRequestModel[]>(`${this.section}/sent`);
 
-  // ⭐ ACTUALIZADO: Aceptar sin collaboratorId (cuando ya tienes el email)
+  //ACTUALIZADO: Aceptar sin collaboratorId (cuando ya tienes el email)
   public acceptMatchRequest = (requestId: number): Observable<CollaboratorMatchModel> =>
     this.httpClient.patch<CollaboratorMatchModel>(`${this.section}/${requestId}/accept`, {});
 

@@ -5,7 +5,7 @@ export interface CollaboratorMatchModel {
   user1Id: number;
   user2Id: number;
   dateCreated: Date;
-  // ⭐ AGREGAR: Propiedades calculadas/enriquecidas del backend
+  //AGREGAR: Propiedades calculadas/enriquecidas del backend
   collaboratorName?: string;
   collaboratorSurname?: string;
   matchedCollaboratorName?: string;

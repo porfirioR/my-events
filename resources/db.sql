@@ -41,7 +41,7 @@ CREATE TABLE collaborators (
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(150), -- NULL = colaborador INTERNO, valor = colaborador EXTERNO
     userid INT NOT NULL,
-    isactive BOOLEAN DEFAULT TRUE, -- ⭐ AGREGAR para soft delete
+    isactive BOOLEAN DEFAULT TRUE, --AGREGAR para soft delete
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );

@@ -1,5 +1,4 @@
-// collaborator-match-requests.component.ts
-import { Component, inject, OnInit, signal } from '@angular/core'; // ⭐ Agregar signal
+import { Component, inject, OnInit, signal } from '@angular/core'; //Agregar signal
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -71,7 +70,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   private loadAllData(): void {
-    // ⭐ Solo usar loadingStore para acciones del usuario, no para carga inicial
+    //Solo usar loadingStore para acciones del usuario, no para carga inicial
     const isInitial = this.initialLoading();
     
     if (!isInitial) {

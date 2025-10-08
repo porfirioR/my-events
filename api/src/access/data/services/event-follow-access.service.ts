@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { EventAccessModel } from '../../contract/events/event-access-model';
 import { EventFollowRequest } from '../../contract/event-follows/event-follow-request';
-import { EventEntity } from '../entities/event.entity';
-import { EventFollowEntity } from '../entities/event-follow.entity';
 import { BaseAccessService, DbContextService } from '.';
+import { EventEntity, EventFollowEntity } from '../entities';
 
 @Injectable()
 export class EventFollowAccessService extends BaseAccessService {
