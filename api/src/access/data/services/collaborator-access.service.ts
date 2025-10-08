@@ -1,25 +1,23 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { DbContextService } from './db-context.service';
+import { Injectable } from '@nestjs/common';
 import { CollaboratorEntity } from '../entities/collaborator.entity';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, ICollaboratorAccessService, UpdateCollaboratorAccessRequest } from '../../../access/contract/collaborators';
+import { BaseAccessService, DbContextService } from '.';
 
 
 @Injectable()
-export class CollaboratorAccessService implements ICollaboratorAccessService{
-  private collaboratorContext: SupabaseClient<any, 'public', any>;
+export class CollaboratorAccessService extends BaseAccessService implements ICollaboratorAccessService{
 
-  constructor(private dbContextService: DbContextService) {
-    this.collaboratorContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
-// En tu CollaboratorAccessService (capa de acceso)
-public assignEmailToCollaborator = async (collaboratorId: number, email: string, userId: number): Promise<CollaboratorAccessModel> => {
+
+  public assignEmailToCollaborator = async (collaboratorId: number, email: string, userId: number): Promise<CollaboratorAccessModel> => {
     const existingCollaborator = await this.getById(collaboratorId, userId);
     const entity = this.getEntityByAccessModel(existingCollaborator);
     entity.email = email;
 
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .upsert(entity)
       .select()
@@ -29,11 +27,10 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
       throw new Error(error.message);
     }
     return this.getCollaboratorAccessModel(data);
-
-};
+  };
 
   public getAll = async (userId: number): Promise<CollaboratorAccessModel[]> => {
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
@@ -46,7 +43,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
   };
 
   public getUnlinkedCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
@@ -61,7 +58,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
   };
 
   public getLinkedCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
@@ -76,7 +73,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
   };
 
   public getById = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, id)
@@ -91,7 +88,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
 
   public createCollaborator = async (accessRequest: CreateCollaboratorAccessRequest): Promise<CollaboratorAccessModel> => {
     const collaboratorEntity = this.getEntity(accessRequest);
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .insert(collaboratorEntity)
       .select()
@@ -112,7 +109,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
     entity.isactive = existingCollaborator.isActive;
     entity.email = existingCollaborator.email;
 
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .upsert(entity)
       .select()
@@ -127,7 +124,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
   public changeVisibility = async (id: number, userId: number): Promise<CollaboratorAccessModel> => {
     const accessModel = await this.getById(id, userId);
 
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .update({ isactive: !accessModel.isActive })
       .eq(DatabaseColumns.EntityId, id)
@@ -143,7 +140,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
 
   public canDeleteCollaborator = async (collaboratorId: number): Promise<boolean> => {
     // Verificar en transactions
-    const { data: transactionData, error: transactionError } = await this.collaboratorContext
+    const { data: transactionData, error: transactionError } = await this.dbContext
       .from(TableEnum.Transactions)
       .select('id')
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
@@ -152,7 +149,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
     if (transactionError) throw new Error(transactionError.message);
     if (transactionData && transactionData.length > 0) return false;
 
-    const { data: splitData, error: splitError } = await this.collaboratorContext
+    const { data: splitData, error: splitError } = await this.dbContext
       .from(TableEnum.TransactionSplits)
       .select('id')
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
@@ -161,7 +158,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
     if (splitError) throw new Error(splitError.message);
     if (splitData && splitData.length > 0) return false;
 
-    const { data: memberData, error: memberError } = await this.collaboratorContext
+    const { data: memberData, error: memberError } = await this.dbContext
       .from(TableEnum.ProjectMembers)
       .select('id')
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
@@ -173,8 +170,12 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
     return true;
   };
 
-  public getCollaboratorStats = async (userId: number) => {
-    const { data, error } = await this.collaboratorContext
+  public getCollaboratorStats = async (userId: number): Promise<{
+    total: number;
+    internal: number;
+    external: number;
+}> => {
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(`
         ${DatabaseColumns.EntityId},
@@ -199,7 +200,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
   };
 
   public getMyCollaboratorByEmail = async (email: string, userId: number): Promise<CollaboratorAccessModel | null> => {
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.Email, email)
@@ -216,7 +217,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
 
   
   public getByEmail = async (email: string): Promise<CollaboratorAccessModel | null> => {
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.Email, email)
@@ -231,7 +232,7 @@ public assignEmailToCollaborator = async (collaboratorId: number, email: string,
   };
 
   public getExternalCollaboratorsByEmail = async (email: string): Promise<CollaboratorAccessModel[]> => {
-    const { data, error } = await this.collaboratorContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.Email, email)

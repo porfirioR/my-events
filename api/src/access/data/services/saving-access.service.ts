@@ -1,21 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { CreateSavingAccessRequest, SavingAccessModel, UpdateSavingAccessRequest } from '../../contract/savings';
-import { DbContextService } from './db-context.service';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { SavingEntity } from '../entities/saving.entity';
+import { BaseAccessService, DbContextService } from '.';
 
 @Injectable()
-export class SavingAccessService {
-  private dbtContext: SupabaseClient<any, 'public', any>;
+export class SavingAccessService extends BaseAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.dbtContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
   public create = async (accessRequest: CreateSavingAccessRequest): Promise<SavingAccessModel> => {
     const entity = this.mapAccessRequestToEntity(accessRequest);
-    const event  = await this.dbtContext
+    const event  = await this.dbContext
       .from(TableEnum.Savings)
       .insert(entity)
       .select()
@@ -25,7 +23,7 @@ export class SavingAccessService {
   };
 
   public getMySavings = async (authorId: number, id: number): Promise<SavingAccessModel[]> => {
-    const { data, error } = await this.dbtContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Savings)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.AuthorId, authorId)
@@ -37,7 +35,7 @@ export class SavingAccessService {
 
   public updateSaving = async (accessRequest: UpdateSavingAccessRequest): Promise<SavingAccessModel> => {
     const eventEntity = this.mapAccessRequestToEntity(accessRequest);
-    const event = await this.dbtContext
+    const event = await this.dbContext
       .from(TableEnum.Savings)
       .upsert(eventEntity)
       .select()

@@ -1,22 +1,18 @@
-// access/data/services/collaborator-match-access.service.ts
-
 import { Injectable } from "@nestjs/common";
-import { SupabaseClient } from "@supabase/supabase-js";
-import { DbContextService } from "./db-context.service";
 import { DatabaseColumns, TableEnum } from "../../../utility/enums";
 import { CollaboratorMatchEntity } from "../entities/collaborator-match.entity";
 import { CollaboratorMatchAccessModel, CreateMatchAccessRequest, ICollaboratorMatchAccessService } from "../../contract/collaborator-match";
+import { BaseAccessService, DbContextService } from ".";
 
 @Injectable()
-export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessService {
-  private matchContext: SupabaseClient<any, 'public', any>;
+export class CollaboratorMatchAccessService extends BaseAccessService implements ICollaboratorMatchAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.matchContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
   public getMatchByCollaboratorId = async (collaboratorId: number): Promise<CollaboratorMatchAccessModel | null> => {
-    const { data, error } = await this.matchContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatches)
       .select(DatabaseColumns.All)
       .or(`collaborator1id.eq.${collaboratorId},collaborator2id.eq.${collaboratorId}`)
@@ -31,7 +27,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
   };
 
   public getMatchesByUserId = async (userId: number): Promise<CollaboratorMatchAccessModel[]> => {
-    const { data, error } = await this.matchContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatches)
       .select(DatabaseColumns.All)
       .or(`user1id.eq.${userId},user2id.eq.${userId}`)
@@ -45,7 +41,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
   };
 
   public getMatchById = async (matchId: number): Promise<CollaboratorMatchAccessModel | null> => {
-    const { data, error } = await this.matchContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatches)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, matchId)
@@ -62,7 +58,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
   public createMatch = async (request: CreateMatchAccessRequest): Promise<CollaboratorMatchAccessModel> => {
     const entity = this.getEntity(request);
     
-    const { data, error } = await this.matchContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatches)
       .insert(entity)
       .select()
@@ -76,7 +72,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
   };
 
   public deleteMatch = async (matchId: number): Promise<void> => {
-    const { error } = await this.matchContext
+    const { error } = await this.dbContext
       .from(TableEnum.CollaboratorMatches)
       .delete()
       .eq(DatabaseColumns.EntityId, matchId);
@@ -87,7 +83,7 @@ export class CollaboratorMatchAccessService implements ICollaboratorMatchAccessS
   };
 
   public existsMatch = async (collaborator1Id: number, collaborator2Id: number): Promise<boolean> => {
-    const { data, error } = await this.matchContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatches)
       .select('id')
       .or(`and(collaborator1id.eq.${collaborator1Id},collaborator2id.eq.${collaborator2Id}),and(collaborator1id.eq.${collaborator2Id},collaborator2id.eq.${collaborator1Id})`)

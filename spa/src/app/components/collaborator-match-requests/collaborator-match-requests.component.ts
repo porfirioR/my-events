@@ -48,7 +48,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   protected activeTab: 'received' | 'sent' | 'create' = 'received';
   protected internalCollaboratorList?: KeyValueViewModel[] = [];
   
-  // ⭐ NUEVO: Estado de carga inicial separado
+  // Estado de carga inicial separado
   protected initialLoading = signal(true);
   protected isLoading = this.loadingStore.isLoading;
 

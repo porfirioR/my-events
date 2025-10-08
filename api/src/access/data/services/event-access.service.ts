@@ -1,22 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { DbContextService } from './db-context.service';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { CreateEventAccessRequest } from '../../contract/events/create-event-access-request';
 import { EventAccessModel } from '../../contract/events/event-access-model';
 import { UpdateEventAccessRequest } from '../../contract/events/update-event-access-request';
 import { EventEntity } from '../entities/event.entity';
+import { BaseAccessService, DbContextService } from '.';
 
 @Injectable()
-export class EventAccessService {
-  private eventContext: SupabaseClient<any, 'public', any>;
+export class EventAccessService extends BaseAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.eventContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
   public getPublicEvents = async (): Promise<EventAccessModel[]> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Events)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.IsActive, true)
@@ -27,7 +25,7 @@ export class EventAccessService {
   };
 
   public getMyEvents = async (authorId: number): Promise<EventAccessModel[]> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Events)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.AuthorId, authorId)
@@ -37,7 +35,7 @@ export class EventAccessService {
   };
 
   public getMyEvent = async (id: number): Promise<EventAccessModel> => {
-    const { data, error } = await this.eventContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Events)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, id)
@@ -48,7 +46,7 @@ export class EventAccessService {
 
   public createEvent = async (accessRequest: CreateEventAccessRequest): Promise<EventAccessModel> => {
     const eventEntity = this.getEntity(accessRequest);
-    const event  = await this.eventContext
+    const event  = await this.dbContext
       .from(TableEnum.Events)
       .insert(eventEntity)
       .select()
@@ -61,7 +59,7 @@ export class EventAccessService {
     const eventEntity = this.getEntity(accessRequest);
     const entity = await this.getMyEvent(accessRequest.id)
     eventEntity.authorid = entity.authorId
-    const event = await this.eventContext
+    const event = await this.dbContext
       .from(TableEnum.Events)
       .upsert(eventEntity)
       .select()

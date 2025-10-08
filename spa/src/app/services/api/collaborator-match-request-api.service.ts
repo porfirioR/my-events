@@ -32,7 +32,7 @@ export class CollaboratorMatchRequestApiService {
   public acceptMatchRequest = (requestId: number): Observable<CollaboratorMatchModel> =>
     this.httpClient.patch<CollaboratorMatchModel>(`${this.section}/${requestId}/accept`, {});
 
-  // ⭐ NUEVO: Aceptar con collaboratorId (cuando no tienes el email)
+  // Aceptar con collaboratorId (cuando no tienes el email)
   public acceptMatchRequestWithCollaborator = (
     requestId: number, 
     collaboratorId: number

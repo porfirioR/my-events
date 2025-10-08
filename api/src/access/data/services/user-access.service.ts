@@ -1,8 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
-import { DbContextService } from '../../data/services/db-context.service';
-
 import { UserEntity } from '../entities/user.entity';
 import { WebPushTokenEntity } from '../entities/web-push-token.Entity';
 import {
@@ -13,31 +10,30 @@ import {
   WebPushTokenAccessModel,
   WebPushTokenAccessRequest
 } from '../../../access/contract/users';
+import { BaseAccessService, DbContextService } from '.';
 
 @Injectable()
-export class UserAccessService {
-  private userContext: SupabaseClient<any, 'public', any>;
-  private databaseColumns = DatabaseColumns
+export class UserAccessService extends BaseAccessService {
 
-  constructor(private dbContextService: DbContextService) {
-    this.userContext = this.dbContextService.getConnection();
+  constructor(dbContextService: DbContextService) {
+    super(dbContextService);
   }
 
   public getUsers = async (): Promise<UserAccessModel[]> => {
-    const { data, error } = await this.userContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Users)
-      .select(this.databaseColumns.All);
+      .select(DatabaseColumns.All);
     if (error) throw new Error(error.message);
     return data.map(this.getUser);
   };
 
   public createUser = async (accessRequest: CreateUserAccessRequest): Promise<UserAccessModel> => {
     const insertValue: Record<string, string | Date> = {
-      [this.databaseColumns.Email]: accessRequest.email,
-      [this.databaseColumns.DateCreated]: new Date(),
-      [this.databaseColumns.Password]: accessRequest.password
+      [DatabaseColumns.Email]: accessRequest.email,
+      [DatabaseColumns.DateCreated]: new Date(),
+      [DatabaseColumns.Password]: accessRequest.password
     };
-    const { data, error } = await this.userContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Users)
       .insert(insertValue)
       .select()
@@ -53,7 +49,7 @@ export class UserAccessService {
 
   public resetPassword = async (accessRequest: ResetUserAccessRequest): Promise<UserAccessModel> => {
     const userEntity = await this.getUserByEmail(accessRequest.email)
-    const { data, error } = await this.userContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Users)
       .upsert({ id: userEntity.id, code: null, password: accessRequest.password })
       .select()
@@ -68,7 +64,7 @@ export class UserAccessService {
   };
 
   public saveToken = async (accessRequest: WebPushTokenAccessRequest): Promise<WebPushTokenAccessModel> => {
-    const { data } = await this.userContext
+    const { data } = await this.dbContext
       .from(TableEnum.WebPushToken)
       .select()
       .returns<WebPushTokenEntity[]>();
@@ -78,7 +74,7 @@ export class UserAccessService {
       if (!webPush) {
         return await this.insertWebPushToken(accessRequest)
       }
-      const result = await this.userContext
+      const result = await this.dbContext
         .from(TableEnum.WebPushToken)
         .upsert({ id: webPush.id, endpoint: accessRequest.endpoint, expirationtime: accessRequest.expirationTime, keys: JSON.stringify(accessRequest.keys), email: accessRequest.email })
         .select()
@@ -93,7 +89,7 @@ export class UserAccessService {
   };
 
   public getWebPushToken = async (): Promise<WebPushTokenAccessModel> => {
-    const { data, error } = await this.userContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.WebPushToken)
       .select()
       .single<WebPushTokenEntity>()
@@ -103,7 +99,7 @@ export class UserAccessService {
 
   public addForgotCodePassword = async (accessRequest: ForgotPasswordAccessRequest): Promise<UserAccessModel> => {
     const userEntity = await this.getUserByEmail(accessRequest.email);
-    const { data, error } = await this.userContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Users)
       .update({ code: accessRequest.code })
       .eq('id', userEntity.id)
@@ -119,10 +115,10 @@ export class UserAccessService {
   };
 
   public getUserByEmail = async (email: string): Promise<UserAccessModel> => {
-    const { data, error } = await this.userContext
+    const { data, error } = await this.dbContext
       .from(TableEnum.Users)
       .select()
-      .eq(this.databaseColumns.Email, email)
+      .eq(DatabaseColumns.Email, email)
       .single<UserEntity>();
     if (error) throw new Error(error.message);
     return this.getUser(data);
@@ -138,12 +134,12 @@ export class UserAccessService {
 
   private insertWebPushToken = async (accessRequest: WebPushTokenAccessRequest): Promise<WebPushTokenAccessModel> => {
     const insertValue: Record<string, string | Date> = {
-      [this.databaseColumns.Endpoint]: accessRequest.endpoint,
-      [this.databaseColumns.Email]: accessRequest.email,
-      [this.databaseColumns.ExpirationTime]: null,
-      [this.databaseColumns.Keys]: JSON.stringify(accessRequest.keys)
+      [DatabaseColumns.Endpoint]: accessRequest.endpoint,
+      [DatabaseColumns.Email]: accessRequest.email,
+      [DatabaseColumns.ExpirationTime]: null,
+      [DatabaseColumns.Keys]: JSON.stringify(accessRequest.keys)
     };
-    const result = await this.userContext
+    const result = await this.dbContext
       .from(TableEnum.WebPushToken)
       .insert(insertValue)
       .select()

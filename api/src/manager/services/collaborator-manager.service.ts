@@ -326,7 +326,7 @@ export class CollaboratorManagerService {
       throw new BadRequestException('This request is not pending');
     }
 
-    // ⭐ NUEVO: Si targetUserId es NULL, asignarlo ahora
+    // Si targetUserId es NULL, asignarlo ahora
     if (request.targetUserId === null) {
       await this.matchRequestAccessService.updateTargetUser(requestId, userId);
       request.targetUserId = userId; // Actualizar en memoria

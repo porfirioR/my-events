@@ -93,7 +93,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
     this.router.navigate(['/collaborators', invitation.collaborator.id, 'invitations']);
   }
 
-  // ⭐ NUEVO: Aceptar invitación desde este componente
+  // Aceptar invitación desde este componente
   acceptInvitation(invitation: ReceivedMatchRequestModel): void {
     const confirmMsg = `Accept match request from ${invitation.requesterCollaboratorName}?`;
     

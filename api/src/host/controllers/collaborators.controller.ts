@@ -120,7 +120,7 @@ export class CollaboratorsController {
   }
 
   /**
-   * ⭐ NUEVO: Obtener notificaciones al hacer login
+   * Obtener notificaciones al hacer login
    * GET /api/collaborators/notifications/login
    */
   @Get('notifications/login')
