@@ -5,6 +5,7 @@ export { CreateTransactionAccessRequest } from './create-transaction-access-requ
 export { CreateTransactionSplitAccessRequest } from './create-transaction-split-access-request';
 export { CreateTransactionReimbursementAccessRequest } from './create-transaction-reimbursement-access-request';
 export { UpdateTransactionReimbursementTotalAccessRequest } from './update-transaction-reimbursement-total-access-request';
-export {  } from './';
-export {  } from './';
+export { ITransactionAccessService } from './transaction-access-service.interface';
+export { ITransactionSplitAccessService } from './transaction-split-access-service.interface';
+export { ITransactionReimbursementAccessService } from './transaction-reimbursement-access-service.interface';
 

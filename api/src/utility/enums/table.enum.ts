@@ -16,4 +16,5 @@ export enum TableEnum {
   ProjectTransactions = 'projecttransactions',
   CollaboratorMatches = 'collaboratormatches',
   CollaboratorMatchRequests = 'collaboratormatchrequests',
+  TransactionReimbursements = "transactionreimbursements",
 }
