@@ -192,7 +192,7 @@ export class TestHelpers {
       typeof model.userId === 'number' &&
       typeof model.isActive === 'boolean' &&
       model.dateCreated instanceof Date &&
-      (model.type === 'UNLINKED' || model.type === 'EXTERNAL')
+      (model.type === 'UNLINKED' || model.type === 'LINKED')
     );
   }
 

@@ -128,7 +128,7 @@ describe('Collaborator Module Integration E2E', () => {
     });
 
     it('should test service call flow with mocks', async () => {
-      const accessSpy = jest.spyOn(accessService, 'getMyCollaborators');
+      const accessSpy = jest.spyOn(accessService, 'getAll');
       const mockResult = [TestHelpers.createMockCollaboratorAccessModel()];
       accessSpy.mockResolvedValue(mockResult);
 
@@ -159,7 +159,7 @@ describe('Collaborator Module Integration E2E', () => {
 
   describe('Error Propagation', () => {
     it('should propagate errors through service chain', async () => {
-      const accessSpy = jest.spyOn(accessService, 'getMyCollaborators');
+      const accessSpy = jest.spyOn(accessService, 'getAll');
       const testError = new Error('Integration test error');
       accessSpy.mockRejectedValue(testError);
 
