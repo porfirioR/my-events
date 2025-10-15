@@ -3,6 +3,7 @@ import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITrans
 import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest } from 'src/access/contract/transactions';
 import { CollaboratorSummaryModel } from '../models/collaborators';
 import { COLLABORATOR_TOKENS, TRANSACTION_TOKENS } from '../../utility/constants';
+import { ParticipantType, WhoPaid } from '../../utility/enums';
 import { ICollaboratorAccessService } from '../../access/contract/collaborators';
 import { ICollaboratorMatchAccessService } from '../../access/contract/collaborator-match';
 
@@ -149,14 +150,14 @@ export class TransactionManagerService implements ITransactionManagerService {
       const theirCollaboratorId =
         match.user1Id === userId ? match.collaborator2Id : match.collaborator1Id;
 
-      const txs = await this.transactionAccessService.getByUserAndCollaborator(
+      const transactions = await this.transactionAccessService.getByUserAndCollaborator(
         otherUserId,
         theirCollaboratorId,
       );
 
       theirTransactions.push(
-        ...txs.map((tx) => ({
-          ...tx,
+        ...transactions.map((x) => ({
+          ...x,
           matchInfo: {
             myCollaboratorId,
             theirCollaboratorId,
@@ -168,11 +169,11 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     // 5. Mapear todas las transacciones a la vista del usuario
     const myViews = await Promise.all(
-      myCreatedTransactions.map((tx) => this.mapToMyView(tx, userId, true)),
+      myCreatedTransactions.map(x => this.mapToMyView(x, userId, true)),
     );
 
     const theirViews = await Promise.all(
-      theirTransactions.map((tx) => this.mapToTheirView(tx, userId, false)),
+      theirTransactions.map(x => this.mapToTheirView(x, userId, false)),
     );
 
     // 6. Combinar y ordenar por fecha
@@ -303,8 +304,8 @@ export class TransactionManagerService implements ITransactionManagerService {
       throw new BadRequestException('Debe haber exactamente 2 participantes (usuario y colaborador)');
     }
 
-    const userSplits = splits.filter(x => x.participantType === 'user');
-    const collaboratorSplits = splits.filter(x => x.participantType === 'collaborator');
+    const userSplits = splits.filter(x => x.participantType === ParticipantType.User);
+    const collaboratorSplits = splits.filter(x => x.participantType === ParticipantType.Collaborator);
 
     if (userSplits.length !== 1 || collaboratorSplits.length !== 1) {
       throw new BadRequestException('Debe haber un split para el usuario y otro para el colaborador');
@@ -337,11 +338,11 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     const payer = payers[0];
 
-    if (whoPaid === 'user' && payer.participantType !== 'user') {
+    if (whoPaid === WhoPaid.USER && payer.participantType !== ParticipantType.User) {
       throw new BadRequestException('El pagador debe ser el usuario según whoPaid');
     }
 
-    if (whoPaid === 'collaborator' && payer.participantType !== 'collaborator') {
+    if (whoPaid === WhoPaid.COLLABORATOR && payer.participantType !== ParticipantType.Collaborator) {
       throw new BadRequestException('El pagador debe ser el colaborador según whoPaid');
     }
 
@@ -374,8 +375,8 @@ export class TransactionManagerService implements ITransactionManagerService {
     for (const split of splits) {
       const accessRequest = new CreateTransactionSplitAccessRequest(
         transactionId,
-        split.participantType === 'collaborator' ? split.collaboratorId : null,
-        split.participantType === 'user' ? split.userId : null,
+        split.participantType === ParticipantType.Collaborator ? split.collaboratorId : null,
+        split.participantType === ParticipantType.User ? split.userId : null,
         split.amount,
         split.sharePercentage,
         split.isPayer,
@@ -438,6 +439,7 @@ export class TransactionManagerService implements ITransactionManagerService {
       transaction.description,
       transaction.totalAmount,
       transaction.netAmount,
+      transaction.totalReimbursement,
       new CollaboratorSummaryModel(
         collaborator.id,
         collaborator.name,
@@ -445,10 +447,10 @@ export class TransactionManagerService implements ITransactionManagerService {
         collaborator.email,
       ),
       transaction.whoPaid,
-      transaction.whoPaid === 'user' ? transaction.totalAmount : 0,
+      transaction.whoPaid === WhoPaid.USER ? transaction.totalAmount : 0,
       mySplit && !mySplit.isPayer ? mySplit.amount : 0,
       theirSplit && !theirSplit.isPayer ? theirSplit.amount : 0,
-      transaction.whoPaid === 'collaborator' ? transaction.totalAmount : 0,
+      transaction.whoPaid === WhoPaid.COLLABORATOR ? transaction.totalAmount : 0,
       transaction.transactionDate,
       splits.every(x => x.isSettled),
       true,
@@ -474,6 +476,7 @@ export class TransactionManagerService implements ITransactionManagerService {
       transaction.id,
       transaction.description,
       transaction.totalAmount,
+      transaction.totalReimbursement,
       transaction.netAmount,
       new CollaboratorSummaryModel(
         myCollaborator.id,

@@ -1,10 +1,11 @@
 import { IsEnum, IsNumber, IsOptional, Min, Max } from 'class-validator';
+import { ParticipantType } from '../../../utility/enums';
 
 export class TransactionSplitApiRequest {
-  @IsEnum(['user', 'collaborator'], {
+  @IsEnum(ParticipantType, {
     message: 'participantType debe ser "user" o "collaborator"'
   })
-  participantType: 'user' | 'collaborator';
+  participantType: ParticipantType;
 
   @IsNumber({}, { message: 'amount debe ser un número' })
   @Min(0, { message: 'amount no puede ser negativo' })

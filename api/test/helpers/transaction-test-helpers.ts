@@ -1,4 +1,4 @@
-import { SplitType, WhoPaid } from "../../src/utility/enums";
+import { ParticipantType, SplitType, WhoPaid } from "../../src/utility/enums";
 
 export class TransactionTestHelpers {
   static createMockTransactionAccessModel() {
@@ -53,7 +53,7 @@ export class TransactionTestHelpers {
           sharePercentage: 50
         },
         {
-          participantType: 'collaborator' as const,
+          participantType: ParticipantType.Collaborator,
           amount: 50000,
           sharePercentage: 50
         }
@@ -79,7 +79,7 @@ export class TransactionTestHelpers {
           isPayer: true
         },
         {
-          participantType: 'collaborator' as const,
+          participantType: ParticipantType.Collaborator,
           userId: null,
           collaboratorId: 2,
           amount: 50000,

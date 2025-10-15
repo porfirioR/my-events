@@ -1,12 +1,8 @@
-import { NgIf } from '@angular/common'
 import { Component, Input, Self } from '@angular/core'
 import { ControlValueAccessor, NgControl } from '@angular/forms'
 
 @Component({
   selector: 'app-form-errors',
-  imports: [
-    NgIf,
-  ],
   templateUrl: './form-errors.component.html',
   styleUrl: './form-errors.component.css'
 })

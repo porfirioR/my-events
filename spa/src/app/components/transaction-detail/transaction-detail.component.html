@@ -1,0 +1,181 @@
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg">
+    <!-- Header -->
+    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-base-content">Transaction Details</h2>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="goBack()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-12">
+        <span class="loading loading-spinner loading-lg"></span>
+        <p class="ml-3 text-base-content/70">Loading transaction...</p>
+      </div>
+    } @else if (transaction()) {
+      <div class="p-6">
+        <!-- Main Info Card -->
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-6 mb-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="text-xl font-semibold text-base-content mb-2">
+                {{ transaction()!.description || 'No description' }}
+              </h3>
+              <p class="text-base-content/70">
+                <i class="fas fa-user-circle mr-2"></i>
+                {{ transaction()!.collaborator.fullName }}
+              </p>
+              @if (transaction()!.collaborator.email) {
+                <p class="text-sm text-base-content/60">
+                  <i class="fas fa-envelope mr-2"></i>
+                  {{ transaction()!.collaborator.email }}
+                </p>
+              }
+            </div>
+            
+            <!-- Status Badge -->
+            <span class="badge badge-lg"
+              [ngClass]="{
+                'badge-success': transaction()!.isSettled,
+                'badge-warning': !transaction()!.isSettled
+              }"
+            >
+              <i class="fas mr-2"
+                [ngClass]="{
+                  'fa-check-circle': transaction()!.isSettled,
+                  'fa-clock': !transaction()!.isSettled
+                }"
+              ></i>
+              {{ transaction()!.isSettled ? 'Settled' : 'Pending' }}
+            </span>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Amount Details -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-base-content/70 mb-1">Total Amount</p>
+              <p class="text-2xl font-bold text-base-content">
+                {{ formatCurrency(transaction()!.totalAmount) }}
+              </p>
+            </div>
+            
+            @if (transaction()!.totalAmount !== transaction()!.netAmount) {
+              <div>
+                <p class="text-sm text-base-content/70 mb-1">Net Amount</p>
+                <p class="text-2xl font-bold text-primary">
+                  {{ formatCurrency(transaction()!.netAmount) }}
+                </p>
+                <p class="text-xs text-base-content/60 mt-1">
+                  <i class="fas fa-undo mr-1"></i>
+                  Reimbursement: {{ formatCurrency(transaction()!.totalAmount - transaction()!.netAmount) }}
+                </p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-6 mb-6">
+          <h4 class="text-lg font-semibold text-base-content mb-4">
+            <i class="fas fa-wallet mr-2"></i>
+            Payment Information
+          </h4>
+          
+          <div class="space-y-3">
+            @if (transaction()!.iPaid > 0) {
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">I paid:</span>
+                <span class="font-semibold text-green-600 dark:text-green-400">
+                  {{ formatCurrency(transaction()!.iPaid) }}
+                </span>
+              </div>
+            }
+            
+            @if (transaction()!.theyPaid > 0) {
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">They paid:</span>
+                <span class="font-semibold text-blue-600 dark:text-blue-400">
+                  {{ formatCurrency(transaction()!.theyPaid) }}
+                </span>
+              </div>
+            }
+
+            <div class="divider my-2"></div>
+
+            @if (transaction()!.iOwe > 0) {
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">I owe:</span>
+                <span class="font-bold text-lg text-error">
+                  {{ formatCurrency(transaction()!.iOwe) }}
+                </span>
+              </div>
+            }
+            
+            @if (transaction()!.theyOwe > 0) {
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">They owe:</span>
+                <span class="font-bold text-lg text-success">
+                  {{ formatCurrency(transaction()!.theyOwe) }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-6">
+          <h4 class="text-lg font-semibold text-base-content mb-4">
+            <i class="fas fa-info-circle mr-2"></i>
+            Additional Information
+          </h4>
+          
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-base-content/70">Created:</span>
+              <span class="font-medium">{{ getFormattedDate(transaction()!.date) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-base-content/70">Created by:</span>
+              <span class="font-medium">
+                {{ transaction()!.createdByMe ? 'You' : transaction()!.collaborator.fullName }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-base-content/70">Transaction ID:</span>
+              <span class="font-mono text-xs">{{ transaction()!.id }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-2 mt-6">
+          <button type="button" class="btn btn-ghost" (click)="goBack()">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back
+          </button>
+          
+          @if (transaction()!.createdByMe && !transaction()!.isSettled) {
+            <button type="button" class="btn btn-warning" (click)="addReimbursement()">
+              <i class="fas fa-undo mr-2"></i>
+              Add Reimbursement
+            </button>
+            
+            <button type="button" class="btn btn-error" (click)="deleteTransaction()">
+              <i class="fas fa-trash mr-2"></i>
+              Delete
+            </button>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="p-6 text-center">
+        <p class="text-error">Transaction not found</p>
+      </div>
+    }
+  </article>
+</section>

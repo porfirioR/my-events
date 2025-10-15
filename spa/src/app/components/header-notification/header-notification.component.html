@@ -1,33 +1,37 @@
 <div class="notification-bell" (click)="toggleDropdown()">
   <i class="fa fa-bell"></i>
-  <span class="badge" *ngIf="(pendingCount$ | async) > 0">
-    {{ pendingCount$ | async }}
-  </span>
+  @if ((pendingCount$ | async) ?? 0 > 0) {
+    <span class="badge">
+      {{ pendingCount$ | async }}
+    </span>
+  }
 
   <!-- Dropdown de notificaciones -->
   @if (showDropdown) {
     <div class="notification-dropdown">
       <h4>Match Requests</h4>
-      <div *ngIf="(notifications$ | async) as notifications">
-        @if (notifications.pendingMatchRequests === 0) {
-          <div class="empty-state">
-            No pending invitations
-          </div>
-        }
-        @for (request of notifications.matchRequests; track request.id) {
-          <div 
-            class="notification-item"
-            [routerLink]="['/collaborators/invitations']"
-            (click)="closeDropdown()">
-            <p>
-              <strong>{{ request.requesterCollaboratorName }}</strong> 
-              wants to match with 
-              <strong>{{ request.targetCollaboratorEmail }}</strong>
-            </p>
-            <small>{{ request.requestedDate | date:'short' }}</small>
-          </div>
-        }
-      </div>
+      @if (notifications$ | async; as notifications) {
+        <div>
+          @if (notifications.pendingMatchRequests === 0) {
+            <div class="empty-state">
+              No pending invitations
+            </div>
+          }
+          @for (request of notifications.matchRequests; track request.id) {
+            <div 
+              class="notification-item"
+              [routerLink]="['/collaborators/invitations']"
+              (click)="closeDropdown()">
+              <p>
+                <strong>{{ request.requesterCollaboratorName }}</strong> 
+                wants to match with 
+                <strong>{{ request.targetCollaboratorEmail }}</strong>
+              </p>
+              <small>{{ request.requestedDate | date:'short' }}</small>
+            </div>
+          }
+        </div>
+      }
     </div>
   }
 </div>

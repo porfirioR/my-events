@@ -99,6 +99,28 @@ export const routes: Routes = [
         loadComponent: () => CollaboratorInvitationsComponent,
         canActivate: [authGuard]
       },
+      {
+        path: 'transactions',
+        canActivate: [authGuard],
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./components/transactions/transactions.component').then(x => x.TransactionsComponent)
+          },
+          {
+            path: 'new',
+            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.TransactionFormComponent)
+          },
+          {
+            path: 'balances',
+            loadComponent: () => import('./components/balances/balances.component').then(x => x.BalancesComponent)
+          },
+          {
+            path: ':id',
+            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.TransactionFormComponent)
+          }
+        ]
+      },
       // Opcional: Si creas el componente de stats
       // {
       //   path: 'collaborators/:collaboratorId/stats',

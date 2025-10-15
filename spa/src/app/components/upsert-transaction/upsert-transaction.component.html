@@ -1,0 +1,276 @@
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6">
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-base-content">
+          {{ isEditMode ? 'Edit Transaction' : 'New Transaction' }}
+        </h2>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="goBack()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <!-- Collaborator Selection -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Collaborator *</span>
+        </label>
+        <select formControlName="collaboratorId" class="select select-bordered w-full">
+          <option value="" disabled selected>Select a collaborator</option>
+          @for (collaborator of linkedCollaborators(); track collaborator.id) {
+            <option [value]="collaborator.id">
+              {{ collaborator.name }} {{ collaborator.surname }}
+              @if (collaborator.email) {
+                - {{ collaborator.email }}
+              }
+            </option>
+          }
+        </select>
+        @if (form.get('collaboratorId')?.invalid && form.get('collaboratorId')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Please select a collaborator</span>
+          </label>
+        }
+      </div>
+
+      <!-- Total Amount -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Total Amount *</span>
+        </label>
+        <input 
+          type="number" 
+          formControlName="totalAmount" 
+          class="input input-bordered w-full" 
+          placeholder="Enter total amount"
+          min="0"
+          step="0.01"
+        >
+        @if (form.get('totalAmount')?.invalid && form.get('totalAmount')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Please enter a valid amount (greater than 0)</span>
+          </label>
+        }
+      </div>
+
+      <!-- Description -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Description</span>
+        </label>
+        <input 
+          type="text" 
+          formControlName="description" 
+          class="input input-bordered w-full" 
+          placeholder="Enter description (optional)"
+        >
+      </div>
+
+      <!-- Who Paid -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Who Paid? *</span>
+        </label>
+        <div class="btn-group w-full">
+          <button 
+            type="button"
+            class="btn flex-1"
+            [ngClass]="{'btn-active': form.get('whoPaid')?.value === whoPaid.User}"
+            (click)="setWhoPaid(whoPaid.User)"
+          >
+            <i class="fas fa-user mr-2"></i>
+            I Paid
+          </button>
+          <button 
+            type="button"
+            class="btn flex-1"
+            [ngClass]="{'btn-active': form.get('whoPaid')?.value === whoPaid.Collaborator}"
+            (click)="setWhoPaid(whoPaid.Collaborator)"
+          >
+            <i class="fas fa-user-friends mr-2"></i>
+            They Paid
+          </button>
+        </div>
+      </div>
+
+      <!-- Split Type -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Split Type *</span>
+        </label>
+        <div class="btn-group w-full">
+          <button 
+            type="button"
+            class="btn btn-sm flex-1"
+            [ngClass]="{'btn-active': form.get('splitType')?.value === splitType.Equal}"
+            (click)="setSplitType(splitType.Equal)"
+          >
+            <i class="fas fa-equals mr-1"></i>
+            Equal
+          </button>
+          <button 
+            type="button"
+            class="btn btn-sm flex-1"
+            [ngClass]="{'btn-active': form.get('splitType')?.value === splitType.Custom}"
+            (click)="setSplitType(splitType.Custom)"
+          >
+            <i class="fas fa-sliders-h mr-1"></i>
+            Custom
+          </button>
+          <button 
+            type="button"
+            class="btn btn-sm flex-1"
+            [ngClass]="{'btn-active': form.get('splitType')?.value === splitType.Percentage}"
+            (click)="setSplitType(splitType.Percentage)"
+          >
+            <i class="fas fa-percent mr-1"></i>
+            Percentage
+          </button>
+        </div>
+      </div>
+
+      <!-- Split Details -->
+      <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
+        <h3 class="text-lg font-semibold mb-3">Split Details</h3>
+        
+        <!-- Split calculation display -->
+        @if (form.get('totalAmount')?.value > 0) {
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-base-content/70">You:</span>
+              <span class="font-semibold">{{ formatCurrency(calculateMySplit()) }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-base-content/70">They:</span>
+              <span class="font-semibold">{{ formatCurrency(calculateTheirSplit()) }}</span>
+            </div>
+            <div class="divider my-2"></div>
+            <div class="flex justify-between items-center text-lg">
+              <span class="font-bold">Total:</span>
+              <span class="font-bold">{{ formatCurrency(calculateNetAmount()) }}</span>
+            </div>
+          </div>
+        }
+
+        <!-- Custom split inputs -->
+        @if (form.get('splitType')?.value === 'Custom' || form.get('splitType')?.value === 'Percentage') {
+          <div class="mt-4 space-y-3">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Your {{ form.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
+              </label>
+              <input 
+                type="number" 
+                class="input input-bordered w-full" 
+                [value]="customUserAmount()"
+                (input)="onCustomUserAmountChange($event)"
+                [min]="0"
+                [max]="form.get('splitType')?.value === 'Percentage' ? 100 : form.get('totalAmount')?.value"
+                [step]="form.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
+              >
+            </div>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Their {{ form.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
+              </label>
+              <input 
+                type="number" 
+                class="input input-bordered w-full" 
+                [value]="customCollaboratorAmount()"
+                (input)="onCustomCollaboratorAmountChange($event)"
+                [min]="0"
+                [max]="form.get('splitType')?.value === 'Percentage' ? 100 : form.get('totalAmount')?.value"
+                [step]="form.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
+              >
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Reimbursement Section -->
+      <div class="form-control mb-4">
+        <label class="label cursor-pointer justify-start gap-2">
+          <input 
+            type="checkbox" 
+            formControlName="hasReimbursement" 
+            class="checkbox checkbox-primary"
+            (change)="onReimbursementToggle()"
+          >
+          <span class="label-text">Add Reimbursement</span>
+        </label>
+      </div>
+
+      @if (form.get('hasReimbursement')?.value) {
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
+          <h3 class="text-lg font-semibold mb-3">Reimbursement Details</h3>
+          
+          <div class="form-control mb-3">
+            <label class="label">
+              <span class="label-text">Amount *</span>
+            </label>
+            <input 
+              type="number" 
+              formControlName="amount" 
+              class="input input-bordered w-full" 
+              placeholder="Enter reimbursement amount"
+              min="0"
+              [max]="form.get('totalAmount')?.value"
+              step="0.01"
+            >
+            @if (form.get('reimbursement.amount')?.invalid && form.get('reimbursement.amount')?.touched) {
+              <label class="label">
+                <span class="label-text-alt text-error">
+                  Reimbursement must be greater than 0 and not exceed total amount
+                </span>
+              </label>
+            }
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Description</span>
+            </label>
+            <input 
+              type="text" 
+              formControlName="description" 
+              class="input input-bordered w-full" 
+              placeholder="Enter description (optional)"
+            >
+          </div>
+
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle"></i>
+            <span>Net amount after reimbursement: {{ formatCurrency(calculateNetAmount()) }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="alert alert-error mb-4">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-2 mt-6">
+        <button type="button" class="btn btn-ghost" (click)="goBack()">
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="form.invalid || isSubmitting()"
+        >
+          @if (isSubmitting()) {
+            <span class="loading loading-spinner loading-sm"></span>
+          }
+          {{ isEditMode ? 'Update' : 'Create' }} Transaction
+        </button>
+      </div>
+    </form>
+  </article>
+</section>

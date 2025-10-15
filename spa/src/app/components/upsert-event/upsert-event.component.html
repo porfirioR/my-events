@@ -12,7 +12,9 @@
         <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
         <app-date-input formControlName="date" label="Date" id="date" name="date" />
         <app-check-box-input formControlName="isPublic" label="Is Public" />
-        <app-check-box-input *ngIf="event" formControlName="isActive" label="Is Active" />
+        @if (event) {
+          <app-check-box-input formControlName="isActive" label="Is Active" />
+        }
         <footer class="flex justify-between">
           <button
             type="button"

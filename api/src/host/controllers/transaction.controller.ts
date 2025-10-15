@@ -16,6 +16,7 @@ import {
 } from '../models/transactions';
 import { MessageModel } from '../models/message.model';
 import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../../manager/models/transactions';
+import { ParticipantType, WhoPaid } from '../../utility/enums';
 
 @Controller('transactions')
 @UseGuards(PrivateEndpointGuard)
@@ -30,19 +31,17 @@ export class TransactionController {
    * POST /api/transactions
    */
   @Post()
-  async createTransaction(
-    @Body() apiRequest: CreateTransactionApiRequest,
-  ): Promise<TransactionModel> {
+  async createTransaction(@Body() apiRequest: CreateTransactionApiRequest): Promise<TransactionModel> {
     const userId = await this.currentUserService.getCurrentUserId();
 
     // Mapear splits del API request al manager request
     const splits = apiRequest.splits.map((split) => {
       const isPayer = this.determinePayer(split.participantType, apiRequest.whoPaid);
-      
+
       return new TransactionSplitRequest(
         split.participantType,
-        split.participantType === 'user' ? userId : null,
-        split.participantType === 'collaborator' ? apiRequest.collaboratorId : null,
+        split.participantType === ParticipantType.User ? userId : null,
+        split.participantType === ParticipantType.Collaborator ? apiRequest.collaboratorId : null,
         split.amount,
         split.sharePercentage || null,
         isPayer,
@@ -146,11 +145,11 @@ export class TransactionController {
 
   // ========== Métodos Privados de Helpers ==========
 
-  private determinePayer(participantType: string, whoPaid: string): boolean {
-    if (whoPaid === 'user' && participantType === 'user') {
+  private determinePayer(participantType: ParticipantType, whoPaid: WhoPaid): boolean {
+    if (whoPaid === WhoPaid.USER && participantType === ParticipantType.User) {
       return true;
     }
-    if (whoPaid === 'collaborator' && participantType === 'collaborator') {
+    if (whoPaid === WhoPaid.COLLABORATOR && participantType === ParticipantType.Collaborator) {
       return true;
     }
     return false;

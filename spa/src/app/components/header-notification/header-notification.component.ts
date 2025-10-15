@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { NotificationService } from '../../services/notification.service';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-header-notification',

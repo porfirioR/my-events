@@ -1,0 +1,208 @@
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold text-base-content">Balances</h2>
+          <p class="text-base-content/70 mt-1">See who owes you and who you owe</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="goBack()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <!-- Total Balance -->
+      <div class="stats shadow bg-base-200 dark:bg-base-300">
+        <div class="stat">
+          <div class="stat-figure text-primary">
+            <i class="fas fa-balance-scale text-3xl"></i>
+          </div>
+          <div class="stat-title">Net Balance</div>
+          <div class="stat-value text-primary">{{ formatCurrency(totalBalance()) }}</div>
+          <div class="stat-desc">Overall balance</div>
+        </div>
+      </div>
+
+      <!-- They Owe Me -->
+      <div class="stats shadow bg-base-200 dark:bg-base-300">
+        <div class="stat">
+          <div class="stat-figure text-success">
+            <i class="fas fa-arrow-up text-3xl"></i>
+          </div>
+          <div class="stat-title">They Owe Me</div>
+          <div class="stat-value text-success">{{ formatCurrency(totalTheyOwe()) }}</div>
+          <div class="stat-desc">Money to receive</div>
+        </div>
+      </div>
+
+      <!-- I Owe Them -->
+      <div class="stats shadow bg-base-200 dark:bg-base-300">
+        <div class="stat">
+          <div class="stat-figure text-error">
+            <i class="fas fa-arrow-down text-3xl"></i>
+          </div>
+          <div class="stat-title">I Owe Them</div>
+          <div class="stat-value text-error">{{ formatCurrency(totalIOwe()) }}</div>
+          <div class="stat-desc">Money to pay</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Balances List -->
+    <div class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg">
+      <div class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+        <h3 class="text-lg font-semibold text-base-content">Balances by Collaborator</h3>
+      </div>
+
+      <div class="p-6">
+        @if (isLoading()) {
+          <div class="flex justify-center items-center py-12">
+            <span class="loading loading-spinner loading-lg"></span>
+            <p class="ml-3 text-base-content/70">Loading balances...</p>
+          </div>
+        } @else {
+          <ul class="space-y-4" role="list">
+            @for (balance of balances(); track balance.collaboratorId) {
+              <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+                <article class="flex items-center justify-between">
+                  <!-- Collaborator Info -->
+                  <div class="flex items-center flex-grow">
+                    <figure class="flex-shrink-0 mr-4">
+                      <div
+                        class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
+                        [ngClass]="{
+                          'bg-green-500 dark:bg-green-600': balance.netBalance > 0,
+                          'bg-red-500 dark:bg-red-600': balance.netBalance < 0,
+                          'bg-gray-500 dark:bg-gray-600': balance.netBalance === 0
+                        }"
+                      >
+                        {{ getInitials(balance.collaboratorInfo.fullName) }}
+                      </div>
+                    </figure>
+                    
+                    <div class="flex-grow min-w-0">
+                      <h4 class="font-semibold text-base-content">
+                        {{ balance.collaboratorInfo.fullName }}
+                      </h4>
+                      @if (balance.collaboratorInfo.email) {
+                        <p class="text-sm text-base-content/70">
+                          <i class="fas fa-envelope mr-1"></i>
+                          {{ balance.collaboratorInfo.email }}
+                        </p>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Balance Amount -->
+                  <div class="text-right ml-4">
+                    @if (balance.netBalance > 0) {
+                      <!-- They owe me -->
+                      <p class="text-lg font-bold text-success">
+                        +{{ formatCurrency(balance.collaboratorOwes) }}
+                      </p>
+                      <p class="text-xs text-base-content/60">They owe you</p>
+                    } @else if (balance.netBalance < 0) {
+                      <!-- I owe them -->
+                      <p class="text-lg font-bold text-error">
+                        -{{ formatCurrency(balance.userOwes) }}
+                      </p>
+                      <p class="text-xs text-base-content/60">You owe them</p>
+                    } @else {
+                      <!-- Settled -->
+                      <p class="text-lg font-bold text-base-content/50">
+                        {{ formatCurrency(0) }}
+                      </p>
+                      <p class="text-xs text-base-content/60">Settled</p>
+                    }
+                  </div>
+
+                  <!-- Actions -->
+                  <aside class="ml-4">
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm btn-circle"
+                      (click)="viewTransactionsWithCollaborator(balance.collaboratorId)"
+                      title="View transactions"
+                    >
+                      <i class="fas fa-list text-base-content/70"></i>
+                    </button>
+                  </aside>
+                </article>
+
+                <!-- Breakdown Details (Expandable) -->
+                @if (expandedBalanceId() === balance.collaboratorId) {
+                  <div class="mt-4 pt-4 border-t border-base-300">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p class="text-base-content/70">They owe you:</p>
+                        <p class="font-semibold">{{ formatCurrency(balance.collaboratorOwes) }}</p>
+                      </div>
+                      <div>
+                        <p class="text-base-content/70">You owe them:</p>
+                        <p class="font-semibold">{{ formatCurrency(balance.userOwes) }}</p>
+                      </div>
+                    </div>
+                    <div class="divider my-2"></div>
+                    <div class="flex justify-between items-center">
+                      <span class="font-bold">Net Balance:</span>
+                      <span class="font-bold text-lg"
+                        [ngClass]="{
+                          'text-success': balance.netBalance > 0,
+                          'text-error': balance.netBalance < 0
+                        }"
+                      >
+                        {{ formatCurrency(Math.abs(balance.netBalance)) }}
+                      </span>
+                    </div>
+                  </div>
+                }
+
+                <!-- Toggle Details Button -->
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm w-full mt-2"
+                  (click)="toggleBalanceDetails(balance.collaboratorId)"
+                >
+                  <i class="fas"
+                    [ngClass]="{
+                      'fa-chevron-down': expandedBalanceId() !== balance.collaboratorId,
+                      'fa-chevron-up': expandedBalanceId() === balance.collaboratorId
+                    }"
+                  ></i>
+                  {{ expandedBalanceId() === balance.collaboratorId ? 'Hide' : 'Show' }} Details
+                </button>
+              </li>
+            }
+
+            <!-- Empty State -->
+            @if (balances().length === 0) {
+              <li class="text-center py-12">
+                <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-balance-scale text-2xl text-base-content/50"></i>
+                </figure>
+                <h3 class="text-lg font-medium text-base-content mb-2">No balances yet</h3>
+                <p class="text-base-content/70 mb-4">Create transactions to see your balances here</p>
+                <button class="btn btn-primary" (click)="createTransaction()">
+                  <i class="fas fa-plus mr-2"></i>
+                  Create Transaction
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-6 flex justify-center">
+      <button type="button" class="btn btn-outline" (click)="goBack()">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Transactions
+      </button>
+    </div>
+  </article>
+</section>

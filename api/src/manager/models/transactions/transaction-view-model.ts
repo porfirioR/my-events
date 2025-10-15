@@ -6,6 +6,7 @@ export class TransactionViewModel {
     public id: number,
     public description: string | null,
     public totalAmount: number,
+    public totalReimbursement: number,
     public netAmount: number,
     public myCollaborator: CollaboratorSummaryModel,
     public whoPaid: WhoPaid,
