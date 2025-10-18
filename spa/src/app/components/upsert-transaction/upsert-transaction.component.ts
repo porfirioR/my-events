@@ -1,13 +1,19 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import Swal from 'sweetalert2';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
-import { SplitType, WhoPaid } from '../../models/enums';
+import { Configurations, SplitType, WhoPaid } from '../../models/enums';
 import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionSplitApiRequest } from '../../models/api/transactions';
 import { ParticipantType } from '../../enums';
+import { HelperService } from '../../services';
+import { SelectInputComponent } from '../inputs/select-input/select-input.component';
+import { KeyValueViewModel } from '../../models/view';
+import { TextComponent } from '../inputs/text/text.component';
+import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
+import { ReimbursementFormGroup, TransactionFormGroup } from '../../models/forms';
 
 @Component({
   selector: 'app-upsert-transaction',
@@ -15,7 +21,10 @@ import { ParticipantType } from '../../enums';
   imports: [
     CommonModule,
     RouterModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SelectInputComponent,
+    TextComponent,
+    TextAreaInputComponent
   ],
   templateUrl: './upsert-transaction.component.html',
   styleUrls: ['./upsert-transaction.component.css']
@@ -37,12 +46,15 @@ export class TransactionFormComponent implements OnInit {
   customCollaboratorAmount = signal<number>(0);
 
   // Form
-  formGroup!: FormGroup;
+  protected formGroup: FormGroup<TransactionFormGroup>;
   isEditMode = false;
   transactionId?: number;
 
   // Computed
-  linkedCollaborators = computed(() => this.collaboratorStore.linkedCollaborators());
+  protected linkedCollaborators: Signal<KeyValueViewModel[]> = computed(() => {
+    const linkedCollaborators = this.collaboratorStore.linkedCollaborators()
+    return HelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
+  });
   protected splitType = SplitType
   protected whoPaid = WhoPaid
 
@@ -52,18 +64,22 @@ export class TransactionFormComponent implements OnInit {
     this.loadCollaborators();
   }
 
-  private initForm(): void {
-    this.formGroup = this.fb.group({
-      collaboratorId: [null, Validators.required],
-      totalAmount: [null, [Validators.required, Validators.min(0.01)]],
-      description: [null],
-      splitType: [SplitType.Equal, Validators.required],
-      whoPaid: [WhoPaid.User, Validators.required],
-      hasReimbursement: [false],
-      reimbursement: this.fb.group({
-        amount: [null],
-        description: [null]
-      })
+  /**
+   *
+   */
+  constructor() {
+    this.formGroup = new FormGroup<TransactionFormGroup>({
+      collaboratorId: new FormControl(null, [Validators.required]),
+      totalAmount: new FormControl(null, [Validators.required, Validators.min(0.01)]),
+      description: new FormControl(null),
+      splitType: new FormControl(SplitType.Equal, [Validators.required]),
+      whoPaid: new FormControl(WhoPaid.User, [Validators.required]),
+      hasReimbursement: new FormControl(false),
+      reimbursement: new FormGroup<ReimbursementFormGroup>({
+        amount: new FormControl(null),
+        description: new FormControl(null)
+      }),
+      splits: new FormArray([])
     });
 
     // Watch for changes in totalAmount to recalculate splits
@@ -74,6 +90,10 @@ export class TransactionFormComponent implements OnInit {
     this.formGroup.get('splitType')?.valueChanges.subscribe(() => {
       this.recalculateSplits();
     });
+  }
+
+  private initForm(): void {
+    
   }
 
   private checkEditMode(): void {
@@ -93,12 +113,12 @@ export class TransactionFormComponent implements OnInit {
   }
 
   // ========== Split Type Handlers ==========
-  setSplitType(type: SplitType): void {
+  protected setSplitType(type: SplitType): void {
     this.formGroup.patchValue({ splitType: type });
     this.recalculateSplits();
   }
 
-  setWhoPaid(who: WhoPaid): void {
+  protected setWhoPaid(who: WhoPaid): void {
     this.formGroup.patchValue({ whoPaid: who });
   }
 

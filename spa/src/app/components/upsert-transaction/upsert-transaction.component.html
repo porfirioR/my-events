@@ -20,7 +20,7 @@
 
     <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
       <!-- Collaborator Selection -->
-      <div class="form-control mb-4">
+      <!-- <div class="form-control mb-4">
         <label class="label">
           <span class="label-text">Collaborator *</span>
         </label>
@@ -40,40 +40,21 @@
             <span class="label-text-alt text-error">Please select a collaborator</span>
           </label>
         }
-      </div>
+      </div> -->
+      <app-select-input
+        formControlName="collaboratorId"
+        id="collaboratorId"
+        label="Collaborator"
+        name="collaborator"
+        [list]="linkedCollaborators()"
+        [disabled]="isLoading()"
+      />
 
       <!-- Total Amount -->
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Total Amount *</span>
-        </label>
-        <input 
-          type="number" 
-          formControlName="totalAmount" 
-          class="input input-bordered w-full" 
-          placeholder="Enter total amount"
-          min="0"
-          step="0.01"
-        >
-        @if (formGroup.get('totalAmount')?.invalid && formGroup.get('totalAmount')?.touched) {
-          <label class="label">
-            <span class="label-text-alt text-error">Please enter a valid amount (greater than 0)</span>
-          </label>
-        }
-      </div>
+      <app-text formControlName="totalAmount" type="number" label="Total Amount" id="totalAmount" name="totalAmount" [description]="'Total Amount'" />
 
       <!-- Description -->
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Description</span>
-        </label>
-        <input 
-          type="text" 
-          formControlName="description" 
-          class="input input-bordered w-full" 
-          placeholder="Enter description (optional)"
-        >
-      </div>
+      <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
 
       <!-- Who Paid -->
       <div class="form-control mb-4">
