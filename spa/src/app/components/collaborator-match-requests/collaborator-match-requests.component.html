@@ -1,5 +1,5 @@
 <section aria-labelledby="match-requests-heading" class="mb-8">
-  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+  <article class="dark:bg-base-300 rounded-xl transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center gap-3">
@@ -176,7 +176,7 @@
         <!-- Create New Request Tab -->
         @if (activeTab === 'create') {
           <div class="flex justify-center">
-            <section class="w-full bg-base-100 rounded-lg shadow-xl border border-base-300 max-w-2xl">
+            <section class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
               <main class="px-6 py-6 space-y-6">
                 <h3 class="text-xl font-bold text-base-content">
                   Create Match Request
@@ -215,34 +215,35 @@
                     </div>
                   </div>
 
-                  <footer class="flex justify-between items-center pt-2">
+                  <footer class="flex justify-between items-center pt-6 gap-4">
                     <button
                       type="button"
-                      class="btn btn-outline btn-ghost"
+                      class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
                       [disabled]="isLoading()"
                       (click)="exit()"
                     >
-                      <i class="fas fa-arrow-left mr-1"></i>
+                      <i class="fas fa-arrow-left text-sm"></i>
                       Cancel
                     </button>
 
                     @if (isLoading()) {
                       <button
                         type="button"
-                        class="btn btn-primary"
-                        disabled
+                        class="btn btn-primary flex items-center gap-2 loading-btn"
                       >
                         <span class="loading loading-spinner loading-xs"></span>
-                        Sending...
+                        Saving...
                       </button>
                     } @else {
                       <button
+                        role="button"
                         type="submit"
-                        class="btn btn-primary"
+                        class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
                         [disabled]="formGroup.invalid"
+                        [class.btn-disabled]="formGroup.invalid"
                       >
-                        <i class="fas fa-paper-plane mr-1"></i>
-                        Send Request
+                        <i class="fas fa-cloud-arrow-up text-sm"></i>
+                        Save
                       </button>
                     }
                   </footer>

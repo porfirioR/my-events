@@ -1,7 +1,7 @@
-<section class="flex flex-col items-center justify-center px-6 py-1 mx-auto lg:py-0 mt-6">
-  <section class="w-full bg-base-100 rounded-lg shadow-xl border border-base-300 md:mt-0 sm:max-w-md xl:p-0 transition-all duration-300 hover:shadow-2xl">
-    <main class="px-6 py-4 space-y-4 md:space-y-6 sm:p-8">
-      <div class="flex items-center gap-3">
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
         <button
           type="button"
           class="btn btn-sm btn-ghost btn-circle"
@@ -12,53 +12,55 @@
         <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
           {{ isEditMode ? 'Edit Collaborator' : 'Create Collaborator' }}
         </h1>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="exit()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+    <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
+      <div class="space-y-4">
+        <app-text formControlName="name" type="text" label="Name" id="name" name="name" [disabled]="isLoading()"/>
+        <app-text formControlName="surname" type="text" label="Surname" id="surname" name="surname" [disabled]="isLoading()"/>
+        @if (collaborator) {
+          <app-text formControlName="email" type="text" label="Email" id="email" name="email" [disabled]="isLoading()"/>
+          <div class="pt-2">
+            <app-check-box-input formControlName="isActive" label="Is Active" [disabled]="isLoading()"/>
+          </div>
+        }
       </div>
 
-      <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
-        <div class="space-y-4">
-          <app-text formControlName="name" type="text" label="Name" id="name" name="name" [disabled]="isLoading()"/>
-          <app-text formControlName="surname" type="text" label="Surname" id="surname" name="surname" [disabled]="isLoading()"/>
-          @if (collaborator) {
-            <app-text formControlName="email" type="text" label="Email" id="email" name="email" [disabled]="isLoading()"/>
-            <div class="pt-2">
-              <app-check-box-input formControlName="isActive" label="Is Active" [disabled]="isLoading()"/>
-            </div>
-          }
-        </div>
+      <footer class="flex justify-between items-center pt-6 gap-4">
+        <button
+          type="button"
+          class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+          [disabled]="isLoading()"
+          (click)="exit()"
+        >
+          <i class="fas fa-arrow-left text-sm"></i>
+          Cancel
+        </button>
 
-        <footer class="flex justify-between items-center pt-6 gap-4">
+        @if (isLoading()) {
           <button
             type="button"
-            class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
-            [disabled]="isLoading()"
-            (click)="exit()"
+            class="btn btn-primary flex items-center gap-2 loading-btn"
           >
-            <i class="fas fa-arrow-left text-sm"></i>
-            Cancel
+            <span class="loading loading-spinner loading-xs"></span>
+            Saving...
           </button>
-
-          @if (isLoading()) {
-            <button
-              type="button"
-              class="btn btn-primary flex items-center gap-2 loading-btn"
-            >
-              <span class="loading loading-spinner loading-xs"></span>
-              Saving...
-            </button>
-          } @else {
-            <button
-              role="button"
-              type="submit"
-              class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
-              [disabled]="formGroup.invalid"
-              [class.btn-disabled]="formGroup.invalid"
-            >
-              <i class="fas fa-cloud-arrow-up text-sm"></i>
-              Save
-            </button>
-          }
-        </footer>
-      </form>
-    </main>
-  </section>
+        } @else {
+          <button
+            role="button"
+            type="submit"
+            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="formGroup.invalid"
+            [class.btn-disabled]="formGroup.invalid"
+          >
+            <i class="fas fa-cloud-arrow-up text-sm"></i>
+            Save
+          </button>
+        }
+      </footer>
+    </form>
+  </article>
 </section>

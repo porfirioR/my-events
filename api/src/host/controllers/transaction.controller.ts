@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import { CurrentUserService } from '../services/current-user.service';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
@@ -17,12 +18,14 @@ import {
 import { MessageModel } from '../models/message.model';
 import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../../manager/models/transactions';
 import { ParticipantType, WhoPaid } from '../../utility/enums';
+import { TRANSACTION_TOKENS } from 'src/utility/constants';
 
 @Controller('transactions')
 @UseGuards(PrivateEndpointGuard)
 export class TransactionController {
   constructor(
     private readonly currentUserService: CurrentUserService,
+    @Inject(TRANSACTION_TOKENS.MANAGER_SERVICE)
     private readonly transactionManagerService: ITransactionManagerService,
   ) {}
 
@@ -113,9 +116,7 @@ export class TransactionController {
    * GET /api/transactions/balance/:collaboratorId
    */
   @Get('balance/:collaboratorId')
-  async getBalanceWithCollaborator(
-    @Param('collaboratorId', ParseIntPipe) collaboratorId: number,
-  ): Promise<BalanceModel> {
+  async getBalanceWithCollaborator(@Param('collaboratorId', ParseIntPipe) collaboratorId: number): Promise<BalanceModel> {
     const userId = await this.currentUserService.getCurrentUserId();
     return await this.transactionManagerService.getBalanceWithCollaborator(
       userId,

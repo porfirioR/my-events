@@ -22,7 +22,7 @@ import { TransactionController } from './controllers/transaction.controller';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    ManagerModule
+    ManagerModule,
   ],
   controllers: [
     UsersController,

@@ -38,14 +38,14 @@
       </article>
 
       <!-- Transactions Card -->
-      <article class="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
+      <article [routerLink]="['transactions']" class="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
         <header class="flex items-center justify-between">
           <div>
             <h3 class="text-green-100 dark:text-green-50 text-sm font-medium">Transactions</h3>
             <data value="12" class="text-3xl font-bold mt-1 text-white">12</data>
           </div>
           <figure class="bg-green-400 bg-opacity-30 dark:bg-green-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-calendar-check text-xl text-white" aria-hidden="true"></i>
+            <i class="fas fa-dollar-sign text-xl text-white" aria-hidden="true"></i>
           </figure>
         </header>
         <footer class="mt-4">
@@ -284,7 +284,7 @@
                 </button>
               </li>
               <li>
-                <button class="w-full flex items-center p-3 text-left text-base-content hover:bg-warning/10 hover:text-warning rounded-lg transition-colors duration-200 cursor-pointer">
+                <button [routerLink]="['transactions/new']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-warning/10 hover:text-warning rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-dollar-sign mr-3 text-warning" aria-hidden="true"></i>
                   <span>Add Transaction</span>
                 </button>

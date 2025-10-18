@@ -1,10 +1,10 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import Swal from 'sweetalert2';
-import { useCollaboratorStore, useTransactionStore } from '../../store';
+import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
 import { SplitType, WhoPaid } from '../../models/enums';
 import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionSplitApiRequest } from '../../models/api/transactions';
 import { ParticipantType } from '../../enums';
@@ -12,7 +12,11 @@ import { ParticipantType } from '../../enums';
 @Component({
   selector: 'app-upsert-transaction',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './upsert-transaction.component.html',
   styleUrls: ['./upsert-transaction.component.css']
 })
@@ -23,6 +27,8 @@ export class TransactionFormComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
+  private loadingStore = useLoadingStore();
+  protected isLoading = this.loadingStore.isLoading;
 
   // Signals
   isSubmitting = signal<boolean>(false);
@@ -31,7 +37,7 @@ export class TransactionFormComponent implements OnInit {
   customCollaboratorAmount = signal<number>(0);
 
   // Form
-  form!: FormGroup;
+  formGroup!: FormGroup;
   isEditMode = false;
   transactionId?: number;
 
@@ -47,7 +53,7 @@ export class TransactionFormComponent implements OnInit {
   }
 
   private initForm(): void {
-    this.form = this.fb.group({
+    this.formGroup = this.fb.group({
       collaboratorId: [null, Validators.required],
       totalAmount: [null, [Validators.required, Validators.min(0.01)]],
       description: [null],
@@ -61,11 +67,11 @@ export class TransactionFormComponent implements OnInit {
     });
 
     // Watch for changes in totalAmount to recalculate splits
-    this.form.get('totalAmount')?.valueChanges.subscribe(() => {
+    this.formGroup.get('totalAmount')?.valueChanges.subscribe(() => {
       this.recalculateSplits();
     });
 
-    this.form.get('splitType')?.valueChanges.subscribe(() => {
+    this.formGroup.get('splitType')?.valueChanges.subscribe(() => {
       this.recalculateSplits();
     });
   }
@@ -88,17 +94,17 @@ export class TransactionFormComponent implements OnInit {
 
   // ========== Split Type Handlers ==========
   setSplitType(type: SplitType): void {
-    this.form.patchValue({ splitType: type });
+    this.formGroup.patchValue({ splitType: type });
     this.recalculateSplits();
   }
 
   setWhoPaid(who: WhoPaid): void {
-    this.form.patchValue({ whoPaid: who });
+    this.formGroup.patchValue({ whoPaid: who });
   }
 
   private recalculateSplits(): void {
-    const totalAmount = this.form.get('totalAmount')?.value || 0;
-    const splitType = this.form.get('splitType')?.value;
+    const totalAmount = this.formGroup.get('totalAmount')?.value || 0;
+    const splitType = this.formGroup.get('splitType')?.value;
     const netAmount = this.calculateNetAmount();
 
     if (splitType === SplitType.Equal) {
@@ -125,7 +131,7 @@ export class TransactionFormComponent implements OnInit {
     const value = parseFloat((event.target as HTMLInputElement).value) || 0;
     this.customUserAmount.set(value);
 
-    const splitType = this.form.get('splitType')?.value;
+    const splitType = this.formGroup.get('splitType')?.value;
     const netAmount = this.calculateNetAmount();
 
     if (splitType === SplitType.Custom) {
@@ -139,7 +145,7 @@ export class TransactionFormComponent implements OnInit {
     const value = parseFloat((event.target as HTMLInputElement).value) || 0;
     this.customCollaboratorAmount.set(value);
 
-    const splitType = this.form.get('splitType')?.value;
+    const splitType = this.formGroup.get('splitType')?.value;
     const netAmount = this.calculateNetAmount();
 
     if (splitType === SplitType.Custom) {
@@ -151,15 +157,15 @@ export class TransactionFormComponent implements OnInit {
 
   // ========== Calculations ==========
   calculateNetAmount(): number {
-    const totalAmount = this.form.get('totalAmount')?.value || 0;
-    const hasReimbursement = this.form.get('hasReimbursement')?.value;
-    const reimbursementAmount = hasReimbursement ? (this.form.get('reimbursement.amount')?.value || 0) : 0;
+    const totalAmount = this.formGroup.get('totalAmount')?.value || 0;
+    const hasReimbursement = this.formGroup.get('hasReimbursement')?.value;
+    const reimbursementAmount = hasReimbursement ? (this.formGroup.get('reimbursement.amount')?.value || 0) : 0;
     return totalAmount - reimbursementAmount;
   }
 
   calculateMySplit(): number {
     const netAmount = this.calculateNetAmount();
-    const splitType = this.form.get('splitType')?.value;
+    const splitType = this.formGroup.get('splitType')?.value;
 
     if (splitType === SplitType.Equal) {
       return netAmount / 2;
@@ -173,7 +179,7 @@ export class TransactionFormComponent implements OnInit {
 
   calculateTheirSplit(): number {
     const netAmount = this.calculateNetAmount();
-    const splitType = this.form.get('splitType')?.value;
+    const splitType = this.formGroup.get('splitType')?.value;
 
     if (splitType === SplitType.Equal) {
       return netAmount / 2;
@@ -187,14 +193,14 @@ export class TransactionFormComponent implements OnInit {
 
   // ========== Reimbursement ==========
   onReimbursementToggle(): void {
-    const hasReimbursement = this.form.get('hasReimbursement')?.value;
-    const reimbursementGroup = this.form.get('reimbursement') as FormGroup;
+    const hasReimbursement = this.formGroup.get('hasReimbursement')?.value;
+    const reimbursementGroup = this.formGroup.get('reimbursement') as FormGroup;
 
     if (hasReimbursement) {
       reimbursementGroup.get('amount')?.setValidators([
         Validators.required,
         Validators.min(0.01),
-        Validators.max(this.form.get('totalAmount')?.value || 0)
+        Validators.max(this.formGroup.get('totalAmount')?.value || 0)
       ]);
     } else {
       reimbursementGroup.get('amount')?.clearValidators();
@@ -207,8 +213,8 @@ export class TransactionFormComponent implements OnInit {
 
   // ========== Submit ==========
   onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    if (this.formGroup.invalid) {
+      this.formGroup.markAllAsTouched();
       return;
     }
 
@@ -225,7 +231,7 @@ export class TransactionFormComponent implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-    const formValue = this.form.value;
+    const formValue = this.formGroup.value;
     const whoPaid = formValue.whoPaid;
 
     // Create splits
@@ -233,12 +239,12 @@ export class TransactionFormComponent implements OnInit {
       new TransactionSplitApiRequest(
         ParticipantType.User,
         mySplit,
-        this.form.get('splitType')?.value === SplitType.Percentage ? this.customUserAmount() : null
+        this.formGroup.get('splitType')?.value === SplitType.Percentage ? this.customUserAmount() : null
       ),
       new TransactionSplitApiRequest(
         ParticipantType.Collaborator,
         theirSplit,
-        this.form.get('splitType')?.value === SplitType.Percentage ? this.customCollaboratorAmount() : null
+        this.formGroup.get('splitType')?.value === SplitType.Percentage ? this.customCollaboratorAmount() : null
       )
     ];
 

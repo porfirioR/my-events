@@ -1,17 +1,24 @@
 <section class="container mx-auto px-4 py-8">
-  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
     <header class="mb-6">
       <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-base-content">
+        <button
+          type="button"
+          class="btn btn-sm btn-ghost btn-circle"
+          [routerLink]="['/collaborators']"
+        >
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
           {{ isEditMode ? 'Edit Transaction' : 'New Transaction' }}
-        </h2>
+        </h1>
         <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="goBack()">
           <i class="fas fa-times"></i>
         </button>
       </div>
     </header>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
       <!-- Collaborator Selection -->
       <div class="form-control mb-4">
         <label class="label">
@@ -28,7 +35,7 @@
             </option>
           }
         </select>
-        @if (form.get('collaboratorId')?.invalid && form.get('collaboratorId')?.touched) {
+        @if (formGroup.get('collaboratorId')?.invalid && formGroup.get('collaboratorId')?.touched) {
           <label class="label">
             <span class="label-text-alt text-error">Please select a collaborator</span>
           </label>
@@ -48,7 +55,7 @@
           min="0"
           step="0.01"
         >
-        @if (form.get('totalAmount')?.invalid && form.get('totalAmount')?.touched) {
+        @if (formGroup.get('totalAmount')?.invalid && formGroup.get('totalAmount')?.touched) {
           <label class="label">
             <span class="label-text-alt text-error">Please enter a valid amount (greater than 0)</span>
           </label>
@@ -77,7 +84,7 @@
           <button 
             type="button"
             class="btn flex-1"
-            [ngClass]="{'btn-active': form.get('whoPaid')?.value === whoPaid.User}"
+            [ngClass]="{'btn-active': formGroup.get('whoPaid')?.value === whoPaid.User}"
             (click)="setWhoPaid(whoPaid.User)"
           >
             <i class="fas fa-user mr-2"></i>
@@ -86,7 +93,7 @@
           <button 
             type="button"
             class="btn flex-1"
-            [ngClass]="{'btn-active': form.get('whoPaid')?.value === whoPaid.Collaborator}"
+            [ngClass]="{'btn-active': formGroup.get('whoPaid')?.value === whoPaid.Collaborator}"
             (click)="setWhoPaid(whoPaid.Collaborator)"
           >
             <i class="fas fa-user-friends mr-2"></i>
@@ -104,7 +111,7 @@
           <button 
             type="button"
             class="btn btn-sm flex-1"
-            [ngClass]="{'btn-active': form.get('splitType')?.value === splitType.Equal}"
+            [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Equal}"
             (click)="setSplitType(splitType.Equal)"
           >
             <i class="fas fa-equals mr-1"></i>
@@ -113,7 +120,7 @@
           <button 
             type="button"
             class="btn btn-sm flex-1"
-            [ngClass]="{'btn-active': form.get('splitType')?.value === splitType.Custom}"
+            [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Custom}"
             (click)="setSplitType(splitType.Custom)"
           >
             <i class="fas fa-sliders-h mr-1"></i>
@@ -122,7 +129,7 @@
           <button 
             type="button"
             class="btn btn-sm flex-1"
-            [ngClass]="{'btn-active': form.get('splitType')?.value === splitType.Percentage}"
+            [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Percentage}"
             (click)="setSplitType(splitType.Percentage)"
           >
             <i class="fas fa-percent mr-1"></i>
@@ -134,9 +141,8 @@
       <!-- Split Details -->
       <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
         <h3 class="text-lg font-semibold mb-3">Split Details</h3>
-        
         <!-- Split calculation display -->
-        @if (form.get('totalAmount')?.value > 0) {
+        @if (formGroup.get('totalAmount')?.value > 0) {
           <div class="space-y-2">
             <div class="flex justify-between items-center">
               <span class="text-base-content/70">You:</span>
@@ -155,11 +161,11 @@
         }
 
         <!-- Custom split inputs -->
-        @if (form.get('splitType')?.value === 'Custom' || form.get('splitType')?.value === 'Percentage') {
+        @if (formGroup.get('splitType')?.value === 'Custom' || formGroup.get('splitType')?.value === 'Percentage') {
           <div class="mt-4 space-y-3">
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Your {{ form.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
+                <span class="label-text">Your {{ formGroup.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
               </label>
               <input 
                 type="number" 
@@ -167,13 +173,13 @@
                 [value]="customUserAmount()"
                 (input)="onCustomUserAmountChange($event)"
                 [min]="0"
-                [max]="form.get('splitType')?.value === 'Percentage' ? 100 : form.get('totalAmount')?.value"
-                [step]="form.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
+                [max]="formGroup.get('splitType')?.value === 'Percentage' ? 100 : formGroup.get('totalAmount')?.value"
+                [step]="formGroup.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
               >
             </div>
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Their {{ form.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
+                <span class="label-text">Their {{ formGroup.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
               </label>
               <input 
                 type="number" 
@@ -181,8 +187,8 @@
                 [value]="customCollaboratorAmount()"
                 (input)="onCustomCollaboratorAmountChange($event)"
                 [min]="0"
-                [max]="form.get('splitType')?.value === 'Percentage' ? 100 : form.get('totalAmount')?.value"
-                [step]="form.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
+                [max]="formGroup.get('splitType')?.value === 'Percentage' ? 100 : formGroup.get('totalAmount')?.value"
+                [step]="formGroup.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
               >
             </div>
           </div>
@@ -202,7 +208,7 @@
         </label>
       </div>
 
-      @if (form.get('hasReimbursement')?.value) {
+      @if (formGroup.get('hasReimbursement')?.value) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
           <h3 class="text-lg font-semibold mb-3">Reimbursement Details</h3>
           
@@ -216,10 +222,10 @@
               class="input input-bordered w-full" 
               placeholder="Enter reimbursement amount"
               min="0"
-              [max]="form.get('totalAmount')?.value"
+              [max]="formGroup.get('totalAmount')?.value"
               step="0.01"
             >
-            @if (form.get('reimbursement.amount')?.invalid && form.get('reimbursement.amount')?.touched) {
+            @if (formGroup.get('reimbursement.amount')?.invalid && formGroup.get('reimbursement.amount')?.touched) {
               <label class="label">
                 <span class="label-text-alt text-error">
                   Reimbursement must be greater than 0 and not exceed total amount
@@ -256,21 +262,38 @@
       }
 
       <!-- Action Buttons -->
-      <div class="flex justify-end gap-2 mt-6">
-        <button type="button" class="btn btn-ghost" (click)="goBack()">
+      <footer class="flex justify-between items-center pt-6 gap-4">
+        <button
+          type="button"
+          class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+          [disabled]="isLoading()"
+          (click)="goBack()"
+        >
+          <i class="fas fa-arrow-left text-sm"></i>
           Cancel
         </button>
-        <button 
-          type="submit" 
-          class="btn btn-primary"
-          [disabled]="form.invalid || isSubmitting()"
-        >
+
           @if (isSubmitting()) {
-            <span class="loading loading-spinner loading-sm"></span>
+            <button
+              type="button"
+              class="btn btn-primary flex items-center gap-2 loading-btn"
+            >
+              <span class="loading loading-spinner loading-xs"></span>
+              Saving...
+            </button>
+          } @else {
+            <button
+              role="button"
+              type="submit"
+              class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+              [disabled]="formGroup.invalid || isSubmitting()"
+              [class.btn-disabled]="formGroup.invalid || isSubmitting()"
+            >
+              <i class="fas fa-cloud-arrow-up text-sm"></i>
+              Save
+            </button>
           }
-          {{ isEditMode ? 'Update' : 'Create' }} Transaction
-        </button>
-      </div>
+      </footer>
     </form>
   </article>
 </section>
