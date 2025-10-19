@@ -31,6 +31,20 @@
       <app-text formControlName="totalAmount" type="number" label="Total Amount" id="totalAmount" name="totalAmount" [description]="'Total transaction amount on invoice'" />
       <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
 
+      <!-- Reimbursement Section -->
+      <app-check-box-input formControlName="hasReimbursement" id="hasReimbursement" [label]="'Add Reimbursement'" />
+
+      @if (formGroup.controls.hasReimbursement.value) {
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
+          <h3 class="text-lg font-semibold mb-3">Reimbursement Details</h3>
+          <app-text formControlName="amount" type="number" label="Amount" id="amount" name="amount" />
+          <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle"></i>
+            <span>Net amount after reimbursement: {{ formatCurrency(calculateNetAmount()) }}</span>
+          </div>
+        </div>
+      }
       <!-- Who Paid -->
       <section class="flex flex-col md:flex-row md:gap-4">
         <div class="form-control mb-4 md:flex-1">
@@ -95,27 +109,10 @@
           </div>
         </div>
       </section>
-
       <!-- Split Details -->
       @if (formGroup.controls.totalAmount.value && formGroup.controls.totalAmount.value > 0) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
           <h3 class="text-lg font-semibold mb-3">Split Details</h3>
-          <!-- Split calculation display -->
-            <div class="space-y-2">
-              <div class="flex justify-between items-center">
-                <span class="text-base-content/70">You:</span>
-                <span class="font-semibold">{{ formatCurrency(calculateMySplit()) }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-base-content/70">They:</span>
-                <span class="font-semibold">{{ formatCurrency(calculateTheirSplit()) }}</span>
-              </div>
-              <div class="divider my-2"></div>
-              <div class="flex justify-between items-center text-lg">
-                <span class="font-bold">Total:</span>
-                <span class="font-bold">{{ formatCurrency(calculateNetAmount()) }}</span>
-              </div>
-            </div>
 
           <!-- Custom split inputs -->
           @if (formGroup.value.splitType === splitType.Custom || formGroup.value.splitType === splitType.Percentage) {
@@ -150,20 +147,21 @@
               </div>
             </div>
           }
-        </div>
-      }
-
-      <!-- Reimbursement Section -->
-      <app-check-box-input formControlName="hasReimbursement" id="hasReimbursement" [label]="'Add Reimbursement'" />
-
-      @if (formGroup.controls.hasReimbursement.value) {
-        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
-          <h3 class="text-lg font-semibold mb-3">Reimbursement Details</h3>
-          <app-text formControlName="amount" type="number" label="Amount" id="amount" name="amount" />
-          <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
-          <div class="alert alert-info mt-3">
-            <i class="fas fa-info-circle"></i>
-            <span>Net amount after reimbursement: {{ formatCurrency(calculateNetAmount()) }}</span>
+          <!-- Split calculation display -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-base-content/70">You:</span>
+              <span class="font-semibold">{{ formatCurrency(calculateMySplit()) }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-base-content/70">They:</span>
+              <span class="font-semibold">{{ formatCurrency(calculateTheirSplit()) }}</span>
+            </div>
+            <div class="divider my-2"></div>
+            <div class="flex justify-between items-center text-lg">
+              <span class="font-bold">Total:</span>
+              <span class="font-bold">{{ formatCurrency(calculateNetAmount()) }}</span>
+            </div>
           </div>
         </div>
       }
