@@ -101,7 +101,6 @@ export class TransactionFormComponent implements OnInit {
     this.loadCollaborators();
   }
 
-
   private checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -142,7 +141,6 @@ export class TransactionFormComponent implements OnInit {
         this.customCollaboratorAmount.set(value);
         break;
       case this.splitType.Percentage:
-        // Keep percentages or default to 50/50
         this.customUserAmount.set(50);
         this.customCollaboratorAmount.set(50);
         break;
