@@ -17,7 +17,7 @@ export class DashboardComponent implements OnInit {
   protected activeCollaborators = this.collaboratorStore.activeCollaborators
   protected inactiveCollaborators = this.collaboratorStore.inactiveCollaborators
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (this.collaboratorStore.totalCount() === 0) {
       this.collaboratorStore.loadCollaborators();
     }

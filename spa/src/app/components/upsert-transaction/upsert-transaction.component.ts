@@ -1,21 +1,18 @@
 import { Component, OnInit, signal, computed, inject, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
-import Swal from 'sweetalert2';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
-import { Configurations, SplitType, WhoPaid } from '../../models/enums';
+import { Configurations, ParticipantType, SplitType, WhoPaid } from '../../models/enums';
 import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionSplitApiRequest } from '../../models/api/transactions';
-import { ParticipantType } from '../../enums';
-import { HelperService } from '../../services';
+import { ReimbursementFormGroup, TransactionFormGroup, TransactionSplitFormGroup } from '../../models/forms';
+import { AlertService, HelperService } from '../../services';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { KeyValueViewModel } from '../../models/view';
 import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
-import { ReimbursementFormGroup, TransactionFormGroup, TransactionSplitFormGroup } from '../../models/forms';
 import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
-import { merge } from 'rxjs';
 
 @Component({
   selector: 'app-upsert-transaction',
@@ -36,6 +33,7 @@ export class TransactionFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
+  private readonly alertService = inject(AlertService);
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
@@ -127,27 +125,32 @@ export class TransactionFormComponent implements OnInit {
   }
 
   private recalculateSplits(): void {
-    const totalAmount = this.formGroup.get('totalAmount')?.value || 0;
-    const splitType = this.formGroup.get('splitType')?.value;
     const netAmount = this.calculateNetAmount();
 
-    if (splitType === SplitType.Equal) {
-      const half = netAmount / 2;
-      this.customUserAmount.set(half);
-      this.customCollaboratorAmount.set(half);
-    } else if (splitType === SplitType.Custom) {
-      // Keep current values or reset
-      if (this.customUserAmount() === 0 && this.customCollaboratorAmount() === 0) {
+    switch (this.formGroup.value.splitType) {
+      case SplitType.Equal:
         const half = netAmount / 2;
         this.customUserAmount.set(half);
-        this.customCollaboratorAmount.set(half);
-      }
-    } else if (splitType === SplitType.Percentage) {
-      // Keep percentages or default to 50/50
-      if (this.customUserAmount() === 0 && this.customCollaboratorAmount() === 0) {
-        this.customUserAmount.set(50);
-        this.customCollaboratorAmount.set(50);
-      }
+        break;
+    
+      case this.splitType.Custom:
+        // Keep current values or reset
+        if (this.customUserAmount() === 0 && this.customCollaboratorAmount() === 0) {
+          const half = netAmount / 2;
+          this.customUserAmount.set(half);
+          this.customCollaboratorAmount.set(half);
+        }
+        break;
+      case this.splitType.Percentage:
+        // Keep percentages or default to 50/50
+        if (this.customUserAmount() === 0 && this.customCollaboratorAmount() === 0) {
+          this.customUserAmount.set(50);
+          this.customCollaboratorAmount.set(50);
+        }
+        break;
+    
+      default:
+        break;
     }
   }
 
@@ -155,12 +158,12 @@ export class TransactionFormComponent implements OnInit {
     const value = parseFloat((event.target as HTMLInputElement).value) || 0;
     this.customUserAmount.set(value);
 
-    const splitType = this.formGroup.get('splitType')?.value;
+    const splitType = this.formGroup.value.splitType;
     const netAmount = this.calculateNetAmount();
 
-    if (splitType === SplitType.Custom) {
+    if (splitType === this.splitType.Custom) {
       this.customCollaboratorAmount.set(netAmount - value);
-    } else if (splitType === SplitType.Percentage) {
+    } else if (splitType === this.splitType.Percentage) {
       this.customCollaboratorAmount.set(100 - value);
     }
   }
@@ -169,12 +172,12 @@ export class TransactionFormComponent implements OnInit {
     const value = parseFloat((event.target as HTMLInputElement).value) || 0;
     this.customCollaboratorAmount.set(value);
 
-    const splitType = this.formGroup.get('splitType')?.value;
+    const splitType = this.formGroup.value.splitType;
     const netAmount = this.calculateNetAmount();
 
-    if (splitType === SplitType.Custom) {
+    if (splitType === this.splitType.Custom) {
       this.customUserAmount.set(netAmount - value);
-    } else if (splitType === SplitType.Percentage) {
+    } else if (splitType === this.splitType.Percentage) {
       this.customUserAmount.set(100 - value);
     }
   }
@@ -189,7 +192,7 @@ export class TransactionFormComponent implements OnInit {
 
   calculateMySplit(): number {
     const netAmount = this.calculateNetAmount();
-    const splitType = this.formGroup.get('splitType')?.value;
+    const splitType = this.formGroup.value.splitType;
 
     if (splitType === SplitType.Equal) {
       return netAmount / 2;
@@ -203,7 +206,7 @@ export class TransactionFormComponent implements OnInit {
 
   calculateTheirSplit(): number {
     const netAmount = this.calculateNetAmount();
-    const splitType = this.formGroup.get('splitType')?.value;
+    const splitType = this.formGroup.value.splitType;
 
     if (splitType === SplitType.Equal) {
       return netAmount / 2;
@@ -262,12 +265,12 @@ export class TransactionFormComponent implements OnInit {
       new TransactionSplitApiRequest(
         ParticipantType.User,
         mySplit,
-        this.formGroup.get('splitType')?.value === SplitType.Percentage ? this.customUserAmount() : null
+        this.formGroup.value.splitType === this.splitType.Percentage ? this.customUserAmount() : null
       ),
       new TransactionSplitApiRequest(
         ParticipantType.Collaborator,
         theirSplit,
-        this.formGroup.get('splitType')?.value === SplitType.Percentage ? this.customCollaboratorAmount() : null
+        this.formGroup.value.splitType === this.splitType.Percentage ? this.customCollaboratorAmount() : null
       )
     ];
 
@@ -294,19 +297,12 @@ export class TransactionFormComponent implements OnInit {
     // Submit
     this.transactionStore.createTransaction(request).subscribe({
       next: () => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'Transaction created successfully',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        this.alertService.showSuccess('Transaction created successfully')
         // Reload transactions
         this.transactionStore.loadTransactions();
         this.router.navigate(['/transactions']);
       },
       error: (error) => {
-        console.error('Error creating transaction:', error);
         this.errorMessage.set(error.error?.message || 'Failed to create transaction');
         this.isSubmitting.set(false);
       }
