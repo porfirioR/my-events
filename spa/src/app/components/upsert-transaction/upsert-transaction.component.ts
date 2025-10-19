@@ -13,7 +13,9 @@ import { SelectInputComponent } from '../inputs/select-input/select-input.compon
 import { KeyValueViewModel } from '../../models/view';
 import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
-import { ReimbursementFormGroup, TransactionFormGroup } from '../../models/forms';
+import { ReimbursementFormGroup, TransactionFormGroup, TransactionSplitFormGroup } from '../../models/forms';
+import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
+import { merge } from 'rxjs';
 
 @Component({
   selector: 'app-upsert-transaction',
@@ -24,13 +26,13 @@ import { ReimbursementFormGroup, TransactionFormGroup } from '../../models/forms
     ReactiveFormsModule,
     SelectInputComponent,
     TextComponent,
-    TextAreaInputComponent
+    TextAreaInputComponent,
+    CheckBoxInputComponent
   ],
   templateUrl: './upsert-transaction.component.html',
   styleUrls: ['./upsert-transaction.component.css']
 })
 export class TransactionFormComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
@@ -46,7 +48,7 @@ export class TransactionFormComponent implements OnInit {
   customCollaboratorAmount = signal<number>(0);
 
   // Form
-  protected formGroup: FormGroup<TransactionFormGroup>;
+  protected formGroup: FormGroup<TransactionFormGroup>
   isEditMode = false;
   transactionId?: number;
 
@@ -58,43 +60,45 @@ export class TransactionFormComponent implements OnInit {
   protected splitType = SplitType
   protected whoPaid = WhoPaid
 
+  constructor() {
+    const reimbursement = new FormGroup<ReimbursementFormGroup>({
+      amount: new FormControl(null),
+      description: new FormControl(null)
+    })
+    this.formGroup = new FormGroup<TransactionFormGroup>({
+      collaboratorId: new FormControl(null, [Validators.required]),
+      totalAmount: new FormControl(null, [Validators.required, Validators.min(0)]),
+      description: new FormControl(null, [Validators.required]),
+      splitType: new FormControl(SplitType.Equal, [Validators.required]),
+      whoPaid: new FormControl(WhoPaid.User, [Validators.required]),
+      splits: new FormArray<FormGroup<TransactionSplitFormGroup>>([]),
+      hasReimbursement: new FormControl(false),
+      reimbursement: reimbursement
+    });
+
+    // Watch for changes in totalAmount to recalculate splits
+    this.formGroup.controls.totalAmount.valueChanges.subscribe((x) => {
+      this.recalculateSplits();
+      if (x) {
+        this.formGroup.controls.reimbursement.controls.amount.addValidators(Validators.max(x))
+      } else {
+        this.formGroup.controls.reimbursement.controls.amount.clearValidators();
+        this.formGroup.controls.reimbursement.controls.amount.reset();
+      }
+    });
+    this.formGroup.controls.splitType.valueChanges.subscribe(() => {
+      this.recalculateSplits();
+    });
+    this.formGroup.controls.hasReimbursement.valueChanges.subscribe(() => {
+      this.onReimbursementToggle();
+    });
+  }
+
   ngOnInit(): void {
-    this.initForm();
     this.checkEditMode();
     this.loadCollaborators();
   }
 
-  /**
-   *
-   */
-  constructor() {
-    this.formGroup = new FormGroup<TransactionFormGroup>({
-      collaboratorId: new FormControl(null, [Validators.required]),
-      totalAmount: new FormControl(null, [Validators.required, Validators.min(0.01)]),
-      description: new FormControl(null),
-      splitType: new FormControl(SplitType.Equal, [Validators.required]),
-      whoPaid: new FormControl(WhoPaid.User, [Validators.required]),
-      hasReimbursement: new FormControl(false),
-      reimbursement: new FormGroup<ReimbursementFormGroup>({
-        amount: new FormControl(null),
-        description: new FormControl(null)
-      }),
-      splits: new FormArray([])
-    });
-
-    // Watch for changes in totalAmount to recalculate splits
-    this.formGroup.get('totalAmount')?.valueChanges.subscribe(() => {
-      this.recalculateSplits();
-    });
-
-    this.formGroup.get('splitType')?.valueChanges.subscribe(() => {
-      this.recalculateSplits();
-    });
-  }
-
-  private initForm(): void {
-    
-  }
 
   private checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -213,21 +217,20 @@ export class TransactionFormComponent implements OnInit {
 
   // ========== Reimbursement ==========
   onReimbursementToggle(): void {
-    const hasReimbursement = this.formGroup.get('hasReimbursement')?.value;
-    const reimbursementGroup = this.formGroup.get('reimbursement') as FormGroup;
+    const reimbursementGroup = this.formGroup.controls.reimbursement;
 
-    if (hasReimbursement) {
-      reimbursementGroup.get('amount')?.setValidators([
+    if (this.formGroup.value.hasReimbursement) {
+      reimbursementGroup.controls.amount.setValidators([
         Validators.required,
-        Validators.min(0.01),
+        Validators.min(1),
         Validators.max(this.formGroup.get('totalAmount')?.value || 0)
       ]);
     } else {
-      reimbursementGroup.get('amount')?.clearValidators();
+      reimbursementGroup.controls.amount.clearValidators();
       reimbursementGroup.reset();
     }
 
-    reimbursementGroup.get('amount')?.updateValueAndValidity();
+    reimbursementGroup.controls.amount.updateValueAndValidity();
     this.recalculateSplits();
   }
 
@@ -270,20 +273,20 @@ export class TransactionFormComponent implements OnInit {
 
     // Create reimbursement if needed
     let reimbursement: ReimbursementApiRequest | null = null;
-    if (formValue.hasReimbursement && formValue.reimbursement.amount > 0) {
+    if (formValue.hasReimbursement && formValue.reimbursement?.amount! > 0) {
       reimbursement = new ReimbursementApiRequest(
-        formValue.reimbursement.amount,
-        formValue.reimbursement.description
+        formValue.reimbursement?.amount!,
+        formValue.reimbursement?.description
       );
     }
 
     // Create request
     const request = new CreateTransactionApiRequest(
-      formValue.collaboratorId,
-      formValue.totalAmount,
-      formValue.description,
-      formValue.splitType,
-      whoPaid,
+      formValue.collaboratorId!,
+      formValue.totalAmount!,
+      formValue.description!,
+      formValue.splitType!,
+      whoPaid!,
       splits,
       reimbursement
     );

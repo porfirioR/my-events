@@ -38,6 +38,7 @@ export class LoginComponent {
     if (this.formGroup.invalid) {
       return
     }
+    this.authStore.loginStart()
     const request: LoginUserApiRequest = new LoginUserApiRequest(this.formGroup.value.email!, this.formGroup.value.password!)
     this.userApiService.loginUser(request).subscribe({
       next: (user) => {

@@ -10,5 +10,5 @@ export interface TransactionFormGroup {
   whoPaid: FormControl<WhoPaid | null>;
   splits: FormArray<FormGroup<TransactionSplitFormGroup>>;
   hasReimbursement: FormControl<boolean | null>;
-  reimbursement: FormGroup<ReimbursementFormGroup> | null;
+  reimbursement: FormGroup<ReimbursementFormGroup>;
 }

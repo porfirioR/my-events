@@ -5,7 +5,7 @@
         <button
           type="button"
           class="btn btn-sm btn-ghost btn-circle"
-          [routerLink]="['/collaborators']"
+          [routerLink]="['/transactions']"
         >
           <i class="fas fa-arrow-left" aria-hidden="true"></i>
         </button>
@@ -19,28 +19,6 @@
     </header>
 
     <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
-      <!-- Collaborator Selection -->
-      <!-- <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Collaborator *</span>
-        </label>
-        <select formControlName="collaboratorId" class="select select-bordered w-full">
-          <option value="" disabled selected>Select a collaborator</option>
-          @for (collaborator of linkedCollaborators(); track collaborator.id) {
-            <option [value]="collaborator.id">
-              {{ collaborator.name }} {{ collaborator.surname }}
-              @if (collaborator.email) {
-                - {{ collaborator.email }}
-              }
-            </option>
-          }
-        </select>
-        @if (formGroup.get('collaboratorId')?.invalid && formGroup.get('collaboratorId')?.touched) {
-          <label class="label">
-            <span class="label-text-alt text-error">Please select a collaborator</span>
-          </label>
-        }
-      </div> -->
       <app-select-input
         formControlName="collaboratorId"
         id="collaboratorId"
@@ -50,80 +28,80 @@
         [disabled]="isLoading()"
       />
 
-      <!-- Total Amount -->
-      <app-text formControlName="totalAmount" type="number" label="Total Amount" id="totalAmount" name="totalAmount" [description]="'Total Amount'" />
-
-      <!-- Description -->
+      <app-text formControlName="totalAmount" type="number" label="Total Amount" id="totalAmount" name="totalAmount" [description]="'Total transaction amount on invoice'" />
       <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
 
       <!-- Who Paid -->
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Who Paid? *</span>
-        </label>
-        <div class="btn-group w-full">
-          <button 
-            type="button"
-            class="btn flex-1"
-            [ngClass]="{'btn-active': formGroup.get('whoPaid')?.value === whoPaid.User}"
-            (click)="setWhoPaid(whoPaid.User)"
-          >
-            <i class="fas fa-user mr-2"></i>
-            I Paid
-          </button>
-          <button 
-            type="button"
-            class="btn flex-1"
-            [ngClass]="{'btn-active': formGroup.get('whoPaid')?.value === whoPaid.Collaborator}"
-            (click)="setWhoPaid(whoPaid.Collaborator)"
-          >
-            <i class="fas fa-user-friends mr-2"></i>
-            They Paid
-          </button>
+      <section class="flex flex-col md:flex-row md:gap-4">
+        <div class="form-control mb-4 md:flex-1">
+          <label class="label">
+            <span class="label-text">Who Paid? *</span>
+          </label>
+          <div class="btn-group w-full">
+            <button 
+              type="button"
+              class="btn flex-1"
+              [ngClass]="{'btn-active': formGroup.get('whoPaid')?.value === whoPaid.User}"
+              (click)="setWhoPaid(whoPaid.User)"
+            >
+              <i class="fas fa-user mr-2"></i>
+              I Paid
+            </button>
+            <button 
+              type="button"
+              class="btn flex-1"
+              [ngClass]="{'btn-active': formGroup.get('whoPaid')?.value === whoPaid.Collaborator}"
+              (click)="setWhoPaid(whoPaid.Collaborator)"
+            >
+              <i class="fas fa-user-friends mr-2"></i>
+              They Paid
+            </button>
+          </div>
         </div>
-      </div>
+  
+        <!-- Split Type -->
+        <div class="form-control mb-4 md:flex-1">
+          <label class="label">
+            <span class="label-text">Split Type *</span>
+          </label>
+          <div class="btn-group w-full">
+            <button 
+              type="button"
+              class="btn btn-sm flex-1"
+              [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Equal}"
+              (click)="setSplitType(splitType.Equal)"
+            >
+              <i class="fas fa-equals mr-1"></i>
+              Equal
+            </button>
+            <button 
+              type="button"
+              class="btn btn-sm flex-1"
+              [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Custom}"
+              (click)="setSplitType(splitType.Custom)"
+            >
+              <i class="fas fa-sliders-h mr-1"></i>
+              Custom
+            </button>
+            <button 
+              type="button"
+              class="btn btn-sm flex-1"
+              [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Percentage}"
+              (click)="setSplitType(splitType.Percentage)"
+            >
+              <i class="fas fa-percent mr-1"></i>
+              Percentage
+            </button>
+          </div>
+        </div>
+      </section>
 
-      <!-- Split Type -->
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Split Type *</span>
-        </label>
-        <div class="btn-group w-full">
-          <button 
-            type="button"
-            class="btn btn-sm flex-1"
-            [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Equal}"
-            (click)="setSplitType(splitType.Equal)"
-          >
-            <i class="fas fa-equals mr-1"></i>
-            Equal
-          </button>
-          <button 
-            type="button"
-            class="btn btn-sm flex-1"
-            [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Custom}"
-            (click)="setSplitType(splitType.Custom)"
-          >
-            <i class="fas fa-sliders-h mr-1"></i>
-            Custom
-          </button>
-          <button 
-            type="button"
-            class="btn btn-sm flex-1"
-            [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Percentage}"
-            (click)="setSplitType(splitType.Percentage)"
-          >
-            <i class="fas fa-percent mr-1"></i>
-            Percentage
-          </button>
-        </div>
-      </div>
 
       <!-- Split Details -->
       <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
         <h3 class="text-lg font-semibold mb-3">Split Details</h3>
         <!-- Split calculation display -->
-        @if (formGroup.get('totalAmount')?.value > 0) {
+        @if (formGroup.controls.totalAmount.value && formGroup.controls.totalAmount.value > 0) {
           <div class="space-y-2">
             <div class="flex justify-between items-center">
               <span class="text-base-content/70">You:</span>
@@ -142,34 +120,34 @@
         }
 
         <!-- Custom split inputs -->
-        @if (formGroup.get('splitType')?.value === 'Custom' || formGroup.get('splitType')?.value === 'Percentage') {
+        @if (formGroup.get('splitType')?.value === splitType.Custom || formGroup.get('splitType')?.value === splitType.Percentage) {
           <div class="mt-4 space-y-3">
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Your {{ formGroup.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
+                <span class="label-text">Your {{ formGroup.get('splitType')?.value === splitType.Percentage ? 'percentage' : 'amount' }}</span>
               </label>
-              <input 
-                type="number" 
-                class="input input-bordered w-full" 
+              <input
+                type="number"
+                class="input input-bordered w-full"
                 [value]="customUserAmount()"
                 (input)="onCustomUserAmountChange($event)"
                 [min]="0"
-                [max]="formGroup.get('splitType')?.value === 'Percentage' ? 100 : formGroup.get('totalAmount')?.value"
-                [step]="formGroup.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
+                [max]="formGroup.get('splitType')?.value === splitType.Percentage ? 100 : formGroup.get('totalAmount')?.value"
+                [step]="1"
               >
             </div>
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Their {{ formGroup.get('splitType')?.value === 'Percentage' ? 'percentage' : 'amount' }}</span>
+                <span class="label-text">Their {{ formGroup.get('splitType')?.value === splitType.Percentage ? 'percentage' : 'amount' }}</span>
               </label>
               <input 
-                type="number" 
+                type="number"
                 class="input input-bordered w-full" 
                 [value]="customCollaboratorAmount()"
                 (input)="onCustomCollaboratorAmountChange($event)"
                 [min]="0"
-                [max]="formGroup.get('splitType')?.value === 'Percentage' ? 100 : formGroup.get('totalAmount')?.value"
-                [step]="formGroup.get('splitType')?.value === 'Percentage' ? 1 : 0.01"
+                [max]="formGroup.get('splitType')?.value === splitType.Percentage ? 100 : formGroup.get('totalAmount')?.value"
+                [step]="1"
               >
             </div>
           </div>
@@ -177,35 +155,25 @@
       </div>
 
       <!-- Reimbursement Section -->
-      <div class="form-control mb-4">
-        <label class="label cursor-pointer justify-start gap-2">
-          <input 
-            type="checkbox" 
-            formControlName="hasReimbursement" 
-            class="checkbox checkbox-primary"
-            (change)="onReimbursementToggle()"
-          >
-          <span class="label-text">Add Reimbursement</span>
-        </label>
-      </div>
+      <app-check-box-input formControlName="hasReimbursement" id="hasReimbursement" [label]="'Add Reimbursement'" />
 
-      @if (formGroup.get('hasReimbursement')?.value) {
+      @if (formGroup.controls.hasReimbursement.value) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
           <h3 class="text-lg font-semibold mb-3">Reimbursement Details</h3>
-          
           <div class="form-control mb-3">
             <label class="label">
               <span class="label-text">Amount *</span>
             </label>
             <input 
               type="number" 
-              formControlName="amount" 
-              class="input input-bordered w-full" 
+              formControlName="amount"
+              class="input input-bordered w-full"
               placeholder="Enter reimbursement amount"
-              min="0"
-              [max]="formGroup.get('totalAmount')?.value"
-              step="0.01"
+              min="1"
+              [max]="formGroup.get('totalAmount')?.value!"
+              step="1"
             >
+
             @if (formGroup.get('reimbursement.amount')?.invalid && formGroup.get('reimbursement.amount')?.touched) {
               <label class="label">
                 <span class="label-text-alt text-error">
@@ -213,20 +181,10 @@
                 </span>
               </label>
             }
-          </div>
+            <app-text formControlName="amount" type="number" label="Amount" id="amount" name="amount" />
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Description</span>
-            </label>
-            <input 
-              type="text" 
-              formControlName="description" 
-              class="input input-bordered w-full" 
-              placeholder="Enter description (optional)"
-            >
           </div>
-
+          <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
           <div class="alert alert-info mt-3">
             <i class="fas fa-info-circle"></i>
             <span>Net amount after reimbursement: {{ formatCurrency(calculateNetAmount()) }}</span>
@@ -253,27 +211,26 @@
           <i class="fas fa-arrow-left text-sm"></i>
           Cancel
         </button>
-
-          @if (isSubmitting()) {
-            <button
-              type="button"
-              class="btn btn-primary flex items-center gap-2 loading-btn"
-            >
-              <span class="loading loading-spinner loading-xs"></span>
-              Saving...
-            </button>
-          } @else {
-            <button
-              role="button"
-              type="submit"
-              class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
-              [disabled]="formGroup.invalid || isSubmitting()"
-              [class.btn-disabled]="formGroup.invalid || isSubmitting()"
-            >
-              <i class="fas fa-cloud-arrow-up text-sm"></i>
-              Save
-            </button>
-          }
+        @if (isSubmitting()) {
+          <button
+            type="button"
+            class="btn btn-primary flex items-center gap-2 loading-btn"
+          >
+            <span class="loading loading-spinner loading-xs"></span>
+            Saving...
+          </button>
+        } @else {
+          <button
+            role="button"
+            type="submit"
+            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="formGroup.invalid || isSubmitting()"
+            [class.btn-disabled]="formGroup.invalid || isSubmitting()"
+          >
+            <i class="fas fa-cloud-arrow-up text-sm"></i>
+            Save
+          </button>
+        }
       </footer>
     </form>
   </article>
