@@ -13,6 +13,7 @@ import { KeyValueViewModel } from '../../models/view';
 import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
+import { debounceTime, tap } from 'rxjs';
 
 @Component({
   selector: 'app-upsert-transaction',
@@ -75,21 +76,24 @@ export class TransactionFormComponent implements OnInit {
     });
 
     // Watch for changes in totalAmount to recalculate splits
-    this.formGroup.controls.totalAmount.valueChanges.subscribe((x) => {
-      this.recalculateSplits();
+    this.formGroup.controls.totalAmount.valueChanges.pipe(
+      tap(()=> {
+        this.customUserAmount.set(0);
+        this.customCollaboratorAmount.set(0);
+      }), debounceTime(100)
+    ).subscribe((x) => {
+      this.recalculateSplits(this.formGroup.value.splitType!);
       if (x) {
-        this.formGroup.controls.reimbursement.controls.amount.addValidators(Validators.max(x))
+        this.formGroup.controls.reimbursement.controls.amount.addValidators([Validators.max(x)])
       } else {
         this.formGroup.controls.reimbursement.controls.amount.clearValidators();
         this.formGroup.controls.reimbursement.controls.amount.reset();
       }
     });
-    this.formGroup.controls.splitType.valueChanges.subscribe(() => {
-      this.recalculateSplits();
+    this.formGroup.controls.splitType.valueChanges.subscribe(splitType => {
+      this.recalculateSplits(splitType!);
     });
-    this.formGroup.controls.hasReimbursement.valueChanges.subscribe(() => {
-      this.onReimbursementToggle();
-    });
+    this.formGroup.controls.hasReimbursement.valueChanges.subscribe(x => this.onReimbursementToggle(x));
   }
 
   ngOnInit(): void {
@@ -117,45 +121,38 @@ export class TransactionFormComponent implements OnInit {
   // ========== Split Type Handlers ==========
   protected setSplitType(type: SplitType): void {
     this.formGroup.patchValue({ splitType: type });
-    this.recalculateSplits();
+    this.recalculateSplits(type);
   }
 
   protected setWhoPaid(who: WhoPaid): void {
     this.formGroup.patchValue({ whoPaid: who });
   }
 
-  private recalculateSplits(): void {
+  private recalculateSplits(splitType: SplitType): void {
     const netAmount = this.calculateNetAmount();
 
-    switch (this.formGroup.value.splitType) {
-      case SplitType.Equal:
+    switch (splitType) {
+      case this.splitType.Equal:
         const half = netAmount / 2;
         this.customUserAmount.set(half);
         break;
-    
       case this.splitType.Custom:
-        // Keep current values or reset
-        if (this.customUserAmount() === 0 && this.customCollaboratorAmount() === 0) {
-          const half = netAmount / 2;
-          this.customUserAmount.set(half);
-          this.customCollaboratorAmount.set(half);
-        }
+        const value = netAmount / 2;
+        this.customUserAmount.set(value);
+        this.customCollaboratorAmount.set(value);
         break;
       case this.splitType.Percentage:
         // Keep percentages or default to 50/50
-        if (this.customUserAmount() === 0 && this.customCollaboratorAmount() === 0) {
-          this.customUserAmount.set(50);
-          this.customCollaboratorAmount.set(50);
-        }
+        this.customUserAmount.set(50);
+        this.customCollaboratorAmount.set(50);
         break;
-    
       default:
         break;
     }
   }
 
-  onCustomUserAmountChange(event: Event): void {
-    const value = parseFloat((event.target as HTMLInputElement).value) || 0;
+  protected onCustomUserAmountChange(event: Event): void {
+    let value = parseFloat((event.target as HTMLInputElement).value) || 0;
     this.customUserAmount.set(value);
 
     const splitType = this.formGroup.value.splitType;
@@ -164,12 +161,17 @@ export class TransactionFormComponent implements OnInit {
     if (splitType === this.splitType.Custom) {
       this.customCollaboratorAmount.set(netAmount - value);
     } else if (splitType === this.splitType.Percentage) {
+      const maxValue = 100
+      if (value > maxValue) {
+        value = maxValue
+        this.customUserAmount.set(value);
+      }
       this.customCollaboratorAmount.set(100 - value);
     }
   }
 
-  onCustomCollaboratorAmountChange(event: Event): void {
-    const value = parseFloat((event.target as HTMLInputElement).value) || 0;
+  protected onCustomCollaboratorAmountChange(event: Event): void {
+    let value = parseFloat((event.target as HTMLInputElement).value) || 0;
     this.customCollaboratorAmount.set(value);
 
     const splitType = this.formGroup.value.splitType;
@@ -178,55 +180,61 @@ export class TransactionFormComponent implements OnInit {
     if (splitType === this.splitType.Custom) {
       this.customUserAmount.set(netAmount - value);
     } else if (splitType === this.splitType.Percentage) {
-      this.customUserAmount.set(100 - value);
+      const maxValue = 100
+      if (value > maxValue) {
+        value = maxValue
+        this.customCollaboratorAmount.set(value);
+      }
+      this.customUserAmount.set(maxValue - value);
     }
   }
 
   // ========== Calculations ==========
-  calculateNetAmount(): number {
-    const totalAmount = this.formGroup.get('totalAmount')?.value || 0;
-    const hasReimbursement = this.formGroup.get('hasReimbursement')?.value;
-    const reimbursementAmount = hasReimbursement ? (this.formGroup.get('reimbursement.amount')?.value || 0) : 0;
+  protected calculateNetAmount(): number {
+    const totalAmount = this.formGroup.value.totalAmount || 0;
+    const hasReimbursement = this.formGroup.value.hasReimbursement;
+    const reimbursementAmount = hasReimbursement ? (this.formGroup.controls.reimbursement.value.amount || 0) : 0;
     return totalAmount - reimbursementAmount;
   }
 
-  calculateMySplit(): number {
+  protected calculateMySplit(): number {
     const netAmount = this.calculateNetAmount();
-    const splitType = this.formGroup.value.splitType;
 
-    if (splitType === SplitType.Equal) {
-      return netAmount / 2;
-    } else if (splitType === SplitType.Custom) {
-      return this.customUserAmount();
-    } else if (splitType === SplitType.Percentage) {
-      return (netAmount * this.customUserAmount()) / 100;
+    switch (this.formGroup.value.splitType) {
+      case this.splitType.Equal:
+        return netAmount / 2;
+      case this.splitType.Custom:
+        return this.customUserAmount();
+      case this.splitType.Percentage:
+        return (netAmount * this.customUserAmount()) / 100;
+      default:
+        return 0;
     }
-    return 0;
   }
 
-  calculateTheirSplit(): number {
+  protected calculateTheirSplit(): number {
     const netAmount = this.calculateNetAmount();
-    const splitType = this.formGroup.value.splitType;
-
-    if (splitType === SplitType.Equal) {
-      return netAmount / 2;
-    } else if (splitType === SplitType.Custom) {
-      return this.customCollaboratorAmount();
-    } else if (splitType === SplitType.Percentage) {
-      return (netAmount * this.customCollaboratorAmount()) / 100;
+    switch (this.formGroup.value.splitType) {
+      case this.splitType.Equal:
+        return netAmount / 2;
+      case this.splitType.Custom:
+        return this.customCollaboratorAmount();
+      case this.splitType.Percentage:
+        return (netAmount * this.customCollaboratorAmount()) / 100;
+      default:
+        return 0;
     }
-    return 0;
   }
 
   // ========== Reimbursement ==========
-  onReimbursementToggle(): void {
+  private onReimbursementToggle(hasReimbursement: boolean | null): void {
     const reimbursementGroup = this.formGroup.controls.reimbursement;
 
-    if (this.formGroup.value.hasReimbursement) {
+    if (hasReimbursement) {
       reimbursementGroup.controls.amount.setValidators([
         Validators.required,
         Validators.min(1),
-        Validators.max(this.formGroup.get('totalAmount')?.value || 0)
+        Validators.max(this.formGroup.value.totalAmount || 0)
       ]);
     } else {
       reimbursementGroup.controls.amount.clearValidators();
@@ -234,11 +242,11 @@ export class TransactionFormComponent implements OnInit {
     }
 
     reimbursementGroup.controls.amount.updateValueAndValidity();
-    this.recalculateSplits();
+    this.recalculateSplits(this.formGroup.value.splitType!);
   }
 
   // ========== Submit ==========
-  onSubmit(): void {
+  protected onSubmit(): void {
     if (this.formGroup.invalid) {
       this.formGroup.markAllAsTouched();
       return;
@@ -310,12 +318,12 @@ export class TransactionFormComponent implements OnInit {
   }
 
   // ========== Navigation ==========
-  goBack(): void {
+  protected goBack(): void {
     this.location.back();
   }
 
   // ========== Formatters ==========
-  formatCurrency(amount: number): string {
+  protected formatCurrency(amount: number): string {
     return new Intl.NumberFormat('es-PY', {
       style: 'currency',
       currency: 'PYG',

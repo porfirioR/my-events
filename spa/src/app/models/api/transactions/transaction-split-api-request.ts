@@ -1,4 +1,4 @@
-import { ParticipantType } from '../../../enums';
+import { ParticipantType } from "../../enums";
 
 export class TransactionSplitApiRequest {
   constructor(

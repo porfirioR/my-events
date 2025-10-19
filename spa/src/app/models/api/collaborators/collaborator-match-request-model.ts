@@ -1,4 +1,4 @@
-import { MatchRequestStatus } from "../../../enums";
+import { MatchRequestStatus } from "../../enums";
 
 export interface CollaboratorMatchRequestModel {
   id: number;

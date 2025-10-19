@@ -1,7 +1,7 @@
 @if (ngControl.control?.touched) {
   <footer>
     @if (ngControl.control?.errors; as error) {
-      <span class="text-pink-600">
+      <span class="label-text-alt text-error">
         @if (error['required']) {
           {{label}} is required
         }

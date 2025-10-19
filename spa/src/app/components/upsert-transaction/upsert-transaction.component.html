@@ -35,7 +35,7 @@
       <section class="flex flex-col md:flex-row md:gap-4">
         <div class="form-control mb-4 md:flex-1">
           <label class="label">
-            <span class="label-text">Who Paid? *</span>
+            <span class="label-text">Who Paid?</span>
           </label>
           <div class="btn-group w-full">
             <button 
@@ -58,17 +58,17 @@
             </button>
           </div>
         </div>
-  
+
         <!-- Split Type -->
         <div class="form-control mb-4 md:flex-1">
           <label class="label">
-            <span class="label-text">Split Type *</span>
+            <span class="label-text">Split Type</span>
           </label>
           <div class="btn-group w-full">
             <button 
               type="button"
               class="btn btn-sm flex-1"
-              [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Equal}"
+              [ngClass]="{'btn-active': formGroup.value.splitType === splitType.Equal}"
               (click)="setSplitType(splitType.Equal)"
             >
               <i class="fas fa-equals mr-1"></i>
@@ -77,7 +77,7 @@
             <button 
               type="button"
               class="btn btn-sm flex-1"
-              [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Custom}"
+              [ngClass]="{'btn-active': formGroup.value.splitType === splitType.Custom}"
               (click)="setSplitType(splitType.Custom)"
             >
               <i class="fas fa-sliders-h mr-1"></i>
@@ -86,7 +86,7 @@
             <button 
               type="button"
               class="btn btn-sm flex-1"
-              [ngClass]="{'btn-active': formGroup.get('splitType')?.value === splitType.Percentage}"
+              [ngClass]="{'btn-active': formGroup.value.splitType === splitType.Percentage}"
               (click)="setSplitType(splitType.Percentage)"
             >
               <i class="fas fa-percent mr-1"></i>
@@ -96,63 +96,62 @@
         </div>
       </section>
 
-
       <!-- Split Details -->
-      <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
-        <h3 class="text-lg font-semibold mb-3">Split Details</h3>
-        <!-- Split calculation display -->
-        @if (formGroup.controls.totalAmount.value && formGroup.controls.totalAmount.value > 0) {
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-base-content/70">You:</span>
-              <span class="font-semibold">{{ formatCurrency(calculateMySplit()) }}</span>
+      @if (formGroup.controls.totalAmount.value && formGroup.controls.totalAmount.value > 0) {
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
+          <h3 class="text-lg font-semibold mb-3">Split Details</h3>
+          <!-- Split calculation display -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">You:</span>
+                <span class="font-semibold">{{ formatCurrency(calculateMySplit()) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">They:</span>
+                <span class="font-semibold">{{ formatCurrency(calculateTheirSplit()) }}</span>
+              </div>
+              <div class="divider my-2"></div>
+              <div class="flex justify-between items-center text-lg">
+                <span class="font-bold">Total:</span>
+                <span class="font-bold">{{ formatCurrency(calculateNetAmount()) }}</span>
+              </div>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-base-content/70">They:</span>
-              <span class="font-semibold">{{ formatCurrency(calculateTheirSplit()) }}</span>
-            </div>
-            <div class="divider my-2"></div>
-            <div class="flex justify-between items-center text-lg">
-              <span class="font-bold">Total:</span>
-              <span class="font-bold">{{ formatCurrency(calculateNetAmount()) }}</span>
-            </div>
-          </div>
-        }
 
-        <!-- Custom split inputs -->
-        @if (formGroup.get('splitType')?.value === splitType.Custom || formGroup.get('splitType')?.value === splitType.Percentage) {
-          <div class="mt-4 space-y-3">
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Your {{ formGroup.get('splitType')?.value === splitType.Percentage ? 'percentage' : 'amount' }}</span>
-              </label>
-              <input
-                type="number"
-                class="input input-bordered w-full"
-                [value]="customUserAmount()"
-                (input)="onCustomUserAmountChange($event)"
-                [min]="0"
-                [max]="formGroup.get('splitType')?.value === splitType.Percentage ? 100 : formGroup.get('totalAmount')?.value"
-                [step]="1"
-              >
+          <!-- Custom split inputs -->
+          @if (formGroup.value.splitType === splitType.Custom || formGroup.value.splitType === splitType.Percentage) {
+            <div class="mt-4 space-y-3">
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Your {{ formGroup.value.splitType === splitType.Percentage ? 'percentage' : 'amount' }}</span>
+                </label>
+                <input
+                  type="number"
+                  class="px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 block w-full rounded-md sm:text-sm focus:ring-1 transition-colors duration-200 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
+                  [value]="customUserAmount()"
+                  (input)="onCustomUserAmountChange($event)"
+                  [min]="0"
+                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : formGroup.value.totalAmount"
+                  [step]="1"
+                >
+              </div>
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Their {{ formGroup.value.splitType === splitType.Percentage ? 'percentage' : 'amount' }}</span>
+                </label>
+                <input
+                  type="number"
+                  class="px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 block w-full rounded-md sm:text-sm focus:ring-1 transition-colors duration-200 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500" 
+                  [value]="customCollaboratorAmount()"
+                  (input)="onCustomCollaboratorAmountChange($event)"
+                  [min]="0"
+                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : formGroup.value.totalAmount"
+                  [step]="1"
+                >
+              </div>
             </div>
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Their {{ formGroup.get('splitType')?.value === splitType.Percentage ? 'percentage' : 'amount' }}</span>
-              </label>
-              <input 
-                type="number"
-                class="input input-bordered w-full" 
-                [value]="customCollaboratorAmount()"
-                (input)="onCustomCollaboratorAmountChange($event)"
-                [min]="0"
-                [max]="formGroup.get('splitType')?.value === splitType.Percentage ? 100 : formGroup.get('totalAmount')?.value"
-                [step]="1"
-              >
-            </div>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      }
 
       <!-- Reimbursement Section -->
       <app-check-box-input formControlName="hasReimbursement" id="hasReimbursement" [label]="'Add Reimbursement'" />
@@ -160,30 +159,7 @@
       @if (formGroup.controls.hasReimbursement.value) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
           <h3 class="text-lg font-semibold mb-3">Reimbursement Details</h3>
-          <div class="form-control mb-3">
-            <label class="label">
-              <span class="label-text">Amount *</span>
-            </label>
-            <input 
-              type="number" 
-              formControlName="amount"
-              class="input input-bordered w-full"
-              placeholder="Enter reimbursement amount"
-              min="1"
-              [max]="formGroup.get('totalAmount')?.value!"
-              step="1"
-            >
-
-            @if (formGroup.get('reimbursement.amount')?.invalid && formGroup.get('reimbursement.amount')?.touched) {
-              <label class="label">
-                <span class="label-text-alt text-error">
-                  Reimbursement must be greater than 0 and not exceed total amount
-                </span>
-              </label>
-            }
-            <app-text formControlName="amount" type="number" label="Amount" id="amount" name="amount" />
-
-          </div>
+          <app-text formControlName="amount" type="number" label="Amount" id="amount" name="amount" />
           <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
           <div class="alert alert-info mt-3">
             <i class="fas fa-info-circle"></i>
