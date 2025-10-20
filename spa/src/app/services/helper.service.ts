@@ -30,6 +30,9 @@ export class HelperService {
       case Configurations.Collaborator:
         const collaborator = x as CollaboratorApiModel
         moreData = `${collaborator.name} ${collaborator.surname}`
+        if (collaborator.email) {
+          moreData += `- ${collaborator.email}`
+        }
         value = moreData
         break;
       default:

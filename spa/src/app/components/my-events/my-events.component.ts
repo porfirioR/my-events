@@ -1,4 +1,3 @@
-import { AsyncPipe } from '@angular/common'
 import { Component, computed } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { first, tap } from 'rxjs'

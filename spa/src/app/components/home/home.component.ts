@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core'
 import { RouterModule } from '@angular/router'
-import { LoadingSkeletonComponent } from "../loading-skeleton/loading-skeleton.component"
 import { DashboardComponent } from "../dashboard/dashboard.component";
 import { EventViewModel } from '../../models/view/event-view-model'
 import { useAuthStore, useLoadingStore } from '../../store'
@@ -12,7 +11,6 @@ import { NotificationService } from '../../services';
   styleUrls: ['./home.component.css'],
   imports: [
     RouterModule,
-    LoadingSkeletonComponent,
     DashboardComponent,
   ]
 })

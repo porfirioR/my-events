@@ -17,11 +17,12 @@ import { SavingsController } from './controllers/savings.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { CurrentUserService } from './services/current-user.service';
 import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController } from './controllers';
+import { TransactionController } from './controllers/transaction.controller';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    ManagerModule
+    ManagerModule,
   ],
   controllers: [
     UsersController,
@@ -33,6 +34,7 @@ import { CollaboratorInvitationsController, CollaboratorMatchesController, Colla
     CollaboratorMatchRequestsController,
     CollaboratorInvitationsController,
     CollaboratorsController,
+    TransactionController
   ],
   providers: [
     JwtService,

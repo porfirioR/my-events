@@ -13,7 +13,9 @@
         <app-select-input formControlName="periodId" id="period" label="Period" name="period" [list]="periodList" />
         <app-text formControlName="numberOfPayment" type="text" label="Number Of Payment" id="numberOfPayment" name="numberOfPayment" />
         <app-select-input formControlName="currencyId" id="currency" label="Currencies" name="currencies" [list]="currencyList" [description]="formGroup.controls.currencyDescription.value"/>
-        <app-check-box-input *ngIf="model" formControlName="isActive" label="Is Active" />
+        @if (model) {
+          <app-check-box-input formControlName="isActive" label="Is Active" />
+        }
         <footer class="flex justify-between">
           <button
             type="button"

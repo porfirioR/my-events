@@ -5,3 +5,10 @@ export const COLLABORATOR_TOKENS = {
   MANAGER_SERVICE: Symbol('ICollaboratorManagerService')
 } as const;
 
+export const TRANSACTION_TOKENS = {
+  ACCESS_SERVICE: Symbol('ITransactionAccessService'),
+  REIMBURSEMENT_ACCESS_SERVICE: Symbol('ITransactionReimbursementAccessService'),
+  SPLIT_ACCESS_SERVICE: Symbol('ITransactionSplitAccessService'),
+  MANAGER_SERVICE: Symbol('ITransactionManagerService')
+} as const;
+

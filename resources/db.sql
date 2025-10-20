@@ -187,6 +187,7 @@ CREATE INDEX idx_projectsettlements_debtorcreditor ON projectsettlements(debtorm
 -- ===== SISTEMA SEPARADO DE TRANSACCIONES GENERALES =====
 
 -- Transacciones individuales (sin afectar proyectos)
+-- ===== TRANSACCIONES INDIVIDUALES =====
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     userid INT NOT NULL,
@@ -194,29 +195,57 @@ CREATE TABLE transactions (
     totalamount DECIMAL(10,2) NOT NULL,
     description VARCHAR(255),
     splittype splittype DEFAULT 'Equal',
+    whopaid VARCHAR(20) NOT NULL DEFAULT 'user',
+    totalreimbursement DECIMAL(10,2) DEFAULT 0.00,
+    netamount DECIMAL(10,2) GENERATED ALWAYS AS (totalamount - totalreimbursement) STORED,
     transactiondate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id),
-    FOREIGN KEY (collaboratorid) REFERENCES collaborators(id)
+    FOREIGN KEY (collaboratorid) REFERENCES collaborators(id),
+    CONSTRAINT check_whopaid CHECK (whopaid IN ('user', 'collaborator')),
+    CONSTRAINT check_totalreimbursement CHECK (totalreimbursement >= 0),
+    CONSTRAINT check_totalreimbursement_not_exceed CHECK (totalreimbursement <= totalamount)
 );
 
--- Índices para transactions
 CREATE INDEX idx_transactions_userdate ON transactions(userid, transactiondate);
 CREATE INDEX idx_transactions_collaboratordate ON transactions(collaboratorid, transactiondate);
 CREATE INDEX idx_transactions_splittype ON transactions(splittype);
+CREATE INDEX idx_transactions_whopaid ON transactions(whopaid);
 
+-- ===== REINTEGROS DE TRANSACCIONES =====
+CREATE TABLE transactionreimbursements (
+    id SERIAL PRIMARY KEY,
+    transactionid INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    description VARCHAR(255),
+    reimbursementdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (transactionid) REFERENCES transactions(id) ON DELETE CASCADE,
+    CONSTRAINT positive_reimbursement_amount CHECK (amount > 0)
+);
+
+CREATE INDEX idx_reimbursements_transaction ON transactionreimbursements(transactionid);
+
+-- ===== SPLITS DE TRANSACCIONES =====
 CREATE TABLE transactionsplits (
     id SERIAL PRIMARY KEY,
     transactionid INT NOT NULL,
-    collaboratorid INT NOT NULL,
+    collaboratorid INT NULL,
+    userid INT NULL,
     amount DECIMAL(10,2) NOT NULL,
     sharepercentage DECIMAL(5,2),
     ispayer BOOLEAN DEFAULT FALSE,
     issettled BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (transactionid) REFERENCES transactions(id) ON DELETE CASCADE,
-    FOREIGN KEY (collaboratorid) REFERENCES collaborators(id)
+    FOREIGN KEY (collaboratorid) REFERENCES collaborators(id),
+    FOREIGN KEY (userid) REFERENCES users(id),
+    CONSTRAINT check_collaborator_or_user CHECK (
+        (collaboratorid IS NOT NULL AND userid IS NULL) OR 
+        (collaboratorid IS NULL AND userid IS NOT NULL)
+    ),
+    CONSTRAINT check_amount_not_negative CHECK (amount >= 0)
 );
 
--- Índices para transaction splits
 CREATE INDEX idx_transactionsplits_transactioncollaborator ON transactionsplits(transactionid, collaboratorid);
+CREATE INDEX idx_transactionsplits_transactionuser ON transactionsplits(transactionid, userid);
 CREATE INDEX idx_transactionsplits_collaboratorsettled ON transactionsplits(collaboratorid, issettled);
+CREATE INDEX idx_transactionsplits_usersettled ON transactionsplits(userid, issettled);
 CREATE INDEX idx_transactionsplits_payerstatus ON transactionsplits(ispayer, issettled);

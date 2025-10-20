@@ -24,6 +24,7 @@ export class TextComponent implements ControlValueAccessor {
   @Input({required: true}) name: string = ''
   @Input() autocomplete: AutocompleteType = 'off'
   @Input() disabled: boolean = true
+  protected passwordFieldType: 'password' | 'text' = 'password';
 
   constructor(@Self() public ngControl: NgControl) {
     this.ngControl.valueAccessor = this
@@ -37,4 +38,7 @@ export class TextComponent implements ControlValueAccessor {
 
   setDisabledState?(isDisabled: boolean): void { }
 
+  protected togglePasswordVisibility(): void {
+    this.passwordFieldType = this.passwordFieldType === 'password' ? 'text' : 'password';
+  }
 }

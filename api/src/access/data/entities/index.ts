@@ -10,5 +10,7 @@ export { SavingEntity } from './saving.entity';
 export { TypeEntity } from './type.entity';
 export { UserEntity } from './user.entity';
 export { WebPushTokenEntity } from './web-push-token.Entity';
-export {  } from './';
+export { TransactionEntity } from './transaction.entity';
+export { TransactionSplitEntity } from './transaction-split.entity';
+export { TransactionReimbursementEntity } from './transaction-reimbursement.entity';
 export {  } from './';

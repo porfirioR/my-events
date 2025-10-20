@@ -3,6 +3,8 @@ import { EventManagerService, MailManagerService, PaymentManagerService, Savings
 import { MailModule } from '../access/mail/mail.module';
 import { AuthModule } from '../access/auth/auth.module';
 import { DataModule } from '../access/data/data.module';
+import { TransactionManagerService } from './services/transaction.manager.service';
+import { TRANSACTION_TOKENS } from 'src/utility/constants';
 
 @Module({
   imports: [
@@ -19,6 +21,11 @@ import { DataModule } from '../access/data/data.module';
     SavingsManagerService,
     ConfigurationManagerService,
     CollaboratorManagerService,
+    TransactionManagerService,
+    {
+      provide: TRANSACTION_TOKENS.MANAGER_SERVICE,
+      useExisting: TransactionManagerService,
+    },
   ],
   exports: [
     EventManagerService,
@@ -28,6 +35,7 @@ import { DataModule } from '../access/data/data.module';
     SavingsManagerService,
     ConfigurationManagerService,
     CollaboratorManagerService,
+    TRANSACTION_TOKENS.MANAGER_SERVICE,
   ]
 })
 export class ManagerModule {}

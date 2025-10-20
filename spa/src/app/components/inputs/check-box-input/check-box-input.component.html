@@ -1,10 +1,10 @@
 <fieldset class="form-control mb-4">
-  <label class="label cursor-pointer">
-    <span class="label-text font-medium text-gray-900 dark:text-white">{{label}}</span> 
+  <label class="label cursor-pointer justify-start gap-2">
     <input
       type="checkbox"
       [formControl]="$any(ngControl).control"
-      class="checkbox border-indigo-600 checked:border-indigo-600 [--chkbg:theme(colors.indigo.600)]"
+      class="checkbox checkbox-primary"
     />
+    <span class="label-text">{{label}}</span> 
   </label>
 </fieldset>

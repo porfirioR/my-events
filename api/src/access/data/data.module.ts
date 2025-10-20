@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { COLLABORATOR_TOKENS } from '../../utility/constants';
+import { COLLABORATOR_TOKENS, TRANSACTION_TOKENS } from '../../utility/constants';
 import { UtilityModule } from '../../utility/utility.module';
 import { DbContextService } from './services/db-context.service';
 import { EventAccessService } from './services/event-access.service';
 import { EventFollowAccessService } from './services/event-follow-access.service';
-import { CollaboratorMatchAccessService } from './services';
+import { CollaboratorMatchAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService } from './services';
 import { CollaboratorAccessService } from './services/collaborator-access.service';
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { ConfigurationAccessService } from './services/configuration-access.service';
@@ -30,6 +30,9 @@ import { UserAccessService } from './services/user-access.service';
     CollaboratorAccessService,
     CollaboratorMatchAccessService,
     CollaboratorMatchRequestAccessService,
+    TransactionAccessService,
+    TransactionReimbursementAccessService,
+    TransactionSplitAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,
@@ -42,6 +45,18 @@ import { UserAccessService } from './services/user-access.service';
       provide: COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE,
       useExisting: CollaboratorMatchRequestAccessService,
     },
+    {
+      provide: TRANSACTION_TOKENS.ACCESS_SERVICE,
+      useExisting: TransactionAccessService,
+    },
+    {
+      provide: TRANSACTION_TOKENS.REIMBURSEMENT_ACCESS_SERVICE,
+      useExisting: TransactionReimbursementAccessService,
+    },
+    {
+      provide: TRANSACTION_TOKENS.SPLIT_ACCESS_SERVICE,
+      useExisting: TransactionSplitAccessService,
+    },
   ],
   exports: [
     EventAccessService,
@@ -53,6 +68,9 @@ import { UserAccessService } from './services/user-access.service';
     COLLABORATOR_TOKENS.ACCESS_SERVICE,
     COLLABORATOR_TOKENS.MATCH_ACCESS_SERVICE,
     COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE,
+    TRANSACTION_TOKENS.ACCESS_SERVICE,
+    TRANSACTION_TOKENS.REIMBURSEMENT_ACCESS_SERVICE,
+    TRANSACTION_TOKENS.SPLIT_ACCESS_SERVICE
   ],
 })
 export class DataModule {}
