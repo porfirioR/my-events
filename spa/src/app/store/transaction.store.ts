@@ -64,10 +64,9 @@ export const TransactionStore = signalStore(
     filteredTransactions: computed(() => {
       const filter = store.filter().toLowerCase();
       if (!filter) return store.transactions();
-
       return store.transactions().filter(x =>
         x.description?.toLowerCase().includes(filter) ||
-        x.collaborator.fullName.toLowerCase().includes(filter)
+        `${x.myCollaborator.name} ${x.myCollaborator.surname}`.toLowerCase().includes(filter)
       );
     }),
 

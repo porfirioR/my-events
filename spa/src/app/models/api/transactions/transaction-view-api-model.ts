@@ -1,4 +1,4 @@
-import { CollaboratorInfoApiModel } from '..';
+import { CollaboratorInfoApiModel, CollaboratorSummaryModel } from '..';
 import { WhoPaid } from '../../enums';
 
 export interface TransactionViewApiModel {
@@ -7,7 +7,7 @@ export interface TransactionViewApiModel {
   totalAmount: number;
   totalReimbursement: number;
   netAmount: number;
-  collaborator: CollaboratorInfoApiModel;
+  myCollaborator: CollaboratorSummaryModel;
   whoPaid: WhoPaid;
   iPaid: number;
   iOwe: number;

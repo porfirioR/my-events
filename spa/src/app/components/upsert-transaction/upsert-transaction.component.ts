@@ -80,15 +80,16 @@ export class TransactionFormComponent implements OnInit {
       tap(()=> {
         this.customUserAmount.set(0);
         this.customCollaboratorAmount.set(0);
-      }), debounceTime(100)
-    ).subscribe((x) => {
-      this.recalculateSplits(this.formGroup.value.splitType!);
-      if (x) {
-        this.formGroup.controls.reimbursement.controls.amount.addValidators([Validators.max(x)])
-      } else {
-        this.formGroup.controls.reimbursement.controls.amount.clearValidators();
         this.formGroup.controls.reimbursement.controls.amount.reset();
+        this.formGroup.controls.reimbursement.controls.amount.clearValidators();
+      }),
+      debounceTime(100)
+    ).subscribe((totalAmount) => {
+      this.recalculateSplits(this.formGroup.value.splitType!);
+      if (totalAmount) {
+        this.formGroup.controls.reimbursement.controls.amount.addValidators([Validators.max(totalAmount)])
       }
+      this.formGroup.controls.reimbursement.updateValueAndValidity()
     });
     this.formGroup.controls.splitType.valueChanges.subscribe(splitType => {
       this.recalculateSplits(splitType!);
@@ -284,7 +285,7 @@ export class TransactionFormComponent implements OnInit {
     let reimbursement: ReimbursementApiRequest | null = null;
     if (formValue.hasReimbursement && formValue.reimbursement?.amount! > 0) {
       reimbursement = new ReimbursementApiRequest(
-        formValue.reimbursement?.amount!,
+        +formValue.reimbursement?.amount!,
         formValue.reimbursement?.description
       );
     }
@@ -292,7 +293,7 @@ export class TransactionFormComponent implements OnInit {
     // Create request
     const request = new CreateTransactionApiRequest(
       formValue.collaboratorId!,
-      formValue.totalAmount!,
+      +formValue.totalAmount!,
       formValue.description!,
       formValue.splitType!,
       whoPaid!,
