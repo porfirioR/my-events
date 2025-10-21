@@ -27,7 +27,7 @@ export class BalancesComponent implements OnInit {
   totalIOwe = computed(() => this.transactionStore.totalIOwe());
 
   // For Math functions in template
-  Math = Math;
+  protected Math = Math;
 
   ngOnInit(): void {
     this.loadBalances();
@@ -40,7 +40,7 @@ export class BalancesComponent implements OnInit {
   }
 
   // ========== Actions ==========
-  toggleBalanceDetails(collaboratorId: number): void {
+  protected toggleBalanceDetails(collaboratorId: number): void {
     if (this.expandedBalanceId() === collaboratorId) {
       this.expandedBalanceId.set(null);
     } else {
@@ -48,23 +48,23 @@ export class BalancesComponent implements OnInit {
     }
   }
 
-  viewTransactionsWithCollaborator(collaboratorId: number): void {
+  protected viewTransactionsWithCollaborator(collaboratorId: number): void {
     // Navigate to transactions filtered by this collaborator
     this.router.navigate(['/transactions'], {
       queryParams: { collaboratorId }
     });
   }
 
-  createTransaction(): void {
+  protected createTransaction(): void {
     this.router.navigate(['/transactions/new']);
   }
 
-  goBack(): void {
+  protected goBack(): void {
     this.location.back();
   }
 
   // ========== Formatters ==========
-  formatCurrency(amount: number): string {
+  protected formatCurrency(amount: number): string {
     return new Intl.NumberFormat('es-PY', {
       style: 'currency',
       currency: 'PYG',
@@ -72,7 +72,7 @@ export class BalancesComponent implements OnInit {
     }).format(amount);
   }
 
-  getInitials(fullName: string): string {
+  protected getInitials(fullName: string): string {
     const parts = fullName.split(' ');
     if (parts.length >= 2) {
       return parts[0][0] + parts[1][0];

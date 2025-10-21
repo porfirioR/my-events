@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../models/transactions';
-import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest } from 'src/access/contract/transactions';
+import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionMatchModel, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../models/transactions';
+import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest, TransactionAccessModel, TransactionReimbursementAccessModel } from '../../access/contract/transactions';
 import { CollaboratorSummaryModel } from '../models/collaborators';
 import { COLLABORATOR_TOKENS, TRANSACTION_TOKENS } from '../../utility/constants';
 import { ParticipantType, WhoPaid } from '../../utility/enums';
@@ -68,9 +68,7 @@ export class TransactionManagerService implements ITransactionManagerService {
     return this.mapToModel(transaction);
   };
 
-  public addReimbursement = async (
-    request: AddReimbursementRequest,
-  ): Promise<TransactionReimbursementModel> => {
+  public addReimbursement = async (request: AddReimbursementRequest): Promise<TransactionReimbursementModel> => {
     // 1. Obtener la transacción actual
     const transaction = await this.transactionAccessService.getById(request.transactionId);
 
@@ -141,7 +139,7 @@ export class TransactionManagerService implements ITransactionManagerService {
     const matches = await this.matchAccessService.getMatchesByUserId(userId);
 
     // 4. Para cada match, obtener transacciones del otro usuario
-    const theirTransactions: any[] = [];
+    const theirTransactions: TransactionMatchModel[] = [];
 
     for (const match of matches) {
       const otherUserId = match.user1Id === userId ? match.user2Id : match.user1Id;
@@ -168,13 +166,9 @@ export class TransactionManagerService implements ITransactionManagerService {
     }
 
     // 5. Mapear todas las transacciones a la vista del usuario
-    const myViews = await Promise.all(
-      myCreatedTransactions.map(x => this.mapToMyView(x, userId, true)),
-    );
+    const myViews = await Promise.all(myCreatedTransactions.map(x => this.mapToMyView(x, userId, true)));
 
-    const theirViews = await Promise.all(
-      theirTransactions.map(x => this.mapToTheirView(x, userId, false)),
-    );
+    const theirViews = await Promise.all(theirTransactions.map(x => this.mapToTheirView(x, userId, false)));
 
     // 6. Combinar y ordenar por fecha
     return [...myViews, ...theirViews].sort(
@@ -212,8 +206,8 @@ export class TransactionManagerService implements ITransactionManagerService {
     let collaboratorOwes = 0;
 
     // 5. Calcular deudas desde MIS transacciones
-    for (const tx of myTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(tx.id);
+    for (const x of myTransactions) {
+      const splits = await this.splitAccessService.getByTransaction(x.id);
 
       for (const split of splits) {
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
@@ -267,6 +261,7 @@ export class TransactionManagerService implements ITransactionManagerService {
         const balance = await this.getBalanceWithCollaborator(userId, collaborator.id);
         // Solo incluir si hay balance diferente de 0
         if (balance.netBalance !== 0) {
+          balance.collaboratorInfo = collaborator
           balances.push(balance);
         }
       }
@@ -280,8 +275,7 @@ export class TransactionManagerService implements ITransactionManagerService {
   };
 
   // ========== Métodos Privados de Validación ==========
-
-  private validateReimbursement(totalAmount: number, reimbursement: any | null): void {
+  private validateReimbursement(totalAmount: number, reimbursement: ReimbursementRequest | null): void {
     if (reimbursement) {
       if (reimbursement.amount <= 0) {
         throw new BadRequestException('El monto del reintegro debe ser mayor a 0');
@@ -295,11 +289,7 @@ export class TransactionManagerService implements ITransactionManagerService {
     }
   }
 
-  private validateSplitsStructure(
-    splits: TransactionSplitRequest[],
-    userId: number,
-    collaboratorId: number,
-  ): void {
+  private validateSplitsStructure(splits: TransactionSplitRequest[], userId: number, collaboratorId: number): void {
     if (splits.length !== 2) {
       throw new BadRequestException('Debe haber exactamente 2 participantes (usuario y colaborador)');
     }
@@ -368,10 +358,7 @@ export class TransactionManagerService implements ITransactionManagerService {
 
   // ========== Métodos Privados de Helpers ==========
 
-  private async createSplits(
-    transactionId: number,
-    splits: TransactionSplitRequest[],
-  ): Promise<void> {
+  private async createSplits(transactionId: number, splits: TransactionSplitRequest[]): Promise<void> {
     for (const split of splits) {
       const accessRequest = new CreateTransactionSplitAccessRequest(
         transactionId,
@@ -386,16 +373,13 @@ export class TransactionManagerService implements ITransactionManagerService {
   }
 
   private async calculateBalanceFromMyTransactions(userId: number, collaboratorId: number): Promise<BalanceModel> {
-    const myTransactions = await this.transactionAccessService.getByUserAndCollaborator(
-      userId,
-      collaboratorId,
-    );
+    const myTransactions = await this.transactionAccessService.getByUserAndCollaborator(userId, collaboratorId);
 
     let userOwes = 0;
     let collaboratorOwes = 0;
 
-    for (const tx of myTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(tx.id);
+    for (const x of myTransactions) {
+      const splits = await this.splitAccessService.getByTransaction(x.id);
 
       for (const split of splits) {
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
@@ -410,18 +394,19 @@ export class TransactionManagerService implements ITransactionManagerService {
     }
 
     const netBalance = collaboratorOwes - userOwes;
-
-    return new BalanceModel(
+    const model = new BalanceModel(
       userId,
       collaboratorId,
       netBalance < 0 ? Math.abs(netBalance) : 0,
       netBalance > 0 ? netBalance : 0,
       netBalance,
     );
+    return model;
   }
 
+  // ========== Mappers ==========
   private async mapToMyView(
-    transaction: any,
+    transaction: TransactionMatchModel,
     userId: number,
     createdByMe: boolean,
   ): Promise<TransactionViewModel> {
@@ -433,19 +418,19 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     const mySplit = splits.find(x => x.userId === userId);
     const theirSplit = splits.find(x => x.collaboratorId === transaction.collaboratorId);
-
-    return new TransactionViewModel(
-      transaction.id,
-      transaction.description,
-      transaction.totalAmount,
-      transaction.netAmount,
-      transaction.totalReimbursement,
-      new CollaboratorSummaryModel(
+    const myCollaborator = new CollaboratorSummaryModel(
         collaborator.id,
         collaborator.name,
         collaborator.surname,
         collaborator.email,
-      ),
+    );
+    return new TransactionViewModel(
+      transaction.id,
+      transaction.description,
+      transaction.totalAmount,
+      transaction.totalReimbursement,
+      transaction.netAmount,
+      myCollaborator,
       transaction.whoPaid,
       transaction.whoPaid === WhoPaid.USER ? transaction.totalAmount : 0,
       mySplit && !mySplit.isPayer ? mySplit.amount : 0,
@@ -453,12 +438,12 @@ export class TransactionManagerService implements ITransactionManagerService {
       transaction.whoPaid === WhoPaid.COLLABORATOR ? transaction.totalAmount : 0,
       transaction.transactionDate,
       splits.every(x => x.isSettled),
-      true,
+      createdByMe
     );
   }
 
   private async mapToTheirView(
-    transaction: any,
+    transaction: TransactionMatchModel,
     myUserId: number,
     createdByMe: boolean,
   ): Promise<TransactionViewModel> {
@@ -471,19 +456,19 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     const mySplit = splits.find(x => x.collaboratorId === transaction.matchInfo.theirCollaboratorId);
     const theirSplit = splits.find(x => x.userId === transaction.matchInfo.otherUserId);
-
+    const collaboratorSummary = new CollaboratorSummaryModel(
+      myCollaborator.id,
+      myCollaborator.name,
+      myCollaborator.surname,
+      myCollaborator.email,
+    )
     return new TransactionViewModel(
       transaction.id,
       transaction.description,
       transaction.totalAmount,
       transaction.totalReimbursement,
       transaction.netAmount,
-      new CollaboratorSummaryModel(
-        myCollaborator.id,
-        myCollaborator.name,
-        myCollaborator.surname,
-        myCollaborator.email,
-      ),
+      collaboratorSummary,
       transaction.whoPaid,
       mySplit?.isPayer ? transaction.totalAmount : 0,
       mySplit && !mySplit.isPayer ? mySplit.amount : 0,
@@ -491,13 +476,11 @@ export class TransactionManagerService implements ITransactionManagerService {
       theirSplit?.isPayer ? transaction.totalAmount : 0,
       transaction.transactionDate,
       splits.every(x => x.isSettled),
-      false,
+      createdByMe,
     );
   }
 
-  // ========== Mappers ==========
-
-  private mapToModel(accessModel: any): TransactionModel {
+  private mapToModel(accessModel: TransactionAccessModel): TransactionModel {
     return new TransactionModel(
       accessModel.id,
       accessModel.userId,
@@ -512,7 +495,7 @@ export class TransactionManagerService implements ITransactionManagerService {
     );
   }
 
-  private mapToReimbursementManagerModel(accessModel: any): TransactionReimbursementModel {
+  private mapToReimbursementManagerModel(accessModel: TransactionReimbursementAccessModel): TransactionReimbursementModel {
     return new TransactionReimbursementModel(
       accessModel.id,
       accessModel.transactionId,

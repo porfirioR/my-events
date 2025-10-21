@@ -53,7 +53,7 @@ export class TransactionsComponent implements OnInit {
       this.collaboratorStore.loadCollaborators();
     }
 
-    setTimeout(() => this.isLoading.set(false), 500);
+    setTimeout(() => this.isLoading.set(false), 1000);
   }
 
   // ========== Filters ==========

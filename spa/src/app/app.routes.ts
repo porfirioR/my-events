@@ -109,7 +109,7 @@ export const routes: Routes = [
           },
           {
             path: 'new',
-            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.TransactionFormComponent)
+            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.UpsertTransactionComponent)
           },
           {
             path: 'balances',
@@ -117,7 +117,7 @@ export const routes: Routes = [
           },
           {
             path: ':id',
-            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.TransactionFormComponent)
+            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.UpsertTransactionComponent)
           }
         ]
       },

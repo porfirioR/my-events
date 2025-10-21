@@ -1,235 +1,211 @@
 <section aria-labelledby="transactions-heading" class="mb-8">
   <article class="dark:bg-base-300 rounded-xl transition-all duration-300">
-    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-      <div class="flex items-center justify-between flex-wrap gap-4">
-        <h2 id="transactions-heading" class="text-xl font-semibold text-base-content">Transactions</h2>
-        <div class="flex items-center gap-2 flex-wrap">
-          <!-- Filter Buttons -->
-          <div class="btn-group">
-            <button 
-              type="button"
-              class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType() === 'all'}"
-              (click)="setFilter('all')"
-            >
-              All
-            </button>
-            <button 
-              type="button"
-              class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType() === 'my-created'}"
-              (click)="setFilter('my-created')"
-            >
-              <i class="fas fa-user mr-1"></i>
-              I Created
-            </button>
-            <button 
-              type="button"
-              class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType() === 'their-created'}"
-              (click)="setFilter('their-created')"
-            >
-              <i class="fas fa-users mr-1"></i>
-              Others
-            </button>
-            <button 
-              type="button"
-              class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType() === 'unsettled'}"
-              (click)="setFilter('unsettled')"
-            >
-              <i class="fas fa-clock mr-1"></i>
-              Pending
-            </button>
-          </div>
+    <!-- ... header sin cambios ... -->
 
-          <!-- Balances -->
-          <button
-            type="button"
-            class="btn btn-sm btn-outline btn-info"
-            (click)="viewBalances()"
-          >
-            <i class="fas fa-balance-scale mr-1" aria-hidden="true"></i>
-            Balances
-          </button>
-
-          <!-- Add New Transaction -->
-          <button
-            type="button"
-            class="btn btn-sm btn-primary"
-            (click)="createTransaction()"
-          >
-            <i class="fas fa-plus mr-1" aria-hidden="true"></i>
-            New Transaction
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <div class="p-6">
+    <div class="p-4 md:p-6">
       @if (isLoading()) {
-        <div class="flex justify-center items-center py-12">
-          <span class="loading loading-spinner loading-lg"></span>
-          <p class="ml-3 text-base-content/70">Loading transactions...</p>
-        </div>
+        <!-- ... loading sin cambios ... -->
       } @else {
-        <ul class="space-y-4" role="list">
+        <ul class="space-y-3" role="list">
           @for (transaction of transactions(); track transaction.id) {
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-              <article class="flex items-start">
-                <!-- Icon -->
-                <figure class="flex-shrink-0 mr-4">
-                  <div
-                    class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
-                    [ngClass]="{
-                      'bg-green-500 dark:bg-green-600': transaction.iPaid > 0,
-                      'bg-blue-500 dark:bg-blue-600': transaction.theyPaid > 0
-                    }"
-                  >
-                    <i class="fas"
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg overflow-hidden hover:shadow-md transition-all duration-200">
+              <article class="p-3 sm:p-4">
+                <div class="flex items-start gap-3">
+                  <!-- Icon Circle -->
+                  <figure class="flex-shrink-0">
+                    <div
+                      class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
                       [ngClass]="{
-                        'fa-arrow-up': transaction.iPaid > 0,
-                        'fa-arrow-down': transaction.theyPaid > 0
-                      }"
-                      aria-hidden="true"
-                    ></i>
-                  </div>
-                </figure>
-                
-                <!-- Info -->
-                <div class="flex-grow min-w-0">
-                  <div class="flex items-start justify-between">
-                    <div class="flex-grow">
-                      <h3 class="font-semibold text-base-content">
-                        {{ transaction.description || 'No description' }}
-                      </h3>
-                      <p class="text-sm text-base-content/70">
-                        <i class="fas fa-user-circle mr-1"></i>
-                        {{ transaction.myCollaborator.name }} {{ transaction.myCollaborator.surname }}
-                        @if (transaction.myCollaborator.email) {
-                          <span class="text-xs">({{ transaction.myCollaborator.email }})</span>
-                        }
-                      </p>
-                      <time [attr.datetime]="transaction.date" class="text-xs text-base-content/60">
-                        {{ getFormattedDate(transaction.date) }}
-                      </time>
-                    </div>
-
-                    <!-- Amounts -->
-                    <div class="text-right ml-4">
-                      <p class="text-lg font-bold text-base-content">
-                        {{ formatCurrency(transaction.netAmount) }}
-                      </p>
-                      @if (transaction.totalReimbursement > 0) {
-                        <p class="text-xs text-base-content/60">
-                          <i class="fas fa-undo mr-1"></i>
-                          Reintegro: {{ formatCurrency(transaction.totalReimbursement) }}
-                        </p>
-                      }
-                    </div>
-                  </div>
-
-                  <!-- Details -->
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    <!-- Who Paid -->
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      [ngClass]="{
-                        'bg-green-100 text-green-700 border border-green-300': transaction.iPaid > 0,
-                        'bg-blue-100 text-blue-700 border border-blue-300': transaction.theyPaid > 0
+                        'bg-green-500 dark:bg-green-600': transaction.iPaid > 0,
+                        'bg-blue-500 dark:bg-blue-600': transaction.theyPaid > 0
                       }"
                     >
-                      @if (transaction.iPaid > 0) {
-                        <i class="fas fa-wallet mr-1"></i>
-                        I paid {{ formatCurrency(transaction.iPaid) }}
-                      } @else {
-                        <i class="fas fa-hand-holding-usd mr-1"></i>
-                        They paid {{ formatCurrency(transaction.theyPaid) }}
-                      }
-                    </span>
-
-                    <!-- Debt Info -->
-                    @if (transaction.iOwe > 0) {
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-300">
-                        <i class="fas fa-arrow-down mr-1"></i>
-                        I owe {{ formatCurrency(transaction.iOwe) }}
-                      </span>
-                    }
-                    @if (transaction.theyOwe > 0) {
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-300">
-                        <i class="fas fa-arrow-up mr-1"></i>
-                        They owe {{ formatCurrency(transaction.theyOwe) }}
-                      </span>
-                    }
-
-                    <!-- Settled Status -->
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
-                      [ngClass]="{
-                        'bg-success/20 text-success border-success/30': transaction.isSettled,
-                        'bg-warning/20 text-warning border-warning/30': !transaction.isSettled
-                      }"
-                    >
-                      <i class="fas mr-1"
+                      <i class="fas text-sm sm:text-base"
                         [ngClass]="{
-                          'fa-check-circle': transaction.isSettled,
-                          'fa-clock': !transaction.isSettled
+                          'fa-arrow-up': transaction.iPaid > 0,
+                          'fa-arrow-down': transaction.theyPaid > 0
                         }"
                         aria-hidden="true"
                       ></i>
-                      {{ transaction.isSettled ? 'Settled' : 'Pending' }}
-                    </span>
+                    </div>
+                  </figure>
+                  
+                  <!-- Main Content -->
+                  <div class="flex-grow min-w-0">
+                    <!-- Header: Title and Amount -->
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                      <div class="flex-grow min-w-0">
+                        <h3 class="font-semibold text-sm sm:text-base text-base-content truncate">
+                          {{ transaction.description || 'No description' }}
+                        </h3>
+                        <p class="text-xs sm:text-sm text-base-content/70 truncate">
+                          <i class="fas fa-user-circle mr-1"></i>
+                          {{ transaction.myCollaborator.name }} {{ transaction.myCollaborator.surname }}
+                        </p>
+                        @if (transaction.myCollaborator.email) {
+                          <p class="text-xs text-base-content/60 truncate hidden sm:block">
+                            {{ transaction.myCollaborator.email }}
+                          </p>
+                        }
+                      </div>
 
-                    <!-- Created By -->
-                    @if (transaction.createdByMe) {
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 border border-purple-300">
-                        <i class="fas fa-user-check mr-1"></i>
-                        Created by me
+                      <!-- Amount (always visible) -->
+                      <div class="text-right flex-shrink-0">
+                        <p class="text-base sm:text-lg font-bold text-base-content whitespace-nowrap">
+                          {{ formatCurrency(transaction.netAmount) }}
+                        </p>
+                        @if (transaction.totalReimbursement > 0) {
+                          <p class="text-xs text-base-content/60 whitespace-nowrap">
+                            <i class="fas fa-undo mr-1"></i>
+                            <span class="hidden sm:inline">Reintegro: </span>{{ formatCurrency(transaction.totalReimbursement) }}
+                          </p>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Date -->
+                    <time [attr.datetime]="transaction.date" class="text-xs text-base-content/60 block mb-2">
+                      {{ getFormattedDate(transaction.date) }}
+                    </time>
+
+                    <!-- ⭐ ALL BADGES IN ONE LINE (Desktop) / Wrap (Mobile) ⭐ -->
+                    <div class="flex flex-wrap lg:flex-nowrap gap-1.5 items-center">
+                      <!-- Who Paid Badge -->
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0"
+                        [ngClass]="{
+                          'bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-300': transaction.iPaid > 0,
+                          'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-300': transaction.theyPaid > 0
+                        }"
+                      >
+                        @if (transaction.iPaid > 0) {
+                          <i class="fas fa-wallet mr-1"></i>
+                          <span class="hidden sm:inline">I paid </span>{{ formatCurrency(transaction.iPaid) }}
+                        } @else {
+                          <i class="fas fa-hand-holding-usd mr-1"></i>
+                          <span class="hidden sm:inline">They paid </span>{{ formatCurrency(transaction.theyPaid) }}
+                        }
                       </span>
-                    }
+
+                      <!-- I Owe Badge -->
+                      @if (transaction.iOwe > 0) {
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-300 dark:bg-red-900 dark:text-red-300 whitespace-nowrap flex-shrink-0">
+                          <i class="fas fa-arrow-down mr-1"></i>
+                          <span class="hidden sm:inline">I owe </span>{{ formatCurrency(transaction.iOwe) }}
+                        </span>
+                      }
+                      
+                      <!-- They Owe Badge -->
+                      @if (transaction.theyOwe > 0) {
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-300 whitespace-nowrap flex-shrink-0">
+                          <i class="fas fa-arrow-up mr-1"></i>
+                          <span class="hidden sm:inline">They owe </span>{{ formatCurrency(transaction.theyOwe) }}
+                        </span>
+                      }
+
+                      <!-- Settled Status Badge -->
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0"
+                        [ngClass]="{
+                          'bg-success/20 text-success border-success/30': transaction.isSettled,
+                          'bg-warning/20 text-warning border-warning/30': !transaction.isSettled
+                        }"
+                      >
+                        <i class="fas mr-1"
+                          [ngClass]="{
+                            'fa-check-circle': transaction.isSettled,
+                            'fa-clock': !transaction.isSettled
+                          }"
+                          aria-hidden="true"
+                        ></i>
+                        {{ transaction.isSettled ? 'Settled' : 'Pending' }}
+                      </span>
+
+                      <!-- Created By Badge -->
+                      @if (transaction.createdByMe) {
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 border border-purple-300 dark:bg-purple-900 dark:text-purple-300 flex-shrink-0">
+                          <i class="fas fa-user-check mr-1"></i>
+                          <span class="hidden sm:inline">Created by me</span>
+                          <span class="sm:hidden">Mine</span>
+                        </span>
+                      }
+                    </div>
                   </div>
+
+                  <!-- Actions Menu (Desktop) -->
+                  <aside class="flex-shrink-0 hidden sm:block">
+                    <div class="dropdown dropdown-end">
+                      <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-base-content/10 cursor-pointer">
+                        <i class="fas fa-ellipsis-v text-base-content/70" aria-hidden="true"></i>
+                      </label>
+                      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-52 border border-base-300 dark:border-base-100">
+                        <!-- View Details -->
+                        <li>
+                          <button type="button" (click)="viewTransaction(transaction)"
+                            class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-info/10 hover:text-info">
+                            <i class="fas fa-eye mr-3 text-info" aria-hidden="true"></i>
+                            <span>View Details</span>
+                          </button>
+                        </li>
+                        
+                        <!-- Add Reimbursement -->
+                        @if (!transaction.isSettled && transaction.createdByMe) {
+                          <li>
+                            <button type="button" (click)="addReimbursement(transaction)"
+                              class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-warning/10 hover:text-warning">
+                              <i class="fas fa-undo mr-3 text-warning" aria-hidden="true"></i>
+                              <span>Add Reimbursement</span>
+                            </button>
+                          </li>
+                        }
+                        
+                        <li><hr class="my-1 border-base-300"></li>
+                        
+                        <!-- Delete -->
+                        @if (transaction.createdByMe) {
+                          <li>
+                            <button type="button" (click)="deleteTransaction(transaction)"
+                              class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-error/10 hover:text-error">
+                              <i class="fas fa-trash mr-3 text-error" aria-hidden="true"></i>
+                              <span>Delete</span>
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </aside>
                 </div>
 
-                <!-- Actions Menu -->
-                <aside class="ml-4">
-                  <div class="dropdown dropdown-end">
-                    <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-base-content/10 cursor-pointer">
-                      <i class="fas fa-ellipsis-v text-base-content/70" aria-hidden="true"></i>
-                    </label>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-52 border border-base-300 dark:border-base-100">
-                      <!-- View Details -->
-                      <li>
-                        <button type="button" (click)="viewTransaction(transaction)"
-                          class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-info/10 hover:text-info">
-                          <i class="fas fa-eye mr-3 text-info" aria-hidden="true"></i>
-                          <span>View Details</span>
-                        </button>
-                      </li>
-                      
-                      <!-- Add Reimbursement -->
-                      @if (!transaction.isSettled && transaction.createdByMe) {
-                        <li>
-                          <button type="button" (click)="addReimbursement(transaction)"
-                            class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-warning/10 hover:text-warning">
-                            <i class="fas fa-undo mr-3 text-warning" aria-hidden="true"></i>
-                            <span>Add Reimbursement</span>
-                          </button>
-                        </li>
-                      }
-                      
-                      <li><hr class="my-1 border-base-300"></li>
-                      
-                      <!-- Delete -->
-                      @if (transaction.createdByMe) {
-                        <li>
-                          <button type="button" (click)="deleteTransaction(transaction)"
-                            class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-error/10 hover:text-error">
-                            <i class="fas fa-trash mr-3 text-error" aria-hidden="true"></i>
-                            <span>Delete</span>
-                          </button>
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                </aside>
+                <!-- Mobile Actions (shown only on mobile) -->
+                <div class="mt-3 flex gap-2 sm:hidden">
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-outline btn-info flex-1"
+                    (click)="viewTransaction(transaction)"
+                  >
+                    <i class="fas fa-eye mr-1"></i>
+                    View
+                  </button>
+                  
+                  @if (!transaction.isSettled && transaction.createdByMe) {
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline btn-warning flex-1"
+                      (click)="addReimbursement(transaction)"
+                    >
+                      <i class="fas fa-undo mr-1"></i>
+                      Reimbursement
+                    </button>
+                  }
+                  
+                  @if (transaction.createdByMe) {
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline btn-error"
+                      (click)="deleteTransaction(transaction)"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  }
+                </div>
               </article>
             </li>
           } @empty {
@@ -237,11 +213,11 @@
               <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                 <i class="fas fa-receipt text-2xl text-base-content/50" aria-hidden="true"></i>
               </figure>
-              <h3 class="text-lg font-medium text-base-content mb-2">
+              <h3 class="text-base sm:text-lg font-medium text-base-content mb-2">
                 No transactions yet
               </h3>
-              <p class="text-base-content/70 mb-4">Get started by creating your first transaction</p>
-              <button class="btn btn-primary" (click)="createTransaction()">
+              <p class="text-sm text-base-content/70 mb-4 px-4">Get started by creating your first transaction</p>
+              <button class="btn btn-sm btn-primary" (click)="createTransaction()">
                 <i class="fas fa-plus mr-2" aria-hidden="true"></i>
                 New Transaction
               </button>

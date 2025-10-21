@@ -1,7 +1,7 @@
-import { CollaboratorSummaryModel, ReceivedMatchRequestModel } from ".";
+import { CollaboratorSummaryApiModel, ReceivedMatchRequestModel } from ".";
 
 export interface CollaboratorInvitationModel {
-  collaborator: CollaboratorSummaryModel;
+  collaborator: CollaboratorSummaryApiModel;
   invitations: ReceivedMatchRequestModel[];
   invitationsCount: number;
 }
