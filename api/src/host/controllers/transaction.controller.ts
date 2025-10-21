@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   UseGuards,
   Inject,
+  Put,
 } from '@nestjs/common';
 import { CurrentUserService } from '../services/current-user.service';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
@@ -142,6 +143,12 @@ export class TransactionController {
   async deleteTransaction(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
     await this.transactionManagerService.deleteTransaction(id);
     return new MessageModel('Transaction deleted successfully');
+  }
+
+  @Put(':id/settle')
+  async settleTransaction(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
+    await this.transactionManagerService.settleTransaction(id);
+    return new MessageModel('Transaction settled successfully');
   }
 
   // ========== Métodos Privados de Helpers ==========

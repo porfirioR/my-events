@@ -26,14 +26,14 @@
         <header class="flex items-center justify-between">
           <div>
             <h3 class="text-green-100 dark:text-green-50 text-sm font-medium">Transactions</h3>
-            <data value="12" class="text-3xl font-bold mt-1 text-white">12</data>
+            <data value="12" class="text-3xl font-bold mt-1 text-white">{{myCreatedTransactions().length}}</data>
           </div>
           <figure class="bg-green-400 bg-opacity-30 dark:bg-green-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
             <i class="fas fa-dollar-sign text-xl text-white" aria-hidden="true"></i>
           </figure>
         </header>
         <footer class="mt-4">
-          <span class="text-green-100 dark:text-green-50 text-xs">8 completed this month</span>
+          <span class="text-green-100 dark:text-green-50 text-xs">{{unsettledTransactions().length}} unsettled,  {{settledTransactions().length}} settled</span>
         </footer>
       </article>
 

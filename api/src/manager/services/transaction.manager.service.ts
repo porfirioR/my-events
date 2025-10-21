@@ -274,6 +274,16 @@ export class TransactionManagerService implements ITransactionManagerService {
     await this.transactionAccessService.delete(id);
   };
 
+  public settleTransaction = async (transactionId: number): Promise<void> => {
+    const splits = await this.splitAccessService.getByTransaction(transactionId);
+    
+    for (const split of splits) {
+      if (!split.isSettled) {
+        await this.splitAccessService.markAsSettled(split.id);
+      }
+    }
+  };
+
   // ========== Métodos Privados de Validación ==========
   private validateReimbursement(totalAmount: number, reimbursement: ReimbursementRequest | null): void {
     if (reimbursement) {
