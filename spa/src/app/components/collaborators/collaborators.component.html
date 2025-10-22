@@ -9,7 +9,7 @@
             <button 
               type="button"
               class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType === 'all'}"
+              [ngClass]="{'btn-active': filterType() === 'all'}"
               (click)="setFilter('all')"
             >
               All
@@ -17,7 +17,7 @@
             <button 
               type="button"
               class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType === 'unlinked'}"
+              [ngClass]="{'btn-active': filterType() === 'unlinked'}"
               (click)="setFilter('unlinked')"
             >
               <i class="fas fa-unlink mr-1"></i>
@@ -26,7 +26,7 @@
             <button 
               type="button"
               class="btn btn-sm"
-              [ngClass]="{'btn-active': filterType === 'linked'}"
+              [ngClass]="{'btn-active': filterType() === 'linked'}"
               (click)="setFilter('linked')"
             >
               <i class="fas fa-link mr-1"></i>
@@ -70,7 +70,7 @@
         </div>
       } @else {
         <ul class="space-y-4" role="list">
-          @for (collaborator of collaborators; track collaborator.id) {
+          @for (collaborator of collaborators(); track collaborator.id) {
             <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
               <article class="flex items-center">
                 <!-- Avatar -->
@@ -197,34 +197,29 @@
                           </button>
                         </li>
                       }
-                      
-                      <li><hr class="my-1 border-base-300"></li>
-                      
-                      <!-- Delete -->
+                      <!-- TODO Delete -->
+                      <!-- <li><hr class="my-1 border-base-300"></li>
                       <li>
                         <button type="button" (click)="deleteCollaborator(collaborator)"
                           class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-error/10 hover:text-error">
                           <i class="fas fa-trash mr-3 text-error" aria-hidden="true"></i>
                           <span>Delete</span>
                         </button>
-                      </li>
+                      </li> -->
                     </ul>
                   </div>
                 </aside>
               </article>
             </li>
-          }
-
-          <!-- Empty State -->
-          @if (collaborators.length === 0) {
+          } @empty {
             <li class="text-center py-12">
               <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                 <i class="fas fa-users text-2xl text-base-content/50" aria-hidden="true"></i>
               </figure>
               <h3 class="text-lg font-medium text-base-content mb-2">
-                @if (filterType === 'unlinked') {
+                @if (filterType() === 'unlinked') {
                   No unlinked collaborators yet
-                } @else if (filterType === 'linked') {
+                } @else if (filterType() === 'linked') {
                   No linked collaborators yet
                 } @else {
                   No collaborators yet

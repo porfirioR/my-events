@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import Swal from 'sweetalert2';
 import { useTransactionStore } from '../../store';
+import { HelperService } from '../../services';
 
 @Component({
   selector: 'app-transaction-detail',
@@ -137,7 +138,7 @@ export class TransactionDetailComponent implements OnInit {
 
     if (result.isConfirmed) {
       this.transactionStore.deleteTransaction(trans.id);
-      
+
       Swal.fire({
         icon: 'success',
         title: 'Deleted!',
@@ -150,27 +151,12 @@ export class TransactionDetailComponent implements OnInit {
     }
   }
 
-  goBack(): void {
+  protected goBack(): void {
     this.location.back();
   }
 
   // ========== Formatters ==========
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-PY', {
-      style: 'currency',
-      currency: 'PYG',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
+  protected formatCurrency = (amount: number): string => HelperService.formatCurrency(amount)
 
-  getFormattedDate(date: Date): string {
-    const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
+  protected getFormattedDate = (date: Date): string => HelperService.getFormattedDate(date)
 }

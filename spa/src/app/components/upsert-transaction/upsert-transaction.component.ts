@@ -98,7 +98,6 @@ export class UpsertTransactionComponent implements OnInit {
     });
     this.formGroup.controls.hasReimbursement.valueChanges.subscribe(x => this.onReimbursementToggle(x));
 
-    
     effect(() => {
       this.transaction = this.selectedTransaction();
       if (this.transaction && this.isEditMode) {
@@ -173,41 +172,39 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   protected onCustomUserAmountChange(event: Event): void {
-    let value = parseFloat((event.target as HTMLInputElement).value) || 0;
+    const input = event.target as HTMLInputElement;
+    const [value, maxValue] = this.getValueAndMaxValue(input.value)
+
     this.customUserAmount.set(value);
-
-    const splitType = this.formGroup.value.splitType;
-    const netAmount = this.calculateNetAmount();
-
-    if (splitType === this.splitType.Custom) {
-      this.customCollaboratorAmount.set(netAmount - value);
-    } else if (splitType === this.splitType.Percentage) {
-      const maxValue = 100
-      if (value > maxValue) {
-        value = maxValue
-        this.customUserAmount.set(value);
-      }
-      this.customCollaboratorAmount.set(100 - value);
-    }
+    this.customCollaboratorAmount.set(maxValue - value);
+    input.value = value.toString()
   }
 
   protected onCustomCollaboratorAmountChange(event: Event): void {
-    let value = parseFloat((event.target as HTMLInputElement).value) || 0;
+    const input = event.target as HTMLInputElement;
+    const [value, maxValue] = this.getValueAndMaxValue(input.value)
+
     this.customCollaboratorAmount.set(value);
+    this.customUserAmount.set(maxValue - value);
+    input.value = value.toString()
+  }
+
+  private getValueAndMaxValue(inputValue: string):[number, number] {
+    let value = parseInt(inputValue) || 0;
 
     const splitType = this.formGroup.value.splitType;
     const netAmount = this.calculateNetAmount();
 
+    let maxValue = 100
     if (splitType === this.splitType.Custom) {
-      this.customUserAmount.set(netAmount - value);
-    } else if (splitType === this.splitType.Percentage) {
-      const maxValue = 100
-      if (value > maxValue) {
-        value = maxValue
-        this.customCollaboratorAmount.set(value);
+      maxValue = netAmount
+      if (value > netAmount) {
+        value = netAmount
       }
-      this.customUserAmount.set(maxValue - value);
+    } else if(splitType === this.splitType.Percentage && value > maxValue) {
+      value = maxValue
     }
+    return [value, maxValue]
   }
 
   // ========== Calculations ==========
@@ -344,11 +341,10 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   // ========== Formatters ==========
-  protected formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-PY', {
-      style: 'currency',
-      currency: 'PYG',
-      minimumFractionDigits: 0
-    }).format(amount);
+  protected formatCurrency = (amount: number): string => HelperService.formatCurrency(amount)
+
+  private getMaxValue(): number {
+    const splitType = this.formGroup.value.splitType;
+    return splitType === this.splitType.Percentage ? 100 : this.calculateNetAmount();
   }
 }

@@ -36,10 +36,10 @@ export const CollaboratorStore = signalStore(
       const filter = store.filter().toLowerCase();
       if (!filter) return store.collaborators();
 
-      return store.collaborators().filter(c => 
-        c.name.toLowerCase().includes(filter) ||
-        c.surname.toLowerCase().includes(filter) ||
-        c.email?.toLowerCase().includes(filter)
+      return store.collaborators().filter(x => 
+        x.name.toLowerCase().includes(filter) ||
+        x.surname.toLowerCase().includes(filter) ||
+        x.email?.toLowerCase().includes(filter)
       );
     }),
 
@@ -123,6 +123,12 @@ export const CollaboratorStore = signalStore(
     selectCollaborator: (collaborator: CollaboratorApiModel | undefined) => patchState(store, { selectedCollaborator: collaborator }),
     clearError: () => patchState(store, { error: null }),
     clearSelectedCollaborator: () => patchState(store, { selectedCollaborator: undefined }),
+    clearCollaborators: () => patchState(store, {
+      collaborators: [],
+      selectedCollaborator: undefined,
+      error: null,
+      filter: ''
+    }),
   }))
 );
 

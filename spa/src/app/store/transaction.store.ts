@@ -201,6 +201,14 @@ export const TransactionStore = signalStore(
       patchState(store, { selectedBalance: balance }),
     clearError: () => patchState(store, { error: null }),
     clearSelectedTransaction: () => patchState(store, { selectedTransaction: undefined }),
+    clearTransactions: () => patchState(store, {
+      transactions: [],
+      balances: [],
+      selectedTransaction: undefined,
+      selectedBalance: undefined,
+      error: null,
+      filter: ''
+    }),
     clearSelectedBalance: () => patchState(store, { selectedBalance: undefined }),
   }))
 );

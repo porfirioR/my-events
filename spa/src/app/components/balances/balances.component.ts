@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { useTransactionStore } from '../../store';
+import { HelperService } from '../../services';
 
 @Component({
   selector: 'app-balances',
@@ -64,13 +65,7 @@ export class BalancesComponent implements OnInit {
   }
 
   // ========== Formatters ==========
-  protected formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-PY', {
-      style: 'currency',
-      currency: 'PYG',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
+  protected formatCurrency = (amount: number): string => HelperService.formatCurrency(amount)
 
   protected getInitials(fullName: string): string {
     const parts = fullName.split(' ');

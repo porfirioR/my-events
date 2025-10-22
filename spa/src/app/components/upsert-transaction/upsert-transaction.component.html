@@ -127,7 +127,7 @@
                   [value]="customUserAmount()"
                   (input)="onCustomUserAmountChange($event)"
                   [min]="0"
-                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : formGroup.value.totalAmount"
+                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : calculateNetAmount()"
                   [step]="1"
                 >
               </div>
@@ -141,7 +141,7 @@
                   [value]="customCollaboratorAmount()"
                   (input)="onCustomCollaboratorAmountChange($event)"
                   [min]="0"
-                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : formGroup.value.totalAmount"
+                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : calculateNetAmount()"
                   [step]="1"
                 >
               </div>

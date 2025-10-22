@@ -23,7 +23,7 @@ export class AlertService {
       reverseButtons: true,
       focusCancel: true,
       customClass: {
-        cancelButton: 'btn btn-outline btn-primary',
+        cancelButton: 'btn btn-outline btn-primary mx-1',
         confirmButton: 'btn btn-outline btn-primary'
       },
       buttonsStyling: false

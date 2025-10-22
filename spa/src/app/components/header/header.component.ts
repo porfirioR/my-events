@@ -3,7 +3,7 @@ import { Router, RouterModule } from '@angular/router'
 import { ProfileComponent } from "../profile/profile.component"
 import { AlertService, LocalService } from '../../services'
 import { ModeType } from '../../constants'
-import { useAuthStore } from '../../store'
+import { useAuthStore, useCollaboratorStore, useTransactionStore } from '../../store'
 
 @Component({
   selector: 'app-header',
@@ -17,6 +17,8 @@ import { useAuthStore } from '../../store'
 export class HeaderComponent {
   @ViewChild(ProfileComponent) profile: ProfileComponent | undefined
   authStore = useAuthStore()
+  transactionStore = useTransactionStore()
+  collaboratorStore = useCollaboratorStore()
   private router = inject(Router)
   private localService = inject(LocalService)
   private alertService = inject(AlertService)
@@ -34,6 +36,8 @@ export class HeaderComponent {
 
   protected logOut = (): void => {
     this.localService.cleanCredentials()
+    this.transactionStore.clearTransactions()
+    this.collaboratorStore.clearCollaborators()
     this.alertService.showSuccess('Good bye.')
     this.authStore.logout()
     this.profile?.ngOnDestroy()

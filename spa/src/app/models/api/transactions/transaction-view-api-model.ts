@@ -13,7 +13,7 @@ export interface TransactionViewApiModel {
   iOwe: number;
   theyOwe: number;
   theyPaid: number;
-  date: Date;
+  transactionDate: Date;
   isSettled: boolean;
   createdByMe: boolean;
 }
