@@ -54,4 +54,12 @@ export interface ITransactionManagerService {
    * @returns Promise<void>
    */
   deleteTransaction(id: number): Promise<void>;
+
+  
+  /**
+   * Marca un split como liquidado
+   * @param id - ID del split
+   * @returns Promise<void>
+   */
+  settleTransaction(transactionId: number): Promise<void>;
 }

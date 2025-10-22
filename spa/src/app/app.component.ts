@@ -25,7 +25,7 @@ export class AppComponent {
     private swPush: SwPush,
     private readonly userApiService: UserApiService,
   ) {
-      this.initializeAuth();
+    this.initializeAuth();
 
     // this.key = environment.webPush.publicKey
     // this.subscribeToNotification()
@@ -43,7 +43,7 @@ export class AppComponent {
   //     })
   //   }
   // }
-  private initializeAuth() {
+  private initializeAuth(): void {
     const token = this.localService.getJwtToken();
     const userString = this.localService.getUserId();
     const email = this.localService.getEmail();

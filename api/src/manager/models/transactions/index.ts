@@ -8,3 +8,5 @@ export { ReimbursementRequest } from './reimbursement-request';
 export { AddReimbursementRequest } from './add-reimbursement-request';
 export { BalanceModel } from './balance-model';
 export { ITransactionManagerService } from './transaction-manager-service.interface';
+export { TransactionMatchModel } from './transaction-match-model';
+export { TransactionMatchInfoModel } from './transaction-match-info-model';

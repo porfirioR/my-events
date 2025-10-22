@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { useCollaboratorStore } from '../../store';
+import { useCollaboratorStore, useTransactionStore } from '../../store';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,6 +12,11 @@ import { useCollaboratorStore } from '../../store';
 })
 export class DashboardComponent implements OnInit {
   private collaboratorStore = useCollaboratorStore();
+  private transactionStore = useTransactionStore();
+
+  unsettledTransactions = this.transactionStore.unsettledTransactions
+  myCreatedTransactions = this.transactionStore.myCreatedTransactions
+  settledTransactions = this.transactionStore.settledTransactions
 
   protected totalCollaborators = this.collaboratorStore.totalCount
   protected activeCollaborators = this.collaboratorStore.activeCollaborators
@@ -21,6 +26,7 @@ export class DashboardComponent implements OnInit {
     if (this.collaboratorStore.totalCount() === 0) {
       this.collaboratorStore.loadCollaborators();
     }
+    this.transactionStore.loadTransactions()
   }
 
 }

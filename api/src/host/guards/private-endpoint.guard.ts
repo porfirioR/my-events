@@ -47,12 +47,12 @@ export class PrivateEndpointGuard implements CanActivate {
       return false
     }
     const user = await this.userManager.getUserByEmail(email)
-    if (request.method === 'PUT') {
-      const body: UpdateEventApiRequest = request.body
-      const myEvents = await this.eventManager.getMyEvents(user.id)
-      const eventToUpdateIsMine = myEvents.some(x => x.id === body.id)
-      return eventToUpdateIsMine
-    }
+    // if (request.method === 'PUT') {
+    //   const body: UpdateEventApiRequest = request.body
+    //   const myEvents = await this.eventManager.getMyEvents(user.id)
+    //   const eventToUpdateIsMine = myEvents.some(x => x.id === body.id)
+    //   return eventToUpdateIsMine
+    // }
     return true;
   }
 

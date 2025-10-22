@@ -7,13 +7,14 @@ import {
   BalanceApiModel,
   CreateTransactionApiRequest,
   AddReimbursementApiRequest,
+  TransactionApiModel,
 } from '../models/api/transactions';
 import { TransactionApiService } from '../services/api/transaction-api.service';
 
 export interface TransactionState {
   transactions: TransactionViewApiModel[];
   balances: BalanceApiModel[];
-  selectedTransaction: TransactionViewApiModel | undefined;
+  selectedTransaction: TransactionApiModel | undefined;
   selectedBalance: BalanceApiModel | undefined;
   error: string | null;
   filter: string;
@@ -113,11 +114,7 @@ export const TransactionStore = signalStore(
         tap(() => patchState(store, { error: null })),
         switchMap((id) => transactionApiService.getById(id).pipe(
           tap(transaction => {
-            // Buscar en las transacciones existentes
-            const existing = store.transactions().find(x => x.id === id);
-            if (existing) {
-              patchState(store, { selectedTransaction: existing });
-            }
+            patchState(store, { selectedTransaction: transaction });
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load transaction' });
@@ -198,12 +195,20 @@ export const TransactionStore = signalStore(
     // Métodos auxiliares
     setFilter: (filter: string) => patchState(store, { filter }),
     clearFilter: () => patchState(store, { filter: '' }),
-    selectTransaction: (transaction: TransactionViewApiModel | undefined) =>
+    selectTransaction: (transaction: TransactionApiModel | undefined) =>
       patchState(store, { selectedTransaction: transaction }),
     selectBalance: (balance: BalanceApiModel | undefined) =>
       patchState(store, { selectedBalance: balance }),
     clearError: () => patchState(store, { error: null }),
     clearSelectedTransaction: () => patchState(store, { selectedTransaction: undefined }),
+    clearTransactions: () => patchState(store, {
+      transactions: [],
+      balances: [],
+      selectedTransaction: undefined,
+      selectedBalance: undefined,
+      error: null,
+      filter: ''
+    }),
     clearSelectedBalance: () => patchState(store, { selectedBalance: undefined }),
   }))
 );

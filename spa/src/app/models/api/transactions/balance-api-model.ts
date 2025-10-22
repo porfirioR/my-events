@@ -1,4 +1,4 @@
-import { CollaboratorInfoApiModel } from '../collaborators';
+import { CollaboratorSummaryApiModel } from '../collaborators';
 
 export interface BalanceApiModel {
   userId: number;
@@ -6,5 +6,5 @@ export interface BalanceApiModel {
   userOwes: number;
   collaboratorOwes: number;
   netBalance: number;
-  collaboratorInfo: CollaboratorInfoApiModel;
+  collaboratorInfo: CollaboratorSummaryApiModel;
 }

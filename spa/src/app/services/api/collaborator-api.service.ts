@@ -11,7 +11,6 @@ export class CollaboratorApiService {
 
   constructor(private readonly httpClient: HttpClient) { }
 
-  // Existing methods
   public getAll = (): Observable<CollaboratorApiModel[]> =>
     this.httpClient.get<CollaboratorApiModel[]>(`${this.section}`);
 

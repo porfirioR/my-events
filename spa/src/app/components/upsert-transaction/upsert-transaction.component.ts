@@ -1,11 +1,11 @@
-import { Component, OnInit, signal, computed, inject, Signal } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, Signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
 import { Configurations, ParticipantType, SplitType, WhoPaid } from '../../models/enums';
-import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionSplitApiRequest } from '../../models/api/transactions';
+import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionApiModel, TransactionSplitApiRequest, TransactionViewApiModel } from '../../models/api/transactions';
 import { ReimbursementFormGroup, TransactionFormGroup, TransactionSplitFormGroup } from '../../models/forms';
 import { AlertService, HelperService } from '../../services';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
@@ -30,7 +30,7 @@ import { debounceTime, tap } from 'rxjs';
   templateUrl: './upsert-transaction.component.html',
   styleUrls: ['./upsert-transaction.component.css']
 })
-export class TransactionFormComponent implements OnInit {
+export class UpsertTransactionComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
@@ -39,6 +39,8 @@ export class TransactionFormComponent implements OnInit {
   private readonly collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
   protected isLoading = this.loadingStore.isLoading;
+  protected selectedTransaction = this.transactionStore.selectedTransaction;
+  private transaction: TransactionApiModel | undefined;
 
   // Signals
   isSubmitting = signal<boolean>(false);
@@ -95,6 +97,22 @@ export class TransactionFormComponent implements OnInit {
       this.recalculateSplits(splitType!);
     });
     this.formGroup.controls.hasReimbursement.valueChanges.subscribe(x => this.onReimbursementToggle(x));
+
+    effect(() => {
+      this.transaction = this.selectedTransaction();
+      if (this.transaction && this.isEditMode) {
+        this.formGroup.patchValue({
+          collaboratorId: this.transaction.collaboratorId,
+          totalAmount: this.transaction.totalAmount,
+          description: this.transaction.description,
+          splitType: this.transaction.splitType,
+          whoPaid: this.transaction.whoPaid,
+          // splits: this.transaction.splits,
+          hasReimbursement: !!this.transaction.totalReimbursement,
+          // reimbursement: this.transaction.reimbursement
+        });
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -108,8 +126,11 @@ export class TransactionFormComponent implements OnInit {
       this.isEditMode = true;
       this.transactionId = parseInt(id);
       // Load transaction data
-      // this.loadTransaction(this.transactionId);
+      this.loadTransaction(this.transactionId);
     }
+  }
+  loadTransaction(transactionId: number) {
+    this.transactionStore.loadTransactionById(transactionId)
   }
 
   private loadCollaborators(): void {
@@ -151,41 +172,39 @@ export class TransactionFormComponent implements OnInit {
   }
 
   protected onCustomUserAmountChange(event: Event): void {
-    let value = parseFloat((event.target as HTMLInputElement).value) || 0;
+    const input = event.target as HTMLInputElement;
+    const [value, maxValue] = this.getValueAndMaxValue(input.value)
+
     this.customUserAmount.set(value);
-
-    const splitType = this.formGroup.value.splitType;
-    const netAmount = this.calculateNetAmount();
-
-    if (splitType === this.splitType.Custom) {
-      this.customCollaboratorAmount.set(netAmount - value);
-    } else if (splitType === this.splitType.Percentage) {
-      const maxValue = 100
-      if (value > maxValue) {
-        value = maxValue
-        this.customUserAmount.set(value);
-      }
-      this.customCollaboratorAmount.set(100 - value);
-    }
+    this.customCollaboratorAmount.set(maxValue - value);
+    input.value = value.toString()
   }
 
   protected onCustomCollaboratorAmountChange(event: Event): void {
-    let value = parseFloat((event.target as HTMLInputElement).value) || 0;
+    const input = event.target as HTMLInputElement;
+    const [value, maxValue] = this.getValueAndMaxValue(input.value)
+
     this.customCollaboratorAmount.set(value);
+    this.customUserAmount.set(maxValue - value);
+    input.value = value.toString()
+  }
+
+  private getValueAndMaxValue(inputValue: string):[number, number] {
+    let value = parseInt(inputValue) || 0;
 
     const splitType = this.formGroup.value.splitType;
     const netAmount = this.calculateNetAmount();
 
+    let maxValue = 100
     if (splitType === this.splitType.Custom) {
-      this.customUserAmount.set(netAmount - value);
-    } else if (splitType === this.splitType.Percentage) {
-      const maxValue = 100
-      if (value > maxValue) {
-        value = maxValue
-        this.customCollaboratorAmount.set(value);
+      maxValue = netAmount
+      if (value > netAmount) {
+        value = netAmount
       }
-      this.customUserAmount.set(maxValue - value);
+    } else if(splitType === this.splitType.Percentage && value > maxValue) {
+      value = maxValue
     }
+    return [value, maxValue]
   }
 
   // ========== Calculations ==========
@@ -322,11 +341,10 @@ export class TransactionFormComponent implements OnInit {
   }
 
   // ========== Formatters ==========
-  protected formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-PY', {
-      style: 'currency',
-      currency: 'PYG',
-      minimumFractionDigits: 0
-    }).format(amount);
+  protected formatCurrency = (amount: number): string => HelperService.formatCurrency(amount)
+
+  private getMaxValue(): number {
+    const splitType = this.formGroup.value.splitType;
+    return splitType === this.splitType.Percentage ? 100 : this.calculateNetAmount();
   }
 }

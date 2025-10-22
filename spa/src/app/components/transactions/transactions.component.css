@@ -1,0 +1,30 @@
+/* Asegurar que los badges no se compriman */
+.badge-container {
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+/* En pantallas grandes, forzar una línea */
+@media (min-width: 1024px) {
+  .badge-container {
+    flex-wrap: nowrap;
+  }
+}
+
+/* En pantallas pequeñas, permitir wrap */
+@media (max-width: 1023px) {
+  .badge-container {
+    flex-wrap: wrap;
+  }
+}
+
+/* Prevenir que los badges se estiren */
+.badge-container > span {
+  flex-shrink: 0;
+}
+
+/* Smooth transition cuando cambia el layout */
+.badge-container {
+  transition: all 0.2s ease-in-out;
+}

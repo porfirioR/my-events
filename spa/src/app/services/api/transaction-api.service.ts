@@ -43,6 +43,9 @@ export class TransactionApiService {
   public getAllBalances = (): Observable<BalanceApiModel[]> =>
     this.httpClient.get<BalanceApiModel[]>(`${this.section}/balances/all`);
 
+  public settleTransaction = (id: number): Observable<MessageModel> =>
+    this.httpClient.put<MessageModel>(`${this.section}/${id}/settle`, {});
+
   // Eliminar transacción
   public deleteTransaction = (id: number): Observable<MessageModel> =>
     this.httpClient.delete<MessageModel>(`${this.section}/${id}`);

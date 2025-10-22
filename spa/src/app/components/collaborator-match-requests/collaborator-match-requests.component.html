@@ -287,9 +287,9 @@
           class="select select-bordered w-full"
           [(ngModel)]="selectedCollaboratorForAccept">
           <option [value]="null" disabled>-- Select a collaborator --</option>
-          @for (collab of internalCollaboratorsForAcceptList; track collab.key) {
-            <option [value]="collab.key">
-              {{ collab.value }}
+          @for (internalCollaborator of internalCollaboratorsForAcceptList; track internalCollaborator.key) {
+            <option [value]="internalCollaborator.key">
+              {{ internalCollaborator.value }}
             </option>
           }
         </select>

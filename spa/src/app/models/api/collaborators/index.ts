@@ -12,5 +12,4 @@ export { MessageModel } from './message-model';
 export { ReceivedMatchRequestModel } from './received-match-request-model';
 export { CreateMatchRequestRequest } from './create-match-request-request';
 export { LoginNotificationsModel } from './login-notifications-model';
-export { CollaboratorSummaryModel } from './collaborator-summary-model';
-export { CollaboratorInfoApiModel } from './collaborator-info-api-model';
+export { CollaboratorSummaryApiModel } from './collaborator-summary-api-model';
