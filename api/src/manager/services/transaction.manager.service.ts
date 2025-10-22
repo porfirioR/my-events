@@ -85,7 +85,7 @@ export class TransactionManagerService implements ITransactionManagerService {
     const currentReimbursementTotal = await this.reimbursementAccessService.getTotalByTransaction(
       request.transactionId,
     );
-    const newReimbursementTotal = currentReimbursementTotal + request.amount;
+    const newReimbursementTotal = (+currentReimbursementTotal) + (+request.amount);
 
     // 4. Validar que no supere el monto total
     if (newReimbursementTotal > transaction.totalAmount) {

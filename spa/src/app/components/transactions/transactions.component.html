@@ -271,6 +271,15 @@
                         <i class="fas fa-undo"></i>
                         <span>Reimbursement</span>
                       </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn-xs btn-outline btn-error flex-1 gap-1"
+                        (click)="deleteTransaction(transaction)"
+                      >
+                        <i class="fas fa-trash"></i>
+                        <span>Delete</span>
+                      </button>
                     }
                   </div>
                   
@@ -286,19 +295,16 @@
                           <i class="fas fa-check-double"></i>
                           <span>Mark as Settled</span>
                         </button>
-                      }
                       
                       <button
                         type="button"
-                        class="btn btn-xs btn-outline btn-error gap-1"
-                        [ngClass]="{'flex-1': !transaction.isSettled, 'btn-square': transaction.isSettled}"
+                        class="btn btn-xs btn-outline btn-error flex-1 gap-1"
                         (click)="deleteTransaction(transaction)"
                       >
                         <i class="fas fa-trash"></i>
-                        @if (!transaction.isSettled) {
-                          <span>Delete</span>
-                        }
+                        <span>Delete</span>
                       </button>
+                    }
                     </div>
                   }
                 </div>
@@ -324,3 +330,4 @@
     </div>
   </article>
 </section>
+<app-add-reimbursement-modal/>

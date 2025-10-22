@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
@@ -6,15 +6,20 @@ import { TransactionViewApiModel } from '../../models/api/transactions';
 import { useCollaboratorStore, useTransactionStore } from '../../store';
 import { TransactionApiService } from '../../services/api/transaction-api.service';
 import { HelperService } from '../../services';
+import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-reimbursement-modal.component';
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    AddReimbursementModalComponent
+  ],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css']
 })
 export class TransactionsComponent implements OnInit {
+  @ViewChild(AddReimbursementModalComponent) addReimbursementModal: AddReimbursementModalComponent | undefined
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
   private readonly router = inject(Router);
@@ -78,82 +83,12 @@ export class TransactionsComponent implements OnInit {
   }
 
   protected async addReimbursement(transaction: TransactionViewApiModel): Promise<void> {
-    const { value: formValues } = await Swal.fire({
-      title: 'Add Reimbursement',
-      html: `
-        <div class="space-y-4">
-          <div>
-            <label class="label">
-              <span class="label-text">Amount</span>
-            </label>
-            <input id="swal-amount" type="number" class="input input-bordered w-full" placeholder="Enter amount" min="0" step="0.01">
-          </div>
-          <div>
-            <label class="label">
-              <span class="label-text">Description (optional)</span>
-            </label>
-            <input id="swal-description" type="text" class="input input-bordered w-full" placeholder="Enter description">
-          </div>
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i>
-            <span>Transaction total: ${this.formatCurrency(transaction.totalAmount)}</span>
-          </div>
-        </div>
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: 'Add Reimbursement',
-      cancelButtonText: 'Cancel',
-      customClass: {
-        confirmButton: 'btn btn-primary',
-        cancelButton: 'btn btn-ghost'
-      },
-      preConfirm: () => {
-        const amount = parseInt((document.getElementById('swal-amount') as HTMLInputElement).value);
-        const description = (document.getElementById('swal-description') as HTMLInputElement).value;
-
-        if (!amount || amount <= 0) {
-          Swal.showValidationMessage('Please enter a valid amount');
-          return false;
-        }
-
-        if (amount > transaction.totalAmount) {
-          Swal.showValidationMessage('Reimbursement cannot exceed transaction amount');
-          return false;
-        }
-
-        return { amount, description: description || null };
+    this.addReimbursementModal?.openDialog(transaction.netAmount, transaction.id)
+    this.addReimbursementModal?.loadData.subscribe(x =>{
+      if (x) {
+        this.loadData()
       }
-    });
-
-    if (formValues) {
-      this.isLoading.set(true);
-      
-      this.transactionStore.addReimbursement(transaction.id, {
-        amount: formValues.amount,
-        description: formValues.description
-      }).subscribe({
-        next: () => {
-          Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Reimbursement added successfully',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          this.loadData();
-        },
-        error: (error) => {
-          console.error('Error adding reimbursement:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.error?.message || 'Failed to add reimbursement'
-          });
-          this.isLoading.set(false);
-        }
-      });
-    }
+    })
   }
 
   protected async deleteTransaction(transaction: TransactionViewApiModel): Promise<void> {

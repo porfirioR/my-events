@@ -126,11 +126,8 @@ export class UpsertTransactionComponent implements OnInit {
       this.isEditMode = true;
       this.transactionId = parseInt(id);
       // Load transaction data
-      this.loadTransaction(this.transactionId);
+    this.transactionStore.loadTransactionById(this.transactionId)
     }
-  }
-  loadTransaction(transactionId: number) {
-    this.transactionStore.loadTransactionById(transactionId)
   }
 
   private loadCollaborators(): void {
