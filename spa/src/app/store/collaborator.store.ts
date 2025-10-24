@@ -84,7 +84,7 @@ export const CollaboratorStore = signalStore(
           if (request.id) {
             // Actualizar colaborador existente
             const updatedCollaborators = currentCollaborators.map(x => x.id === collaborator.id ? collaborator : x);
-            patchState(store, { 
+            patchState(store, {
               collaborators: updatedCollaborators,
               selectedCollaborator: collaborator
             });
@@ -104,8 +104,8 @@ export const CollaboratorStore = signalStore(
         tap(() => patchState(store, { error: null })),
         switchMap((id) => collaboratorApiService.changeVisibility(id).pipe(
           tap(updatedCollaborator => {
-            const updatedCollaborators = store.collaborators().map(c => 
-              c.id === id ? updatedCollaborator : c
+            const updatedCollaborators = store.collaborators().map(x => 
+              x.id === id ? updatedCollaborator : x
             );
             patchState(store, { collaborators: updatedCollaborators });
           }),

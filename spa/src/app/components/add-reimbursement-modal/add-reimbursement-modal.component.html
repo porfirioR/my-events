@@ -7,18 +7,20 @@
 
       <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        <span>Transaction total: {{this.formatCurrency(maxAmount)}}</span>
+        <span>Transaction total: {{formatCurrency(modalData()?.maxAmount ?? 0)}}</span>
       </div>
+      
       <footer class="flex justify-between items-center pt-6 gap-4">
         <button
           type="button"
           class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
           [disabled]="isSubmitting()"
-          (click)="closeDialog()"
+          (click)="close()"
         >
           <i class="fas fa-arrow-left text-sm"></i>
           Cancel
         </button>
+        
         @if (isSubmitting()) {
           <button
             type="button"
@@ -29,11 +31,9 @@
           </button>
         } @else {
           <button
-            role="button"
             type="submit"
             class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
             [disabled]="formGroup.invalid || isSubmitting()"
-            [class.btn-disabled]="formGroup.invalid || isSubmitting()"
           >
             <i class="fas fa-cloud-arrow-up text-sm"></i>
             Save

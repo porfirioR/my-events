@@ -1,5 +1,5 @@
 <section aria-labelledby="transactions-heading" class="mb-8">
-  <article class="dark:bg-base-300 rounded-xl transition-all duration-300">
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <h2 id="transactions-heading" class="text-xl font-semibold text-base-content">Transactions</h2>
@@ -72,9 +72,9 @@
           <p class="ml-3 text-base-content/70">Loading transactions...</p>
         </div>
       } @else {
-        <ul class="space-y-3 overflow-visible" role="list">
+        <ul class="space-y-3" role="list">
           @for (transaction of transactions(); track transaction.id) {
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 relative">
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
               <article class="p-3 sm:p-4">
                 <div class="flex items-start gap-3">
                   <!-- Icon Circle -->
@@ -131,7 +131,7 @@
 
                     <!-- Date -->
                     <time [attr.datetime]="transaction.transactionDate" class="text-xs text-base-content/60 block mb-2">
-                      {{ getFormattedDate(transaction.transactionDate) }}
+                      {{ getFormattedDate(transaction.transactionDate, true) }}
                     </time>
 
                     <!-- ⭐ ALL BADGES IN ONE LINE (Desktop) / Wrap (Mobile) ⭐ -->
@@ -213,16 +213,16 @@
                         </li>
                         
                         @if (transaction.createdByMe) {
-                          <!-- Add Reimbursement (only if not settled) -->
                           @if (!transaction.isSettled) {
-                            <li>
-                              <button type="button" (click)="addReimbursement(transaction)"
-                                class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-warning/10 hover:text-warning transition-colors">
-                                <i class="fas fa-undo w-5 text-warning" aria-hidden="true"></i>
-                                <span class="ml-2">Add Reimbursement</span>
-                              </button>
-                            </li>
-                            
+                            @if (transaction.netAmount != 0) {
+                              <li>
+                                <button type="button" (click)="addReimbursement(transaction)"
+                                  class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-warning/10 hover:text-warning transition-colors">
+                                  <i class="fas fa-undo w-5 text-warning" aria-hidden="true"></i>
+                                  <span class="ml-2">Add Reimbursement</span>
+                                </button>
+                              </li>
+                            }
                             <!-- Mark as Settled -->
                             <li>
                               <button type="button" (click)="settleTransaction(transaction)"
@@ -232,9 +232,6 @@
                               </button>
                             </li>
                           }
-                          
-                          <li><hr class="my-1 border-base-300"></li>
-                          
                           <!-- Delete -->
                           <li>
                             <button type="button" (click)="deleteTransaction(transaction)"
@@ -263,14 +260,16 @@
                     </button>
                     
                     @if (transaction.createdByMe && !transaction.isSettled) {
-                      <button
-                        type="button"
-                        class="btn btn-xs btn-outline btn-warning flex-1 gap-1"
-                        (click)="addReimbursement(transaction)"
-                      >
-                        <i class="fas fa-undo"></i>
-                        <span>Reimbursement</span>
-                      </button>
+                      @if (transaction.netAmount != 0) {
+                        <button
+                          type="button"
+                          class="btn btn-xs btn-outline btn-warning flex-1 gap-1"
+                          (click)="addReimbursement(transaction)"
+                        >
+                          <i class="fas fa-undo"></i>
+                          <span>Reimbursement</span>
+                        </button>
+                      }
                     } @else {
                       <button
                         type="button"

@@ -1,10 +1,16 @@
-import { Component, ElementRef, inject, OnDestroy, output, signal, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReimbursementFormGroup } from '../../models/forms';
 import { AlertService, HelperService } from '../../services';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { TextComponent } from '../inputs/text/text.component';
 import { useTransactionStore } from '../../store';
+import { AddReimbursementApiRequest } from '../../models/api';
+
+export interface ReimbursementModalData {
+  maxAmount: number;
+  transactionId: number;
+}
 
 @Component({
   selector: 'app-add-reimbursement-modal',
@@ -16,28 +22,77 @@ import { useTransactionStore } from '../../store';
     TextAreaInputComponent,
   ]
 })
-export class AddReimbursementModalComponent implements OnDestroy {
+export class AddReimbursementModalComponent {
   @ViewChild('reimbursementModal', { static: true }) reimbursementModal!: ElementRef<HTMLDialogElement>
-  protected maxAmount: number = 0
-  private transactionId: number = 0
-
-  public loadData = output<boolean>();
+  
+  // Signals para manejar el estado
+  private isOpen = signal<boolean>(false);
+  protected modalData = signal<ReimbursementModalData | null>(null);
+  protected isSubmitting = signal<boolean>(false);
+  private submitTimestamp = signal<number>(0);
+  
+  // Output cuando se cierra con éxito
+  closed = output<boolean>();
 
   private readonly transactionStore = useTransactionStore();
-  private alertService = inject(AlertService);
-  protected formGroup: FormGroup<ReimbursementFormGroup>
-  protected formatCurrency = HelperService.formatCurrency
-  isSubmitting = signal<boolean>(false);
+  private readonly alertService = inject(AlertService);
+  protected formGroup!: FormGroup<ReimbursementFormGroup>;
+  protected formatCurrency = HelperService.formatCurrency;
 
   constructor() {
     this.formGroup = new FormGroup<ReimbursementFormGroup>({
-      amount: new FormControl(null, [Validators.required, Validators.min(0), Validators.max(this.maxAmount)]),
+      amount: new FormControl(null, [Validators.required, Validators.min(0), Validators.max(this.modalData()?.maxAmount || 0)]),
       description: new FormControl(null, [Validators.required, Validators.maxLength(100)])
     })
+    // Effect para detectar éxito
+    effect(() => {
+      this.transactionStore.transactions();
+      const timestamp = this.submitTimestamp();
+      
+      if (timestamp > 0 && (Date.now() - timestamp) > 100) {
+        this.handleSuccess();
+      }
+    });
+
+    // Effect para detectar errores
+    effect(() => {
+      const error = this.transactionStore.error();
+      const timestamp = this.submitTimestamp();
+
+      if (error && timestamp > 0) {
+        this.handleError();
+      }
+    });
+
+    // Effect para sincronizar el estado del modal con el DOM
+    effect(() => {
+      const open = this.isOpen();
+      const dialog = this.reimbursementModal?.nativeElement;
+      
+      if (!dialog) return;
+
+      if (open && !dialog.open) {
+        const data = this.modalData();
+        if (data) {
+          this.initializeForm(data.maxAmount);
+          dialog.showModal();
+        }
+      } else if (!open && dialog.open) {
+        dialog.close();
+        this.formGroup?.reset();
+      }
+    });
   }
 
-  ngOnDestroy(): void {
-    this.closeDialog()
+  public open(data: ReimbursementModalData): void {
+    this.modalData.set(data);
+    this.isOpen.set(true);
+  }
+
+  public close(): void {
+    this.isOpen.set(false);
+    this.isSubmitting.set(false);
+    this.submitTimestamp.set(0);
   }
 
   protected onSubmit(): void {
@@ -46,37 +101,41 @@ export class AddReimbursementModalComponent implements OnDestroy {
       return;
     }
 
+    const data = this.modalData();
+    if (!data) return;
+
     this.isSubmitting.set(true);
-    this.transactionStore.addReimbursement(this.transactionId, {
-      amount: +this.formGroup.value.amount!,
-      description: this.formGroup.value.description
-    }).subscribe({
-      next: () => {
-        this.alertService.showSuccess('Reimbursement added successfully')
-        this.loadData.emit(true)
-        this.closeDialog();
-      },
-      error: (error) => {
-        console.error('Error adding reimbursement:', error);
-        this.alertService.showError('Failed to add reimbursement')
-        this.isSubmitting.set(false);
-      }
+    this.submitTimestamp.set(Date.now());
+
+    const request = new AddReimbursementApiRequest(
+      +this.formGroup.value.amount!, 
+      this.formGroup.value.description
+    );
+
+    this.transactionStore.addReimbursement({
+      transactionId: data.transactionId, 
+      request
     });
   }
 
-  public openDialog = (maxAmount: number, transactionId: number): void => {
-    this.transactionId = transactionId
-    this.maxAmount = maxAmount
+  private initializeForm(maxAmount: number): void {
     this.formGroup = new FormGroup<ReimbursementFormGroup>({
       amount: new FormControl(null, [Validators.required, Validators.min(0), Validators.max(maxAmount)]),
       description: new FormControl(null, [Validators.required, Validators.maxLength(100)])
-    })
-    this.formGroup.updateValueAndValidity()
-    this.reimbursementModal.nativeElement.showModal()
+    });
   }
 
-  protected closeDialog = (): void => {
-    this.formGroup.reset()
-    this.reimbursementModal.nativeElement.remove()
+  private handleSuccess(): void {
+    this.isSubmitting.set(false);
+    this.submitTimestamp.set(0);
+    this.alertService.showSuccess('Reimbursement added successfully');
+    this.closed.emit(true);
+    this.close();
+  }
+
+  private handleError(): void {
+    this.alertService.showError('Failed to add reimbursement');
+    this.isSubmitting.set(false);
+    this.submitTimestamp.set(0);
   }
 }

@@ -1,11 +1,9 @@
 import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import Swal from 'sweetalert2';
 import { TransactionViewApiModel } from '../../models/api/transactions';
-import { useCollaboratorStore, useTransactionStore } from '../../store';
-import { TransactionApiService } from '../../services/api/transaction-api.service';
-import { HelperService } from '../../services';
+import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
+import { AlertService, HelperService } from '../../services';
 import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-reimbursement-modal.component';
 
 @Component({
@@ -22,15 +20,19 @@ export class TransactionsComponent implements OnInit {
   @ViewChild(AddReimbursementModalComponent) addReimbursementModal: AddReimbursementModalComponent | undefined
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
+  private readonly loadingStore = useLoadingStore();
+  
   private readonly router = inject(Router);
-  private readonly transactionApiService = inject(TransactionApiService);
+  private readonly alertService = inject(AlertService);
 
   // Signals
-  isLoading = signal<boolean>(false);
+  isLoading = this.loadingStore.isLoading;
   filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
 
-  // Computed - Transacciones filtradas
-  transactions = computed(() => {
+  protected formatCurrency = HelperService.formatCurrency
+  protected getFormattedDate = HelperService.getFormattedDate;
+
+  protected transactions = computed(() => {
     const filter = this.filterType();
     const allTransactions = this.transactionStore.transactions();
 
@@ -51,8 +53,6 @@ export class TransactionsComponent implements OnInit {
   }
 
   private loadData(): void {
-    this.isLoading.set(true);
-    
     // Cargar transacciones
     this.transactionStore.loadTransactions();
     
@@ -60,8 +60,6 @@ export class TransactionsComponent implements OnInit {
     if (this.collaboratorStore.totalCount() === 0) {
       this.collaboratorStore.loadCollaborators();
     }
-
-    setTimeout(() => this.isLoading.set(false), 2000);
   }
 
   // ========== Filters ==========
@@ -82,104 +80,31 @@ export class TransactionsComponent implements OnInit {
     this.router.navigate(['/transactions/balances']);
   }
 
-  protected async addReimbursement(transaction: TransactionViewApiModel): Promise<void> {
-    this.addReimbursementModal?.openDialog(transaction.netAmount, transaction.id)
-    this.addReimbursementModal?.loadData.subscribe(x =>{
-      if (x) {
-        this.loadData()
+  protected addReimbursement(transaction: TransactionViewApiModel): void {
+    this.addReimbursementModal?.open({
+      maxAmount: transaction.netAmount,
+      transactionId: transaction.id
+    });
+  }
+
+  protected deleteTransaction(transaction: TransactionViewApiModel): void {
+    const confirmMsg = `Description: ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount)}
+    This action cannot be undone.`
+    this.alertService.showQuestionModal('Are you sure you want to delete this transaction?', confirmMsg).then(x => {
+      if (x && x.isConfirmed) {
+        this.transactionStore.deleteTransaction(transaction.id);
+        this.alertService.showSuccess(`Transaction was delete successfully`);
       }
     })
   }
 
-  protected async deleteTransaction(transaction: TransactionViewApiModel): Promise<void> {
-    const result = await Swal.fire({
-      title: 'Delete Transaction?',
-      html: `
-        <p>Are you sure you want to delete this transaction?</p>
-        <p class="text-sm text-base-content/70 mt-2">
-          ${transaction.description || 'No description'}<br/>
-          Amount: ${this.formatCurrency(transaction.netAmount)}
-        </p>
-        <p class="text-error text-sm mt-4">This action cannot be undone.</p>
-      `,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it',
-      cancelButtonText: 'Cancel',
-      customClass: {
-        confirmButton: 'btn btn-error',
-        cancelButton: 'btn btn-ghost'
+  protected settleTransaction(transaction: TransactionViewApiModel): void {
+    const confirmMsg = `Confirm that this transaction has been settled? ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount)}`
+    this.alertService.showQuestionModal('Mark as Settled?', confirmMsg).then(x => {
+      if (x && x.isConfirmed) {
+        this.transactionStore.settleTransaction(transaction.id);
+        this.alertService.showSuccess(`Transaction has been marked as settled`);
       }
-    });
-
-    if (result.isConfirmed) {
-      this.isLoading.set(true);
-      
-      this.transactionStore.deleteTransaction(transaction.id);
-      
-      setTimeout(() => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Deleted!',
-          text: 'Transaction has been deleted',
-          timer: 2000,
-          showConfirmButton: false
-        });
-        this.isLoading.set(false);
-      }, 500);
-    }
+    })
   }
-
-  protected async settleTransaction(transaction: TransactionViewApiModel): Promise<void> {
-    const result = await Swal.fire({
-      title: 'Mark as Settled?',
-      html: `
-        <p>Confirm that this transaction has been settled?</p>
-        <p class="text-sm text-base-content/70 mt-2">
-          ${transaction.description || 'No description'}<br/>
-          Amount: ${this.formatCurrency(transaction.netAmount)}
-        </p>
-        <p class="text-warning text-sm mt-4">This action cannot be undone.</p>
-      `,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, mark as settled',
-      cancelButtonText: 'Cancel',
-      customClass: {
-        confirmButton: 'btn btn-success',
-        cancelButton: 'btn btn-ghost'
-      }
-    });
-
-    if (result.isConfirmed) {
-      this.isLoading.set(true);
-
-      this.transactionApiService.settleTransaction(transaction.id).subscribe({
-        next: () => {
-          Swal.fire({
-            icon: 'success',
-            title: 'Settled!',
-            text: 'Transaction has been marked as settled',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          this.loadData();
-        },
-        error: (error) => {
-          console.error('Error settling transaction:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.error?.message || 'Failed to settle transaction'
-          });
-          this.isLoading.set(false);
-        }
-      });
-    }
-  }
-
-  // ========== Formatters ==========
-  protected formatCurrency = (amount: number): string => HelperService.formatCurrency(amount)
-
-  protected getFormattedDate = (date: Date): string => HelperService.getFormattedDate(date, true);
 }

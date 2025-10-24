@@ -138,14 +138,23 @@ export const TransactionStore = signalStore(
     },
 
     // Agregar reintegro
-    addReimbursement: (transactionId: number, request: AddReimbursementApiRequest) => {
-      patchState(store, { error: null });
-      return transactionApiService.addReimbursement(transactionId, request).pipe(
-        tap(() => {
-          // Recargar transacciones después de agregar reintegro
-        })
-      );
-    },
+    addReimbursement: rxMethod<{ transactionId: number; request: AddReimbursementApiRequest }>(
+      pipe(
+        tap(() => patchState(store, { error: null })),
+        switchMap(({ transactionId, request }) => 
+          transactionApiService.addReimbursement(transactionId, request).pipe(
+            switchMap(() => transactionApiService.getMyTransactions().pipe(
+              tap(transactions => patchState(store, { transactions }))
+            )
+          ),
+            catchError(error => {
+              patchState(store, { error: 'Failed to add reimbursement' });
+              return throwError(() => error);
+            })
+          )
+        )
+      )
+    ),
 
     // Cargar todos los balances
     loadBalances: rxMethod<void>(
@@ -181,11 +190,30 @@ export const TransactionStore = signalStore(
         tap(() => patchState(store, { error: null })),
         switchMap((id) => transactionApiService.deleteTransaction(id).pipe(
           tap(() => {
-            const updatedTransactions = store.transactions().filter(t => t.id !== id);
+            const updatedTransactions = store.transactions().filter(x => x.id !== id);
             patchState(store, { transactions: updatedTransactions });
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete transaction' });
+            return throwError(() => error);
+          })
+        ))
+      )
+    ),
+
+    // settleTransaction transacción
+    settleTransaction: rxMethod<number>(
+      pipe(
+        tap(() => patchState(store, { error: null })),
+        switchMap((id) => transactionApiService.settleTransaction(id).pipe(
+          tap(() => {
+            const transactions = store.transactions()
+            const index = transactions.findIndex(x => x.id === id)
+            transactions.at(index)!.isSettled = true;
+            patchState(store, { transactions: transactions });
+          }),
+          catchError(error => {
+            patchState(store, { error: 'Failed to settle transaction' });
             return throwError(() => error);
           })
         ))
