@@ -41,7 +41,9 @@ export class HeaderComponent {
     this.alertService.showSuccess('Good bye.')
     this.authStore.logout()
     this.profile?.ngOnDestroy()
-    this.router.navigate(['/login'])
+    setTimeout(() => {
+      this.router.navigate(['/login'])
+    }, 3000);
   }
 
   protected toggleTheme = (): void => {
