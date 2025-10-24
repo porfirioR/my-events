@@ -11,11 +11,19 @@ export class AlertService {
     return Swal;
   }
 
-  public showQuestionModal = async (title: string, text: string = '', icon: SweetAlertIcon = 'warning'): Promise<SweetAlertResult<any>> => {
+  public showQuestionModal = async (
+    title: string,
+    text: string = '',
+    icon: SweetAlertIcon = 'warning',
+    interpolateParams?: object | undefined,
+    isHtml = false,
+  ): Promise<SweetAlertResult<any>> => {
     const swal = await this.getSwal();
     const result = await swal.fire({
       title,
-      text,
+      text: !!text
+        ? text //this.translateService.instant(text, interpolateParams)
+        : text,
       icon: icon,
       showCancelButton: true,
       confirmButtonText: 'Yes',
@@ -26,7 +34,11 @@ export class AlertService {
         cancelButton: 'btn btn-outline btn-primary mx-1',
         confirmButton: 'btn btn-outline btn-primary'
       },
-      buttonsStyling: false
+      buttonsStyling: false,
+      html:
+        isHtml && text
+          ? text//todo use in translate: this.translateService.instant(text, interpolateParams)
+          : undefined,
     })
     return result
   }
