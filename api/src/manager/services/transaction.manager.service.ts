@@ -206,16 +206,17 @@ export class TransactionManagerService implements ITransactionManagerService {
     let collaboratorOwes = 0;
 
     // 5. Calcular deudas desde MIS transacciones
-    for (const x of myTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(x.id);
+    for (const tx of myTransactions) {
+      const splits = await this.splitAccessService.getByTransaction(tx.id);
 
       for (const split of splits) {
+        // ✅ CORRECCIÓN: Solo considerar splits NO liquidados y NO pagadores
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
-          // El colaborador debe pagarme
+          // Si el split es del colaborador → el colaborador me debe
           if (split.collaboratorId === collaboratorId) {
             collaboratorOwes += split.amount;
           }
-          // Yo debo pagarle al colaborador
+          // Si el split es mío → yo le debo al colaborador
           if (split.userId === userId) {
             userOwes += split.amount;
           }
@@ -228,12 +229,14 @@ export class TransactionManagerService implements ITransactionManagerService {
       const splits = await this.splitAccessService.getByTransaction(tx.id);
 
       for (const split of splits) {
+        // ✅ CORRECCIÓN: Solo considerar splits NO liquidados y NO pagadores
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
-          // Si el otro colaborador (yo) debo en SU transacción
+          // En SU transacción:
+          // - Si el split es del "otherCollaboratorId" (que soy yo) → yo le debo
           if (split.collaboratorId === otherCollaboratorId) {
             userOwes += split.amount;
           }
-          // Si el otro usuario debe en SU transacción
+          // - Si el split es del "otherUserId" (que es él) → él me debe
           if (split.userId === otherUserId) {
             collaboratorOwes += split.amount;
           }
@@ -246,8 +249,8 @@ export class TransactionManagerService implements ITransactionManagerService {
     return new BalanceModel(
       userId,
       collaboratorId,
-      netBalance < 0 ? Math.abs(netBalance) : 0,
-      netBalance > 0 ? netBalance : 0,
+      netBalance < 0 ? Math.abs(netBalance) : 0,  // userOwes
+      netBalance > 0 ? netBalance : 0,             // collaboratorOwes
       netBalance,
     );
   };
@@ -383,15 +386,19 @@ export class TransactionManagerService implements ITransactionManagerService {
   }
 
   private async calculateBalanceFromMyTransactions(userId: number, collaboratorId: number): Promise<BalanceModel> {
-    const myTransactions = await this.transactionAccessService.getByUserAndCollaborator(userId, collaboratorId);
+    const myTransactions = await this.transactionAccessService.getByUserAndCollaborator(
+      userId,
+      collaboratorId,
+    );
 
     let userOwes = 0;
     let collaboratorOwes = 0;
 
-    for (const x of myTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(x.id);
+    for (const tx of myTransactions) {
+      const splits = await this.splitAccessService.getByTransaction(tx.id);
 
       for (const split of splits) {
+        // ✅ CORRECCIÓN: Solo splits NO liquidados, NO pagadores, y con monto > 0
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
           if (split.collaboratorId === collaboratorId) {
             collaboratorOwes += split.amount;
@@ -404,14 +411,14 @@ export class TransactionManagerService implements ITransactionManagerService {
     }
 
     const netBalance = collaboratorOwes - userOwes;
-    const model = new BalanceModel(
+
+    return new BalanceModel(
       userId,
       collaboratorId,
       netBalance < 0 ? Math.abs(netBalance) : 0,
       netBalance > 0 ? netBalance : 0,
       netBalance,
     );
-    return model;
   }
 
   // ========== Mappers ==========
