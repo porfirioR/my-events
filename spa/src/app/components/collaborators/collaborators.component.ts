@@ -109,7 +109,7 @@ export class CollaboratorsComponent implements OnInit {
       next: (response) => {
         this.alertService.showSuccess(response.message);
       },
-      error: (error) => {
+      error: () => {
         this.alertService.showError('Failed to resend invitation');
       }
     });
@@ -118,9 +118,9 @@ export class CollaboratorsComponent implements OnInit {
   protected sendMatchRequest(collaborator: CollaboratorApiModel): void {
     this.collaboratorStore.selectCollaborator(collaborator);
     this.router.navigate(['/collaborators/match-requests'], { 
-      queryParams: { 
-        collaboratorId: collaborator.id, 
-        tab: 'create' 
+      queryParams: {
+        collaboratorId: collaborator.id,
+        tab: 'create'
       }
     });
   }

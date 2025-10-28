@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { useTransactionStore } from '../../store';
 import { HelperService } from '../../services';
@@ -8,7 +8,10 @@ import { HelperService } from '../../services';
 @Component({
   selector: 'app-balances',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+  ],
   templateUrl: './balances.component.html',
   styleUrls: ['./balances.component.css']
 })

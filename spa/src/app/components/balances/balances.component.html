@@ -14,9 +14,9 @@
     </header>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <!-- Total Balance -->
-      <div class="stats shadow bg-base-200 dark:bg-base-300">
+      <article class="stats shadow bg-base-200 dark:bg-base-300">
         <div class="stat">
           <div class="stat-figure text-primary">
             <i class="fas fa-balance-scale text-3xl"></i>
@@ -25,10 +25,10 @@
           <div class="stat-value text-primary">{{ formatCurrency(totalBalance()) }}</div>
           <div class="stat-desc">Overall balance</div>
         </div>
-      </div>
+      </article>
 
       <!-- They Owe Me -->
-      <div class="stats shadow bg-base-200 dark:bg-base-300">
+      <article class="stats shadow bg-base-200 dark:bg-base-300">
         <div class="stat">
           <div class="stat-figure text-success">
             <i class="fas fa-arrow-up text-3xl"></i>
@@ -37,10 +37,10 @@
           <div class="stat-value text-success">{{ formatCurrency(totalTheyOwe()) }}</div>
           <div class="stat-desc">Money to receive</div>
         </div>
-      </div>
+      </article>
 
       <!-- I Owe Them -->
-      <div class="stats shadow bg-base-200 dark:bg-base-300">
+      <article class="stats shadow bg-base-200 dark:bg-base-300">
         <div class="stat">
           <div class="stat-figure text-error">
             <i class="fas fa-arrow-down text-3xl"></i>
@@ -49,11 +49,11 @@
           <div class="stat-value text-error">{{ formatCurrency(totalIOwe()) }}</div>
           <div class="stat-desc">Money to pay</div>
         </div>
-      </div>
-    </div>
+      </article>
+    </section>
 
     <!-- Balances List -->
-    <div class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg">
+    <section class="bg-base-200 dark:bg-base-300 mb-6">
       <div class="px-6 py-4 border-b border-base-300 dark:border-base-100">
         <h3 class="text-lg font-semibold text-base-content">Balances by Collaborator</h3>
       </div>
@@ -195,14 +195,24 @@
           </ul>
         }
       </div>
-    </div>
+    </section>
 
     <!-- Back Button -->
-    <div class="mt-6 flex justify-center">
-      <button type="button" class="btn btn-outline btn-primary" (click)="goBack()">
+    <footer class="bg-base-200 dark:bg-base-300 flex justify-between items-center p-6 gap-4">
+      <a type="button" class="btn btn-outline btn-primary"
+        [routerLink]="['/transactions']"
+      >
         <i class="fas fa-arrow-left mr-2"></i>
         Back to Transactions
-      </button>
-    </div>
+      </a>
+      
+      <a
+        class="btn btn-outline btn-primary"
+        [routerLink]="['/transactions/new']"
+      >
+        <i class="fas fa-plus"></i>
+        Add Transaction
+      </a>
+    </footer>
   </article>
 </section>

@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
-import { SwPush } from '@angular/service-worker'
-import { environment } from '../environments/environment'
-import { LocalService, UserApiService } from './services'
-import { PushTokenApiRequest } from './models/api'
+// import { SwPush } from '@angular/service-worker'
+// import { environment } from '../environments/environment'
+import { LocalService, 
+  // UserApiService 
+} from './services'
+// import { PushTokenApiRequest } from './models/api'
 import { useAuthStore } from './store'
 import { HeaderComponent } from "./components/header/header.component";
 
@@ -22,8 +24,8 @@ export class AppComponent {
   private localService = inject(LocalService);
 
   constructor(
-    private swPush: SwPush,
-    private readonly userApiService: UserApiService,
+    // private swPush: SwPush,
+    // private readonly userApiService: UserApiService,
   ) {
     this.initializeAuth();
 
