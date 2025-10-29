@@ -10,6 +10,7 @@ import {
   AddReimbursementApiRequest,
 } from '../../models/api/transactions';
 import { MessageModel } from '../../models/api';
+import { TransactionDetailApiModel } from '../../models/api/transactions/transaction-detail-api-model';
 
 @Injectable({
   providedIn: 'root'
@@ -49,4 +50,8 @@ export class TransactionApiService {
   // Eliminar transacción
   public deleteTransaction = (id: number): Observable<MessageModel> =>
     this.httpClient.delete<MessageModel>(`${this.section}/${id}`);
+
+  // Obtener detalles completos
+public getTransactionDetails = (id: number): Observable<TransactionDetailApiModel> =>
+  this.httpClient.get<TransactionDetailApiModel>(`${this.section}/${id}/details`);
 }

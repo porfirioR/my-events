@@ -21,7 +21,6 @@ export const routes: Routes = [
     path: '',
     title: 'Principal',
     children: [
-      // ✅ Rutas protegidas (requieren login)
       {
         path: '',
         title: 'Principal',
@@ -62,7 +61,7 @@ export const routes: Routes = [
         resolve: { saving: eventResolver },
         canActivate: [authGuard]
       },
-      // 🆕 Rutas de Collaborators
+      // Collaborators
       {
         path: 'collaborators',
         title: 'Collaborators',
@@ -117,7 +116,7 @@ export const routes: Routes = [
           },
           {
             path: ':id',
-            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.UpsertTransactionComponent)
+            loadComponent: () => import('./components/transaction-details/transaction-details.component').then(x => x.TransactionDetailsComponent)
           }
         ]
       },

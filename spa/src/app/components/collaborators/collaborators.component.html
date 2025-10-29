@@ -82,7 +82,7 @@
                       'bg-green-500 dark:bg-green-600': collaborator.type === 'LINKED'
                     }"
                   >
-                    {{ getInitials(collaborator.name, collaborator.surname) }}
+                    {{ getInitials(`${collaborator.name} ${collaborator.surname}`) }}
                   </div>
                 </figure>
                 <!-- Info -->

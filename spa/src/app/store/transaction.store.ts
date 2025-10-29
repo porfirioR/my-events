@@ -8,6 +8,7 @@ import {
   CreateTransactionApiRequest,
   AddReimbursementApiRequest,
   TransactionApiModel,
+  TransactionDetailApiModel,
 } from '../models/api/transactions';
 import { TransactionApiService } from '../services/api/transaction-api.service';
 
@@ -15,6 +16,7 @@ export interface TransactionState {
   transactions: TransactionViewApiModel[];
   balances: BalanceApiModel[];
   selectedTransaction: TransactionApiModel | undefined;
+  selectedTransactionDetails: TransactionDetailApiModel | undefined;
   selectedBalance: BalanceApiModel | undefined;
   error: string | null;
   filter: string;
@@ -27,6 +29,7 @@ export const TransactionStore = signalStore(
     balances: [],
     selectedTransaction: undefined,
     selectedBalance: undefined,
+    selectedTransactionDetails: undefined,
     error: null,
     filter: ''
   }),
@@ -219,6 +222,20 @@ export const TransactionStore = signalStore(
         ))
       )
     ),
+    loadTransactionDetails: rxMethod<number>(
+      pipe(
+        tap(() => patchState(store, { error: null })),
+        switchMap((id) => transactionApiService.getTransactionDetails(id).pipe(
+          tap(details => {
+            patchState(store, { selectedTransactionDetails: details });
+          }),
+          catchError(error => {
+            patchState(store, { error: 'Failed to load transaction details' });
+            return throwError(() => error);
+          })
+        ))
+      )
+    ),
 
     // Métodos auxiliares
     setFilter: (filter: string) => patchState(store, { filter }),
@@ -233,11 +250,13 @@ export const TransactionStore = signalStore(
       transactions: [],
       balances: [],
       selectedTransaction: undefined,
+      selectedTransactionDetails: undefined,
       selectedBalance: undefined,
       error: null,
       filter: ''
     }),
     clearSelectedBalance: () => patchState(store, { selectedBalance: undefined }),
+    clearSelectedTransactionDetails: () => patchState(store, { selectedTransactionDetails: undefined }),
   }))
 );
 

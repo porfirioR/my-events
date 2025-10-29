@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -17,11 +17,10 @@ import { CollaboratorMatchRequestApiService } from '../../services/api/collabora
   ]
 })
 export class CollaboratorsComponent implements OnInit {
-  private router = inject(Router);
-  private alertService = inject(AlertService);
-  private collaboratorApiService = inject(CollaboratorApiService);
-  private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
-
+  private readonly router = inject(Router);
+  private readonly alertService = inject(AlertService);
+  private readonly collaboratorApiService = inject(CollaboratorApiService);
+  private readonly matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
 
@@ -38,7 +37,8 @@ export class CollaboratorsComponent implements OnInit {
   protected isLoading = this.loadingStore.isLoading;
   protected filterType = signal<'all' | 'unlinked' | 'linked'>('all');
   protected pendingRequestsCount = signal(0);
-
+  protected getInitials = HelperService.getInitials
+  protected getFormattedDate = HelperService.getFormattedDate
 
   ngOnInit(): void {
     this.loadCollaborators();
@@ -48,12 +48,6 @@ export class CollaboratorsComponent implements OnInit {
   protected setFilter = (type: 'all' | 'unlinked' | 'linked'): void => {
     this.filterType.set(type);
   }
-
-  protected getInitials(name: string, surname: string): string {
-    return (name.charAt(0) + surname.charAt(0)).toUpperCase();
-  }
-
-  protected getFormattedDate = (date: Date): string => HelperService.getFormattedDate(date);
 
   protected editCollaborator(collaborator: CollaboratorApiModel): void {
     this.collaboratorStore.selectCollaborator(collaborator);

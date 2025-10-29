@@ -10,3 +10,5 @@ export { BalanceModel } from './balance-model';
 export { ITransactionManagerService } from './transaction-manager-service.interface';
 export { TransactionMatchModel } from './transaction-match-model';
 export { TransactionMatchInfoModel } from './transaction-match-info-model';
+export { TransactionSplitDetailModel } from './transaction-split-detail-model';
+export { TransactionDetailModel } from './transaction-detail-model';

@@ -1,5 +1,5 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionMatchModel, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../models/transactions';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionMatchModel, TransactionModel, TransactionReimbursementModel, TransactionSplitDetailModel, TransactionSplitRequest, TransactionViewModel } from '../models/transactions';
 import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest, TransactionAccessModel, TransactionReimbursementAccessModel } from '../../access/contract/transactions';
 import { CollaboratorSummaryModel } from '../models/collaborators';
 import { COLLABORATOR_TOKENS, TRANSACTION_TOKENS } from '../../utility/constants';
@@ -225,8 +225,8 @@ export class TransactionManagerService implements ITransactionManagerService {
     }
 
     // 6. Calcular deudas desde SUS transacciones (invertido)
-    for (const tx of theirTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(tx.id);
+    for (const x of theirTransactions) {
+      const splits = await this.splitAccessService.getByTransaction(x.id);
 
       for (const split of splits) {
         // ✅ CORRECCIÓN: Solo considerar splits NO liquidados y NO pagadores
@@ -279,12 +279,96 @@ export class TransactionManagerService implements ITransactionManagerService {
 
   public settleTransaction = async (transactionId: number): Promise<void> => {
     const splits = await this.splitAccessService.getByTransaction(transactionId);
-    
+
     for (const split of splits) {
       if (!split.isSettled) {
         await this.splitAccessService.markAsSettled(split.id);
       }
     }
+  };
+
+  public getTransactionDetail = async (
+    transactionId: number,
+    currentUserId: number,
+  ): Promise<TransactionDetailModel> => {
+    // 1. Obtener transacción
+    const transaction = await this.transactionAccessService.getById(transactionId);
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    // 2. Verificar que el usuario tiene acceso
+    const hasAccess = await this.verifyUserAccess(transaction, currentUserId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this transaction');
+    }
+
+    // 3. Obtener colaborador
+    const collaborator = await this.collaboratorAccessService.getById(
+      transaction.collaboratorId,
+      transaction.userId,
+    );
+
+    // 4. Obtener splits
+    const splits = await this.splitAccessService.getByTransaction(transactionId);
+
+    // 5. Obtener reintegros
+    const reimbursements = await this.reimbursementAccessService.getByTransaction(transactionId);
+
+    // 6. Mapear splits con nombres
+    const splitDetails: TransactionSplitDetailModel[] = [];
+    
+    for (const split of splits) {
+      let participantName = '';
+      let participantType: ParticipantType;
+
+      if (split.userId) {
+        participantType = ParticipantType.User;
+        participantName = transaction.userId === currentUserId ? 'You' : 'Other User';
+      } else {
+        participantType = ParticipantType.Collaborator;
+        participantName = `${collaborator.name} ${collaborator.surname}`;
+      }
+
+      splitDetails.push(
+        new TransactionSplitDetailModel(
+          split.id,
+          participantType,
+          participantName,
+          split.amount,
+          split.sharePercentage,
+          split.isPayer,
+          split.isSettled,
+        )
+      );
+    }
+
+    // 7. Determinar si fue creada por el usuario actual
+    const createdByMe = transaction.userId === currentUserId;
+
+    // 8. Determinar si está settled
+    const isSettled = splits.every(x => x.isSettled);
+
+    return new TransactionDetailModel(
+      transaction.id,
+      transaction.userId,
+      transaction.collaboratorId,
+      collaborator.name,
+      collaborator.surname,
+      collaborator.email,
+      transaction.totalAmount,
+      transaction.description,
+      transaction.splitType,
+      transaction.whoPaid,
+      transaction.totalReimbursement,
+      transaction.netAmount,
+      transaction.transactionDate,
+      splitDetails,
+      reimbursements.map(this.mapToReimbursementManagerModel),
+      isSettled,
+      createdByMe,
+    );
   };
 
   // ========== Métodos Privados de Validación ==========
@@ -367,6 +451,24 @@ export class TransactionManagerService implements ITransactionManagerService {
     if (splits.some(x => x.amount < 0)) {
       throw new BadRequestException('Los montos de los splits no pueden ser negativos');
     }
+  }
+
+  private async verifyUserAccess(transaction: TransactionAccessModel, currentUserId: number): Promise<boolean> {
+    // Si es el creador, tiene acceso
+    if (transaction.userId === currentUserId) {
+      return true;
+    }
+
+    // Si hay match, verificar que el usuario es parte del match
+    const match = await this.matchAccessService.getMatchByCollaboratorId(
+      transaction.collaboratorId,
+    );
+
+    if (match) {
+      return match.user1Id === currentUserId || match.user2Id === currentUserId;
+    }
+
+    return false;
   }
 
   // ========== Métodos Privados de Helpers ==========

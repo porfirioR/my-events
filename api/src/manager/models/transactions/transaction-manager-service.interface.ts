@@ -1,4 +1,4 @@
-import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, TransactionModel, TransactionReimbursementModel, TransactionViewModel } from ".";
+import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, TransactionDetailModel, TransactionModel, TransactionReimbursementModel, TransactionViewModel } from ".";
 
 export interface ITransactionManagerService {
   /**
@@ -62,4 +62,13 @@ export interface ITransactionManagerService {
    * @returns Promise<void>
    */
   settleTransaction(transactionId: number): Promise<void>;
+
+
+  /**
+   * Marca un split como liquidado
+   * @param transactionId - ID de la transacción
+   * @param currentUserId - ID del usuario
+   * @returns Promise<TransactionDetailModel>
+   */
+  getTransactionDetail(transactionId: number, currentUserId: number): Promise<TransactionDetailModel>
 }

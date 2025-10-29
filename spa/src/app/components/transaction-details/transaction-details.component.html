@@ -1,0 +1,450 @@
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold text-base-content">Transaction Details</h2>
+          <p class="text-base-content/70 mt-1">Complete transaction information</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="navigateToTransactions()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-12">
+        <span class="loading loading-spinner loading-lg"></span>
+        <p class="ml-3 text-base-content/70">Loading transaction...</p>
+      </div>
+    } @else if (transactionDetails()) {
+      <!-- Summary Stats -->
+      <section class="grid gap-4 mb-6"
+        [ngClass]="{
+          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4': transactionDetails()!.totalReimbursement > 0 && transactionDetails()!.netAmount !== transactionDetails()!.totalAmount,
+          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3': (transactionDetails()!.totalReimbursement > 0 && transactionDetails()!.netAmount === transactionDetails()!.totalAmount) || (transactionDetails()!.totalReimbursement === 0 && transactionDetails()!.netAmount !== transactionDetails()!.totalAmount),
+          'grid-cols-1 sm:grid-cols-2': transactionDetails()!.totalReimbursement === 0 && transactionDetails()!.netAmount === transactionDetails()!.totalAmount
+        }">
+        
+        <!-- Total Amount - SIEMPRE se muestra -->
+        <article class="stats shadow bg-base-200 dark:bg-base-300">
+          <div class="stat py-4">
+            <div class="stat-figure text-primary">
+              <i class="fas fa-dollar-sign text-2xl"></i>
+            </div>
+            <div class="stat-title text-xs">Total Amount</div>
+            <div class="stat-value text-xl text-primary">{{ formatCurrency(transactionDetails()!.totalAmount) }}</div>
+          </div>
+        </article>
+
+        <!-- Reimbursement - Solo si totalReimbursement > 0 -->
+        @if (transactionDetails()!.totalReimbursement > 0) {
+          <article class="stats shadow bg-base-200 dark:bg-base-300">
+            <div class="stat py-4">
+              <div class="stat-figure text-warning">
+                <i class="fas fa-undo text-2xl"></i>
+              </div>
+              <div class="stat-title text-xs">Reimbursement</div>
+              <div class="stat-value text-xl text-warning">{{ formatCurrency(transactionDetails()!.totalReimbursement) }}</div>
+            </div>
+          </article>
+        }
+
+        <!-- Net Amount - Solo si es diferente de Total Amount -->
+        @if (transactionDetails()!.netAmount !== transactionDetails()!.totalAmount) {
+          <article class="stats shadow bg-base-200 dark:bg-base-300">
+            <div class="stat py-4">
+              <div class="stat-figure text-success">
+                <i class="fas fa-check-circle text-2xl"></i>
+              </div>
+              <div class="stat-title text-xs">Net Amount</div>
+              <div class="stat-value text-xl text-success">{{ formatCurrency(transactionDetails()!.netAmount) }}</div>
+            </div>
+          </article>
+        }
+
+        <!-- Status - SIEMPRE se muestra -->
+        <article class="stats shadow bg-base-200 dark:bg-base-300">
+          <div class="stat py-4">
+            <div class="stat-figure"
+              [ngClass]="{
+                'text-success': transactionDetails()!.isSettled,
+                'text-warning': !transactionDetails()!.isSettled
+              }"
+            >
+              <i class="fas text-2xl"
+                [ngClass]="{
+                  'fa-check-double': transactionDetails()!.isSettled,
+                  'fa-clock': !transactionDetails()!.isSettled
+                }"
+              ></i>
+            </div>
+            <div class="stat-title text-xs">Status</div>
+            <div class="stat-value text-base"
+              [ngClass]="{
+                'text-success': transactionDetails()!.isSettled,
+                'text-warning': !transactionDetails()!.isSettled
+              }"
+            >
+              {{ transactionDetails()!.isSettled ? 'Settled' : 'Pending' }}
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Main Info Card -->
+      <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
+        <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+          <h3 class="text-lg font-semibold text-base-content">Transaction Information</h3>
+        </header>
+
+        <main class="p-6">
+          <!-- Description & Collaborator - Full Width -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Description -->
+            <div>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Description</label>
+              <p class="text-base text-base-content font-medium mt-1">
+                {{ transactionDetails()!.description || 'No description' }}
+              </p>
+            </div>
+
+            <!-- Collaborator -->
+            <div>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Collaborator</label>
+              <div class="flex items-center gap-2 mt-1">
+                <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-semibold text-sm">
+                  {{ getInitials(transactionDetails()!.collaboratorName + ' ' + transactionDetails()!.collaboratorSurname) }}
+                </div>
+                <div>
+                  <p class="text-base text-base-content font-medium">
+                    {{ transactionDetails()!.collaboratorName }} {{ transactionDetails()!.collaboratorSurname }}
+                  </p>
+                  @if (transactionDetails()!.collaboratorEmail) {
+                    <p class="text-xs text-base-content/60">
+                      <i class="fas fa-envelope mr-1"></i>{{ transactionDetails()!.collaboratorEmail }}
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date, Split Type, Who Paid, Created By - 2x2 Grid -->
+          <div class="grid grid-cols-2 gap-6">
+            <!-- Date -->
+            <div>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Date</label>
+              <p class="text-base text-base-content mt-1">
+                <i class="fas fa-calendar mr-2"></i>
+                {{ getFormattedDate(transactionDetails()!.transactionDate) }}
+              </p>
+            </div>
+
+            <!-- Split Type -->
+            <div>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Split Type</label>
+              <p class="text-base text-base-content mt-1">
+                <i class="fas mr-2"
+                  [ngClass]="{
+                    'fa-equals': transactionDetails()!.splitType === 'Equal',
+                    'fa-sliders-h': transactionDetails()!.splitType === 'Custom',
+                    'fa-percent': transactionDetails()!.splitType === 'Percentage'
+                  }"
+                ></i>
+                {{ transactionDetails()!.splitType }}
+              </p>
+            </div>
+
+            <!-- Who Paid -->
+            <div>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Who Paid</label>
+              <p class="text-base text-base-content mt-1">
+                <i class="fas mr-2"
+                  [ngClass]="{
+                    'fa-user text-success': transactionDetails()!.whoPaid === 'user',
+                    'fa-user-friends text-info': transactionDetails()!.whoPaid === 'collaborator'
+                  }"
+                ></i>
+                {{ transactionDetails()!.whoPaid === 'user' ? 'I Paid' : 'They Paid' }}
+              </p>
+            </div>
+
+            <!-- Created By -->
+            <div>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Created By</label>
+              <div class="mt-1">
+                @if (transactionDetails()!.createdByMe) {
+                  <span class="badge badge-primary gap-1">
+                    <i class="fas fa-user-check"></i>
+                    Me
+                  </span>
+                } @else {
+                  <span class="badge badge-info gap-1">
+                    <i class="fas fa-users"></i>
+                    Collaborator
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        </main>
+      </section>
+
+      <!-- Splits Section -->
+      <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
+        <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+          <h3 class="text-lg font-semibold text-base-content">Split Details</h3>
+        </header>
+
+        <main class="p-6">
+          <ul class="space-y-3" role="list">
+            @for (split of transactionDetails()!.splits; track split.id) {
+              <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 border"
+                [ngClass]="{
+                  'border-success/30': split.isPayer,
+                  'border-base-300': !split.isPayer
+                }"
+              >
+                <div class="flex items-center justify-between">
+                  <!-- Participant Info -->
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm"
+                      [ngClass]="{
+                        'bg-success text-success-content': split.isPayer,
+                        'bg-base-300 text-base-content': !split.isPayer
+                      }"
+                    >
+                      <i class="fas"
+                        [ngClass]="{
+                          'fa-wallet': split.isPayer,
+                          'fa-user': !split.isPayer
+                        }"
+                      ></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-base-content">{{ split.participantName }}</p>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs text-base-content/60">{{ split.participantType }}</span>
+                        @if (split.isPayer) {
+                          <span class="badge badge-xs badge-success gap-1">
+                            <i class="fas fa-check"></i>
+                            Paid
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Amount -->
+                  <div class="text-right">
+                    <p class="text-lg font-bold text-base-content">
+                      {{ formatCurrency(split.amount) }}
+                    </p>
+                    @if (split.sharePercentage !== null) {
+                      <p class="text-xs text-base-content/60">
+                        {{ split.sharePercentage }}%
+                      </p>
+                    }
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        </main>
+
+        <!-- Mobile Actions DENTRO de Splits Section -->
+        @if (!transactionDetails()!.reimbursements.length) {
+          <div class="mt-3 pt-3 border-t border-base-content/10 sm:hidden px-6 pb-6">
+            <div class="flex gap-2">
+              <!-- Back Button -->
+              <button
+                type="button"
+                class="btn btn-xs btn-ghost gap-1.5"
+                (click)="goBack()"
+              >
+                <i class="fas fa-arrow-left text-primary"></i>
+                <span>Back</span>
+              </button>
+  
+              @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
+                @if (transactionDetails()!.netAmount > 0) {
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                    (click)="addReimbursement()"
+                  >
+                    <i class="fas fa-undo text-warning"></i>
+                    <span>Reimburse</span>
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                  (click)="settleTransaction()"
+                >
+                  <i class="fas fa-check text-success"></i>
+                  <span>Settle</span>
+                </button>
+              }
+              
+              @if (transactionDetails()!.createdByMe) {
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost gap-1.5"
+                  (click)="deleteTransaction()"
+                >
+                  <i class="fas fa-trash text-error"></i>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- Reimbursements Section -->
+      @if (transactionDetails()!.reimbursements.length > 0) {
+        <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
+          <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+            <h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
+              <i class="fas fa-undo text-warning"></i>
+              Reimbursements
+            </h3>
+          </header>
+
+          <main class="p-6">
+            <ul class="space-y-3" role="list">
+              @for (reimbursement of transactionDetails()!.reimbursements; track reimbursement.id) {
+                <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 border border-warning/20">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-semibold text-base-content">
+                        {{ formatCurrency(reimbursement.amount) }}
+                      </p>
+                      @if (reimbursement.description) {
+                        <p class="text-sm text-base-content/70 mt-1">
+                          {{ reimbursement.description }}
+                        </p>
+                      }
+                    </div>
+                    <div class="text-right text-xs text-base-content/60">
+                      <i class="fas fa-calendar mr-1"></i>
+                      {{ getFormattedDate(reimbursement.reimbursementDate) }}
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
+          </main>
+
+          <!-- Mobile Actions DENTRO de Reimbursements Section (cuando existe) -->
+          <div class="mt-3 pt-3 border-t border-base-content/10 sm:hidden px-6 pb-6">
+            <div class="flex gap-2">
+              <!-- Back Button -->
+              <button
+                type="button"
+                class="btn btn-xs btn-ghost gap-1.5"
+                (click)="goBack()"
+              >
+                <i class="fas fa-arrow-left text-primary"></i>
+                <span>Back</span>
+              </button>
+
+              @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
+                @if (transactionDetails()!.netAmount > 0) {
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                    (click)="addReimbursement()"
+                  >
+                    <i class="fas fa-undo text-warning"></i>
+                    <span>Reimburse</span>
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                  (click)="settleTransaction()"
+                >
+                  <i class="fas fa-check text-success"></i>
+                  <span>Settle</span>
+                </button>
+              }
+              
+              @if (transactionDetails()!.createdByMe) {
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost gap-1.5"
+                  (click)="deleteTransaction()"
+                >
+                  <i class="fas fa-trash text-error"></i>
+                </button>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Actions Footer - Desktop only -->
+      <footer class="hidden sm:flex bg-base-200 dark:bg-base-300 rounded-xl p-6 justify-between items-center gap-4">
+        <button
+          type="button"
+          class="btn btn-outline btn-primary"
+          (click)="goBack()"
+        >
+          <i class="fas fa-arrow-left mr-2"></i>
+          Back
+        </button>
+
+        @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
+          <div class="flex gap-2">
+            @if (transactionDetails()!.netAmount > 0) {
+              <button
+                type="button"
+                class="btn btn-outline btn-warning"
+                (click)="addReimbursement()"
+              >
+                <i class="fas fa-undo mr-2"></i>
+                Add Reimbursement
+              </button>
+            }
+            <button
+              type="button"
+              class="btn btn-outline btn-success"
+              (click)="settleTransaction()"
+            >
+              <i class="fas fa-check-double mr-2"></i>
+              Mark as Settled
+            </button>
+          </div>
+        }
+
+        @if (transactionDetails()!.createdByMe) {
+          <button
+            type="button"
+            class="btn btn-outline btn-error"
+            (click)="deleteTransaction()"
+          >
+            <i class="fas fa-trash mr-2"></i>
+            Delete
+          </button>
+        }
+      </footer>
+
+    } @else {
+      <!-- Not Found State -->
+      <div class="text-center py-16">
+        <figure class="mx-auto w-20 h-20 bg-base-200 dark:bg-base-300 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-exclamation-circle text-3xl text-error"></i>
+        </figure>
+        <h3 class="text-lg font-semibold text-base-content mb-2">Transaction not found</h3>
+        <p class="text-base-content/70 mb-6">The transaction you're looking for doesn't exist or you don't have access to it.</p>
+        <button class="btn btn-primary" (click)="navigateToTransactions()">
+          <i class="fas fa-arrow-left mr-2"></i>
+          Back to Transactions
+        </button>
+      </div>
+    }
+  </article>
+</section>
