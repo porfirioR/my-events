@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TransactionViewApiModel } from '../../models/api/transactions';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
 import { AlertService, HelperService } from '../../services';
@@ -11,8 +11,9 @@ import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-r
   standalone: true,
   imports: [
     CommonModule,
-    AddReimbursementModalComponent
-  ],
+    AddReimbursementModalComponent,
+    RouterLink
+],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css']
 })
@@ -21,13 +22,11 @@ export class TransactionsComponent implements OnInit {
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
   private readonly loadingStore = useLoadingStore();
-  
-  private readonly router = inject(Router);
   private readonly alertService = inject(AlertService);
 
   // Signals
-  isLoading = this.loadingStore.isLoading;
-  filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
+  protected isLoading = this.loadingStore.isLoading;
+  protected filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
 
   protected formatCurrency = HelperService.formatCurrency
   protected getFormattedDate = HelperService.getFormattedDate;
@@ -68,18 +67,6 @@ export class TransactionsComponent implements OnInit {
   }
 
   // ========== Actions ==========
-  protected createTransaction(): void {
-    this.router.navigate(['/transactions/new']);
-  }
-
-  protected viewTransaction(transaction: TransactionViewApiModel): void {
-    this.router.navigate(['/transactions', transaction.id]);
-  }
-
-  protected viewBalances(): void {
-    this.router.navigate(['/transactions/balances']);
-  }
-
   protected addReimbursement(transaction: TransactionViewApiModel): void {
     this.addReimbursementModal?.open({
       maxAmount: transaction.netAmount,

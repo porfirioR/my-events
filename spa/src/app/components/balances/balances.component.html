@@ -15,18 +15,6 @@
 
     <!-- Summary Cards -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <!-- Total Balance -->
-      <article class="stats shadow bg-base-200 dark:bg-base-300">
-        <div class="stat">
-          <div class="stat-figure text-primary">
-            <i class="fas fa-balance-scale text-3xl"></i>
-          </div>
-          <div class="stat-title">Net Balance</div>
-          <div class="stat-value text-primary">{{ formatCurrency(totalBalance()) }}</div>
-          <div class="stat-desc">Overall balance</div>
-        </div>
-      </article>
-
       <!-- They Owe Me -->
       <article class="stats shadow bg-base-200 dark:bg-base-300">
         <div class="stat">
@@ -50,20 +38,45 @@
           <div class="stat-desc">Money to pay</div>
         </div>
       </article>
+
+      <!-- Total Balance -->
+      <article class="stats shadow bg-base-200 dark:bg-base-300">
+        <div class="stat">
+          <div class="stat-figure text-primary"
+            [ngClass]="{
+              'text-success': totalBalance() > 0,
+              'text-error': totalBalance() < 0,
+              'text-primary': totalBalance() === 0
+            }"
+          >
+            <i class="fas fa-balance-scale text-2xl"></i>
+          </div>
+          <div class="stat-title">Net Balance</div>
+          <div class="stat-value text-primary"
+            [ngClass]="{
+              'text-success': totalBalance() > 0,
+              'text-error': totalBalance() < 0,
+              'text-primary': totalBalance() === 0
+            }"
+          >
+          {{ formatCurrency(totalBalance()) }}</div>
+          <div class="stat-desc">Overall balance</div>
+        </div>
+      </article>
     </section>
 
     <!-- Balances List -->
     <section class="bg-base-200 dark:bg-base-300 mb-6">
-      <div class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+      <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
         <h3 class="text-lg font-semibold text-base-content">Balances by Collaborator</h3>
-      </div>
+      </header>
 
-      <div class="p-6">
+      <main class="p-6">
         @if (isLoading()) {
-          <div class="flex justify-center items-center py-12">
+          <article class="flex justify-center items-center py-12">
             <span class="loading loading-spinner loading-lg"></span>
             <p class="ml-3 text-base-content/70">Loading balances...</p>
-          </div>
+          </article>
         } @else {
           <ul class="space-y-4" role="list">
             @for (balance of balances(); track balance.collaboratorId) {
@@ -83,7 +96,6 @@
                         {{ getInitials(`${balance.collaboratorInfo.name} ${balance.collaboratorInfo.surname}`) }}
                       </div>
                     </figure>
-                    
                     <div class="flex-grow min-w-0">
                       <h4 class="font-semibold text-base-content">
                         {{ balance.collaboratorInfo.name }} {{ balance.collaboratorInfo.surname }}
@@ -119,18 +131,6 @@
                       <p class="text-xs text-base-content/60">Settled</p>
                     }
                   </div>
-
-                  <!-- Actions -->
-                  <aside class="ml-4">
-                    <button
-                      type="button"
-                      class="btn btn-ghost btn-sm btn-circle"
-                      (click)="viewTransactionsWithCollaborator(balance.collaboratorId)"
-                      title="View transactions"
-                    >
-                      <i class="fas fa-list text-base-content/70"></i>
-                    </button>
-                  </aside>
                 </article>
 
                 <!-- Breakdown Details (Expandable) -->
@@ -155,7 +155,7 @@
                           'text-error': balance.netBalance < 0
                         }"
                       >
-                        {{ formatCurrency(Math.abs(balance.netBalance)) }}
+                        {{ formatCurrency(math.abs(balance.netBalance)) }}
                       </span>
                     </div>
                   </div>
@@ -186,30 +186,24 @@
                 </figure>
                 <h3 class="text-lg font-medium text-base-content mb-2">No balances yet</h3>
                 <p class="text-base-content/70 mb-4">Create transactions to see your balances here</p>
-                <button class="btn btn-primary" (click)="createTransaction()">
+                <a class="btn btn-primary" [routerLink]="['/transactions/new']">
                   <i class="fas fa-plus mr-2"></i>
                   Create Transaction
-                </button>
+                </a>
               </li>
             }
           </ul>
         }
-      </div>
+      </main>
     </section>
 
     <!-- Back Button -->
     <footer class="bg-base-200 dark:bg-base-300 flex justify-between items-center p-6 gap-4">
-      <a type="button" class="btn btn-outline btn-primary"
-        [routerLink]="['/transactions']"
-      >
+      <a type="button" class="btn btn-outline btn-primary" [routerLink]="['/transactions']">
         <i class="fas fa-arrow-left mr-2"></i>
-        Back to Transactions
+        Go to Transactions
       </a>
-      
-      <a
-        class="btn btn-outline btn-primary"
-        [routerLink]="['/transactions/new']"
-      >
+      <a class="btn btn-outline btn-primary" [routerLink]="['/transactions/new']">
         <i class="fas fa-plus"></i>
         Add Transaction
       </a>

@@ -17,7 +17,7 @@ import {
   AddReimbursementApiRequest,
 } from '../models/transactions';
 import { MessageModel } from '../models/message.model';
-import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../../manager/models/transactions';
+import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../../manager/models/transactions';
 import { ParticipantType, WhoPaid } from '../../utility/enums';
 import { TRANSACTION_TOKENS } from 'src/utility/constants';
 
@@ -149,6 +149,16 @@ export class TransactionController {
   async settleTransaction(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
     await this.transactionManagerService.settleTransaction(id);
     return new MessageModel('Transaction settled successfully');
+  }
+
+  /**
+   * Obtiene detalles completos de una transacción (con splits y reintegros)
+   * GET /api/transactions/:id/details
+   */
+  @Get(':id/details')
+  async getTransactionDetails(@Param('id', ParseIntPipe) id: number): Promise<TransactionDetailModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return await this.transactionManagerService.getTransactionDetail(id, userId);
   }
 
   // ========== Métodos Privados de Helpers ==========

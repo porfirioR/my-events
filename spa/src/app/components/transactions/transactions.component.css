@@ -1,30 +1,98 @@
-/* Asegurar que los badges no se compriman */
-.badge-container {
-  display: flex;
-  gap: 0.375rem;
-  align-items: center;
-}
+/* Estilos adicionales para mejorar las transacciones */
 
-/* En pantallas grandes, forzar una línea */
-@media (min-width: 1024px) {
-  .badge-container {
-    flex-wrap: nowrap;
+/* Mejorar el contraste SOLO en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .transaction-card {
+    background: hsl(var(--nf) / 0.05);
+  }
+  
+  .transaction-card:hover {
+    background: hsl(var(--nf) / 0.1);
   }
 }
 
-/* En pantallas pequeñas, permitir wrap */
-@media (max-width: 1023px) {
-  .badge-container {
-    flex-wrap: wrap;
+/* En light mode, mantener el estilo original */
+@media (prefers-color-scheme: light) {
+  .transaction-card {
+    background: hsl(var(--b1));
+  }
+  
+  .transaction-card:hover {
+    background: hsl(var(--b2));
   }
 }
 
-/* Prevenir que los badges se estiren */
-.badge-container > span {
-  flex-shrink: 0;
+/* Animaciones suaves para ambos modos */
+.transaction-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Smooth transition cuando cambia el layout */
-.badge-container {
-  transition: all 0.2s ease-in-out;
+.transaction-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Mejorar los badges */
+.transaction-badge {
+  backdrop-filter: blur(8px);
+}
+
+/* Iconos circulares más atractivos */
+.transaction-icon {
+  transition: all 0.3s ease;
+}
+
+.transaction-card:hover .transaction-icon {
+  transform: scale(1.05);
+}
+
+/* Sombra en dark mode como la primera versión */
+@media (prefers-color-scheme: dark) {
+  .transaction-card:hover .transaction-icon {
+    box-shadow: 0 8px 16px -4px currentColor;
+  }
+}
+
+/* Dropdown mejorado */
+.dropdown-content {
+  backdrop-filter: blur(16px);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Botones móviles más touch-friendly */
+@media (max-width: 640px) {
+  .mobile-actions button {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Mejoras de accesibilidad */
+.transaction-card:focus-within {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 2px;
+}
+
+/* Estados de carga suaves */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.loading-state {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

@@ -6,3 +6,5 @@ export { TransactionApiModel } from './transaction-api-model';
 export { TransactionReimbursementApiModel } from './transaction-reimbursement-api-model';
 export { TransactionSplitApiRequest } from './transaction-split-api-request';
 export { TransactionViewApiModel } from './transaction-view-api-model';
+export { TransactionSplitDetailApiModel } from './transaction-split-detail-api-model';
+export { TransactionDetailApiModel } from './transaction-detail-api-model';
