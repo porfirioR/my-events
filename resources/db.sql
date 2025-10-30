@@ -34,6 +34,45 @@ CREATE TABLE users (
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE passwordresettokens (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    expiresat TIMESTAMP NOT NULL,
+    isused BOOLEAN DEFAULT FALSE,
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usedat TIMESTAMP NULL,
+    ipaddress VARCHAR(45) NULL,
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_password_reset_tokens_token ON passwordresettokens(token);
+CREATE INDEX idx_password_reset_tokens_userid_active ON passwordresettokens(userid, expiresat, isused);
+CREATE INDEX idx_password_reset_tokens_cleanup ON passwordresettokens(expiresat, isused);
+
+-- Tokens de verificación de email
+CREATE TABLE emailverificationtokens (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    expiresat TIMESTAMP NOT NULL,
+    isverified BOOLEAN DEFAULT FALSE,
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    verifiedat TIMESTAMP NULL,
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_email_verification_tokens_token ON emailverificationtokens(token);
+CREATE INDEX idx_email_verification_tokens_userid ON emailverificationtokens(userid, expiresat);
+CREATE INDEX idx_email_verification_tokens_cleanup ON emailverificationtokens(expiresat, isverified);
+
+-- Actualizar tabla users
+ALTER TABLE users ADD COLUMN IF NOT EXISTS isemailverified BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS emailverifiedat TIMESTAMP NULL;
+
+-- Eliminar columna 'code' antigua (ejecutar después de migrar datos si es necesario)
+ALTER TABLE users DROP COLUMN IF EXISTS code;
+
 -- Colaboradores - email NULL = interno, email valor = externo
 CREATE TABLE collaborators (
     id SERIAL PRIMARY KEY,

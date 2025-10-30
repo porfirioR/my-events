@@ -17,4 +17,6 @@ export enum TableEnum {
   CollaboratorMatches = 'collaboratormatches',
   CollaboratorMatchRequests = 'collaboratormatchrequests',
   TransactionReimbursements = "transactionreimbursements",
+  PasswordResetTokens = 'passwordresettokens',
+  EmailVerificationTokens = 'emailverificationtokens',
 }

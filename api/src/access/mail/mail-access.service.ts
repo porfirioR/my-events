@@ -46,7 +46,7 @@ export class MailAccessService {
     `;
     return this.mailerService.sendMail({
       to: request.email,
-      subject: 'Email',
+      subject: 'Forgot Password',
       html: template
     });
   }

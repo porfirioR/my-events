@@ -33,4 +33,18 @@ export enum DatabaseColumns {
   WhoPaid = 'whopaid',
   IsPayer = 'ispayer',
   SharePercentage = 'sharepercentage',
+  // Nuevos campos para users
+  IsEmailVerified = 'isemailverified',
+  EmailVerifiedAt = 'emailverifiedat',
+  // Campos para password reset tokens
+  Token = 'token',
+  ExpiresAt = 'expiresat',
+  IsUsed = 'isused',
+  CreatedAt = 'createdat',
+  UsedAt = 'usedat',
+  IpAddress = 'ipaddress',
+  
+  // Campos para email verification tokens
+  IsVerified = 'isverified',
+  VerifiedAt = 'verifiedat',
 }

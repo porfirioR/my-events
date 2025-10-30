@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserAccessRequest } from '../../access/contract/users/create-user-access-request';
 import { UserAccessModel } from '../../access/contract/users/user-access-model';
 import { ResetUserAccessRequest } from '../../access/contract/users/reset-user-password-access-request';
@@ -46,6 +46,10 @@ export class UserManagerService {
   };
 
   public resetUserPassword = async (request: ResetUserPasswordRequest): Promise<SignModel> => {
+    const checkUser = await this.userAccessService.getUserByEmail(request.email);
+    if(checkUser.code !== request.code) {
+      throw new BadRequestException('Invalid code provided, verify your email, copy and try again.');
+    }
     const password = await this.authService.getHash(request.password)
     const accessModel = await this.userAccessService.resetPassword(new ResetUserAccessRequest(request.email, password));
     const authModel = new AuthUserModel(accessModel.id, accessModel.email, '')
