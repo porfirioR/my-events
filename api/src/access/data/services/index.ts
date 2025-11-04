@@ -7,6 +7,8 @@ export { EventFollowAccessService } from './event-follow-access.service';
 export { PaymentAccessService } from './payment-access.service';
 export { SavingAccessService } from './saving-access.service';
 export { UserAccessService } from './user-access.service';
+export { EmailVerificationTokenAccessService } from './email-verification-token-access.service';
+export { PasswordResetTokenAccessService } from './password-reset-token-access.service';
 
 //collaborators
 export { CollaboratorMatchAccessService } from './collaborator-match-access.service';

@@ -1,21 +1,46 @@
+// src/manager/services/mail-manager.service.ts (ACTUALIZAR COMPLETO)
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MailAccessService } from '../../access/mail';
-import { ForgotPasswordAccessRequest } from '../../access/contract/users/forgot-password-access-request';
-import { UserAccessService } from '../../access/data/services/user-access.service';
-import { generateRandomCode } from '../../utility/functions/random-code';
+import { SPA_URL } from '../../utility/constants';
 
 @Injectable()
 export class MailManagerService {
   constructor(
-    private userAccessService: UserAccessService,
-    private mailAccessService: MailAccessService
+    private mailAccessService: MailAccessService,
+    private configService: ConfigService
   ) {}
 
-  public async forgotPassword(email: string): Promise<boolean> {
-    const code = generateRandomCode()
-    const accessRequest = new ForgotPasswordAccessRequest(email, code)
-    await this.userAccessService.addForgotCodePassword(accessRequest)
-    await this.mailAccessService.forgotPassword(accessRequest)
-    return true
-  }
+  /**
+   * Envía email de verificación al registrarse
+   */
+  public sendVerificationEmail = async (
+    email: string,
+    verificationToken: string
+  ): Promise<boolean> => {
+    const baseUrl = this.configService.get<string>(SPA_URL);
+    const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+
+    await this.mailAccessService.sendVerificationEmail(
+      email,
+      verificationLink
+    );
+
+    return true;
+  };
+
+  /**
+   * Envía email de forgot password
+   */
+  public sendForgotPasswordEmail = async (
+    email: string,
+    resetToken: string
+  ): Promise<boolean> => {
+    const baseUrl = this.configService.get<string>(SPA_URL);
+    const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
+
+    await this.mailAccessService.sendForgotPasswordEmail(email, resetLink);
+
+    return true;
+  };
 }

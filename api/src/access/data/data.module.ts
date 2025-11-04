@@ -5,7 +5,7 @@ import { UtilityModule } from '../../utility/utility.module';
 import { DbContextService } from './services/db-context.service';
 import { EventAccessService } from './services/event-access.service';
 import { EventFollowAccessService } from './services/event-follow-access.service';
-import { CollaboratorMatchAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService } from './services';
+import { CollaboratorMatchAccessService, EmailVerificationTokenAccessService, PasswordResetTokenAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService } from './services';
 import { CollaboratorAccessService } from './services/collaborator-access.service';
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { ConfigurationAccessService } from './services/configuration-access.service';
@@ -33,6 +33,8 @@ import { UserAccessService } from './services/user-access.service';
     TransactionAccessService,
     TransactionReimbursementAccessService,
     TransactionSplitAccessService,
+    PasswordResetTokenAccessService,
+    EmailVerificationTokenAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,
@@ -70,7 +72,9 @@ import { UserAccessService } from './services/user-access.service';
     COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE,
     TRANSACTION_TOKENS.ACCESS_SERVICE,
     TRANSACTION_TOKENS.REIMBURSEMENT_ACCESS_SERVICE,
-    TRANSACTION_TOKENS.SPLIT_ACCESS_SERVICE
+    TRANSACTION_TOKENS.SPLIT_ACCESS_SERVICE,
+    PasswordResetTokenAccessService,
+    EmailVerificationTokenAccessService,
   ],
 })
 export class DataModule {}
