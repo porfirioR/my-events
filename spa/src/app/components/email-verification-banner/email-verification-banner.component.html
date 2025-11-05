@@ -1,0 +1,22 @@
+@if (authStore.needsEmailVerification()) {
+  <div class="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center justify-between flex-wrap">
+        <div class="flex items-center flex-1">
+          <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mr-3"></i>
+          <p class="text-sm text-yellow-800 dark:text-yellow-300">
+            <span class="font-medium">Email not verified.</span>
+            Please verify your email address to access all features.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="ml-3 text-sm font-medium text-yellow-800 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-200 underline transition-colors"
+          (click)="goToVerification()"
+        >
+          Verify Now
+        </button>
+      </div>
+    </div>
+  </div>
+}

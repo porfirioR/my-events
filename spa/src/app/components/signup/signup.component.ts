@@ -40,22 +40,28 @@ export class SignupComponent {
   }
 
   protected save = (event: Event): void => {
-    event.preventDefault()
+    event.preventDefault();
     if (this.formGroup.invalid) {
-      return
+      return;
     }
-    const request: CreateUserApiRequest = new CreateUserApiRequest(this.formGroup.value.email!, this.formGroup.value.password!)
+    this.authStore.loginStart();
+    const request: CreateUserApiRequest = new CreateUserApiRequest(
+      this.formGroup.value.email!,
+      this.formGroup.value.password!
+    );
     this.userApiService.signUpUser(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token, user.email);
-        this.alertService.showSuccess(`Welcome ${user.email}`)
-        this.router.navigate([''])
+        this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified); // ACTUALIZAR
+        this.alertService.showSuccess(
+          `Account created successfully! Please check your email to verify your account.`
+        );
+        this.router.navigate(['/verify-email-pending']);
       },
       error: (error) => {
         this.authStore.loginFailure('Signup failed. Please try again.');
-      }
-    })
-  }
+      },
+    });
+  };
 
   private checkRepeatPassword = (): ValidatorFn => {
     return (control: AbstractControl): ValidationErrors | null => {

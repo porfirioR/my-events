@@ -18,4 +18,17 @@ export class LocalService {
   public setJwtToken = (token: string): void => localStorage.setItem(this.jwtToken, token)
 
   public cleanCredentials = (): void => localStorage.clear()
+
+  /**
+   * Guarda el estado de verificación de email
+   */
+  public setEmailVerified = (isVerified: boolean): void => localStorage.setItem('isEmailVerified', JSON.stringify(isVerified));
+
+  /**
+   * Obtiene el estado de verificación de email
+   */
+  public getEmailVerified = (): boolean => {
+    const value = localStorage.getItem('isEmailVerified');
+    return value ? JSON.parse(value) : false;
+  };
 }

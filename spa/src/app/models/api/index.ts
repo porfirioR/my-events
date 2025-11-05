@@ -8,7 +8,6 @@ export * from './events/update-event-api-request'
 export * from './events/even-api-model'
 
 export * from './forgot-password-api-request'
-export * from './sign-api-model'
 export * from './push-token-api-request'
 export * from './web-push-token-key-api-request'
 export * from './push-token-api-model'

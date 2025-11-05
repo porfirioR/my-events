@@ -1,4 +1,3 @@
-// src/web/guards/reset-password-rate-limit.guard.ts (NUEVO)
 import {
   Injectable,
   CanActivate,

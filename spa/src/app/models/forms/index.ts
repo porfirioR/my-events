@@ -9,3 +9,4 @@ export { SavingFormGroup } from './saving-form-group';
 export { SignupFormGroup } from './sign-up-form-group';
 export { TransactionFormGroup } from './transaction-form-group';
 export { TransactionSplitFormGroup } from './transaction-split-form-group';
+export { ResendFormGroup } from './resend-form-group';

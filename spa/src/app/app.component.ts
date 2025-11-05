@@ -8,13 +8,15 @@ import { LocalService,
 // import { PushTokenApiRequest } from './models/api'
 import { useAuthStore } from './store'
 import { HeaderComponent } from "./components/header/header.component";
+import { EmailVerificationBannerComponent } from "./components/email-verification-banner/email-verification-banner.component";
 
 @Component({
   selector: 'app-root',
   imports: [
     RouterOutlet,
-    HeaderComponent
-],
+    HeaderComponent,
+    EmailVerificationBannerComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

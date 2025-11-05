@@ -15,6 +15,8 @@ import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { CollaboratorMatchRequestsComponent } from './components/collaborator-match-requests/collaborator-match-requests.component';
 import { CollaboratorInvitationsComponent } from './components/collaborator-invitations/collaborator-invitations.component';
+import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
+import { VerifyEmailPendingComponent } from './components/verify-email-pending/verify-email-pending.component';
 
 export const routes: Routes = [
   {
@@ -152,6 +154,14 @@ export const routes: Routes = [
         title: 'Reset password',
         loadComponent: () => ResetPasswordComponent,
         canActivate: [guestGuard]
+      },
+      { 
+        path: 'verify-email',
+        loadComponent: () => VerifyEmailComponent
+      },
+      { 
+        path: 'verify-email-pending',
+        loadComponent: () => VerifyEmailPendingComponent
       },
     ]
   }

@@ -93,9 +93,7 @@ export class UsersController {
    */
   @Post('verify-email')
   @Public()
-  async verifyEmail(
-    @Body() apiRequest: VerifyEmailApiRequest
-  ): Promise<SignModel> {
+  async verifyEmail(@Body() apiRequest: VerifyEmailApiRequest): Promise<SignModel> {
     this.logger.log('UsersController: verifyEmail');
 
     const request = new VerifyEmailRequest(apiRequest.token);
@@ -109,9 +107,7 @@ export class UsersController {
    */
   @Post('resend-verification')
   @Public()
-  async resendVerificationEmail(
-    @Body() apiRequest: ResendVerificationEmailApiRequest
-  ): Promise<{ message: string }> {
+  async resendVerificationEmail(@Body() apiRequest: ResendVerificationEmailApiRequest): Promise<{ message: string }> {
     this.logger.log('UsersController: resendVerificationEmail');
 
     const request = new ResendVerificationEmailRequest(apiRequest.email);
@@ -135,9 +131,7 @@ export class UsersController {
    */
   @Post('login')
   @Public()
-  async login(
-    @Headers(USER_AUTHORIZATION) authorization: string
-  ): Promise<SignModel> {
+  async login(@Headers(USER_AUTHORIZATION) authorization: string): Promise<SignModel> {
     this.logger.log('UsersController: login');
     const model = await this.userManagerService.loginUser(authorization);
     return model;
@@ -185,9 +179,7 @@ export class UsersController {
   @Post('reset-password')
   @Public()
   @UseGuards(ResetPasswordRateLimitGuard)
-  async resetPassword(
-    @Body() apiRequest: ResetUserPasswordApiRequest
-  ): Promise<SignModel> {
+  async resetPassword(@Body() apiRequest: ResetUserPasswordApiRequest): Promise<SignModel> {
     this.logger.log('UsersController: resetPassword');
 
     const request = new ResetUserPasswordRequest(

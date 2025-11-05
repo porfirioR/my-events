@@ -36,20 +36,29 @@ export class LoginComponent {
 
   protected loginUser = (): void => {
     if (this.formGroup.invalid) {
-      return
+      return;
     }
-    this.authStore.loginStart()
-    const request: LoginUserApiRequest = new LoginUserApiRequest(this.formGroup.value.email!, this.formGroup.value.password!)
+    this.authStore.loginStart();
+    const request: LoginUserApiRequest = new LoginUserApiRequest(
+      this.formGroup.value.email!,
+      this.formGroup.value.password!
+    );
     this.userApiService.loginUser(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token, user.email);
-        this.alertService.showSuccess(`Welcome ${user.email}`)
-        this.router.navigate([''])
+        this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified);
+
+        if (!user.isEmailVerified) {
+          this.alertService.showError('Please verify your email to access all features.');
+          this.router.navigate(['/verify-email-pending']);
+        } else {
+          this.alertService.showSuccess(`Welcome ${user.email}`);
+          this.router.navigate(['']);
+        }
       },
       error: () => {
         this.authStore.loginFailure('Login failed. Please check your credentials.');
       },
-    })
-  }
+    });
+  };
 
 }

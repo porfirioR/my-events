@@ -1,0 +1,93 @@
+<section class="flex flex-col items-center justify-center px-6 py-4 mx-auto lg:py-0 min-h-screen">
+  <h1 class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+    My Events
+  </h1>
+
+  <article class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700 border-indigo-500 ring-indigo-500 ring-1">
+    <main class="px-6 py-8 space-y-6">
+      <!-- Icono de email -->
+      <div class="flex justify-center">
+        <div class="rounded-full bg-indigo-100 dark:bg-indigo-900 p-4">
+          <i class="fas fa-envelope text-5xl text-indigo-600 dark:text-indigo-400"></i>
+        </div>
+      </div>
+
+      <header class="text-center">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Verify Your Email
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.
+        </p>
+      </header>
+
+      <!-- Información adicional -->
+      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div class="flex items-start">
+          <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-0.5 mr-3"></i>
+          <div class="text-sm text-blue-800 dark:text-blue-300">
+            <p class="font-medium mb-1">Didn't receive the email?</p>
+            <ul class="list-disc list-inside space-y-1 text-xs">
+              <li>Check your spam or junk folder</li>
+              <li>Make sure you entered the correct email address</li>
+              <li>Wait a few minutes for the email to arrive</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario para reenviar -->
+      <form class="space-y-4" (submit)="resendVerificationEmail($event)" [formGroup]="formGroup">
+        <app-text
+          formControlName="email"
+          type="email"
+          placeholder="email@email.com"
+          autocomplete="email"
+          label="Email Address"
+          id="email"
+          name="email"
+          [disabled]="isLoading || cooldownSeconds > 0"
+        />
+
+        <button
+          type="submit"
+          class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          [disabled]="formGroup.invalid || isLoading || cooldownSeconds > 0"
+        >
+          @if (isLoading) {
+            <span class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Sending...
+            </span>
+          } @else if (cooldownSeconds > 0) {
+            <span>Resend in {{ cooldownSeconds }}s</span>
+          } @else {
+            <span>Resend Verification Email</span>
+          }
+        </button>
+      </form>
+
+      <!-- Acciones adicionales -->
+      <div class="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button
+          type="button"
+          class="w-full text-indigo-600 hover:text-indigo-700 font-medium text-sm transition-colors"
+          (click)="goToDashboard()"
+        >
+          Continue to Dashboard
+        </button>
+        
+        <button
+          type="button"
+          class="w-full text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 font-medium text-sm transition-colors"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+      </div>
+    </main>
+  </article>
+</section>
