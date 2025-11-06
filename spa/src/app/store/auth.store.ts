@@ -6,6 +6,7 @@ export interface AuthState {
   email: string | null;
   token: string | null;
   isAuthenticated: boolean;
+  isEmailVerified: boolean;
   loginLoading: boolean;
   error: string | null;
 }
@@ -17,6 +18,7 @@ export const AuthStore = signalStore(
     email: null,
     token: null,
     isAuthenticated: false,
+    isEmailVerified: false,
     loginLoading: false,
     error: null
   }),
@@ -24,14 +26,18 @@ export const AuthStore = signalStore(
     isLoggedIn: computed(() => store.isAuthenticated() && !!store.token()),
     currentUser: computed(() => store.userId()),
     currentUserEmail: computed(() => store.email()),
+    needsEmailVerification: computed(() => 
+      store.isAuthenticated() && !store.isEmailVerified()
+    ),
   })),
   withMethods((store) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
-    loginSuccess: (userId: number, token: string, email: string) => patchState(store, {
+    loginSuccess: (userId: number, token: string, email: string, isEmailVerified: boolean = false) => patchState(store, {
       userId,
       email,
       token,
       isAuthenticated: true,
+      isEmailVerified: isEmailVerified,
       loginLoading: false,
       error: null
     }),
@@ -54,17 +60,22 @@ export const AuthStore = signalStore(
       loginLoading: false,
       error: null
     }),
-    
+
+    updateEmailVerificationStatus: (isVerified: boolean) => {
+      patchState(store, { isEmailVerified: isVerified });
+    },
+
     // Restaurar sesión desde localStorage
-    restoreSession: (userId: number, token: string, email: string) => patchState(store, {
+    restoreSession: (userId: number, token: string, email: string, isEmailVerified: boolean) => patchState(store, {
       userId,
       email,
       token,
       isAuthenticated: true,
       loginLoading: false,
-      error: null
+      error: null,
+      isEmailVerified
     }),
-    
+
     clearError: () => patchState(store, { error: null })
   }))
 );

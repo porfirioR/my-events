@@ -1,7 +1,7 @@
 export class ResetPasswordApiRequest {
   constructor(
     public email: string,
-    public code: string,
+    public token: string,
     public newPassword: string,
   ) { }
 }

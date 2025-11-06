@@ -38,8 +38,8 @@ export class HeaderComponent {
     this.localService.cleanCredentials()
     this.transactionStore.clearTransactions()
     this.collaboratorStore.clearCollaborators()
-    this.alertService.showSuccess('Good bye.')
     this.authStore.logout()
+    this.alertService.showSuccess('Good bye.')
     this.profile?.ngOnDestroy()
     setTimeout(() => {
       this.router.navigate(['/login'])

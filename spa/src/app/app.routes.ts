@@ -15,6 +15,8 @@ import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { CollaboratorMatchRequestsComponent } from './components/collaborator-match-requests/collaborator-match-requests.component';
 import { CollaboratorInvitationsComponent } from './components/collaborator-invitations/collaborator-invitations.component';
+import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
+import { VerifyEmailPendingComponent } from './components/verify-email-pending/verify-email-pending.component';
 
 export const routes: Routes = [
   {
@@ -128,31 +130,40 @@ export const routes: Routes = [
       //   canActivate: [authGuard]
       // },
       
-      // Rutas de autenticación (guest)
-      {
-        path: 'login',
-        title: 'Login',
-        loadComponent: () => LoginComponent,
-        canActivate: [guestGuard]
-      },
-      {
-        path: 'signup',
-        title: 'Signup',
-        loadComponent: () => SignupComponent,
-        canActivate: [guestGuard]
-      },
-      {
-        path: 'forgot-password',
-        title: 'Forgot password',
-        loadComponent: () => ForgotPasswordComponent,
-        canActivate: [guestGuard]
-      },
-      {
-        path: 'reset-password',
-        title: 'Reset password',
-        loadComponent: () => ResetPasswordComponent,
-        canActivate: [guestGuard]
-      },
+      
     ]
-  }
+  },
+  // Rutas de autenticación (guest)
+  {
+    path: 'login',
+    title: 'Login',
+    loadComponent: () => LoginComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'signup',
+    title: 'Signup',
+    loadComponent: () => SignupComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'forgot-password',
+    title: 'Forgot password',
+    loadComponent: () => ForgotPasswordComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'reset-password',
+    title: 'Reset password',
+    loadComponent: () => ResetPasswordComponent,
+    canActivate: [guestGuard]
+  },
+  { 
+    path: 'verify-email',
+    loadComponent: () => VerifyEmailComponent
+  },
+  { 
+    path: 'verify-email-pending',
+    loadComponent: () => VerifyEmailPendingComponent
+  },
 ];

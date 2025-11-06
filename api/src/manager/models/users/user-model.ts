@@ -3,6 +3,7 @@ export class UserModel {
     public id: number,
     public email: string,
     public dateCreated: Date,
-    public token: string
+    public token: string,
+    public isEmailVerified: boolean
   ) {}
 }

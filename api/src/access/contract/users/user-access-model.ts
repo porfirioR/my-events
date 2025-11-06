@@ -4,6 +4,7 @@ export class UserAccessModel {
     public email: string,
     public dateCreated: Date,
     public password: string,
-    public code?: string
+    public isEmailVerified: boolean,
+    public emailVerifiedAt: Date | null
   ) {}
 }

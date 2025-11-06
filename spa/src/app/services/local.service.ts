@@ -7,6 +7,7 @@ export class LocalService {
   private readonly emailKey = 'email'
   private readonly userKey = 'user'
   private readonly jwtToken = 'jwt'
+  private readonly isEmailVerified = 'isEmailVerified'
 
   public getEmail = (): string | null => localStorage.getItem(this.emailKey) ?? ''
   public setEmail = (email: string): void => localStorage.setItem(this.emailKey, email)
@@ -18,4 +19,10 @@ export class LocalService {
   public setJwtToken = (token: string): void => localStorage.setItem(this.jwtToken, token)
 
   public cleanCredentials = (): void => localStorage.clear()
+
+  public setEmailVerified = (isVerified: boolean): void => localStorage.setItem(this.isEmailVerified, JSON.stringify(isVerified));
+  public getEmailVerified = (): boolean => {
+    const value = localStorage.getItem(this.isEmailVerified);
+    return value ? JSON.parse(value) : false;
+  };
 }

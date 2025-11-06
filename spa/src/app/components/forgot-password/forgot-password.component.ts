@@ -29,23 +29,22 @@ export class ForgotPasswordComponent {
   }
 
   protected sendCode = (event: Event): void => {
-    event.preventDefault()
+    event.preventDefault();
     if (this.formGroup.invalid) {
-      return
+      return;
     }
-    const email = this.formGroup.value.email!
-    this.showMessage = false
+    const email = this.formGroup.value.email!;
+    this.showMessage = false;
     this.userApiService.forgotPassword(new ForgotPasswordApiRequest(email)).subscribe({
-      next: (value) => {
-        if (value) {
-          this.alertService.showSuccess('Code was sended correctly.')
-          this.showMessage = true
-        }
-      }, error: (e) => {
-        this.showMessage = false
-        throw e
-      }
-    })
-  }
+      next: (response) => {
+        this.alertService.showSuccess(response.message);
+        this.showMessage = true;
+      },
+      error: (e) => {
+        this.showMessage = false;
+        this.alertService.showError('An error occurred. Please try again.');
+      },
+    });
+  };
 
 }
