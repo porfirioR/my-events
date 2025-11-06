@@ -1,5 +1,8 @@
-<app-header/>
-<main class="pt-16">
+@if (authStore.isLoggedIn() && !authStore.needsEmailVerification()) {
+  <app-header/>
+  <main class="pt-16">
+    <router-outlet></router-outlet>
+  </main>
+} @else {
   <router-outlet></router-outlet>
-</main>
-<app-email-verification-banner />
+}

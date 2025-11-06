@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core'
-import { RouterOutlet } from '@angular/router'
+import { Router, RouterOutlet } from '@angular/router'
 // import { SwPush } from '@angular/service-worker'
 // import { environment } from '../environments/environment'
 import { LocalService, 
@@ -8,28 +8,34 @@ import { LocalService,
 // import { PushTokenApiRequest } from './models/api'
 import { useAuthStore } from './store'
 import { HeaderComponent } from "./components/header/header.component";
-import { EmailVerificationBannerComponent } from "./components/email-verification-banner/email-verification-banner.component";
+import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-root',
   imports: [
     RouterOutlet,
     HeaderComponent,
-    EmailVerificationBannerComponent
-  ],
+    CommonModule
+],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
   // private key: string
-  private authStore = useAuthStore();
+  protected authStore = useAuthStore();
   private localService = inject(LocalService);
+  private router = inject(Router);
 
   constructor(
     // private swPush: SwPush,
     // private readonly userApiService: UserApiService,
   ) {
-    this.initializeAuth();
+    if (this.authStore.needsEmailVerification()) {
+      this.goToVerification()
+    } else {
+      this.initializeAuth();
+    }
 
     // this.key = environment.webPush.publicKey
     // this.subscribeToNotification()
@@ -60,5 +66,10 @@ export class AppComponent {
         this.authStore.logout();
       }
     }
+  }
+
+  
+  protected goToVerification(): void {
+    this.router.navigate(['/verify-email-pending']);
   }
 }

@@ -15,6 +15,7 @@ import {
   UserRequest,
   VerifyEmailRequest,
   ResendVerificationEmailRequest,
+  WebPushModel,
 } from '../models/users';
 import { TokenGenerator } from '../../utility/helpers/token-generator.helper';
 import { AUTH_CONFIG } from '../../utility/constants';
@@ -270,9 +271,7 @@ export class UserManagerService {
   /**
    * Resetea la contraseña usando el token
    */
-  public resetUserPassword = async (
-    request: ResetUserPasswordRequest
-  ): Promise<SignModel> => {
+  public resetUserPassword = async (request: ResetUserPasswordRequest): Promise<SignModel> => {
     // Validar token
     const tokenModel = await this.passwordResetTokenAccessService.getValidToken(
       request.token
@@ -321,16 +320,20 @@ export class UserManagerService {
       updatedUser.isEmailVerified
     );
   };
+  public getWebPushToken = async (): Promise<WebPushModel> => {
+    const accessModel = await this.userAccessService.getWebPushToken();
+    const model = new WebPushModel(accessModel.id, accessModel.endpoint, accessModel.expirationTime, accessModel.keys)
+    return model;
+  }
 
   /**
    * Mapea AccessModel a UserModel
    */
-  private getUserModel = (accessModel: any): UserModel =>
-    new UserModel(
-      accessModel.id,
-      accessModel.email,
-      accessModel.dateCreated,
-      '', // token vacío (se llena en endpoints específicos)
-      accessModel.isEmailVerified
-    );
+  private getUserModel = (accessModel: any): UserModel => new UserModel(
+    accessModel.id,
+    accessModel.email,
+    accessModel.dateCreated,
+    '', // token vacío (se llena en endpoints específicos)
+    accessModel.isEmailVerified
+  );
 }

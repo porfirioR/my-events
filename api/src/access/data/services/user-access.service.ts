@@ -5,8 +5,10 @@ import {
   CreateUserAccessRequest,
   ResetUserAccessRequest,
   UserAccessModel,
+  WebPushTokenAccessModel,
 } from '../../../access/contract/users';
 import { BaseAccessService, DbContextService } from '.';
+import { WebPushTokenEntity } from '../entities';
 
 @Injectable()
 export class UserAccessService extends BaseAccessService {
@@ -112,6 +114,14 @@ export class UserAccessService extends BaseAccessService {
     if (error) throw new Error(error.message);
     return this.getUser(data);
   };
+  public getWebPushToken = async (): Promise<WebPushTokenAccessModel> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.WebPushToken)
+      .select()
+      .single<WebPushTokenEntity>()
+    if (error) throw new Error(error.message)
+    return new WebPushTokenAccessModel(data.id, data.endpoint, data.expirationtime, JSON.parse(data.keys), data.email);
+  }
 
   private getUser = (entity: UserEntity): UserAccessModel =>
     new UserAccessModel(

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AllExceptionsFilter } from './filters/exception.filter';
 import { ManagerModule } from '../manager/manager.module';
 import { LoginMiddleware } from './middleware/login.middleware';
@@ -10,19 +11,23 @@ import { SignupMiddleware } from './middleware/signup.middleware';
 import { ResetPasswordMiddleware } from './middleware/reset-password.middleware';
 import { PrivateEndpointGuard } from './guards/private-endpoint.guard';
 import { TasksService } from './services/tasks.service';
+import { CurrentUserService } from './services/current-user.service';
 import { UsersController } from './controllers/users.controller';
 import { EventsController } from './controllers/events.controller';
 import { PaymentController } from './controllers/payments.controller';
 import { SavingsController } from './controllers/savings.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
-import { CurrentUserService } from './services/current-user.service';
-import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController } from './controllers';
 import { TransactionController } from './controllers/transaction.controller';
+import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController } from './controllers';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     ManagerModule,
+    CacheModule.register({
+      ttl: 3600, // 1 hour in seconds (equals that JWT)
+      max: 100, // max 100 item in cache
+    }),
   ],
   controllers: [
     UsersController,

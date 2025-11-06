@@ -130,39 +130,40 @@ export const routes: Routes = [
       //   canActivate: [authGuard]
       // },
       
-      // Rutas de autenticación (guest)
-      {
-        path: 'login',
-        title: 'Login',
-        loadComponent: () => LoginComponent,
-        canActivate: [guestGuard]
-      },
-      {
-        path: 'signup',
-        title: 'Signup',
-        loadComponent: () => SignupComponent,
-        canActivate: [guestGuard]
-      },
-      {
-        path: 'forgot-password',
-        title: 'Forgot password',
-        loadComponent: () => ForgotPasswordComponent,
-        canActivate: [guestGuard]
-      },
-      {
-        path: 'reset-password',
-        title: 'Reset password',
-        loadComponent: () => ResetPasswordComponent,
-        canActivate: [guestGuard]
-      },
-      { 
-        path: 'verify-email',
-        loadComponent: () => VerifyEmailComponent
-      },
-      { 
-        path: 'verify-email-pending',
-        loadComponent: () => VerifyEmailPendingComponent
-      },
+      
     ]
-  }
+  },
+  // Rutas de autenticación (guest)
+  {
+    path: 'login',
+    title: 'Login',
+    loadComponent: () => LoginComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'signup',
+    title: 'Signup',
+    loadComponent: () => SignupComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'forgot-password',
+    title: 'Forgot password',
+    loadComponent: () => ForgotPasswordComponent,
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'reset-password',
+    title: 'Reset password',
+    loadComponent: () => ResetPasswordComponent,
+    canActivate: [guestGuard]
+  },
+  { 
+    path: 'verify-email',
+    loadComponent: () => VerifyEmailComponent
+  },
+  { 
+    path: 'verify-email-pending',
+    loadComponent: () => VerifyEmailPendingComponent
+  },
 ];

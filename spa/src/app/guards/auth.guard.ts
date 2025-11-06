@@ -6,6 +6,11 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authStore = useAuthStore();
   const router = inject(Router);
 
+  if (authStore.needsEmailVerification()) {
+    router.navigate(['/verify-email-pending']);
+    return false;
+  }
+
   if (authStore.isLoggedIn()) {
     return true;
   }

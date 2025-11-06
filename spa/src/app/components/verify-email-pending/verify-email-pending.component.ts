@@ -69,13 +69,12 @@ export class VerifyEmailPendingComponent {
     }, 1000);
   }
 
-  protected goToDashboard(): void {
-    this.router.navigate(['']);
-  }
-
   protected logout(): void {
     this.localService.cleanCredentials();
-    this.router.navigate(['/login']);
+    this.alertService.showSuccess('Good bye.')
+    setTimeout(() => {
+      this.router.navigate(['/login']);
+    }, 3000);
   }
 
   ngOnDestroy(): void {
