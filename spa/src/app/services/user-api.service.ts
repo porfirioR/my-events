@@ -77,9 +77,7 @@ export class UserApiService {
   /**
    * Solicita reset de contraseña
    */
-  public forgotPassword = (
-    request: ForgotPasswordApiRequest
-  ): Observable<{ message: string }> =>
+  public forgotPassword = (request: ForgotPasswordApiRequest): Observable<{ message: string }> =>
     this.httpClient.post<{ message: string }>(
       `${this.section}/forgot-password`,
       request
@@ -103,7 +101,6 @@ export class UserApiService {
     this.localService.setEmail(user.email);
     this.localService.setJwtToken(user.token);
     this.localService.setUserId(user.id);
-    // NUEVO: Guardar estado de verificación
     this.localService.setEmailVerified(user.isEmailVerified);
   };
 }

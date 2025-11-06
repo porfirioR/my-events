@@ -1,5 +1,4 @@
-// src/app/components/verify-email/verify-email.component.ts
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AlertService, UserApiService } from '../../services';
@@ -19,15 +18,15 @@ export class VerifyEmailComponent implements OnInit {
   private alertService = inject(AlertService);
   private authStore = useAuthStore();
 
-  protected isVerifying = true;
-  protected verificationSuccess = false;
+  protected isVerifying = signal(true);
+  protected verificationSuccess = signal(false);
   protected errorMessage: string | null = null;
 
   ngOnInit(): void {
     const token = this.activeRoute.snapshot.queryParams['token'];
 
     if (!token) {
-      this.isVerifying = false;
+      this.isVerifying.set(false);
       this.errorMessage = 'Invalid verification link. No token provided.';
       return;
     }
@@ -40,8 +39,8 @@ export class VerifyEmailComponent implements OnInit {
 
     this.userApiService.verifyEmail(request).subscribe({
       next: (user) => {
-        this.isVerifying = false;
-        this.verificationSuccess = true;
+        this.isVerifying.set(false);
+        this.verificationSuccess.set(true);
         this.authStore.loginSuccess(
           user.id,
           user.token,
@@ -56,19 +55,12 @@ export class VerifyEmailComponent implements OnInit {
         }, 2000);
       },
       error: (error) => {
-        this.isVerifying = false;
-        this.verificationSuccess = false;
+        this.isVerifying.set(false);
+        this.verificationSuccess.set(false)
         this.errorMessage = 'Invalid or expired verification token. Please request a new one.';
         this.alertService.showError(this.errorMessage);
       },
     });
   }
 
-  protected goToResend(): void {
-    this.router.navigate(['/verify-email-pending']);
-  }
-
-  protected goToLogin(): void {
-    this.router.navigate(['/login']);
-  }
 }

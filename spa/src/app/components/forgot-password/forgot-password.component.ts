@@ -37,7 +37,6 @@ export class ForgotPasswordComponent {
     this.showMessage = false;
     this.userApiService.forgotPassword(new ForgotPasswordApiRequest(email)).subscribe({
       next: (response) => {
-        // ACTUALIZAR: El backend siempre responde con mensaje de éxito
         this.alertService.showSuccess(response.message);
         this.showMessage = true;
       },

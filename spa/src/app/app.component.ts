@@ -31,11 +31,7 @@ export class AppComponent {
     // private swPush: SwPush,
     // private readonly userApiService: UserApiService,
   ) {
-    if (this.authStore.needsEmailVerification()) {
-      this.goToVerification()
-    } else {
-      this.initializeAuth();
-    }
+    this.initializeAuth();
 
     // this.key = environment.webPush.publicKey
     // this.subscribeToNotification()
@@ -57,10 +53,11 @@ export class AppComponent {
     const token = this.localService.getJwtToken();
     const userString = this.localService.getUserId();
     const email = this.localService.getEmail();
+    const isEmailVerified = this.localService.getEmailVerified();
 
     if (token && userString) {
       try {
-        this.authStore.restoreSession(userString, token, email!);
+        this.authStore.restoreSession(userString, token, email!, isEmailVerified);
       } catch (error) {
         this.localService.cleanCredentials();
         this.authStore.logout();

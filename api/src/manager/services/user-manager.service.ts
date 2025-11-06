@@ -40,9 +40,7 @@ export class UserManagerService {
   /**
    * Registra un nuevo usuario y envía email de verificación
    */
-  public registerUser = async (
-    request: UserRequest
-  ): Promise<{ user: SignModel; verificationToken: string }> => {
+  public registerUser = async (request: UserRequest): Promise<{ user: SignModel; verificationToken: string }> => {
     // Hashear contraseña
     const password = await this.authService.getHash(request.password);
 

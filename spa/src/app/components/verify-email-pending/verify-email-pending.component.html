@@ -1,11 +1,9 @@
 <section class="flex flex-col items-center justify-center px-6 py-4 mx-auto lg:py-0 min-h-screen">
-  <h1 class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-    My Events
-  </h1>
-
   <article class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700 border-indigo-500 ring-indigo-500 ring-1">
     <main class="px-6 py-8 space-y-6">
-      <!-- Icono de email -->
+      <h1 class=" uppercase font-bold flex items-start mb-6 text-2xl text-gray-900 dark:text-white">
+        My Events
+      </h1>
       <div class="flex justify-center">
         <div class="rounded-full bg-indigo-100 dark:bg-indigo-900 p-4">
           <i class="fas fa-envelope text-5xl text-indigo-600 dark:text-indigo-400"></i>
@@ -46,15 +44,15 @@
           label="Email Address"
           id="email"
           name="email"
-          [disabled]="isLoading || cooldownSeconds > 0"
+          [disabled]="isLoading() || coolDownSeconds() > 0"
         />
 
         <button
           type="submit"
-          class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          [disabled]="formGroup.invalid || isLoading || cooldownSeconds > 0"
+          class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          [disabled]="formGroup.invalid || isLoading() || coolDownSeconds() > 0"
         >
-          @if (isLoading) {
+          @if (isLoading()) {
             <span class="flex items-center justify-center">
               <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -62,8 +60,8 @@
               </svg>
               Sending...
             </span>
-          } @else if (cooldownSeconds > 0) {
-            <span>Resend in {{ cooldownSeconds }}s</span>
+          } @else if (coolDownSeconds() > 0) {
+            <span>Resend in {{ coolDownSeconds() }}s</span>
           } @else {
             <span>Resend Verification Email</span>
           }

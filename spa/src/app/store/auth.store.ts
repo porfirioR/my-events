@@ -66,13 +66,14 @@ export const AuthStore = signalStore(
     },
 
     // Restaurar sesión desde localStorage
-    restoreSession: (userId: number, token: string, email: string) => patchState(store, {
+    restoreSession: (userId: number, token: string, email: string, isEmailVerified: boolean) => patchState(store, {
       userId,
       email,
       token,
       isAuthenticated: true,
       loginLoading: false,
-      error: null
+      error: null,
+      isEmailVerified
     }),
 
     clearError: () => patchState(store, { error: null })

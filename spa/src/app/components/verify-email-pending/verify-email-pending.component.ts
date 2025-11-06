@@ -1,5 +1,4 @@
-// src/app/components/verify-email-pending/verify-email-pending.component.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -7,6 +6,7 @@ import { AlertService, LocalService, UserApiService } from '../../services';
 import { TextComponent } from '../inputs/text/text.component';
 import { ResendVerificationEmailApiRequest } from '../../models/api/auth';
 import { ResendFormGroup } from '../../models/forms';
+import { useAuthStore } from '../../store';
 
 @Component({
   selector: 'app-verify-email-pending',
@@ -19,11 +19,12 @@ export class VerifyEmailPendingComponent {
   private userApiService = inject(UserApiService);
   private alertService = inject(AlertService);
   private localService = inject(LocalService);
+  private authStore = useAuthStore();
 
   protected formGroup: FormGroup<ResendFormGroup>;
-  protected isLoading = false;
-  protected cooldownSeconds = 0;
-  private cooldownInterval: any;
+  protected isLoading = signal(false);
+  protected coolDownSeconds = signal(0);
+  private coolDownInterval: any;
 
   constructor() {
     const userEmail = this.localService.getEmail() || '';
@@ -33,24 +34,30 @@ export class VerifyEmailPendingComponent {
     });
   }
 
+  ngOnDestroy(): void {
+    if (this.coolDownInterval) {
+      clearInterval(this.coolDownInterval);
+    }
+  }
+
   protected resendVerificationEmail = (event: Event): void => {
     event.preventDefault();
 
-    if (this.formGroup.invalid || this.isLoading || this.cooldownSeconds > 0) {
+    if (this.formGroup.invalid || this.isLoading() || this.coolDownSeconds() > 0) {
       return;
     }
 
-    this.isLoading = true;
+    this.isLoading.set(true);
     const request = new ResendVerificationEmailApiRequest(this.formGroup.value.email!);
 
     this.userApiService.resendVerificationEmail(request).subscribe({
       next: (response) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.alertService.showSuccess(response.message);
         this.startCooldown(60); // 60 segundos de cooldown
       },
       error: (error) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         const errorMessage = error.error?.message || 'Failed to resend verification email. Please try again.';
         this.alertService.showError(errorMessage);
       },
@@ -58,28 +65,23 @@ export class VerifyEmailPendingComponent {
   };
 
   private startCooldown(seconds: number): void {
-    this.cooldownSeconds = seconds;
+    this.coolDownSeconds.set(seconds);
 
-    this.cooldownInterval = setInterval(() => {
-      this.cooldownSeconds--;
+    this.coolDownInterval = setInterval(() => {
+      const coolDownSeconds = this.coolDownSeconds()
+      this.coolDownSeconds.set(coolDownSeconds-1);
 
-      if (this.cooldownSeconds <= 0) {
-        clearInterval(this.cooldownInterval);
+      if (this.coolDownSeconds() <= 0) {
+        clearInterval(this.coolDownInterval);
       }
     }, 1000);
   }
 
   protected logout(): void {
     this.localService.cleanCredentials();
+    this.authStore.logout()
     this.alertService.showSuccess('Good bye.')
-    setTimeout(() => {
-      this.router.navigate(['/login']);
-    }, 3000);
+    this.router.navigate(['/login']);
   }
 
-  ngOnDestroy(): void {
-    if (this.cooldownInterval) {
-      clearInterval(this.cooldownInterval);
-    }
-  }
 }
