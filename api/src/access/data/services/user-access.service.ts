@@ -31,7 +31,7 @@ export class UserAccessService extends BaseAccessService {
       [DatabaseColumns.Email]: accessRequest.email,
       [DatabaseColumns.DateCreated]: new Date(),
       [DatabaseColumns.Password]: accessRequest.password,
-      [DatabaseColumns.IsEmailVerified]: false, // NUEVO
+      [DatabaseColumns.IsEmailVerified]: false,
     };
 
     const { data, error } = await this.dbContext

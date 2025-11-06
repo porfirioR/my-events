@@ -1,4 +1,3 @@
-// src/manager/services/user-manager.service.ts (ACTUALIZAR COMPLETO)
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserAccessService } from '../../access/data/services/user-access.service';
 import { PasswordResetTokenAccessService } from '../../access/data/services/password-reset-token-access.service';

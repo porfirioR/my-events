@@ -1,4 +1,3 @@
-// src/access/mail/mail-access.service.ts (ACTUALIZAR)
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 

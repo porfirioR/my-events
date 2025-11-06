@@ -1,5 +1,4 @@
-// src/access/data/services/password-reset-token-access.service.ts
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseAccessService } from './base-access.service';
 import { DbContextService } from './db-context.service';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';

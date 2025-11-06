@@ -1,4 +1,3 @@
-// src/manager/services/mail-manager.service.ts (ACTUALIZAR COMPLETO)
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailAccessService } from '../../access/mail';
