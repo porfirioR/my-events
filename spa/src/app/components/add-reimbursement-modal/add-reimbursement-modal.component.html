@@ -5,7 +5,7 @@
       <app-text formControlName="amount" type="number" label="Reimbursement Amount" id="amount" name="amount" />
       <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
 
-      <div class="alert alert-info">
+      <div class="alert alert-info alert-soft">
         <i class="fas fa-info-circle"></i>
         <span>Transaction total: {{formatCurrency(modalData()?.maxAmount ?? 0)}}</span>
       </div>

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AlertService, UserApiService } from '../../services';
+import { AlertService, LocalService, UserApiService } from '../../services';
 import { useAuthStore } from '../../store';
 import { VerifyEmailApiRequest } from '../../models/api/auth';
 
@@ -17,6 +17,7 @@ export class VerifyEmailComponent implements OnInit {
   private userApiService = inject(UserApiService);
   private alertService = inject(AlertService);
   private authStore = useAuthStore();
+  private localService = inject(LocalService);
 
   protected isVerifying = signal(true);
   protected verificationSuccess = signal(false);
@@ -41,15 +42,10 @@ export class VerifyEmailComponent implements OnInit {
       next: (user) => {
         this.isVerifying.set(false);
         this.verificationSuccess.set(true);
-        this.authStore.loginSuccess(
-          user.id,
-          user.token,
-          user.email,
-          user.isEmailVerified
-        );
+        this.authStore.logout();
+        this.localService.cleanCredentials();
         this.alertService.showSuccess('Email verified successfully!');
 
-        // Redirigir después de 2 segundos
         setTimeout(() => {
           this.router.navigate(['']);
         }, 2000);

@@ -23,7 +23,7 @@ export class HeaderComponent {
   private localService = inject(LocalService)
   private alertService = inject(AlertService)
   protected currentTheme: ModeType = 'light'
-  protected currentUserEmail = this.authStore.currentUserEmail
+  protected currentUserName = this.authStore.currentUserName
   protected isAuthenticated = this.authStore.isAuthenticated;
 
   constructor() {

@@ -3,13 +3,13 @@
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center gap-3">
-          <button
+          <a
             type="button"
             class="btn btn-sm btn-ghost btn-circle"
             [routerLink]="['/collaborators']"
           >
             <i class="fas fa-arrow-left" aria-hidden="true"></i>
-          </button>
+          </a>
           <h2 id="match-requests-heading" class="text-xl font-semibold text-base-content">
             Match Requests
           </h2>
@@ -62,10 +62,10 @@
           <div>
             <ul class="space-y-4" role="list">
               @for (request of receivedRequests; track request.id) {
-                <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+                <li class="bg-base-200 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
                   <article class="flex items-center justify-between">
                     <div class="flex items-center gap-4 flex-grow">
-                      <figure class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                      <figure class="hidden flex-shrink-0 w-12 h-12 rounded-full bg-primary/20 md:flex items-center justify-center text-primary font-semibold">
                         {{ request.requesterUserEmail.charAt(0).toUpperCase() }}
                       </figure>
                       <div class="flex-grow min-w-0">
@@ -73,7 +73,10 @@
                           {{ request.requesterUserEmail }}
                         </h3>
                         <p class="text-sm text-base-content/70">
-                          Wants to match with: {{ request.targetCollaboratorEmail }}
+                          Wants to match with:
+                          <span>
+                            {{ request.targetCollaboratorEmail }}
+                          </span>
                         </p>
                         <p class="text-xs text-base-content/60 mt-1">
                           They registered you as: <span class="font-medium">{{ request.requesterCollaboratorName }}</span>
@@ -188,7 +191,7 @@
                       id="collaboratorId"
                       label="Unlinked Collaborator"
                       name="collaborator"
-                      [list]="internalCollaboratorList"
+                      [list]="internalCollaborators()"
                       [disabled]="isLoading()"
                     />
 
@@ -204,7 +207,7 @@
                     />
                   </div>
 
-                  <div class="alert alert-info">
+                  <div class="alert alert-info alert-soft">
                     <i class="fas fa-info-circle" aria-hidden="true"></i>
                     <div>
                       <h4 class="font-semibold">About Match Requests</h4>
@@ -262,7 +265,7 @@
     <div class="modal-box max-w-md">
       <h3 class="font-bold text-lg mb-4">Select a Collaborator</h3>
 
-      <div class="alert alert-info mb-4">
+      <div class="alert alert-info alert-soft mb-4">
         <i class="fas fa-info-circle"></i>
         <div class="text-sm">
           <p class="font-semibold">
@@ -270,7 +273,9 @@
           </p>
           <p class="mt-2">
             They registered you as: 
-            <strong>{{ pendingRequestToAccept?.requesterCollaboratorName }}</strong>
+          </p>
+          <p class="text-dark">
+            {{ pendingRequestToAccept?.requesterCollaboratorName }}
           </p>
           <p class="mt-2">
             Select one of your unlinked collaborators to assign the email 
@@ -278,46 +283,41 @@
           </p>
         </div>
       </div>
-
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text font-semibold">Choose an Unlinked Collaborator</span>
-        </label>
-        <select 
-          class="select select-bordered w-full"
-          [(ngModel)]="selectedCollaboratorForAccept">
-          <option [value]="null" disabled>-- Select a collaborator --</option>
-          @for (internalCollaborator of internalCollaboratorsForAcceptList; track internalCollaborator.key) {
-            <option [value]="internalCollaborator.key">
-              {{ internalCollaborator.value }}
-            </option>
-          }
-        </select>
-        <div class="label">
+      <form [formGroup]="formGroup">
+        <app-select-input
+          formControlName="collaboratorId"
+          id="collaboratorId"
+          label="Collaborator"
+          name="collaborator"
+          [list]="internalCollaborators()"
+          [disabled]="isLoading()"
+        />
+        <div class="text-ellipsis">
           <span class="label-text-alt text-base-content/60">
             This collaborator will be assigned the email: 
             <strong>{{ pendingRequestToAccept?.requesterUserEmail }}</strong>
           </span>
         </div>
-      </div>
-
-      @if (internalCollaborators.length === 0) {
-        <div class="alert alert-warning mt-4">
+      </form>
+      @if (internalCollaborators().length === 0) {
+        <div class="alert alert-warning alert-soft mt-4">
           <i class="fas fa-exclamation-triangle"></i>
           <span>You need to create an unlinked collaborator first.</span>
         </div>
       }
 
-      <div class="modal-action">
-        <button 
-          class="btn btn-ghost" 
+      <footer class="modal-action flex justify-between items-center pt-6 gap-4">
+        <button
+          class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
           (click)="cancelCollaboratorSelection()"
-          [disabled]="isLoading()">
+          [disabled]="isLoading()"
+        >
+          <i class="fas fa-arrow-left text-sm"></i>
           Cancel
         </button>
         <button 
           class="btn btn-primary"
-          [disabled]="!selectedCollaboratorForAccept || isLoading()"
+          [disabled]="!formGroup.value.collaboratorId || isLoading()"
           (click)="confirmAcceptWithCollaborator()">
           @if (isLoading()) {
             <span class="loading loading-spinner loading-xs"></span>
@@ -327,7 +327,7 @@
             Accept & Assign
           }
         </button>
-      </div>
+      </footer>
     </div>
   </div>
 }
