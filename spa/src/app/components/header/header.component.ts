@@ -23,7 +23,7 @@ export class HeaderComponent {
   private localService = inject(LocalService)
   private alertService = inject(AlertService)
   protected currentTheme: ModeType = 'light'
-  protected currentUserEmail = this.authStore.currentUserEmail
+  protected currentUserName = this.authStore.currentUserName
   protected isAuthenticated = this.authStore.isAuthenticated;
 
   constructor() {
@@ -40,15 +40,14 @@ export class HeaderComponent {
     this.collaboratorStore.clearCollaborators()
     this.authStore.logout()
     this.alertService.showSuccess('Good bye.')
+    this.toggleTheme()
     this.profile?.ngOnDestroy()
-    setTimeout(() => {
-      this.router.navigate(['/login'])
-    }, 3000);
+    this.router.navigate([''])
   }
 
   protected toggleTheme = (): void => {
     const html = document.documentElement
-    const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark'
+    const newTheme: ModeType = this.currentTheme === 'dark' ? 'light' : 'dark'
 
     html.setAttribute('data-theme', newTheme)
     localStorage.setItem('theme', newTheme)

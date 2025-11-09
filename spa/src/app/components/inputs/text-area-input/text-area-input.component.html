@@ -1,5 +1,5 @@
 <fieldset [ngClass]="ngControl.control?.invalid && ngControl.control?.touched ? 'mb-0': 'mb-6'">
-  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" [for]="name">{{label}}</label>
+  <label class="label-text text-base-content font-medium text-sm transition-colors duration-200 dark:text-white" [for]="name">{{label}}</label>
   <textarea
     [name]="name"
     [placeholder]="label"
@@ -8,13 +8,13 @@
     [formControl]="$any(ngControl).control"
     autocomplete="off"
     class="textarea textarea-bordered textarea-lg textarea-indigo-500
-      px-3 py-2 bg-white border shadow-sm
+      px-3 py-2 border shadow-sm
     placeholder-slate-400
     disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200
       focus:outline-none block w-full rounded-md sm:text-sm
       disabled:shadow-none"
     [ngClass]="{
-      'border-pink-500 focus:border-pink-500 focus:ring-1 ring-pink-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500': ngControl.control?.invalid && ngControl.control?.touched ,
+      'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 text-red-600 dark:border-red-400 dark:text-red-400 dark:focus:border-red-400 dark:focus:ring-red-400/20': ngControl.control?.invalid && ngControl.control?.touched ,
       'focus:border-indigo-500 focus:ring-indigo-500 focus:ring-1': ngControl.control?.valid,
       'border-slate-300': ngControl.control && !ngControl.control.touched
     }"

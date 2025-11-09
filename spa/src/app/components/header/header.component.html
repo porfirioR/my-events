@@ -24,32 +24,37 @@
             </a>
           </li>
           <li>
-            <a [routerLink]="['projects']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['projects']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-project-diagram mr-2"></i>Projects
             </a>
           </li>
           <li>
-            <a [routerLink]="['events']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['events']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-calendar mr-2"></i>Events
             </a>
           </li>
           <li>
-            <a [routerLink]="['finance']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['finance']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-wallet mr-2"></i>Finance
             </a>
           </li>
           <li>
-            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-cogs mr-2"></i>Settings
             </a>
           </li>
           <div class="divider"></div>
           <li>
-            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-question-circle mr-2"></i>Help
             </a>
           </li>
-          <li><a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
+          <li>
+            <a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-sign-out-alt mr-2"></i>
+              Logout
+            </a>
+          </li>
         </ul>
       </div>
     </article>
@@ -64,14 +69,14 @@
         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
           <li>
             <div class="flex flex-col items-start p-2">
-              <span class="font-bold">{{currentUserEmail()}}</span>
+              <span class="font-bold truncate">{{currentUserName()}}</span>
             </div>
           </li>
           <div class=" my-0"></div>
           <li>
             <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="openProfile()"><i class="fas fa-user mr-2"></i>Profile</a>
           </li>
-          <li>
+          <li class="hidden">
             <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-cog mr-2"></i>Settings
             </a>
@@ -87,7 +92,7 @@
           </li>
           <div class="divider my-1"></div>
           <li>
-            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="logOut()">
+            <a class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg" (click)="logOut()">
               <i class="fas fa-sign-out-alt mr-2"></i>Logout
             </a>
           </li>

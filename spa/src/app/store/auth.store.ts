@@ -25,6 +25,7 @@ export const AuthStore = signalStore(
   withComputed((store) => ({
     isLoggedIn: computed(() => store.isAuthenticated() && !!store.token()),
     currentUser: computed(() => store.userId()),
+    currentUserName: computed(() => store.email()?.split('@')[0]),
     currentUserEmail: computed(() => store.email()),
     needsEmailVerification: computed(() => 
       store.isAuthenticated() && !store.isEmailVerified()

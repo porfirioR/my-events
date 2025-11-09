@@ -1,7 +1,7 @@
 // errors/custom-error-handler.ts
 import { ErrorHandler, Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertService } from '../services';
+import { AlertService, LocalService } from '../services';
 import { useAuthStore } from '../store';
 
 @Injectable({
@@ -9,6 +9,7 @@ import { useAuthStore } from '../store';
 })
 export class CustomErrorHandler implements ErrorHandler {
   private alertService = inject(AlertService);
+  private localService = inject(LocalService)
   private router = inject(Router);
   // ✅ Usar AuthStore en lugar de LocalService
   private authStore = useAuthStore();
@@ -39,8 +40,10 @@ export class CustomErrorHandler implements ErrorHandler {
         } else if (error.message) {
           // ✅ Manejar JWT expirado con AuthStore
           if (error.message === 'Invalid Token') {
+            this.localService.cleanCredentials()
             this.authStore.logout();
             this.alertService.showError('Your session has expired. Please login again.');
+            localStorage.setItem('theme', 'light')
             this.router.navigate(['/login']);
             return;
           }

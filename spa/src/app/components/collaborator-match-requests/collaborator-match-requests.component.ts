@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core'; //Agregar signal
+import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core'; //Agregar signal
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -11,7 +11,7 @@ import {
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
 import { AlertService, HelperService } from '../../services';
-import { useLoadingStore } from '../../store';
+import { useCollaboratorStore, useLoadingStore } from '../../store';
 import { TextComponent } from '../inputs/text/text.component';
 import { MatchRequestFormGroup } from '../../models/forms';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
@@ -39,23 +39,23 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   private alertService = inject(AlertService);
   private loadingStore = useLoadingStore();
   private router = inject(Router);
+  private readonly collaboratorStore = useCollaboratorStore();
 
   private externalCollaborators: CollaboratorApiModel[] = [];
-  protected internalCollaborators: CollaboratorApiModel[] = [];
   protected receivedRequests: ReceivedMatchRequestModel[] = [];
   protected sentRequests: CollaboratorMatchRequestModel[] = [];
   protected activeTab: 'received' | 'sent' | 'create' = 'received';
-  protected internalCollaboratorList?: KeyValueViewModel[] = [];
-  
+
   // Estado de carga inicial separado
   protected initialLoading = signal(true);
   protected isLoading = this.loadingStore.isLoading;
 
   protected showCollaboratorSelectionModal = false;
   protected pendingRequestToAccept: ReceivedMatchRequestModel | null = null;
-  protected selectedCollaboratorForAccept: number | null = null;
-  protected internalCollaboratorsForAcceptList: KeyValueViewModel[] = [];
-
+  protected internalCollaborators: Signal<KeyValueViewModel[]> = computed(() => {
+    const linkedCollaborators = this.collaboratorStore.unlinkedCollaborators()
+    return HelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
+  });
   protected formGroup: FormGroup<MatchRequestFormGroup>;
 
   constructor() {
@@ -84,7 +84,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   protected confirmAcceptWithCollaborator = (): void => {
-    if (!this.selectedCollaboratorForAccept || !this.pendingRequestToAccept) {
+    if (!this.formGroup.value.collaboratorId || !this.pendingRequestToAccept) {
       return;
     }
 
@@ -92,13 +92,13 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
     this.matchRequestApiService.acceptMatchRequestWithCollaborator(
       this.pendingRequestToAccept.id,
-      this.selectedCollaboratorForAccept
+      this.formGroup.value.collaboratorId
     ).subscribe({
       next: () => {
         this.alertService.showSuccess('Match request accepted! Email assigned to your collaborator.');
         this.showCollaboratorSelectionModal = false;
         this.pendingRequestToAccept = null;
-        this.selectedCollaboratorForAccept = null;
+        this.formGroup.controls.collaboratorId.setValue(null)
         this.loadAllData();
       },
       error: (error) => {
@@ -111,7 +111,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   protected cancelCollaboratorSelection(): void {
     this.showCollaboratorSelectionModal = false;
     this.pendingRequestToAccept = null;
-    this.selectedCollaboratorForAccept = null;
+    this.formGroup.controls.collaboratorId.setValue(null)
   }
 
   protected cancelRequest(request: CollaboratorMatchRequestModel): void {
@@ -142,7 +142,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       this.formGroup.value.collaboratorId!, 
       this.formGroup.value.targetEmail!
     );
-    
+
     this.matchRequestApiService.createMatchRequest(request).subscribe({
       next: (response) => {
         this.alertService.showSuccess(response.message);
@@ -189,15 +189,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       next: (results) => {
         this.receivedRequests = results.received;
         this.sentRequests = results.sent;
-        this.internalCollaborators = results.internal.filter(c => c.isActive);
-        this.externalCollaborators = results.external.filter(c => c.isActive);
-
-        // Actualizar listas para selects
-        this.internalCollaboratorList = HelperService.convertToList(
-          this.internalCollaborators, 
-          Configurations.Collaborator
-        );
-        this.internalCollaboratorsForAcceptList = this.internalCollaboratorList;
+        this.externalCollaborators = results.external.filter(x => x.isActive);
 
         if (isInitial) {
           this.initialLoading.set(false);
@@ -235,13 +227,13 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   private showCollaboratorSelection = (request: ReceivedMatchRequestModel): void => {
-    if (this.internalCollaborators.length === 0) {
+    if (this.internalCollaborators().length === 0) {
       this.alertService.showError('You need to create an internal collaborator first to accept this invitation.');
       return;
     }
 
     this.pendingRequestToAccept = request;
-    this.selectedCollaboratorForAccept = null;
+    this.formGroup.controls.collaboratorId.setValue(null)
     this.showCollaboratorSelectionModal = true;
   }
 }
