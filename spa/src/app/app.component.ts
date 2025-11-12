@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core'
 import { Router, RouterOutlet } from '@angular/router'
 // import { SwPush } from '@angular/service-worker'
 // import { environment } from '../environments/environment'
-import { LocalService, 
+import { LocalService, ThemeService, 
   // UserApiService 
 } from './services'
 // import { PushTokenApiRequest } from './models/api'
@@ -26,6 +26,7 @@ export class AppComponent {
   protected authStore = useAuthStore();
   private localService = inject(LocalService);
   private router = inject(Router);
+  private themeService = inject(ThemeService);
 
   constructor(
     // private swPush: SwPush,
