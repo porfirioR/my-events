@@ -43,15 +43,16 @@ export class UpsertTransactionComponent implements OnInit {
   private transaction: TransactionApiModel | undefined;
 
   // Signals
-  isSubmitting = signal<boolean>(false);
-  errorMessage = signal<string | null>(null);
-  customUserAmount = signal<number>(0);
-  customCollaboratorAmount = signal<number>(0);
+  protected isSubmitting = signal<boolean>(false);
+  protected errorMessage = signal<string | null>(null);
+  protected customUserAmount = signal<number>(0);
+  protected customCollaboratorAmount = signal<number>(0);
 
   // Form
-  protected formGroup: FormGroup<TransactionFormGroup>
-  isEditMode = false;
-  transactionId?: number;
+  public formGroup: FormGroup<TransactionFormGroup>
+  public ignorePreventUnsavedChanges = false
+  protected isEditMode = false;
+  private transactionId?: number;
 
   // Computed
   protected linkedCollaborators: Signal<KeyValueViewModel[]> = computed(() => {
@@ -316,13 +317,13 @@ export class UpsertTransactionComponent implements OnInit {
       splits,
       reimbursement
     );
-
     // Submit
     this.transactionStore.createTransaction(request).subscribe({
       next: () => {
         this.alertService.showSuccess('Transaction created successfully')
         // Reload transactions
         this.transactionStore.loadTransactions();
+        this.ignorePreventUnsavedChanges = true
         this.router.navigate(['/transactions']);
       },
       error: (error) => {

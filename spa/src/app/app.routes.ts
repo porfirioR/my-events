@@ -17,6 +17,7 @@ import { CollaboratorMatchRequestsComponent } from './components/collaborator-ma
 import { CollaboratorInvitationsComponent } from './components/collaborator-invitations/collaborator-invitations.component';
 import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
 import { VerifyEmailPendingComponent } from './components/verify-email-pending/verify-email-pending.component';
+import { WarningUnsavedChanges } from './guards';
 
 export const routes: Routes = [
   {
@@ -73,18 +74,21 @@ export const routes: Routes = [
       {
         path: 'collaborators/create',
         title: 'Add Collaborator',
+        canDeactivate: [WarningUnsavedChanges],
         loadComponent: () => UpsertCollaboratorComponent,
         canActivate: [authGuard]
       },
       {
         path: 'collaborators/edit/:id',
         title: 'Edit Collaborator',
+        canDeactivate: [WarningUnsavedChanges],
         loadComponent: () => UpsertCollaboratorComponent,
         canActivate: [authGuard]
       },
       {
         path: 'collaborators/match-requests',
         title: 'Match Requests',
+        canDeactivate: [WarningUnsavedChanges],
         loadComponent: () => CollaboratorMatchRequestsComponent,
         canActivate: [authGuard]
       },
@@ -110,6 +114,7 @@ export const routes: Routes = [
           },
           {
             path: 'new',
+            canDeactivate: [WarningUnsavedChanges],
             loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.UpsertTransactionComponent)
           },
           {

@@ -32,7 +32,8 @@ export class AlertService {
       focusCancel: true,
       customClass: {
         cancelButton: 'btn btn-outline btn-primary mx-1',
-        confirmButton: 'btn btn-outline btn-primary'
+        confirmButton: 'btn btn-outline btn-primary',
+        icon: icon == 'question' ? 'swal2-icon-question-custom': undefined,
       },
       buttonsStyling: false,
       html:
