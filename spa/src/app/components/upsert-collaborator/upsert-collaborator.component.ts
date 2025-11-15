@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, effect, inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -31,7 +31,8 @@ export class UpsertCollaboratorComponent implements OnInit {
   protected isLoading = this.loadingStore.isLoading;
   protected selectedCollaborator = this.collaboratorStore.selectedCollaborator;
 
-  protected formGroup: FormGroup<CollaboratorFormGroup>
+  public formGroup: FormGroup<CollaboratorFormGroup>
+  public ignorePreventUnsavedChanges = false
   protected isEditMode = false;
   protected collaborator?: CollaboratorApiModel
 
@@ -82,6 +83,7 @@ export class UpsertCollaboratorComponent implements OnInit {
 
     this.collaboratorStore.upsertCollaborator(request).subscribe({
       next: () => {
+        this.ignorePreventUnsavedChanges = true
         this.alertService.showSuccess('Event save successfully')
         this.exit()
       }, error: (e) => {

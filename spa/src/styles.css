@@ -6,3 +6,7 @@
 @plugin "daisyui";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+.swal2-icon-question-custom.swal2-icon.swal2-question {
+  @apply border-primary text-primary;
+}

@@ -1,12 +1,19 @@
 import { inject } from '@angular/core';
 import { CanDeactivateFn } from '@angular/router';
 import { AlertService } from '../services';
+import { UpsertTransactionComponent } from '../components/upsert-transaction/upsert-transaction.component';
+import { UpsertCollaboratorComponent } from '../components/upsert-collaborator/upsert-collaborator.component';
+import { CollaboratorMatchRequestsComponent } from '../components/collaborator-match-requests/collaborator-match-requests.component';
 
 export const WarningUnsavedChanges: CanDeactivateFn<
-  | any
+  | UpsertTransactionComponent
+  | UpsertCollaboratorComponent
+  | CollaboratorMatchRequestsComponent
 > = (
   component:
-    | any
+    | UpsertTransactionComponent
+    | UpsertCollaboratorComponent
+    | CollaboratorMatchRequestsComponent
 ): boolean | Promise<boolean> => {
   const alertService = inject(AlertService);
   if (component.ignorePreventUnsavedChanges) {

@@ -56,7 +56,8 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     const linkedCollaborators = this.collaboratorStore.unlinkedCollaborators()
     return HelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
   });
-  protected formGroup: FormGroup<MatchRequestFormGroup>;
+  public formGroup: FormGroup<MatchRequestFormGroup>;
+  public ignorePreventUnsavedChanges = false
 
   constructor() {
     this.formGroup = new FormGroup<MatchRequestFormGroup>({
@@ -148,6 +149,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
         this.alertService.showSuccess(response.message);
         this.formGroup.reset();
         this.activeTab = 'sent';
+        this.ignorePreventUnsavedChanges = true
         this.loadAllData();
       },
       error: (error) => {
