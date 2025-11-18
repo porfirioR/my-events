@@ -1,22 +1,3 @@
--- INSERT INTO currencies (Id, Name, Symbol, Country) VALUES
--- (1, 'United States Dollar', '$', 'United States'),
--- (2, 'Euro', '€', 'Eurozone'),
--- (3, 'British Pound Sterling', '£', 'United Kingdom'),
--- (4, 'Guarani', '₲', 'Paraguay'),
--- (5, 'Argentine Peso', '$', 'Argentina'),
--- (6, 'Real', 'R$', 'Brazil'),
--- (7, 'Other', '$', '---');
-
--- INSERT INTO Periods (Id, Name, quantity) VALUES
--- (1, 'Day', 365),
--- (2, 'Week', 52),
--- (3, 'Month', 12),
--- (4, 'Custom', -1);
-
--- INSERT INTO [Types] (Id, name, Description) VALUES
--- (1, 'Progressive', 'Amounts increase by adding a constant value'),
--- (2, 'Fixed amount', 'Fixed amount for the duration of the loan'),
--- (3, 'Total', 'Total amount of the loan');
 -- ===== SCHEMA POSTGRESQL MÍNIMO - SOLO TABLAS =====
 
 -- Tipos ENUM personalizados
@@ -288,3 +269,224 @@ CREATE INDEX idx_transactionsplits_transactionuser ON transactionsplits(transact
 CREATE INDEX idx_transactionsplits_collaboratorsettled ON transactionsplits(collaboratorid, issettled);
 CREATE INDEX idx_transactionsplits_usersettled ON transactionsplits(userid, issettled);
 CREATE INDEX idx_transactionsplits_payerstatus ON transactionsplits(ispayer, issettled);
+
+-- ===== NUEVAS TABLAS PARA MÓDULO DE AHORROS =====
+INSERT INTO currencies (Id, Name, Symbol, Country) VALUES
+(1, 'United States Dollar', '$', 'United States'),
+(2, 'Euro', '€', 'Eurozone'),
+(3, 'British Pound Sterling', '£', 'United Kingdom'),
+(4, 'Guarani', '₲', 'Paraguay'),
+(5, 'Argentine Peso', '$', 'Argentina'),
+(6, 'Real', 'R$', 'Brazil'),
+(7, 'Other', '$', '---');
+
+-- Tabla de tipos de progresión de ahorro
+CREATE TABLE savingsprogressiontypes (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT NOT NULL
+);
+
+-- Datos iniciales
+INSERT INTO savingsprogressiontypes (id, name, description) VALUES
+(1, 'Fixed', 'Fixed amount per installment - the same amount is saved in each period'),
+(2, 'Ascending', 'Ascending amounts - each installment increases by adding a fixed increment to the previous amount'),
+(3, 'Descending', 'Descending amounts - each installment decreases by subtracting a fixed increment from the previous amount'),
+(4, 'Random', 'Random amounts - installments are shuffled randomly based on an ascending progression'),
+(5, 'FreeForm', 'Free form - no predefined installments, user adds deposits freely until reaching the target amount');
+
+-- Tabla de estados de ahorro
+CREATE TABLE savingsstatus (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT NOT NULL
+);
+
+INSERT INTO savingsstatus (id, name, description) VALUES
+(1, 'Active', 'Savings goal is currently active and accepting deposits'),
+(2, 'Completed', 'Savings goal has been completed - target amount reached'),
+(3, 'Paused', 'Savings goal is temporarily paused'),
+(4, 'Cancelled', 'Savings goal has been cancelled by the user');
+
+-- Tabla de estados de cuota
+CREATE TABLE installmentstatus (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT NOT NULL
+);
+
+INSERT INTO installmentstatus (id, name, description) VALUES
+(1, 'Pending', 'Installment has not been paid yet'),
+(2, 'Paid', 'Installment has been fully paid'),
+(3, 'Skipped', 'Installment was intentionally skipped by the user');
+
+-- Meta de ahorro principal
+CREATE TABLE savingsgoals (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    currencyid INT NOT NULL,
+    
+    -- Información básica
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    targetamount BIGINT NOT NULL, -- Monto objetivo total (entero)
+    currentamount BIGINT DEFAULT 0, -- Monto acumulado actual
+    
+    -- Configuración de cuotas (NULL para FreeForm)
+    progressiontypeid INT NOT NULL,
+    numberofinstallments INT NULL, -- NULL para FreeForm
+    baseamount BIGINT NULL, -- NULL para FreeForm
+    incrementamount BIGINT NULL, -- Solo para Ascending/Descending
+    
+    -- Estado y fechas
+    statusid INT NOT NULL DEFAULT 1, -- Default: Active
+    startdate DATE NOT NULL,
+    expectedenddate DATE NULL, -- Calculado en backend
+    completeddate TIMESTAMP NULL,
+    
+    -- Timestamps
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (currencyid) REFERENCES currencies(id),
+    FOREIGN KEY (progressiontypeid) REFERENCES savingsprogressiontypes(id),
+    FOREIGN KEY (statusid) REFERENCES savingsstatus(id),
+    
+    -- Validaciones
+    CONSTRAINT check_target_positive CHECK (targetamount > 0),
+    CONSTRAINT check_current_not_negative CHECK (currentamount >= 0),
+    CONSTRAINT check_current_not_exceed_target CHECK (currentamount <= targetamount),
+    CONSTRAINT check_freeform_nulls CHECK (
+        (progressiontypeid = 5 AND numberofinstallments IS NULL AND baseamount IS NULL) OR
+        (progressiontypeid != 5 AND numberofinstallments IS NOT NULL AND baseamount IS NOT NULL)
+    ),
+    CONSTRAINT check_base_positive CHECK (baseamount IS NULL OR baseamount > 0),
+    CONSTRAINT check_installments_positive CHECK (numberofinstallments IS NULL OR numberofinstallments > 0),
+    CONSTRAINT check_increment_for_progression CHECK (
+        (progressiontypeid IN (1, 4, 5) AND incrementamount IS NULL) OR
+        (progressiontypeid IN (2, 3) AND incrementamount IS NOT NULL AND incrementamount > 0)
+    )
+);
+
+-- Cuotas individuales de ahorro
+CREATE TABLE savingsinstallments (
+    id SERIAL PRIMARY KEY,
+    savingsgoalid INT NOT NULL,
+    
+    -- Información de la cuota
+    installmentnumber INT NOT NULL, -- Número de cuota (1, 2, 3...)
+    amount BIGINT NOT NULL, -- Monto de esta cuota específica
+    statusid INT NOT NULL DEFAULT 1, -- Default: Pending
+    
+    -- Fechas
+    duedate DATE NULL, -- Fecha sugerida (opcional)
+    paiddate TIMESTAMP NULL,
+    
+    -- Metadata
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (savingsgoalid) REFERENCES savingsgoals(id) ON DELETE CASCADE,
+    FOREIGN KEY (statusid) REFERENCES installmentstatus(id),
+    
+    -- Validaciones
+    CONSTRAINT check_installment_amount_positive CHECK (amount > 0),
+    CONSTRAINT check_installment_number_positive CHECK (installmentnumber > 0),
+    CONSTRAINT unique_installment_per_goal UNIQUE (savingsgoalid, installmentnumber)
+);
+
+-- Depósitos/pagos realizados
+CREATE TABLE savingsdeposits (
+    id SERIAL PRIMARY KEY,
+    savingsgoalid INT NOT NULL,
+    installmentid INT NULL, -- NULL si es depósito libre (FreeForm o pago adicional)
+    
+    amount BIGINT NOT NULL,
+    description VARCHAR(255),
+    depositdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (savingsgoalid) REFERENCES savingsgoals(id) ON DELETE CASCADE,
+    FOREIGN KEY (installmentid) REFERENCES savingsinstallments(id) ON DELETE SET NULL,
+    
+    CONSTRAINT check_deposit_positive CHECK (amount > 0)
+);
+
+-- ===== ÍNDICES PARA AHORROS =====
+
+-- Índices para savingsgoals
+CREATE INDEX idx_savingsgoals_user_status ON savingsgoals(userid, statusid);
+CREATE INDEX idx_savingsgoals_currency ON savingsgoals(currencyid);
+CREATE INDEX idx_savingsgoals_progression_status ON savingsgoals(progressiontypeid, statusid);
+CREATE INDEX idx_savingsgoals_status ON savingsgoals(statusid);
+CREATE INDEX idx_savingsgoals_user_progression ON savingsgoals(userid, progressiontypeid);
+
+-- Índices para savingsinstallments
+CREATE INDEX idx_savingsinstallments_goal_status ON savingsinstallments(savingsgoalid, statusid);
+CREATE INDEX idx_savingsinstallments_goal_number ON savingsinstallments(savingsgoalid, installmentnumber);
+CREATE INDEX idx_savingsinstallments_status_duedate ON savingsinstallments(statusid, duedate);
+CREATE INDEX idx_savingsinstallments_status ON savingsinstallments(statusid);
+
+-- Índices para savingsdeposits
+CREATE INDEX idx_savingsdeposits_goal_date ON savingsdeposits(savingsgoalid, depositdate);
+CREATE INDEX idx_savingsdeposits_installment ON savingsdeposits(installmentid);
+CREATE INDEX idx_savingsdeposits_goal ON savingsdeposits(savingsgoalid);
+
+-- ===== VISTA ÚTIL PARA REPORTES =====
+
+-- Vista que combina información de goals con sus tipos y estados
+CREATE VIEW v_savingsgoals_details AS
+SELECT 
+    sg.id,
+    sg.userid,
+    sg.name,
+    sg.description,
+    sg.targetamount,
+    sg.currentamount,
+    sg.targetamount - sg.currentamount AS remainingamount,
+    CASE 
+        WHEN sg.targetamount > 0 THEN ROUND((sg.currentamount::NUMERIC / sg.targetamount::NUMERIC) * 100, 2)
+        ELSE 0 
+    END AS progresspercentage,
+    sg.numberofinstallments,
+    sg.baseamount,
+    sg.incrementamount,
+    sg.startdate,
+    sg.expectedenddate,
+    sg.completeddate,
+    sg.datecreated,
+    spt.name AS progressiontype,
+    spt.description AS progressiondescription,
+    ss.name AS status,
+    ss.description AS statusdescription,
+    c.name AS currencyname,
+    c.symbol AS currencysymbol,
+    -- Contar cuotas
+    (SELECT COUNT(*) FROM savingsinstallments WHERE savingsgoalid = sg.id) AS totalinstallments,
+    (SELECT COUNT(*) FROM savingsinstallments WHERE savingsgoalid = sg.id AND statusid = 2) AS paidinstallments,
+    (SELECT COUNT(*) FROM savingsinstallments WHERE savingsgoalid = sg.id AND statusid = 1) AS pendinginstallments,
+    -- Contar depósitos
+    (SELECT COUNT(*) FROM savingsdeposits WHERE savingsgoalid = sg.id) AS totaldeposits
+FROM savingsgoals sg
+INNER JOIN savingsprogressiontypes spt ON sg.progressiontypeid = spt.id
+INNER JOIN savingsstatus ss ON sg.statusid = ss.id
+INNER JOIN currencies c ON sg.currencyid = c.id;
+
+-- Vista para cuotas con detalles
+CREATE VIEW v_savingsinstallments_details AS
+SELECT 
+    si.id,
+    si.savingsgoalid,
+    si.installmentnumber,
+    si.amount,
+    si.duedate,
+    si.paiddate,
+    si.datecreated,
+    ist.name AS status,
+    ist.description AS statusdescription,
+    sg.name AS goalname,
+    sg.userid,
+    -- Total depositado para esta cuota específica
+    (SELECT COALESCE(SUM(amount), 0) FROM savingsdeposits WHERE installmentid = si.id) AS totaldepositedforinstallment
+FROM savingsinstallments si
+INNER JOIN installmentstatus ist ON si.statusid = ist.id
+INNER JOIN savingsgoals sg ON si.savingsgoalid = sg.id;
