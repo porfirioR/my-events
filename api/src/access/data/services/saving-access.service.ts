@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSavingAccessRequest, SavingAccessModel, UpdateSavingAccessRequest } from '../../contract/savings';
+import { CreateSavingAccessRequest, SavingsGoalAccessModel, UpdateSavingAccessRequest } from '../../contract/savings';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
-import { SavingEntity } from '../entities/saving.entity';
+import { SavingsGoalEntity } from '../entities/savings-goal.entity';
 import { BaseAccessService, DbContextService } from '.';
 
 @Injectable()
@@ -11,18 +11,18 @@ export class SavingAccessService extends BaseAccessService {
     super(dbContextService);
   }
 
-  public create = async (accessRequest: CreateSavingAccessRequest): Promise<SavingAccessModel> => {
+  public create = async (accessRequest: CreateSavingAccessRequest): Promise<SavingsGoalAccessModel> => {
     const entity = this.mapAccessRequestToEntity(accessRequest);
     const event  = await this.dbContext
       .from(TableEnum.Savings)
       .insert(entity)
       .select()
-      .single<SavingEntity>();
+      .single<SavingsGoalEntity>();
     if (event.error) throw new Error(event.error.message);
     return this.mapEntityToAccessModel(event.data);
   };
 
-  public getMySavings = async (authorId: number, id: number): Promise<SavingAccessModel[]> => {
+  public getMySavings = async (authorId: number, id: number): Promise<SavingsGoalAccessModel[]> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Savings)
       .select(DatabaseColumns.All)
@@ -33,18 +33,18 @@ export class SavingAccessService extends BaseAccessService {
     return data?.map(this.mapEntityToAccessModel);
   };
 
-  public updateSaving = async (accessRequest: UpdateSavingAccessRequest): Promise<SavingAccessModel> => {
+  public updateSaving = async (accessRequest: UpdateSavingAccessRequest): Promise<SavingsGoalAccessModel> => {
     const eventEntity = this.mapAccessRequestToEntity(accessRequest);
     const event = await this.dbContext
       .from(TableEnum.Savings)
       .upsert(eventEntity)
       .select()
-      .single<SavingEntity>();
+      .single<SavingsGoalEntity>();
     if (event.error) throw new Error(event.error.message);
     return this.mapEntityToAccessModel(event.data);
   };
 
-  private mapEntityToAccessModel = (entity: SavingEntity): SavingAccessModel => new SavingAccessModel(
+  private mapEntityToAccessModel = (entity: SavingsGoalEntity): SavingsGoalAccessModel => new SavingsGoalAccessModel(
     entity.id,
     entity.isactive,
     entity.name,
@@ -58,8 +58,8 @@ export class SavingAccessService extends BaseAccessService {
     entity.numberofpayment
   );
 
-  private mapAccessRequestToEntity = (accessRequest: CreateSavingAccessRequest | UpdateSavingAccessRequest): SavingEntity => {
-    const eventEntity = new SavingEntity(
+  private mapAccessRequestToEntity = (accessRequest: CreateSavingAccessRequest | UpdateSavingAccessRequest): SavingsGoalEntity => {
+    const eventEntity = new SavingsGoalEntity(
       accessRequest.name,
       accessRequest.description,
       true,

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { SavingModel } from '../models/savings/saving-model';
-import { SavingAccessModel } from '../../access/contract/savings/saving-access-model';
-import { CreateSavingAccessRequest } from '../../access/contract/savings/create-saving-access-request';
-import { UpdateSavingAccessRequest } from '../../access/contract/savings/update-saving-access-request';
+import { SavingsGoalAccessModel } from '../../access/contract/savings/savings-goal-access.model';
+import { CreateSavingsGoalAccessRequest } from '../../access/contract/savings/create-savings-goal-access-request';
+import { UpdateSavingsGoalAccessRequest } from '../../access/contract/savings/update-savings-goal-access-request';
 import { SavingAccessService } from '../../access/data/services/saving-access.service';
 import { CreateSavingRequest } from '../models/savings/create-saving-request';
 import { UpdateSavingRequest } from '../models/savings/update-saving-request';
@@ -20,7 +20,7 @@ export class SavingsManagerService {
   }
 
   public createSaving = async (request: CreateSavingRequest): Promise<SavingModel> => {
-    const accessRequest = new CreateSavingAccessRequest(
+    const accessRequest = new CreateSavingsGoalAccessRequest(
       request.name,
       request.description,
       request.date,
@@ -37,7 +37,7 @@ export class SavingsManagerService {
   }
 
   public updateSaving = async (request: UpdateSavingRequest): Promise<SavingModel> => {
-    const accessRequest = new UpdateSavingAccessRequest(
+    const accessRequest = new UpdateSavingsGoalAccessRequest(
       request.id,
       request.isActive,
       request.name,
@@ -55,7 +55,7 @@ export class SavingsManagerService {
     return this.mapAccessModelToModel(accessModel)
   }
 
-  private mapAccessModelToModel = (accessModel: SavingAccessModel) => new SavingModel(
+  private mapAccessModelToModel = (accessModel: SavingsGoalAccessModel) => new SavingModel(
     accessModel.id,
     accessModel.isActive,
     accessModel.name,

@@ -19,4 +19,10 @@ export enum TableEnum {
   TransactionReimbursements = "transactionreimbursements",
   PasswordResetTokens = 'passwordresettokens',
   EmailVerificationTokens = 'emailverificationtokens',
+  SavingsGoals = 'savingsgoals',
+  SavingsInstallments = 'savingsinstallments',
+  SavingsDeposits = 'savingsdeposits',
+  SavingsProgressionTypes = 'savingsprogressiontypes',
+  SavingsStatus = 'savingsstatus',
+  InstallmentStatus = 'installmentstatus',
 }

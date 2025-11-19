@@ -270,7 +270,16 @@ CREATE INDEX idx_transactionsplits_collaboratorsettled ON transactionsplits(coll
 CREATE INDEX idx_transactionsplits_usersettled ON transactionsplits(userid, issettled);
 CREATE INDEX idx_transactionsplits_payerstatus ON transactionsplits(ispayer, issettled);
 
--- ===== NUEVAS TABLAS PARA MÓDULO DE AHORROS =====
+-- ===== MÓDULO DE AHORROS =====
+
+CREATE TABLE currencies (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    symbol VARCHAR(10) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO currencies (Id, Name, Symbol, Country) VALUES
 (1, 'United States Dollar', '$', 'United States'),
 (2, 'Euro', '€', 'Eurozone'),
@@ -325,34 +334,34 @@ CREATE TABLE savingsgoals (
     id SERIAL PRIMARY KEY,
     userid INT NOT NULL,
     currencyid INT NOT NULL,
-    
+
     -- Información básica
     name VARCHAR(200) NOT NULL,
     description TEXT,
     targetamount BIGINT NOT NULL, -- Monto objetivo total (entero)
     currentamount BIGINT DEFAULT 0, -- Monto acumulado actual
-    
+
     -- Configuración de cuotas (NULL para FreeForm)
     progressiontypeid INT NOT NULL,
     numberofinstallments INT NULL, -- NULL para FreeForm
     baseamount BIGINT NULL, -- NULL para FreeForm
     incrementamount BIGINT NULL, -- Solo para Ascending/Descending
-    
+
     -- Estado y fechas
     statusid INT NOT NULL DEFAULT 1, -- Default: Active
     startdate DATE NOT NULL,
     expectedenddate DATE NULL, -- Calculado en backend
     completeddate TIMESTAMP NULL,
-    
+
     -- Timestamps
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (currencyid) REFERENCES currencies(id),
     FOREIGN KEY (progressiontypeid) REFERENCES savingsprogressiontypes(id),
     FOREIGN KEY (statusid) REFERENCES savingsstatus(id),
-    
+
     -- Validaciones
     CONSTRAINT check_target_positive CHECK (targetamount > 0),
     CONSTRAINT check_current_not_negative CHECK (currentamount >= 0),
@@ -373,22 +382,22 @@ CREATE TABLE savingsgoals (
 CREATE TABLE savingsinstallments (
     id SERIAL PRIMARY KEY,
     savingsgoalid INT NOT NULL,
-    
+
     -- Información de la cuota
     installmentnumber INT NOT NULL, -- Número de cuota (1, 2, 3...)
     amount BIGINT NOT NULL, -- Monto de esta cuota específica
     statusid INT NOT NULL DEFAULT 1, -- Default: Pending
-    
+
     -- Fechas
     duedate DATE NULL, -- Fecha sugerida (opcional)
     paiddate TIMESTAMP NULL,
-    
+
     -- Metadata
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (savingsgoalid) REFERENCES savingsgoals(id) ON DELETE CASCADE,
     FOREIGN KEY (statusid) REFERENCES installmentstatus(id),
-    
+
     -- Validaciones
     CONSTRAINT check_installment_amount_positive CHECK (amount > 0),
     CONSTRAINT check_installment_number_positive CHECK (installmentnumber > 0),
@@ -400,14 +409,14 @@ CREATE TABLE savingsdeposits (
     id SERIAL PRIMARY KEY,
     savingsgoalid INT NOT NULL,
     installmentid INT NULL, -- NULL si es depósito libre (FreeForm o pago adicional)
-    
+
     amount BIGINT NOT NULL,
     description VARCHAR(255),
     depositdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (savingsgoalid) REFERENCES savingsgoals(id) ON DELETE CASCADE,
     FOREIGN KEY (installmentid) REFERENCES savingsinstallments(id) ON DELETE SET NULL,
-    
+
     CONSTRAINT check_deposit_positive CHECK (amount > 0)
 );
 
