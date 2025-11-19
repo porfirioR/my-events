@@ -3,7 +3,7 @@ import { SavingModel } from '../models/savings/saving-model';
 import { SavingsGoalAccessModel } from '../../access/contract/savings/savings-goal-access.model';
 import { CreateSavingsGoalAccessRequest } from '../../access/contract/savings/create-savings-goal-access-request';
 import { UpdateSavingsGoalAccessRequest } from '../../access/contract/savings/update-savings-goal-access-request';
-import { SavingAccessService } from '../../access/data/services/saving-access.service';
+import { SavingAccessService } from '../../access/data/services/savings-goal-access.service';
 import { CreateSavingRequest } from '../models/savings/create-saving-request';
 import { UpdateSavingRequest } from '../models/savings/update-saving-request';
 

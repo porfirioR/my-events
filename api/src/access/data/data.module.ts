@@ -10,7 +10,7 @@ import { CollaboratorAccessService } from './services/collaborator-access.servic
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { ConfigurationAccessService } from './services/configuration-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
-import { SavingAccessService } from './services/saving-access.service';
+import { SavingAccessService } from './services/savings-goal-access.service';
 import { UserAccessService } from './services/user-access.service';
 
 @Module({
