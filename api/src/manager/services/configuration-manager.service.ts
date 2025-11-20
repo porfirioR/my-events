@@ -1,39 +1,48 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigurationAccessService } from '../../access/data/services/configuration-access.service';
-import { TypeAccessModel } from '../../access/contract/configurations/type-access-model';
-import { PeriodAccessModel } from '../../access/contract/configurations/period-access-model';
+import { Inject, Injectable } from '@nestjs/common';
 import { CurrencyAccessModel } from '../../access/contract/configurations/currency-access-model';
 import { Configurations } from '../../utility/enums';
-import { CurrencyModel, PeriodModel, TypeModel } from '../models/configurations';
+import { ConfigurationBaseModel, CurrencyModel, SavingsProgressionTypeModel } from '../models/configurations';
+import { ConfigurationBaseAccessModel, IConfigurationAccessService, InstallmentStatusAccessModel, SavingsProgressionTypeAccessModel } from '../../access/contract/configurations';
+import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 
 @Injectable()
 export class ConfigurationManagerService {
 
   constructor(
-    private readonly configurationAccessService: ConfigurationAccessService
+    @Inject(SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE)
+    private readonly configurationAccessService: IConfigurationAccessService,
   ) { }
 
-  public getConfiguration = async (configuration: Configurations): Promise<TypeModel[] | PeriodModel[] | CurrencyModel[]> => {
-    switch (configuration) {
-      case Configurations.Periods:
-        return this.getPeriods()
-      case Configurations.Types:
-        return this.getTypes()
-      case Configurations.Currencies:
-        return this.getCurrencies()
-      default:
-        break;
+  public getConfiguration = async (configuration: Configurations): Promise<ConfigurationBaseModel[] | CurrencyModel[]> => {
+    if (configuration === Configurations.Currencies) {
+      return await this.getCurrencies()
+    } else {
+      let accessModelList: Promise<ConfigurationBaseAccessModel[]>
+      switch (configuration) {
+        case Configurations.InstallmentStatuses:
+          accessModelList = this.getInstallmentStatuses()
+        case Configurations.SavingsStatuses:
+          accessModelList = this.getSavingsStatuses()
+        case Configurations.SavingsProgressionTypes:
+          accessModelList = this.getSavingsProgressionType()
+        default:
+          break;
+      }
+      return (await accessModelList).map(this.mapAccessModelToModel)
     }
   }
 
-  private getTypes = async (): Promise<TypeModel[]> => {
-    const accessModelList = await this.configurationAccessService.getTypes();
-    return accessModelList.map(this.mapAccessModelToModel)
+  // ===== Private methods =====
+  private getInstallmentStatuses = async (): Promise<InstallmentStatusAccessModel[]> => {
+    return await this.configurationAccessService.getInstallmentStatuses();
   }
 
-  private getPeriods = async (): Promise<PeriodModel[]> => {
-    const accessModelList = await this.configurationAccessService.getPeriods();
-    return accessModelList.map(this.mapPeriodAccessModelToModel)
+  private getSavingsStatuses = async (): Promise<InstallmentStatusAccessModel[]> => {
+    return await this.configurationAccessService.getSavingsStatuses();
+  }
+
+  private getSavingsProgressionType = async (): Promise<SavingsProgressionTypeAccessModel[]> => {
+    return await this.configurationAccessService.getSavingsProgressionTypes();
   }
 
   private getCurrencies = async (): Promise<CurrencyModel[]> => {
@@ -41,23 +50,17 @@ export class ConfigurationManagerService {
     return accessModelList.map(this.mapCurrencyAccessModelToModel)
   }
 
-  private mapAccessModelToModel = (accessModel: TypeAccessModel): TypeModel => new TypeModel(
+  private mapAccessModelToModel = (accessModel: ConfigurationBaseModel): ConfigurationBaseModel => new SavingsProgressionTypeModel(
     accessModel.id,
     accessModel.name,
     accessModel.description,
-  )
-
-  private mapPeriodAccessModelToModel = (accessModel: PeriodAccessModel): PeriodModel => new PeriodModel(
-    accessModel.id,
-    accessModel.name,
-    accessModel.quantity,
-  )
+  );
 
   private mapCurrencyAccessModelToModel = (accessModel: CurrencyAccessModel): CurrencyModel => new CurrencyModel(
     accessModel.id,
     accessModel.name,
     accessModel.symbol,
     accessModel.country,
-  )
+  );
 
 }

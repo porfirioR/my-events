@@ -43,4 +43,11 @@ export enum DatabaseColumns {
   IpAddress = 'ipaddress',  
   IsVerified = 'isverified',
   VerifiedAt = 'verifiedat',
+  SavingsGoalId = 'savingsgoalid',
+  StatusId = 'statusid',
+  InstallmentNumber = 'installmentnumber',
+  DepositDate = 'depositdate',
+  InstallmentId = 'installmentid',
+  Amount = 'amount',
+  PaidDate = 'paiddate',
 }

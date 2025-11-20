@@ -16,6 +16,6 @@ export const SAVINGS_TOKENS = {
   GOAL_ACCESS_SERVICE: Symbol('ISavingsGoalAccessService'),
   INSTALLMENT_ACCESS_SERVICE: Symbol('ISavingsInstallmentAccessService'),
   DEPOSIT_ACCESS_SERVICE: Symbol('ISavingsDepositAccessService'),
-  CATALOG_ACCESS_SERVICE: Symbol('ICatalogAccessService'),
+  CONFIGURATION_ACCESS_SERVICE: Symbol('IConfigurationAccessService'),
   MANAGER_SERVICE: Symbol('ISavingsManagerService')
 } as const;

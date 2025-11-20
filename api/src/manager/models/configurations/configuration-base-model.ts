@@ -1,7 +1,7 @@
-export class PeriodModel {
+export class ConfigurationBaseModel {
   constructor(
     public id: number,
     public name: string,
-    public quantity: number
+    public description: string
   ) {}
 }

@@ -14,10 +14,10 @@ export class CollaboratorManagerService {
   constructor(
     @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
     private collaboratorAccessService: ICollaboratorAccessService,
-    
+
     @Inject(COLLABORATOR_TOKENS.MATCH_ACCESS_SERVICE)
     private matchAccessService: ICollaboratorMatchAccessService,
-    
+
     @Inject(COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE)
     private matchRequestAccessService: ICollaboratorMatchRequestAccessService,
     private userAccessService: UserAccessService,

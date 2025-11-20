@@ -1,7 +1,7 @@
-export class SavingsStatusModel {
-  constructor(
-    public readonly id: number,
-    public readonly name: string,
-    public readonly description: string,
-  ) {}
+import { ConfigurationBaseAccessModel } from '.';
+
+export class SavingsStatusAccessModel extends ConfigurationBaseAccessModel {
+  constructor(id: number, name: string, description: string) {
+    super(id, name, description);
+  }
 }

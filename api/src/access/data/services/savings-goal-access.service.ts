@@ -1,4 +1,3 @@
-// access/data/services/savings-goal-access.service.ts
 
 import { Injectable } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
@@ -12,17 +11,13 @@ import {
 import { SavingsGoalEntity } from '../entities';
 
 @Injectable()
-export class SavingsGoalAccessService
-  extends BaseAccessService
-  implements ISavingsGoalAccessService
+export class SavingsGoalAccessService extends BaseAccessService implements ISavingsGoalAccessService
 {
   constructor(dbContextService: DbContextService) {
     super(dbContextService);
   }
 
-  public create = async (
-    accessRequest: CreateSavingsGoalAccessRequest,
-  ): Promise<SavingsGoalAccessModel> => {
+  public create = async (accessRequest: CreateSavingsGoalAccessRequest): Promise<SavingsGoalAccessModel> => {
     const entity = this.mapAccessRequestToEntity(accessRequest);
     const { data, error } = await this.dbContext
       .from(TableEnum.SavingsGoals)
@@ -34,10 +29,7 @@ export class SavingsGoalAccessService
     return this.mapEntityToAccessModel(data);
   };
 
-  public getById = async (
-    id: number,
-    userId: number,
-  ): Promise<SavingsGoalAccessModel> => {
+  public getById = async (id: number, userId: number): Promise<SavingsGoalAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.SavingsGoals)
       .select(DatabaseColumns.All)
@@ -199,9 +191,7 @@ export class SavingsGoalAccessService
     );
   };
 
-  private mapAccessRequestToEntity = (
-    accessRequest: CreateSavingsGoalAccessRequest,
-  ): SavingsGoalEntity => {
+  private mapAccessRequestToEntity = (accessRequest: CreateSavingsGoalAccessRequest): SavingsGoalEntity => {
     return new SavingsGoalEntity(
       accessRequest.userId,
       accessRequest.currencyId,
@@ -219,9 +209,7 @@ export class SavingsGoalAccessService
     );
   };
 
-  private mapUpdateRequestToEntity = (
-    accessRequest: UpdateSavingsGoalAccessRequest,
-  ): SavingsGoalEntity => {
+  private mapUpdateRequestToEntity = (accessRequest: UpdateSavingsGoalAccessRequest): SavingsGoalEntity => {
     const entity = new SavingsGoalEntity(
       accessRequest.userId,
       accessRequest.currencyId,
