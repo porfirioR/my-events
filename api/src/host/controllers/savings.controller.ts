@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CreateSavingApiRequest } from '../models/savings/create-saving-api-request';
-import { SavingModel } from '../../manager/models/savings/saving-model';
+import { SavingModel } from '../../manager/models/savings/savings-goal-model';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
 import { SavingsManagerService } from '../../manager/services';
-import { CreateSavingRequest } from '../../manager/models/savings/create-saving-request';
-import { UpdateSavingRequest } from '../../manager/models/savings/update-saving-request';
+import { CreateSavingRequest } from '../../manager/models/savings/create-savings-goal-request';
+import { UpdateSavingRequest } from '../../manager/models/savings/update-savings-goal-request';
 import { UpdateSavingApiRequest } from '../models/savings/update-saving-api-request';
 
 @Controller('savings')
