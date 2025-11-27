@@ -10,7 +10,7 @@ import {
 } from '../../models/api/collaborators';
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
-import { AlertService, HelperService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { useCollaboratorStore, useLoadingStore } from '../../store';
 import { TextComponent } from '../inputs/text/text.component';
 import { MatchRequestFormGroup } from '../../models/forms';
@@ -54,7 +54,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   protected pendingRequestToAccept: ReceivedMatchRequestModel | null = null;
   protected internalCollaborators: Signal<KeyValueViewModel[]> = computed(() => {
     const linkedCollaborators = this.collaboratorStore.unlinkedCollaborators()
-    return HelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
+    return FormatterHelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
   });
   public formGroup: FormGroup<MatchRequestFormGroup>;
   public ignorePreventUnsavedChanges = false
@@ -172,7 +172,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     }
   }
 
-  protected getFormattedDate = (date: Date): string => HelperService.getFormattedDate(date);
+  protected getFormattedDate = (date: Date): string => FormatterHelperService.getFormattedDate(date);
 
   private loadAllData(): void {
     //Solo usar loadingStore para acciones del usuario, no para carga inicial

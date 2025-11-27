@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { KeyValueViewModel } from '../models/view/key-value-view-model';
-import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../models/api';
-import { Configurations } from '../models/enums';
+import { KeyValueViewModel } from '../../models/view/key-value-view-model';
+import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../../models/api';
+import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 
 @Injectable({
   providedIn: 'root'
 })
-export class HelperService {
+export class FormatterHelperService {
 
   public static convertToList = (elements: BaseConfigurationApiModel[], configurationType: Configurations): KeyValueViewModel[] => elements.map(x => {
     let moreData = ''
@@ -80,5 +80,26 @@ export class HelperService {
       return parts[0][0] + parts[1][0];
     }
     return fullName.substring(0, 2).toUpperCase();
+  }
+
+  
+  public static  getGoalStatusLabel(statusId: number): string {
+    return GoalStatusLabels[statusId as GoalStatus] || 'Unknown';
+  }
+  
+  public static getGoalStatusIcon(statusId: number): string {
+    return GoalStatusIcons[statusId as GoalStatus] || 'fa-question';
+  }
+
+  public static getGoalStatusColor(statusId: number): string {
+    return GoalStatusColors[statusId as GoalStatus] || 'text-base-content';
+  }
+
+  public static getProgressionTypeLabel(typeId: number): string {
+    return ProgressionTypeLabels[typeId as ProgressionType] || 'Unknown';
+  }
+
+  public static getProgressionTypeIcon(typeId: number): string {
+    return ProgressionTypeIcons[typeId as ProgressionType] || 'fa-question';
   }
 }

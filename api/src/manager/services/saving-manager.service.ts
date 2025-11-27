@@ -91,9 +91,9 @@ export class SavingsManagerService {
       // Generar montos de cuotas
       installmentAmounts = SavingsCalculatorHelper.calculateInstallmentAmounts(
         request.progressionTypeId,
-        request.baseAmount,
-        request.numberOfInstallments,
-        request.incrementAmount,
+        +request.baseAmount,
+        +request.numberOfInstallments,
+        +request.incrementAmount,
       );
     }
 

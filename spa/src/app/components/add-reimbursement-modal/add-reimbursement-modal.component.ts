@@ -1,7 +1,7 @@
 import { Component, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReimbursementFormGroup } from '../../models/forms';
-import { AlertService, HelperService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { TextComponent } from '../inputs/text/text.component';
 import { useTransactionStore } from '../../store';
@@ -37,7 +37,7 @@ export class AddReimbursementModalComponent {
   private readonly transactionStore = useTransactionStore();
   private readonly alertService = inject(AlertService);
   protected formGroup!: FormGroup<ReimbursementFormGroup>;
-  protected formatCurrency = HelperService.formatCurrency;
+  protected formatCurrency = FormatterHelperService.formatCurrency;
 
   constructor() {
     this.formGroup = new FormGroup<ReimbursementFormGroup>({

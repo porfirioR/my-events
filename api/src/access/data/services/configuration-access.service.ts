@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
-import { ConfigurationBaseAccessModel, CurrencyAccessModel, IConfigurationAccessService, InstallmentStatusAccessModel, SavingsProgressionTypeAccessModel, SavingsStatusAccessModel } from 'src/access/contract/configurations';
+import { ConfigurationBaseAccessModel, CurrencyAccessModel, IConfigurationAccessService, InstallmentStatusAccessModel, SavingsProgressionTypeAccessModel, SavingsStatusAccessModel } from '../../../access/contract/configurations';
 import { ConfigurationBaseEntity, CurrencyEntity, InstallmentStatusEntity, SavingsProgressionTypeEntity, SavingsStatusEntity } from '../entities';
 
 

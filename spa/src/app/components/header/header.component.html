@@ -9,43 +9,49 @@
         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
           <li class="menu-title">Navigation</li>
           <li>
-            <a [routerLink]="['']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
             </a>
           </li>
           <li>
-            <a [routerLink]="['collaborators']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['collaborators']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-users mr-2"></i>Collaborators
             </a>
           </li>
           <li>
-            <a [routerLink]="['transactions']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+            <a [routerLink]="['transactions']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-dollar-sign mr-2"></i>Transactions
             </a>
           </li>
           <li>
-            <a [routerLink]="['projects']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
+            <a [routerLink]="['projects']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-project-diagram mr-2"></i>Projects
             </a>
           </li>
           <li>
-            <a [routerLink]="['events']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
+            <a routerLink="/savings" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-piggy-bank"></i>
+              <span>Savings Goals</span>
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['events']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-calendar mr-2"></i>Events
             </a>
           </li>
           <li>
-            <a [routerLink]="['finance']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
+            <a [routerLink]="['finance']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-wallet mr-2"></i>Finance
             </a>
           </li>
           <li>
-            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
+            <a [routerLink]="['settings']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-cogs mr-2"></i>Settings
             </a>
           </li>
           <div class="divider"></div>
           <li>
-            <a [routerLink]="['settings']"  (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
+            <a [routerLink]="['settings']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-question-circle mr-2"></i>Help
             </a>
           </li>

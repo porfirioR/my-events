@@ -5,11 +5,11 @@ import {
   CreateCollaboratorRequest,
   UpdateCollaboratorRequest
 } from '../../src/manager/models/collaborators';
-import { AuthUserModel } from 'src/access/auth/contracts/auth-user-model';
+import { AuthUserModel } from '../../src/access/auth/contracts/auth-user-model';
 import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, UpdateCollaboratorAccessRequest } from 'src/access/contract/collaborators';
-import { CreateCollaboratorApiRequest } from 'src/host/models/collaborators/create-collaborator-api-request';
-import { UpdateCollaboratorApiRequest } from 'src/host/models/collaborators/update-collaborator-api-request';
-import { CollaboratorType } from 'src/utility/types';
+import { CreateCollaboratorApiRequest } from '../../src/host/models/collaborators/create-collaborator-api-request';
+import { UpdateCollaboratorApiRequest } from '../../src/host/models/collaborators/update-collaborator-api-request';
+import { CollaboratorType } from '../../src/utility/types';
 
 export class TestHelpers {
   // Auth helpers

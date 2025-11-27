@@ -128,7 +128,8 @@ export class SavingsCalculatorHelper {
       // Ascending
       const amounts: number[] = [];
       for (let i = 0; i < count; i++) {
-        amounts.push(lastAmount + (i + 1) * increment);
+        const amount = lastAmount + (i + 1) * increment
+        amounts.push(+amount);
       }
       return amounts;
     }
@@ -137,7 +138,8 @@ export class SavingsCalculatorHelper {
       // Random
       const amounts: number[] = [];
       for (let i = 0; i < count; i++) {
-        amounts.push(lastAmount + (i + 1) * increment);
+        const amount = lastAmount + (i + 1) * increment
+        amounts.push(+amount);
       }
       return this.shuffleArray(amounts);
     }
@@ -179,7 +181,8 @@ export class SavingsCalculatorHelper {
   ): number[] {
     const amounts: number[] = [];
     for (let i = 0; i < count; i++) {
-      amounts.push(baseAmount + i * increment);
+      const amount = baseAmount + i * increment;
+      amounts.push(+amount);
     }
     return amounts;
   }
@@ -192,7 +195,8 @@ export class SavingsCalculatorHelper {
     const amounts: number[] = [];
     const startAmount = baseAmount + (count - 1) * increment;
     for (let i = 0; i < count; i++) {
-      amounts.push(startAmount - i * increment);
+      const amount = startAmount - i * increment;
+      amounts.push(+amount);
     }
     return amounts;
   }

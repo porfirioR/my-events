@@ -1,4 +1,4 @@
-import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, UpdateCollaboratorAccessRequest } from 'src/access/contract/collaborators';
+import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, UpdateCollaboratorAccessRequest } from '../../../access/contract/collaborators';
 
 export interface ICollaboratorAccessService {
 /**

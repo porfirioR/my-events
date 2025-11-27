@@ -3,7 +3,7 @@ import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { useCollaboratorStore, useLoadingStore } from '../../store';
-import { AlertService, HelperService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
 
@@ -37,8 +37,8 @@ export class CollaboratorsComponent implements OnInit {
   protected isLoading = this.loadingStore.isLoading;
   protected filterType = signal<'all' | 'unlinked' | 'linked'>('all');
   protected pendingRequestsCount = signal(0);
-  protected getInitials = HelperService.getInitials
-  protected getFormattedDate = HelperService.getFormattedDate
+  protected getInitials = FormatterHelperService.getInitials
+  protected getFormattedDate = FormatterHelperService.getFormattedDate
 
   ngOnInit(): void {
     this.loadCollaborators();

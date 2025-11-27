@@ -5,7 +5,7 @@ export { LoginFormGroup } from './login-form-group';
 export { MatchRequestFormGroup } from './match-request-form-group';
 export { ReimbursementFormGroup } from './reimbursement-form-group';
 export { ResetPasswordFormGroup } from './reset-password-form-group';
-export { SavingFormGroup } from './saving-form-group';
+export { SavingsGoalFormGroup as SavingFormGroup } from './saving-form-group';
 export { SignupFormGroup } from './sign-up-form-group';
 export { TransactionFormGroup } from './transaction-form-group';
 export { TransactionSplitFormGroup } from './transaction-split-form-group';

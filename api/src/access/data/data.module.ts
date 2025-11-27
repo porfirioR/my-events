@@ -10,7 +10,7 @@ import { CollaboratorAccessService } from './services/collaborator-access.servic
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
 import { UserAccessService } from './services/user-access.service';
-import { SAVINGS_TOKENS } from 'src/utility/constants/injection-tokens.const';
+import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { SavingsInstallmentAccessService } from './services/savings-installment-access.service';
 import { SavingsDepositAccessService } from './services/savings-deposit-access.service';
 

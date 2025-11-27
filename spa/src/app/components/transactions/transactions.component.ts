@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TransactionViewApiModel } from '../../models/api/transactions';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
-import { AlertService, HelperService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-reimbursement-modal.component';
 
 @Component({
@@ -28,8 +28,8 @@ export class TransactionsComponent implements OnInit {
   protected isLoading = this.loadingStore.isLoading;
   protected filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
 
-  protected formatCurrency = HelperService.formatCurrency
-  protected getFormattedDate = HelperService.getFormattedDate;
+  protected formatCurrency = FormatterHelperService.formatCurrency
+  protected getFormattedDate = FormatterHelperService.getFormattedDate;
 
   protected transactions = computed(() => {
     const filter = this.filterType();

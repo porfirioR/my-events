@@ -8,6 +8,7 @@ import {
   Param,
   UseGuards,
   ParseIntPipe,
+  Inject,
 } from '@nestjs/common';
 import { CurrentUserService } from '../services/current-user.service';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
@@ -30,12 +31,15 @@ import {
   AddInstallmentsApiRequest,
 } from '../models/savings';
 import { MessageModel } from '../models/message.model';
+import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 
 @Controller('savings-goals')
 @UseGuards(PrivateEndpointGuard)
 export class SavingsGoalsController {
   constructor(
     private readonly currentUserService: CurrentUserService,
+    
+    @Inject(SAVINGS_TOKENS.MANAGER_SERVICE)
     private readonly savingsManagerService: SavingsManagerService,
   ) {}
 

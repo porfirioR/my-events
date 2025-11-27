@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { useTransactionStore, useLoadingStore } from '../../store';
-import { HelperService, AlertService } from '../../services';
+import { FormatterHelperService, AlertService } from '../../services';
 
 @Component({
   selector: 'app-transaction-details',
@@ -23,8 +23,8 @@ export class TransactionDetailsComponent implements OnInit {
   protected isLoading = this.loadingStore.isLoading;
   protected transactionDetails = this.transactionStore.selectedTransactionDetails;
   
-  protected formatCurrency = HelperService.formatCurrency;
-  protected getFormattedDate = HelperService.getFormattedDate;
+  protected formatCurrency = FormatterHelperService.formatCurrency;
+  protected getFormattedDate = FormatterHelperService.getFormattedDate;
 
   private transactionId: number = 0;
 
@@ -48,7 +48,7 @@ export class TransactionDetailsComponent implements OnInit {
   }
 
   protected getInitials(fullName: string): string {
-    return HelperService.getInitials(fullName);
+    return FormatterHelperService.getInitials(fullName);
   }
 
   protected goBack(): void {
