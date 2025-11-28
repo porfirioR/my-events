@@ -24,7 +24,8 @@ export interface ReimbursementModalData {
 })
 export class AddReimbursementModalComponent {
   @ViewChild('reimbursementModal', { static: true }) reimbursementModal!: ElementRef<HTMLDialogElement>
-  
+  private formatterService = inject(FormatterHelperService);
+
   // Signals para manejar el estado
   private isOpen = signal<boolean>(false);
   protected modalData = signal<ReimbursementModalData | null>(null);
@@ -37,7 +38,7 @@ export class AddReimbursementModalComponent {
   private readonly transactionStore = useTransactionStore();
   private readonly alertService = inject(AlertService);
   protected formGroup!: FormGroup<ReimbursementFormGroup>;
-  protected formatCurrency = FormatterHelperService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency;
 
   constructor() {
     this.formGroup = new FormGroup<ReimbursementFormGroup>({

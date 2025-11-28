@@ -94,7 +94,7 @@
                   <i class="fas fa-info-circle"></i>
                   <div>
                     <h4 class="font-semibold">First Installment</h4>
-                    <p>{{ formatCurrency(calculatedBaseAmount()!) }}</p>
+                    <p>{{ formatCurrency(calculatedBaseAmount()!, 1) }}</p>
                   </div>
                 </div>
               }
@@ -107,7 +107,7 @@
                   <i class="fas fa-piggy-bank text-2xl"></i>
                   <div>
                     <h4 class="font-semibold">Calculated Target Amount</h4>
-                    <p class="text-lg font-bold">{{ formatCurrency(calculatedTargetAmount()!) }}</p>
+                    <p class="text-lg font-bold">{{ formatCurrency(calculatedTargetAmount()!, 1) }}</p>
                     <p class="text-xs opacity-80">
                       {{ formGroup.value.numberOfInstallments }} installments
                       @if (showIncrementField()) {

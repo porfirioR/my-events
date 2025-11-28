@@ -61,6 +61,9 @@ export class ConfigurationManagerService {
     accessModel.name,
     accessModel.symbol,
     accessModel.country,
+    accessModel.locale,
+    accessModel.currencyCode,
+    accessModel.minimumDecimal
   );
 
 }

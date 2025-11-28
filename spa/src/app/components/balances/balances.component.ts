@@ -19,6 +19,7 @@ export class BalancesComponent implements OnInit {
   private readonly transactionStore = useTransactionStore();
   private readonly loadingStore = useLoadingStore();
   private readonly location = inject(Location);
+  private formatterService = inject(FormatterHelperService);
 
   // Signals
   protected isLoading = this.loadingStore.isLoading;
@@ -32,7 +33,7 @@ export class BalancesComponent implements OnInit {
 
   // For Math functions in template
   protected math = Math;
-  protected formatCurrency =  FormatterHelperService.formatCurrency
+  protected formatCurrency =  this.formatterService.formatCurrency
   protected getInitials = FormatterHelperService.getInitials
 
   ngOnInit(): void {

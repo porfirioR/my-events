@@ -2,19 +2,20 @@ import { Injectable } from '@angular/core';
 import { KeyValueViewModel } from '../../models/view/key-value-view-model';
 import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../../models/api';
 import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
+import { useCurrencyStore } from '../../store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FormatterHelperService {
-
+  private currencyStore = useCurrencyStore();
   public static convertToList = (elements: BaseConfigurationApiModel[], configurationType: Configurations): KeyValueViewModel[] => elements.map(x => {
     let moreData = ''
     let value = ''
     switch (configurationType) {
       case Configurations.Currencies:
         const currency = (x as CurrencyApiModel)
-        moreData = `Origin ${currency.symbol} ${currency.country}`
+        moreData = `(${currency.symbol}/${currency.country})`
         value = currency.name
         break;
       case Configurations.Periods:
@@ -66,12 +67,27 @@ export class FormatterHelperService {
     return `${Math.floor(diffDays / 365)} years ago`;
   }
 
-  public static formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-PY', {
-      style: 'currency',
-      currency: 'PYG',
-      minimumFractionDigits: 0
-    }).format(amount);
+  public formatCurrency = (amount: number, currencyId: number): string => {
+    if (this.currencyStore.needsLoading()) {
+      this.currencyStore.loadCurrencies();
+    }
+    
+    return this.currencyStore.formatCurrency()(amount, currencyId);
+  }
+
+  // ✅ Método para obtener información de moneda
+  public getCurrency = (currencyId: number): CurrencyApiModel | undefined => {
+    if (this.currencyStore.needsLoading()) {
+      this.currencyStore.loadCurrencies();
+    }
+    
+    return this.currencyStore.getCurrencyById()(currencyId);
+  }
+
+  // ✅ Método para obtener símbolo de moneda
+  public getCurrencySymbol = (currencyId: number): string => {
+    const currency = this.getCurrency(currencyId);
+    return currency?.symbol || '$';
   }
 
   public static getInitials = (fullName: string): string => {

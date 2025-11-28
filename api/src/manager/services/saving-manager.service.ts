@@ -25,6 +25,7 @@ import {
 } from '../models/savings';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { ProgressionType } from 'src/utility/enums';
 
 @Injectable()
 export class SavingsManagerService {
@@ -54,7 +55,7 @@ export class SavingsManagerService {
     let installmentAmounts: number[] = [];
 
     // FreeForm: el usuario debe proporcionar targetAmount
-    if (request.progressionTypeId === 5) {
+    if (request.progressionTypeId === ProgressionType.FreeForm) {
       if (!request.targetAmount) {
         throw new BadRequestException('targetAmount is required for FreeForm type');
       }
@@ -69,16 +70,16 @@ export class SavingsManagerService {
       }
 
       // Validar incrementAmount para Ascending/Descending
-      if ((request.progressionTypeId === 2 || request.progressionTypeId === 3) && !request.incrementAmount) {
+      if ((request.progressionTypeId === ProgressionType.Ascending || request.progressionTypeId === ProgressionType.Descending) && !request.incrementAmount) {
         throw new BadRequestException('incrementAmount is required for Ascending/Descending types');
       }
 
       // Calcular targetAmount
       targetAmount = SavingsCalculatorHelper.calculateTargetAmount(
         request.progressionTypeId,
-        request.baseAmount,
-        request.numberOfInstallments,
-        request.incrementAmount,
+        +request.baseAmount,
+        +request.numberOfInstallments,
+        +request.incrementAmount,
       );
 
       // Si el usuario proporcionó un targetAmount, validar que coincida

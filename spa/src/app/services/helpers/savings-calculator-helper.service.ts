@@ -10,23 +10,28 @@ export class SavingsCalculatorHelper {
     numberOfInstallments: number,
     incrementAmount?: number
   ): number {
-    const n = numberOfInstallments;
+    const n = +numberOfInstallments;
 
     switch (progressionTypeId) {
       case ProgressionType.Fixed:
         return n * baseAmount;
 
       case ProgressionType.Ascending:
-      case ProgressionType.Descending:
         if (!incrementAmount) {
           throw new Error('incrementAmount is required for Ascending/Descending types');
         }
         // Fórmula: n × base + (n × (n-1) × incremento / 2)
-        return (n * baseAmount) + (n * (n - 1) * incrementAmount / 2);
+        return (n * baseAmount) + (n * (n - 1) * (+incrementAmount) / 2);
+      case ProgressionType.Descending:
+        if (!incrementAmount) {
+          throw new Error('incrementAmount is required for Ascending/Descending types');
+        }
+        // Fórmula: n + (n × (n-1) × incremento / 2)
+        return n  + (n * (n - 1) * (+incrementAmount) / 2);
 
       case ProgressionType.Random:
         if (incrementAmount) {
-          return (n * baseAmount) + (n * (n - 1) * incrementAmount / 2);
+          return (n * baseAmount) + (n * (n - 1) * (+incrementAmount) / 2);
         }
         return n * baseAmount;
 

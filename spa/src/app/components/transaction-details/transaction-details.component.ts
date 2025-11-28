@@ -17,13 +17,15 @@ export class TransactionDetailsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly alertService = inject(AlertService);
+  private formatterService = inject(FormatterHelperService);
+
   private readonly transactionStore = useTransactionStore();
   private readonly loadingStore = useLoadingStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected transactionDetails = this.transactionStore.selectedTransactionDetails;
   
-  protected formatCurrency = FormatterHelperService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency;
   protected getFormattedDate = FormatterHelperService.getFormattedDate;
 
   private transactionId: number = 0;
@@ -72,7 +74,7 @@ export class TransactionDetailsComponent implements OnInit {
     const details = this.transactionDetails();
     if (!details) return;
 
-    const confirmMsg = `Mark this transaction as settled?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount)}`;
+    const confirmMsg = `Mark this transaction as settled?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 1)}`;
     
     this.alertService.showQuestionModal('Mark as Settled?', confirmMsg).then(result => {
       if (result && result.isConfirmed) {
@@ -88,7 +90,7 @@ export class TransactionDetailsComponent implements OnInit {
     const details = this.transactionDetails();
     if (!details) return;
 
-    const confirmMsg = `Delete this transaction?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount)}\n\nThis action cannot be undone.`;
+    const confirmMsg = `Delete this transaction?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 1)}\n\nThis action cannot be undone.`;
     
     this.alertService.showQuestionModal('Delete Transaction?', confirmMsg).then(result => {
       if (result && result.isConfirmed) {

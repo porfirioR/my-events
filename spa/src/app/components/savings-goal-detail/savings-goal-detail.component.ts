@@ -28,6 +28,7 @@ export class SavingsGoalDetailComponent implements OnInit {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
+  private formatterService = inject(FormatterHelperService);
 
   private savingsStore = useSavingsStore();
 
@@ -168,8 +169,9 @@ export class SavingsGoalDetailComponent implements OnInit {
     // Validar que no exceda el remaining
     if (values.amount! > this.remaining()) {
       this.alertService.showError(
-        `Amount cannot exceed remaining: ${FormatterHelperService.formatCurrency(
-          this.remaining()
+        `Amount cannot exceed remaining: ${this.formatterService.formatCurrency(
+          this.remaining(),
+          this.goal()!.currencyId
         )}`
       );
       return;
@@ -273,6 +275,6 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor;
   protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel;
 
-  protected formatCurrency = FormatterHelperService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency;
   protected getFormattedDate = FormatterHelperService.getFormattedDate;
 }

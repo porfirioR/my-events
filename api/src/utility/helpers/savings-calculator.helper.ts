@@ -15,28 +15,30 @@ export class SavingsCalculatorHelper {
     numberOfInstallments: number,
     incrementAmount?: number
   ): number {
-    const n = numberOfInstallments;
+    const n = +numberOfInstallments;
 
     switch (progressionTypeId) {
       case ProgressionType.Fixed: // Fixed
         return n * baseAmount;
 
       case ProgressionType.Ascending: // Ascending
-      case ProgressionType.Descending: // Descending
+      case ProgressionType.Random: // Random
         if (!incrementAmount) {
+          const errorType = progressionTypeId == ProgressionType.Ascending ? 'Ascending' : 'Random'
           throw new Error(
-            'incrementAmount is required for Ascending/Descending types'
+            `incrementAmount is required for ${errorType } types`
           );
         }
         // Fórmula: n × base + (n × (n-1) × incremento / 2)
         return n * baseAmount + (n * (n - 1) * incrementAmount) / 2;
-
-      case ProgressionType.Random: // Random
-        if (incrementAmount) {
-          return n * baseAmount + (n * (n - 1) * incrementAmount) / 2;
+      case ProgressionType.Descending: // Descending
+        if (!incrementAmount) {
+          throw new Error(
+            'incrementAmount is required for Descending types'
+          );
         }
-        return n * baseAmount;
-
+        // Fórmula: n + (n × (n-1) × incremento / 2)
+        return n  + (n * (n - 1) * (+incrementAmount) / 2);
       case ProgressionType.FreeForm: // FreeForm
         throw new Error(
           'FreeForm type does not calculate target amount automatically'
@@ -80,7 +82,6 @@ export class SavingsCalculatorHelper {
           throw new Error('incrementAmount is required for Descending type');
         }
         return this.calculateDescending(
-          baseAmount,
           numberOfInstallments,
           incrementAmount
         );
@@ -188,15 +189,14 @@ export class SavingsCalculatorHelper {
   }
 
   private static calculateDescending(
-    baseAmount: number,
     count: number,
     increment: number
   ): number[] {
     const amounts: number[] = [];
-    const startAmount = baseAmount + (count - 1) * increment;
+    
     for (let i = 0; i < count; i++) {
-      const amount = startAmount - i * increment;
-      amounts.push(+amount);
+      const amount = increment * (count - i);
+      amounts.push(amount);
     }
     return amounts;
   }

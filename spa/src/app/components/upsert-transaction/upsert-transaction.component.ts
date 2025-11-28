@@ -35,6 +35,8 @@ export class UpsertTransactionComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
   private readonly alertService = inject(AlertService);
+  private formatterService = inject(FormatterHelperService);
+
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
@@ -339,7 +341,7 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   // ========== Formatters ==========
-  protected formatCurrency = (amount: number): string => FormatterHelperService.formatCurrency(amount)
+  protected formatCurrency = (amount: number): string => this.formatterService.formatCurrency(amount, 1)
 
   private getMaxValue(): number {
     const splitType = this.formGroup.value.splitType;

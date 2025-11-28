@@ -149,7 +149,7 @@
                   <div class="mt-3">
                     <div class="flex items-center justify-between text-sm mb-1">
                       <span class="text-base-content/70">
-                        {{ formatCurrency(goal.currentAmount) }} / {{ formatCurrency(goal.targetAmount) }}
+                        {{ formatCurrency(goal.currentAmount, goal.currencyId) }} / {{ formatCurrency(goal.targetAmount, goal.currencyId) }}
                       </span>
                       <span class="font-semibold" [ngClass]="getGoalStatusColor(goal.statusId)">
                         {{ calculateProgress(goal.currentAmount, goal.targetAmount) }}%

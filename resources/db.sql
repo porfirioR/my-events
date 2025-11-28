@@ -373,8 +373,8 @@ CREATE TABLE savingsgoals (
     CONSTRAINT check_base_positive CHECK (baseamount IS NULL OR baseamount > 0),
     CONSTRAINT check_installments_positive CHECK (numberofinstallments IS NULL OR numberofinstallments > 0),
     CONSTRAINT check_increment_for_progression CHECK (
-        (progressiontypeid IN (1, 4, 5) AND incrementamount IS NULL) OR
-        (progressiontypeid IN (2, 3) AND incrementamount IS NOT NULL AND incrementamount > 0)
+        (progressiontypeid IN (1, 5) AND incrementamount IS NULL) OR
+        (progressiontypeid IN (2, 3, 4) AND incrementamount IS NOT NULL AND incrementamount > 0)
     )
 );
 

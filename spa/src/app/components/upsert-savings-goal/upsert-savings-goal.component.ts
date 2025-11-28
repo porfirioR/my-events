@@ -61,6 +61,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
   private configurationApiService = inject(ConfigurationApiService);
+  private formatterService = inject(FormatterHelperService);
   
   private savingsStore = useSavingsStore();
   
@@ -265,7 +266,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     try {
       const calculated = SavingsCalculatorHelper.calculateTargetAmount(
         typeId!,
-        baseAmount,
+        +baseAmount,
         numberOfInstallments,
         incrementAmount || undefined
       );
@@ -341,8 +342,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
     try {
       const calculated = SavingsCalculatorHelper.calculateTargetAmount(
         typeId!,
-        calculatedBase,
-        numberOfInstallments,
+        +calculatedBase,
+        +numberOfInstallments,
         incrementAmount || undefined
       );
       this.calculatedTargetAmount.set(calculated);
@@ -381,7 +382,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
       finalBaseAmount = this.calculatedBaseAmount() || undefined;
       finalTargetAmount = this.calculatedTargetAmount() || 0;
     }
-
+    const numberOfInstallments = values.numberOfInstallments || undefined
+    const incrementAmount = values.incrementAmount || undefined
     if (this.isEditMode) {
       const request = new UpdateSavingsGoalApiRequest(
         values.id!,
@@ -392,9 +394,9 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.statusId || 1,
         values.startDate!.toString(),
         values.description || undefined,
-        +(values.numberOfInstallments || 0),
-        +finalBaseAmount!,
-        +(values.incrementAmount || 0),
+        numberOfInstallments ? +numberOfInstallments : undefined,
+        finalBaseAmount ? +finalBaseAmount : undefined,
+        incrementAmount ? +incrementAmount : undefined,
         values.expectedEndDate?.toString() || undefined
       );
 
@@ -418,10 +420,10 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.progressionTypeId!,
         values.startDate!.toString(),
         values.description || undefined,
-        finalTargetAmount,
-        values.numberOfInstallments || undefined,
-        finalBaseAmount,
-        values.incrementAmount || undefined,
+        +finalTargetAmount,
+        numberOfInstallments ? +numberOfInstallments : undefined,
+        finalBaseAmount ? +finalBaseAmount : undefined,
+        incrementAmount ? +incrementAmount : undefined,
         values.expectedEndDate?.toString() || undefined
       );
 
@@ -449,7 +451,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.router.navigate(['/savings']);
   };
 
-  protected formatCurrency = FormatterHelperService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency;
 
   protected getIncrementDescription(): string {
     const typeId = this.formGroup.controls.progressionTypeId.value;

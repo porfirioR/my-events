@@ -1,4 +1,4 @@
-import { Component, computed, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
   useCollaboratorStore,
@@ -17,6 +17,7 @@ export class DashboardComponent implements OnInit {
   private collaboratorStore = useCollaboratorStore();
   private transactionStore = useTransactionStore();
   private savingsStore = useSavingsStore();
+  private formatterService = inject(FormatterHelperService);
 
   unsettledTransactions = this.transactionStore.unsettledTransactions;
   myCreatedTransactions = this.transactionStore.myCreatedTransactions;
@@ -78,5 +79,5 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  protected formatCurrency = FormatterHelperService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency;
 }

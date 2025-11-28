@@ -108,15 +108,15 @@
         <div class="flex items-center justify-between mt-2 text-sm">
           <div>
             <span class="text-base-content/70">Current:</span>
-            <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.currentAmount) }}</span>
+            <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.currentAmount, g.currencyId) }}</span>
           </div>
           <div>
             <span class="text-base-content/70">Target:</span>
-            <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.targetAmount) }}</span>
+            <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.targetAmount, g.currencyId) }}</span>
           </div>
           <div>
             <span class="text-base-content/70">Remaining:</span>
-            <span class="font-semibold text-warning ml-1">{{ formatCurrency(remaining()) }}</span>
+            <span class="font-semibold text-warning ml-1">{{ formatCurrency(remaining(), g.currencyId) }}</span>
           </div>
         </div>
       </div>
@@ -197,7 +197,7 @@
                         </div>
                         <div>
                           <p class="font-semibold text-base-content">
-                            {{ formatCurrency(installment.amount) }}
+                            {{ formatCurrency(installment.amount, g.currencyId) }}
                           </p>
                           @if (installment.dueDate) {
                             <p class="text-xs text-base-content/60">
@@ -246,7 +246,7 @@
                         </div>
                         <div>
                           <p class="font-semibold text-base-content">
-                            {{ formatCurrency(installment.amount) }}
+                            {{ formatCurrency(installment.amount, g.currencyId) }}
                           </p>
                           @if (installment.paidDate) {
                             <p class="text-xs text-base-content/60">
@@ -278,7 +278,7 @@
                   <div class="flex items-start justify-between">
                     <div>
                       <p class="font-semibold text-lg text-base-content">
-                        {{ formatCurrency(deposit.amount) }}
+                        {{ formatCurrency(deposit.amount, g.currencyId) }}
                       </p>
                       @if (deposit.description) {
                         <p class="text-sm text-base-content/70 mt-1">{{ deposit.description }}</p>
@@ -333,7 +333,7 @@
           />
           <label class="label">
             <span class="label-text-alt text-info">
-              Installment amount: {{ formatCurrency(selectedInstallment()?.amount) }}
+              Installment amount: {{ formatCurrency(selectedInstallment()?.amount, 1) }}
             </span>
           </label>
         </div>
@@ -392,7 +392,7 @@
           />
           <label class="label">
             <span class="label-text-alt text-warning">
-              Remaining to goal: {{ formatCurrency(remaining()) }}
+              Remaining to goal: {{ formatCurrency(remaining(), 1) }}
             </span>
           </label>
         </div>

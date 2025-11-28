@@ -14,6 +14,8 @@ import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, Progre
 export class SavingsGoalsListComponent implements OnInit {
   private router = inject(Router);
   private alertService = inject(AlertService);
+  private formatterService = inject(FormatterHelperService);
+
   private savingsStore = useSavingsStore();
   private loadingStore = useLoadingStore();
 
@@ -88,7 +90,7 @@ export class SavingsGoalsListComponent implements OnInit {
   protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel;
   protected getProgressionTypeIcon = FormatterHelperService.getProgressionTypeIcon;
   protected getFormattedDate = FormatterHelperService.getFormattedDate;
-  protected formatCurrency = FormatterHelperService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency;
 
   protected calculateProgress(current: number, target: number): number {
     if (target === 0) return 0;

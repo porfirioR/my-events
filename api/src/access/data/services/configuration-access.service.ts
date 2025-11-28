@@ -111,6 +111,9 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
     entity.id,
     entity.name,
     entity.symbol,
-    entity.country
+    entity.country,
+    entity.locale,
+    entity.currencycode,
+    entity.minimumdecimal
   );
 }

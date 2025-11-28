@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { DashboardComponent } from "../dashboard/dashboard.component";
 import { EventViewModel } from '../../models/view/event-view-model'
-import { useAuthStore, useLoadingStore } from '../../store'
+import { useAuthStore, useCurrencyStore, useLoadingStore } from '../../store'
 import { NotificationService } from '../../services';
 
 @Component({
@@ -17,6 +17,7 @@ import { NotificationService } from '../../services';
 export class HomeComponent {
   private authStore = useAuthStore();
   private loadingStore = useLoadingStore();
+  private currencyStore = useCurrencyStore();
   protected eventFollows: EventViewModel[] = []
   protected isLoading = this.loadingStore.isLoading;
   protected currentUser = this.authStore.currentUser;
@@ -28,5 +29,6 @@ export class HomeComponent {
     // if (this.currentUser()) {
     //   this.notificationService.loadNotifications();
     // }
+    this.currencyStore.reloadCurrencies()
   }
 }
