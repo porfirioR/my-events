@@ -122,6 +122,11 @@ export const CurrencyStore = signalStore(
         ))
       )
     ),
+    clearCurrencies: () => patchState(store, {
+      currencies: [],
+      isLoaded: false,
+      error: null
+    }),
 
     // Limpiar error
     clearError: () => patchState(store, { error: null }) // ✅ Usar patchState como función

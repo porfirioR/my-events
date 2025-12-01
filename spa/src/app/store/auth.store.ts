@@ -1,5 +1,6 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
+import { useCurrencyStore } from './currency.store'; // ✅ Importar currency store
 
 export interface AuthState {
   userId: number | null;
@@ -31,17 +32,25 @@ export const AuthStore = signalStore(
       store.isAuthenticated() && !store.isEmailVerified()
     ),
   })),
-  withMethods((store) => ({
+  withMethods((store, 
+    currencyStore = useCurrencyStore() // ✅ Inyectar currency store
+  ) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
-    loginSuccess: (userId: number, token: string, email: string, isEmailVerified: boolean = false) => patchState(store, {
-      userId,
-      email,
-      token,
-      isAuthenticated: true,
-      isEmailVerified: isEmailVerified,
-      loginLoading: false,
-      error: null
-    }),
+    
+    loginSuccess: (userId: number, token: string, email: string, isEmailVerified: boolean = false) => {
+      patchState(store, {
+        userId,
+        email,
+        token,
+        isAuthenticated: true,
+        isEmailVerified: isEmailVerified,
+        loginLoading: false,
+        error: null
+      });
+      
+      // ✅ Cargar currencies después de login exitoso
+      currencyStore.loadCurrencies();
+    },
 
     loginFailure: (error: string) => patchState(store, {
       userId: null,
@@ -53,29 +62,40 @@ export const AuthStore = signalStore(
     }),
 
     // Cerrar sesión
-    logout: () => patchState(store, {
-      userId: null,
-      email: null,
-      token: null,
-      isAuthenticated: false,
-      loginLoading: false,
-      error: null
-    }),
+    logout: () => {
+      patchState(store, {
+        userId: null,
+        email: null,
+        token: null,
+        isAuthenticated: false,
+        isEmailVerified: false,
+        loginLoading: false,
+        error: null
+      });
+      
+      // ✅ Limpiar currencies al logout
+      currencyStore.clearCurrencies();
+    },
 
     updateEmailVerificationStatus: (isVerified: boolean) => {
       patchState(store, { isEmailVerified: isVerified });
     },
 
     // Restaurar sesión desde localStorage
-    restoreSession: (userId: number, token: string, email: string, isEmailVerified: boolean) => patchState(store, {
-      userId,
-      email,
-      token,
-      isAuthenticated: true,
-      loginLoading: false,
-      error: null,
-      isEmailVerified
-    }),
+    restoreSession: (userId: number, token: string, email: string, isEmailVerified: boolean) => {
+      patchState(store, {
+        userId,
+        email,
+        token,
+        isAuthenticated: true,
+        loginLoading: false,
+        error: null,
+        isEmailVerified
+      });
+
+      // ✅ Cargar currencies al restaurar sesión
+      currencyStore.loadCurrencies();
+    },
 
     clearError: () => patchState(store, { error: null })
   }))

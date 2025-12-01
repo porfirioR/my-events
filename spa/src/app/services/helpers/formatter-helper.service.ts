@@ -67,20 +67,12 @@ export class FormatterHelperService {
     return `${Math.floor(diffDays / 365)} years ago`;
   }
 
-  public formatCurrency = (amount: number, currencyId: number): string => {
-    if (this.currencyStore.needsLoading()) {
-      this.currencyStore.loadCurrencies();
-    }
-    
-    return this.currencyStore.formatCurrency()(amount, currencyId);
+  public formatCurrency = (amount: number, currencyId?: number | null): string => {
+    return this.currencyStore.formatCurrency()(amount, currencyId ?? 1);
   }
 
   // ✅ Método para obtener información de moneda
   public getCurrency = (currencyId: number): CurrencyApiModel | undefined => {
-    if (this.currencyStore.needsLoading()) {
-      this.currencyStore.loadCurrencies();
-    }
-    
     return this.currencyStore.getCurrencyById()(currencyId);
   }
 

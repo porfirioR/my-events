@@ -1,5 +1,3 @@
-// manager/services/savings-manager.service.ts
-
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   ISavingsGoalAccessService,

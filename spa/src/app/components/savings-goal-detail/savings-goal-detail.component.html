@@ -2,480 +2,404 @@
 
 <section class="container mx-auto px-4 py-8">
   @if (goal(); as g) {
-    <!-- Header Section -->
-    <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 mb-6">
-      <header class="flex items-start justify-between mb-6">
-        <div class="flex-grow">
-          <div class="flex items-center gap-3 mb-2">
-            <button 
-              type="button" 
-              class="btn btn-sm btn-circle btn-ghost" 
-              (click)="goBack()"
-            >
-              <i class="fas fa-arrow-left"></i>
-            </button>
-            <h1 class="text-2xl font-bold text-base-content">{{ g.name }}</h1>
-          </div>
-          
-          @if (g.description) {
-            <p class="text-base-content/70 ml-12">{{ g.description }}</p>
-          }
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-2">
-          <button 
-            type="button"
-            class="btn btn-sm btn-primary" 
-            (click)="editGoal()"
-          >
-            <i class="fas fa-edit"></i>
-            Edit
+  <!-- Header Section -->
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 mb-6">
+    <header class="flex items-start justify-between mb-6">
+      <div class="flex-grow">
+        <div class="flex items-center gap-3 mb-2">
+          <button type="button" class="btn btn-sm btn-circle btn-ghost" (click)="goBack()">
+            <i class="fas fa-arrow-left"></i>
           </button>
-          
-          @if (canAddInstallments()) {
-            <button 
-              type="button"
-              class="btn btn-sm btn-secondary" 
-              (click)="openAddInstallmentsModal()"
-            >
-              <i class="fas fa-plus"></i>
-              Add Installments
-            </button>
-          }
-          
-          @if (isFreeForm() && g.statusId === GoalStatus.Active) {
-            <button 
-              type="button"
-              class="btn btn-sm btn-accent" 
-              (click)="openFreeFormModal()"
-            >
-              <i class="fas fa-hand-holding-dollar"></i>
-              Add Deposit
-            </button>
-          }
+          <h1 class="text-2xl font-bold text-base-content">{{ g.name }}</h1>
         </div>
-      </header>
 
-      <!-- Status Badges -->
-      <div class="flex items-center gap-2 mb-4 ml-12">
-        <span 
-          class="badge"
-          [ngClass]="{
+        @if (g.description) {
+        <p class="text-base-content/70 ml-12">{{ g.description }}</p>
+        }
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-2">
+        <button type="button" class="btn btn-sm btn-primary" (click)="editGoal()">
+          <i class="fas fa-edit"></i>
+          Edit
+        </button>
+
+        @if (canAddInstallments()) {
+        <button type="button" class="btn btn-sm btn-secondary" (click)="openAddInstallmentsModal()">
+          <i class="fas fa-plus"></i>
+          Add Installments
+        </button>
+        }
+
+        @if (isFreeForm() && g.statusId === GoalStatus.Active) {
+        <button type="button" class="btn btn-sm btn-accent" (click)="openFreeFormModal()">
+          <i class="fas fa-hand-holding-dollar"></i>
+          Add Deposit
+        </button>
+        }
+      </div>
+    </header>
+
+    <!-- Status Badges -->
+    <div class="flex items-center gap-2 mb-4 ml-12">
+      <span class="badge" [ngClass]="{
             'badge-success': g.statusId === GoalStatus.Active,
             'badge-info': g.statusId === GoalStatus.Completed,
             'badge-warning': g.statusId === GoalStatus.Paused,
             'badge-error': g.statusId === GoalStatus.Cancelled
-          }"
-        >
-          <i [class]="'fas ' + getGoalStatusIcon(g.statusId) + ' mr-1'"></i>
-          {{ getGoalStatusLabel(g.statusId) }}
-        </span>
-        
-        <span class="badge badge-outline">
-          {{ getProgressionTypeLabel(g.progressionTypeId) }}
-        </span>
+          }">
+        <i [class]="'fas ' + getGoalStatusIcon(g.statusId) + ' mr-1'"></i>
+        {{ getGoalStatusLabel(g.statusId) }}
+      </span>
 
-        @if (g.numberOfInstallments) {
-          <span class="text-sm text-base-content/70">
-            <i class="fas fa-list-ol mr-1"></i>
-            {{ g.numberOfInstallments }} installments
-          </span>
-        }
+      <span class="badge badge-outline">
+        {{ getProgressionTypeLabel(g.progressionTypeId) }}
+      </span>
+
+      @if (g.numberOfInstallments) {
+      <span class="text-sm text-base-content/70">
+        <i class="fas fa-list-ol mr-1"></i>
+        {{ g.numberOfInstallments }} installments
+      </span>
+      }
+    </div>
+
+    <!-- Progress Section -->
+    <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-semibold text-base-content">Progress</span>
+        <span class="text-2xl font-bold" [ngClass]="getGoalStatusColor(g.statusId)">
+          {{ progress() }}%
+        </span>
       </div>
 
-      <!-- Progress Section -->
-      <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-semibold text-base-content">Progress</span>
-          <span class="text-2xl font-bold" [ngClass]="getGoalStatusColor(g.statusId)">
-            {{ progress() }}%
-          </span>
-        </div>
-        
-        <progress 
-          class="progress w-full h-4"
-          [ngClass]="{
+      <progress class="progress w-full h-4" [ngClass]="{
             'progress-success': g.statusId === GoalStatus.Active,
             'progress-info': g.statusId === GoalStatus.Completed,
             'progress-warning': g.statusId === GoalStatus.Paused,
             'progress-error': g.statusId === GoalStatus.Cancelled
-          }"
-          [value]="g.currentAmount" 
-          [max]="g.targetAmount">
-        </progress>
+          }" [value]="g.currentAmount" [max]="g.targetAmount">
+      </progress>
 
-        <div class="flex items-center justify-between mt-2 text-sm">
-          <div>
-            <span class="text-base-content/70">Current:</span>
-            <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.currentAmount, g.currencyId) }}</span>
-          </div>
-          <div>
-            <span class="text-base-content/70">Target:</span>
-            <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.targetAmount, g.currencyId) }}</span>
-          </div>
-          <div>
-            <span class="text-base-content/70">Remaining:</span>
-            <span class="font-semibold text-warning ml-1">{{ formatCurrency(remaining(), g.currencyId) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Metadata -->
-      <div class="flex items-center gap-4 mt-4 text-sm text-base-content/70 ml-12">
+      <div class="flex items-center justify-between mt-2 text-sm">
         <div>
-          <i class="fas fa-calendar-start mr-1"></i>
-          Started: {{ getFormattedDate(g.startDate) }}
+          <span class="text-base-content/70">Current:</span>
+          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.currentAmount, g.currencyId) }}</span>
         </div>
-        @if (g.expectedEndDate) {
-          <div>
-            <i class="fas fa-calendar-check mr-1"></i>
-            Expected: {{ getFormattedDate(g.expectedEndDate) }}
-          </div>
-        }
-        @if (g.completedDate) {
-          <div class="text-success">
-            <i class="fas fa-check-circle mr-1"></i>
-            Completed: {{ getFormattedDate(g.completedDate) }}
-          </div>
-        }
+        <div>
+          <span class="text-base-content/70">Target:</span>
+          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.targetAmount, g.currencyId) }}</span>
+        </div>
+        <div>
+          <span class="text-base-content/70">Remaining:</span>
+          <span class="font-semibold text-warning ml-1">{{ formatCurrency(remaining(), g.currencyId) }}</span>
+        </div>
       </div>
-    </article>
+    </div>
 
-    <!-- Tabs Section -->
-    <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg">
-      <!-- Tab Headers -->
-      <div role="tablist" class="tabs tabs-bordered px-6 pt-4">
-        <button 
-          role="tab" 
-          class="tab"
-          [class.tab-active]="activeTab() === 'installments'"
-          (click)="setActiveTab('installments')"
-        >
-          <i class="fas fa-list-ol mr-2"></i>
-          Installments
-          @if (pendingInstallments().length > 0) {
-            <span class="badge badge-sm badge-warning ml-2">{{ pendingInstallments().length }}</span>
-          }
-        </button>
-        <button 
-          role="tab" 
-          class="tab"
-          [class.tab-active]="activeTab() === 'deposits'"
-          (click)="setActiveTab('deposits')"
-        >
-          <i class="fas fa-money-bill-wave mr-2"></i>
-          Deposits
-          <span class="badge badge-sm badge-ghost ml-2">{{ deposits().length }}</span>
-        </button>
+    <!-- Metadata -->
+    <div class="flex items-center gap-4 mt-4 text-sm text-base-content/70 ml-12">
+      <div>
+        <i class="fas fa-calendar-start mr-1"></i>
+        Started: {{ getFormattedDate(g.startDate) }}
       </div>
+      @if (g.expectedEndDate) {
+      <div>
+        <i class="fas fa-calendar-check mr-1"></i>
+        Expected: {{ getFormattedDate(g.expectedEndDate) }}
+      </div>
+      }
+      @if (g.completedDate) {
+      <div class="text-success">
+        <i class="fas fa-check-circle mr-1"></i>
+        Completed: {{ getFormattedDate(g.completedDate) }}
+      </div>
+      }
+    </div>
+  </article>
 
-      <!-- Tab Content -->
-      <div class="p-6">
-        <!-- Installments Tab -->
-        @if (activeTab() === 'installments') {
-          @if (installments().length === 0) {
-            <div class="text-center py-12">
-              <i class="fas fa-info-circle text-4xl text-base-content/30 mb-4"></i>
-              <p class="text-base-content/70">No installments for this goal</p>
-              <p class="text-sm text-base-content/50">This is a FreeForm savings goal</p>
-            </div>
-          } @else {
-            <!-- Pending Installments -->
-            @if (pendingInstallments().length > 0) {
-              <div class="mb-6">
-                <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
-                  <i class="fas fa-clock text-warning"></i>
-                  Pending Installments
-                </h3>
-                <div class="space-y-2">
-                  @for (installment of pendingInstallments(); track installment.id) {
-                    <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between hover:bg-base-300/50 transition-colors">
-                      <div class="flex items-center gap-4">
-                        <div class="badge badge-warning">
-                          #{{ installment.installmentNumber }}
-                        </div>
-                        <div>
-                          <p class="font-semibold text-base-content">
-                            {{ formatCurrency(installment.amount, g.currencyId) }}
-                          </p>
-                          @if (installment.dueDate) {
-                            <p class="text-xs text-base-content/60">
-                              Due: {{ getFormattedDate(installment.dueDate) }}
-                            </p>
-                          }
-                        </div>
-                      </div>
-                      <div class="flex gap-2">
-                        <button 
-                          type="button"
-                          class="btn btn-sm btn-success" 
-                          (click)="openPayModal(installment)"
-                        >
-                          <i class="fas fa-check-circle"></i>
-                          Pay
-                        </button>
-                        <button 
-                          type="button"
-                          class="btn btn-sm btn-ghost" 
-                          (click)="skipInstallment(installment)"
-                        >
-                          <i class="fas fa-forward"></i>
-                          Skip
-                        </button>
-                      </div>
-                    </div>
-                  }
-                </div>
+  <!-- Tabs Section -->
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg">
+    <!-- Tab Headers -->
+    <div role="tablist" class="tabs tabs-bordered px-6 pt-4">
+      <button role="tab" class="tab" [class.tab-active]="activeTab() === 'installments'"
+        (click)="setActiveTab('installments')">
+        <i class="fas fa-list-ol mr-2"></i>
+        Installments
+        @if (pendingInstallments().length > 0) {
+        <span class="badge badge-sm badge-warning ml-2">{{ pendingInstallments().length }}</span>
+        }
+      </button>
+      <button role="tab" class="tab" [class.tab-active]="activeTab() === 'deposits'" (click)="setActiveTab('deposits')">
+        <i class="fas fa-money-bill-wave mr-2"></i>
+        Deposits
+        <span class="badge badge-sm badge-ghost ml-2">{{ deposits().length }}</span>
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="p-6">
+      <!-- Installments Tab -->
+      @if (activeTab() === 'installments') {
+      @if (installments().length === 0) {
+      <div class="text-center py-12">
+        <i class="fas fa-info-circle text-4xl text-base-content/30 mb-4"></i>
+        <p class="text-base-content/70">No installments for this goal</p>
+        <p class="text-sm text-base-content/50">This is a FreeForm savings goal</p>
+      </div>
+      } @else {
+      <!-- Pending Installments -->
+      @if (pendingInstallments().length > 0) {
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
+          <i class="fas fa-clock text-warning"></i>
+          Pending Installments
+        </h3>
+        <div class="space-y-2">
+          @for (installment of pendingInstallments(); track installment.id) {
+          <div
+            class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between hover:bg-base-300/50 transition-colors">
+            <div class="flex items-center gap-4">
+              <div class="badge badge-warning">
+                #{{ installment.installmentNumber }}
               </div>
-            }
-
-            <!-- Paid Installments -->
-            @if (paidInstallments().length > 0) {
               <div>
-                <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
-                  <i class="fas fa-check-circle text-success"></i>
-                  Paid Installments
-                </h3>
-                <div class="space-y-2">
-                  @for (installment of paidInstallments(); track installment.id) {
-                    <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between opacity-60">
-                      <div class="flex items-center gap-4">
-                        <div class="badge badge-success">
-                          #{{ installment.installmentNumber }}
-                        </div>
-                        <div>
-                          <p class="font-semibold text-base-content">
-                            {{ formatCurrency(installment.amount, g.currencyId) }}
-                          </p>
-                          @if (installment.paidDate) {
-                            <p class="text-xs text-base-content/60">
-                              Paid: {{ getFormattedDate(installment.paidDate) }}
-                            </p>
-                          }
-                        </div>
-                      </div>
-                      <i class="fas fa-check-circle text-success text-xl"></i>
-                    </div>
-                  }
-                </div>
+                <p class="font-semibold text-base-content">
+                  {{ formatCurrency(installment.amount, g.currencyId) }}
+                </p>
+                @if (installment.dueDate) {
+                <p class="text-xs text-base-content/60">
+                  Due: {{ getFormattedDate(installment.dueDate) }}
+                </p>
+                }
               </div>
-            }
-          }
-        }
-
-        <!-- Deposits Tab -->
-        @if (activeTab() === 'deposits') {
-          @if (deposits().length === 0) {
-            <div class="text-center py-12">
-              <i class="fas fa-money-bill-wave text-4xl text-base-content/30 mb-4"></i>
-              <p class="text-base-content/70">No deposits yet</p>
             </div>
-          } @else {
-            <div class="space-y-3">
-              @for (deposit of deposits(); track deposit.id) {
-                <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
-                  <div class="flex items-start justify-between">
-                    <div>
-                      <p class="font-semibold text-lg text-base-content">
-                        {{ formatCurrency(deposit.amount, g.currencyId) }}
-                      </p>
-                      @if (deposit.description) {
-                        <p class="text-sm text-base-content/70 mt-1">{{ deposit.description }}</p>
-                      }
-                      <p class="text-xs text-base-content/60 mt-2">
-                        <i class="fas fa-calendar mr-1"></i>
-                        {{ getFormattedDate(deposit.depositDate) }}
-                      </p>
-                      @if (deposit.installmentId) {
-                        <p class="text-xs text-info mt-1">
-                          <i class="fas fa-link mr-1"></i>
-                          Linked to installment
-                        </p>
-                      }
-                    </div>
-                    <i class="fas fa-money-bill-wave text-2xl text-success"></i>
-                  </div>
-                </div>
+            <div class="flex gap-2">
+              <button type="button" class="btn btn-sm btn-success" (click)="openPayModal(installment)">
+                <i class="fas fa-check-circle"></i>
+                Pay
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" (click)="skipInstallment(installment)">
+                <i class="fas fa-forward"></i>
+                Skip
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Paid Installments -->
+      @if (paidInstallments().length > 0) {
+      <div>
+        <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
+          <i class="fas fa-check-circle text-success"></i>
+          Paid Installments
+        </h3>
+        <div class="space-y-2">
+          @for (installment of paidInstallments(); track installment.id) {
+          <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between opacity-60">
+            <div class="flex items-center gap-4">
+              <div class="badge badge-success">
+                #{{ installment.installmentNumber }}
+              </div>
+              <div>
+                <p class="font-semibold text-base-content">
+                  {{ formatCurrency(installment.amount, g.currencyId) }}
+                </p>
+                @if (installment.paidDate) {
+                <p class="text-xs text-base-content/60">
+                  Paid: {{ getFormattedDate(installment.paidDate) }}
+                </p>
+                }
+              </div>
+            </div>
+            <i class="fas fa-check-circle text-success text-xl"></i>
+          </div>
+          }
+        </div>
+      </div>
+      }
+      }
+      }
+
+      <!-- Deposits Tab -->
+      @if (activeTab() === 'deposits') {
+      @if (deposits().length === 0) {
+      <div class="text-center py-12">
+        <i class="fas fa-money-bill-wave text-4xl text-base-content/30 mb-4"></i>
+        <p class="text-base-content/70">No deposits yet</p>
+      </div>
+      } @else {
+      <div class="space-y-3">
+        @for (deposit of deposits(); track deposit.id) {
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="font-semibold text-lg text-base-content">
+                {{ formatCurrency(deposit.amount, g.currencyId) }}
+              </p>
+              @if (deposit.description) {
+              <p class="text-sm text-base-content/70 mt-1">{{ deposit.description }}</p>
+              }
+              <p class="text-xs text-base-content/60 mt-2">
+                <i class="fas fa-calendar mr-1"></i>
+                {{ getFormattedDate(deposit.depositDate) }}
+              </p>
+              @if (deposit.installmentId) {
+              <p class="text-xs text-info mt-1">
+                <i class="fas fa-link mr-1"></i>
+                Linked to installment
+              </p>
               }
             </div>
-          }
+            <i class="fas fa-money-bill-wave text-2xl text-success"></i>
+          </div>
+        </div>
         }
       </div>
-    </article>
-  } @else {
-    <!-- Loading State -->
-    <div class="flex justify-center items-center py-12">
-      <span class="loading loading-spinner loading-lg"></span>
-      <p class="ml-3 text-base-content/70">Loading savings goal...</p>
+      }
+      }
     </div>
+  </article>
+  } @else {
+  <!-- Loading State -->
+  <div class="flex justify-center items-center py-12">
+    <span class="loading loading-spinner loading-lg"></span>
+    <p class="ml-3 text-base-content/70">Loading savings goal...</p>
+  </div>
   }
 </section>
 
 <!-- Pay Installment Modal -->
 @if (showPayModal()) {
-  <dialog class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">
-        Pay Installment #{{ selectedInstallment()?.installmentNumber }}
-      </h3>
-      
-      <form [formGroup]="payForm" (submit)="payInstallment()">
-        <div class="form-control w-full mb-4">
-          <label class="label">
-            <span class="label-text">Amount</span>
-          </label>
-          <input 
-            type="number" 
-            formControlName="amount"
-            class="input input-bordered w-full" 
-            placeholder="Enter amount"
-          />
-          <label class="label">
-            <span class="label-text-alt text-info">
-              Installment amount: {{ formatCurrency(selectedInstallment()?.amount, 1) }}
-            </span>
-          </label>
-        </div>
+<dialog class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">
+      Pay Installment #{{ selectedInstallment()?.installmentNumber }}
+    </h3>
 
-        <div class="form-control w-full mb-4">
-          <label class="label">
-            <span class="label-text">Description (optional)</span>
-          </label>
-          <textarea 
-            formControlName="description"
-            class="textarea textarea-bordered" 
-            placeholder="Add a note..."
-            rows="2"
-          ></textarea>
-        </div>
+    <form [formGroup]="payForm" (submit)="payInstallment()">
+      <app-text formControlName="amount" type="number" label="Installment amount" id="amount" name="Amount"
+        [description]="'Installment amount: ' + formatCurrency(selectedInstallment()?.amount, goal()?.currencyId)" />
 
-        <div class="modal-action">
-          <button 
-            type="button" 
-            class="btn btn-ghost" 
-            (click)="closePayModal()"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            class="btn btn-success"
-            [disabled]="payForm.invalid"
-          >
-            <i class="fas fa-check-circle"></i>
-            Pay Installment
-          </button>
-        </div>
-      </form>
-    </div>
-    <div class="modal-backdrop" (click)="closePayModal()"></div>
-  </dialog>
+      <app-text-area-input formControlName="description" label="Description (optional)" placeholder="Add a note..."
+        id="description" name="description" />
+
+      <div class="modal-action">
+        <button type="button"
+          class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+          (click)="closePayModal()">
+          Cancel
+        </button>
+        @if (isSubmitting()) {
+        <button type="button" class="btn btn-primary flex items-center gap-2 loading-btn">
+          <span class="loading loading-spinner loading-xs"></span>
+          Saving...
+        </button>
+        } @else {
+        <button role="button" type="submit"
+          class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+          [disabled]="payForm.invalid || isSubmitting()" [class.btn-disabled]="payForm.invalid || isSubmitting()">
+          <i class="fas fa-cloud-arrow-up text-sm"></i>
+          Pay Installment
+        </button>
+        }
+      </div>
+    </form>
+  </div>
+  <div class="modal-backdrop" (click)="closePayModal()"></div>
+</dialog>
 }
 
 <!-- FreeForm Deposit Modal -->
 @if (showFreeFormModal()) {
-  <dialog class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">Add Deposit</h3>
-      
-      <form [formGroup]="freeFormDepositForm" (submit)="createFreeFormDeposit()">
-        <div class="form-control w-full mb-4">
-          <label class="label">
-            <span class="label-text">Amount</span>
-          </label>
-          <input 
-            type="number" 
-            formControlName="amount"
-            class="input input-bordered w-full" 
-            placeholder="Enter amount"
-          />
-          <label class="label">
-            <span class="label-text-alt text-warning">
-              Remaining to goal: {{ formatCurrency(remaining(), 1) }}
-            </span>
-          </label>
-        </div>
+<dialog class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">Add Deposit</h3>
 
-        <div class="form-control w-full mb-4">
-          <label class="label">
-            <span class="label-text">Description (optional)</span>
-          </label>
-          <textarea 
-            formControlName="description"
-            class="textarea textarea-bordered" 
-            placeholder="Add a note..."
-            rows="2"
-          ></textarea>
-        </div>
+    <form [formGroup]="freeFormDepositForm" (submit)="createFreeFormDeposit()">
+      <div class="form-control w-full mb-4">
+        <label class="label">
+          <span class="label-text">Amount</span>
+        </label>
+        <input type="number" formControlName="amount" class="input input-bordered w-full" placeholder="Enter amount" />
+        <label class="label">
+          <span class="label-text-alt text-warning">
+            Remaining to goal: {{ formatCurrency(remaining(), 1) }}
+          </span>
+        </label>
+      </div>
 
-        <div class="modal-action">
-          <button 
-            type="button" 
-            class="btn btn-ghost" 
-            (click)="closeFreeFormModal()"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            class="btn btn-accent"
-            [disabled]="freeFormDepositForm.invalid"
-          >
-            <i class="fas fa-hand-holding-dollar"></i>
-            Add Deposit
-          </button>
-        </div>
-      </form>
-    </div>
-    <div class="modal-backdrop" (click)="closeFreeFormModal()"></div>
-  </dialog>
+      <div class="form-control w-full mb-4">
+        <label class="label">
+          <span class="label-text">Description (optional)</span>
+        </label>
+        <textarea formControlName="description" class="textarea textarea-bordered" placeholder="Add a note..."
+          rows="2"></textarea>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="closeFreeFormModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-accent" [disabled]="freeFormDepositForm.invalid">
+          <i class="fas fa-hand-holding-dollar"></i>
+          Add Deposit
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="modal-backdrop" (click)="closeFreeFormModal()"></div>
+</dialog>
 }
 
 <!-- Add Installments Modal -->
 @if (showAddInstallmentsModal()) {
-  <dialog class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">Add More Installments</h3>
-      
-      <form [formGroup]="addInstallmentsForm" (submit)="addInstallments()">
-        <div class="form-control w-full mb-4">
-          <label class="label">
-            <span class="label-text">Number of Installments</span>
-          </label>
-          <input 
-            type="number" 
-            formControlName="numberOfNewInstallments"
-            class="input input-bordered w-full" 
-            placeholder="E.g., 10"
-            min="1"
-          />
-          <label class="label">
-            <span class="label-text-alt text-info">
-              This will extend your savings goal
-            </span>
-          </label>
-        </div>
+<dialog class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">Add More Installments</h3>
 
-        <div class="modal-action">
-          <button 
-            type="button" 
-            class="btn btn-ghost" 
-            (click)="closeAddInstallmentsModal()"
+    <form [formGroup]="addInstallmentsForm" (submit)="addInstallments()">
+      <app-text
+        formControlName="numberOfNewInstallments"
+        type="number"
+        label="Number of Installments"
+        id="numberOfNewInstallments"
+        name="numberOfNewInstallments"
+        placeholder="E.g., 10"
+        description="This will extend your savings goal"
+      />
+
+      <div class="modal-action">
+        <button type="button"
+          class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+          (click)="closeAddInstallmentsModal()">
+          Cancel
+        </button>
+        @if (isSubmitting()) {
+          <button
+            type="button"
+            class="btn btn-primary flex items-center gap-2 loading-btn"
           >
-            Cancel
+            <span class="loading loading-spinner loading-xs"></span>
+            Saving...
           </button>
-          <button 
-            type="submit" 
-            class="btn btn-secondary"
-            [disabled]="addInstallmentsForm.invalid"
+        } @else {
+          <button
+            type="submit"
+            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="addInstallmentsForm.invalid || isSubmitting()"
           >
-            <i class="fas fa-plus"></i>
+            <i class="fas fa-cloud-arrow-up text-sm"></i>
             Add Installments
           </button>
-        </div>
-      </form>
-    </div>
-    <div class="modal-backdrop" (click)="closeAddInstallmentsModal()"></div>
-  </dialog>
+        }
+      </div>
+    </form>
+  </div>
+  <div class="modal-backdrop" (click)="closeAddInstallmentsModal()"></div>
+</dialog>
 }

@@ -109,12 +109,12 @@ export class AddReimbursementModalComponent {
     this.submitTimestamp.set(Date.now());
 
     const request = new AddReimbursementApiRequest(
-      +this.formGroup.value.amount!, 
+      +this.formGroup.value.amount!,
       this.formGroup.value.description
     );
 
     this.transactionStore.addReimbursement({
-      transactionId: data.transactionId, 
+      transactionId: data.transactionId,
       request
     });
   }

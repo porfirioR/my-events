@@ -1,5 +1,3 @@
-// src/app/components/savings-goal-detail/savings-goal-detail.component.ts
-
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -16,13 +14,23 @@ import {
   PayInstallmentApiRequest,
   CreateFreeFormDepositApiRequest,
   AddInstallmentsApiRequest,
+  SavingsInstallmentApiModel,
 } from '../../models/api/savings';
+import { TextComponent } from '../inputs/text/text.component';
+import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
+import { ProgressionTypeFormGroup } from '../../models/forms';
 
 @Component({
   selector: 'app-savings-goal-detail',
   templateUrl: './savings-goal-detail.component.html',
   styleUrls: ['./savings-goal-detail.component.css'],
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    TextComponent,
+    TextAreaInputComponent,
+  ],
 })
 export class SavingsGoalDetailComponent implements OnInit {
   private router = inject(Router);
@@ -46,39 +54,37 @@ export class SavingsGoalDetailComponent implements OnInit {
   // Modal state
   protected showPayModal = signal(false);
   protected selectedInstallment = signal<any>(null);
-  protected payForm: FormGroup;
+  protected payForm: FormGroup<ProgressionTypeFormGroup>;
 
   protected showFreeFormModal = signal(false);
-  protected freeFormDepositForm: FormGroup;
+  protected freeFormDepositForm: FormGroup<ProgressionTypeFormGroup>;
 
   protected showAddInstallmentsModal = signal(false);
   protected addInstallmentsForm: FormGroup;
+  protected isSubmitting = signal<boolean>(false);
 
   // Active tab
   protected activeTab = signal<'installments' | 'deposits'>('installments');
 
-  protected isFreeForm = computed(() => {
-    const g = this.goal();
-    return g?.progressionTypeId === ProgressionType.FreeForm;
-  });
+  protected isFreeForm = computed(() => this.goal()?.progressionTypeId === ProgressionType.FreeForm);
 
   protected canAddInstallments = computed(() => {
-    const g = this.goal();
-    if (!g) return false;
+    const goal = this.goal();
+    if (!goal) return false;
     return (
-      g.progressionTypeId !== ProgressionType.Descending &&
-      g.progressionTypeId !== ProgressionType.FreeForm &&
-      g.statusId === GoalStatus.Active
+      goal.progressionTypeId !== ProgressionType.Descending &&
+      goal.progressionTypeId !== ProgressionType.FreeForm &&
+      goal.statusId === GoalStatus.Active
     );
   });
 
   constructor() {
-    this.payForm = new FormGroup({
+    this.payForm = new FormGroup<ProgressionTypeFormGroup>({
       amount: new FormControl(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
     });
 
-    this.freeFormDepositForm = new FormGroup({
+    this.freeFormDepositForm = new FormGroup<ProgressionTypeFormGroup>({
       amount: new FormControl(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
     });
@@ -104,13 +110,21 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   // ==================== PAY INSTALLMENT ====================
 
-  protected openPayModal(installment: any): void {
+  protected openPayModal(installment: SavingsInstallmentApiModel): void {
     this.selectedInstallment.set(installment);
     this.payForm.patchValue({
       amount: installment.amount,
       description: '',
     });
     this.showPayModal.set(true);
+    const goal = this.goal()
+    if (
+      goal?.progressionTypeId == ProgressionType.Ascending ||
+      goal?.progressionTypeId == ProgressionType.Descending ||
+      goal?.progressionTypeId == ProgressionType.Random
+    ) {
+      this.payForm.controls.amount.disable()
+    }
   }
 
   protected closePayModal(): void {
@@ -124,20 +138,22 @@ export class SavingsGoalDetailComponent implements OnInit {
 
     const goalId = this.goal()!.id;
     const installmentId = this.selectedInstallment()!.id;
-    const values = this.payForm.value;
+    const values = this.payForm.getRawValue();
 
     const request = new PayInstallmentApiRequest(
       values.amount!,
       values.description || undefined
     );
-
+    this.isSubmitting.set(true);
     this.savingsStore.payInstallment(goalId, installmentId, request).subscribe({
       next: () => {
+        this.isSubmitting.set(false);
         this.alertService.showSuccess('Installment paid successfully');
         this.closePayModal();
         this.reloadData();
       },
       error: (e) => {
+        this.isSubmitting.set(false);
         this.alertService.showError('Failed to pay installment');
         throw e;
       },
@@ -218,16 +234,18 @@ export class SavingsGoalDetailComponent implements OnInit {
     const request = new AddInstallmentsApiRequest(
       values.numberOfNewInstallments!
     );
-
+    this.isSubmitting.set(true);
     this.savingsStore.addInstallments(goalId, request).subscribe({
       next: () => {
         this.alertService.showSuccess(
           `${values.numberOfNewInstallments} installments added successfully`
         );
+        this.isSubmitting.set(false);
         this.closeAddInstallmentsModal();
         this.reloadData();
       },
       error: (e) => {
+        this.isSubmitting.set(false);
         this.alertService.showError('Failed to add installments');
         throw e;
       },

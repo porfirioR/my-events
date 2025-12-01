@@ -38,7 +38,7 @@ export class SavingsCalculatorHelper {
           );
         }
         // Fórmula: n + (n × (n-1) × incremento / 2)
-        return n  + (n * (n - 1) * (+incrementAmount) / 2);
+        return ((n*(n+1))/2)*+incrementAmount;
       case ProgressionType.FreeForm: // FreeForm
         throw new Error(
           'FreeForm type does not calculate target amount automatically'

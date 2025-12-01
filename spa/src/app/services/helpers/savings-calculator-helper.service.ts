@@ -27,7 +27,7 @@ export class SavingsCalculatorHelper {
           throw new Error('incrementAmount is required for Ascending/Descending types');
         }
         // Fórmula: n + (n × (n-1) × incremento / 2)
-        return n  + (n * (n - 1) * (+incrementAmount) / 2);
+        return ((n*(n+1))/2)*+incrementAmount;
 
       case ProgressionType.Random:
         if (incrementAmount) {

@@ -50,13 +50,6 @@ export class DashboardComponent implements OnInit {
       .slice(0, 3);
   });
 
-  // Savings Goals - Total Saved
-  protected totalSaved = computed(() => {
-    return this.savingsStore
-      .goals()
-      .reduce((sum, goal) => sum + goal.currentAmount, 0);
-  });
-
   ngOnInit(): void {
     // Load Collaborators
     if (this.collaboratorStore.totalCount() === 0) {
