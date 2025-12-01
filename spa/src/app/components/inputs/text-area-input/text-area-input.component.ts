@@ -17,6 +17,7 @@ export class TextAreaInputComponent implements ControlValueAccessor {
   @Input({required: true}) label: string = ''
   @Input({required: true}) id: string = ''
   @Input({required: true}) name: string = ''
+  @Input() placeholder: string = ''
 
   constructor(@Self() public ngControl: NgControl) {
     this.ngControl.valueAccessor = this

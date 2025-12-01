@@ -18,7 +18,7 @@
   >
     <option [ngValue]="null" hidden>Select one {{label}}</option>
     @for (item of list; track item.key) {
-      <option class="dark:border-y-indigo-600 text-black" [ngValue]="item.key">{{item.value}}</option>
+      <option class="dark:border-y-indigo-600 text-black" [ngValue]="item.key">{{item.value}} {{item.moreData}}</option>
     }
   </select>
   <app-form-errors [formControl]="$any(ngControl).control" [label]="label"/>

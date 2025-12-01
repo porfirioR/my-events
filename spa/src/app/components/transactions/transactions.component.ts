@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TransactionViewApiModel } from '../../models/api/transactions';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
-import { AlertService, HelperService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-reimbursement-modal.component';
 
 @Component({
@@ -23,13 +23,14 @@ export class TransactionsComponent implements OnInit {
   private readonly collaboratorStore = useCollaboratorStore();
   private readonly loadingStore = useLoadingStore();
   private readonly alertService = inject(AlertService);
+  private formatterService = inject(FormatterHelperService);
 
   // Signals
   protected isLoading = this.loadingStore.isLoading;
   protected filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
 
-  protected formatCurrency = HelperService.formatCurrency
-  protected getFormattedDate = HelperService.getFormattedDate;
+  protected formatCurrency = this.formatterService.formatCurrency
+  protected getFormattedDate = FormatterHelperService.getFormattedDate;
 
   protected transactions = computed(() => {
     const filter = this.filterType();
@@ -75,7 +76,7 @@ export class TransactionsComponent implements OnInit {
   }
 
   protected deleteTransaction(transaction: TransactionViewApiModel): void {
-    const confirmMsg = `Description: ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount)}
+    const confirmMsg = `Description: ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 1)}
     This action cannot be undone.`
     this.alertService.showQuestionModal('Are you sure you want to delete this transaction?', confirmMsg).then(x => {
       if (x && x.isConfirmed) {
@@ -86,7 +87,7 @@ export class TransactionsComponent implements OnInit {
   }
 
   protected settleTransaction(transaction: TransactionViewApiModel): void {
-    const confirmMsg = `Confirm that this transaction has been settled? ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount)}`
+    const confirmMsg = `Confirm that this transaction has been settled? ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 1)}`
     this.alertService.showQuestionModal('Mark as Settled?', confirmMsg).then(x => {
       if (x && x.isConfirmed) {
         this.transactionStore.settleTransaction(transaction.id);

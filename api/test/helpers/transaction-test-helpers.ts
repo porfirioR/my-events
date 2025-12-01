@@ -1,3 +1,4 @@
+import { CreateTransactionApiRequest, TransactionSplitApiRequest } from "src/host/models/transactions";
 import { ParticipantType, SplitType, WhoPaid } from "../../src/utility/enums";
 
 export class TransactionTestHelpers {
@@ -39,25 +40,26 @@ export class TransactionTestHelpers {
     };
   }
 
-  static createMockCreateTransactionApiRequest() {
+  static createMockCreateTransactionApiRequest(): CreateTransactionApiRequest {
+    const splits: TransactionSplitApiRequest[] = [
+      {
+        participantType: ParticipantType.User,
+        amount: 50000,
+        sharePercentage: 50
+      },
+      {
+        participantType: ParticipantType.Collaborator,
+        amount: 50000,
+        sharePercentage: 50
+      }
+    ]
     return {
       collaboratorId: 2,
       totalAmount: 100000,
       description: 'Test transaction',
       splitType: SplitType.EQUAL as const,
       whoPaid: WhoPaid.USER,
-      splits: [
-        {
-          participantType: WhoPaid.USER,
-          amount: 50000,
-          sharePercentage: 50
-        },
-        {
-          participantType: ParticipantType.Collaborator,
-          amount: 50000,
-          sharePercentage: 50
-        }
-      ]
+      splits: splits
     };
   }
 

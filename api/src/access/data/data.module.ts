@@ -5,13 +5,14 @@ import { UtilityModule } from '../../utility/utility.module';
 import { DbContextService } from './services/db-context.service';
 import { EventAccessService } from './services/event-access.service';
 import { EventFollowAccessService } from './services/event-follow-access.service';
-import { CollaboratorMatchAccessService, EmailVerificationTokenAccessService, PasswordResetTokenAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService } from './services';
+import { CollaboratorMatchAccessService, ConfigurationAccessService, EmailVerificationTokenAccessService, PasswordResetTokenAccessService, SavingsGoalAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService } from './services';
 import { CollaboratorAccessService } from './services/collaborator-access.service';
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
-import { ConfigurationAccessService } from './services/configuration-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
-import { SavingAccessService } from './services/saving-access.service';
 import { UserAccessService } from './services/user-access.service';
+import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { SavingsInstallmentAccessService } from './services/savings-installment-access.service';
+import { SavingsDepositAccessService } from './services/savings-deposit-access.service';
 
 @Module({
   imports: [
@@ -24,8 +25,6 @@ import { UserAccessService } from './services/user-access.service';
     EventAccessService,
     EventFollowAccessService,
     UserAccessService,
-    PaymentAccessService,
-    SavingAccessService,
     ConfigurationAccessService,
     CollaboratorAccessService,
     CollaboratorMatchAccessService,
@@ -35,6 +34,10 @@ import { UserAccessService } from './services/user-access.service';
     TransactionSplitAccessService,
     PasswordResetTokenAccessService,
     EmailVerificationTokenAccessService,
+    PaymentAccessService,
+    SavingsGoalAccessService,
+    SavingsInstallmentAccessService,
+    SavingsDepositAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,
@@ -59,20 +62,38 @@ import { UserAccessService } from './services/user-access.service';
       provide: TRANSACTION_TOKENS.SPLIT_ACCESS_SERVICE,
       useExisting: TransactionSplitAccessService,
     },
+    {
+      provide: SAVINGS_TOKENS.GOAL_ACCESS_SERVICE,
+      useExisting: SavingsGoalAccessService,
+    },
+    {
+      provide: SAVINGS_TOKENS.INSTALLMENT_ACCESS_SERVICE,
+      useExisting: SavingsInstallmentAccessService,
+    },
+    {
+      provide: SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE,
+      useExisting: SavingsDepositAccessService,
+    },
+    {
+      provide: SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE,
+      useExisting: ConfigurationAccessService,
+    },
   ],
   exports: [
     EventAccessService,
     EventFollowAccessService,
     UserAccessService,
     PaymentAccessService,
-    SavingAccessService,
-    ConfigurationAccessService,
     COLLABORATOR_TOKENS.ACCESS_SERVICE,
     COLLABORATOR_TOKENS.MATCH_ACCESS_SERVICE,
     COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE,
     TRANSACTION_TOKENS.ACCESS_SERVICE,
     TRANSACTION_TOKENS.REIMBURSEMENT_ACCESS_SERVICE,
     TRANSACTION_TOKENS.SPLIT_ACCESS_SERVICE,
+    SAVINGS_TOKENS.GOAL_ACCESS_SERVICE,
+    SAVINGS_TOKENS.INSTALLMENT_ACCESS_SERVICE,
+    SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE,
+    SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE,
     PasswordResetTokenAccessService,
     EmailVerificationTokenAccessService,
   ],

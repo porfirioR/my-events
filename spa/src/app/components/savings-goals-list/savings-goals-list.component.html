@@ -1,0 +1,225 @@
+<!-- src/app/components/savings-goals-list/savings-goals-list.component.html -->
+
+<section aria-labelledby="savings-goals-heading" class="mb-8">
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
+    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <h2 id="savings-goals-heading" class="text-xl font-semibold text-base-content">
+          Savings Goals
+        </h2>
+        
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Filtro por Estado -->
+          <div class="btn-group">
+            <button 
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === null}"
+              (click)="setStatusFilter(null)"
+            >
+              All
+            </button>
+            <button 
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === GoalStatus.Active}"
+              (click)="setStatusFilter(GoalStatus.Active)"
+            >
+              <i class="fas fa-circle-play mr-1"></i>
+              Active
+            </button>
+            <button 
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === GoalStatus.Completed}"
+              (click)="setStatusFilter(GoalStatus.Completed)"
+            >
+              <i class="fas fa-circle-check mr-1"></i>
+              Completed
+            </button>
+          </div>
+
+          <!-- Filtro por Tipo -->
+          <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-sm btn-outline">
+              <i class="fas fa-filter mr-1"></i>
+              Type
+            </label>
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-52 border border-base-300">
+              <li>
+                <button (click)="setProgressionTypeFilter(null)">All Types</button>
+              </li>
+              <li>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Fixed)">Fixed</button>
+              </li>
+              <li>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Ascending)">Ascending</button>
+              </li>
+              <li>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Descending)">Descending</button>
+              </li>
+              <li>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Random)">Random</button>
+              </li>
+              <li>
+                <button (click)="setProgressionTypeFilter(ProgressionType.FreeForm)">Free Form</button>
+              </li>
+            </ul>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            (click)="create()"
+          >
+            <i class="fas fa-plus mr-1" aria-hidden="true"></i>
+            New Goal
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-6">
+      @if (isLoading()) {
+        <div class="flex justify-center items-center py-12">
+          <span class="loading loading-spinner loading-lg"></span>
+          <p class="ml-3 text-base-content/70">Loading savings goals...</p>
+        </div>
+      } @else {
+        <ul class="space-y-4" role="list">
+          @for (goal of goals(); track goal.id) {
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
+                (click)="viewDetail(goal)">
+              <article class="flex items-start gap-4">
+                <!-- Icon -->
+                <figure class="flex-shrink-0">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md"
+                    [ngClass]="{
+                      'bg-success': goal.statusId === GoalStatus.Active,
+                      'bg-info': goal.statusId === GoalStatus.Completed,
+                      'bg-warning': goal.statusId === GoalStatus.Paused,
+                      'bg-error': goal.statusId === GoalStatus.Cancelled
+                    }">
+                    <i [class]="'fas ' + getGoalStatusIcon(goal.statusId)"></i>
+                  </div>
+                </figure>
+
+                <!-- Content -->
+                <div class="flex-grow min-w-0">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-grow">
+                      <h3 class="font-semibold text-base-content text-lg">
+                        {{ goal.name }}
+                      </h3>
+                      @if (goal.description) {
+                        <p class="text-sm text-base-content/70 mt-1">{{ goal.description }}</p>
+                      }
+                    </div>
+                    
+                    <!-- Actions Menu -->
+                    <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
+                      <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </label>
+                      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
+                        <li>
+                          <button (click)="viewDetail(goal)">
+                            <i class="fas fa-eye text-info"></i>
+                            View Details
+                          </button>
+                        </li>
+                        <li>
+                          <button (click)="editGoal(goal)">
+                            <i class="fas fa-edit text-primary"></i>
+                            Edit
+                          </button>
+                        </li>
+                        <li><hr class="my-1 border-base-300"></li>
+                        <li>
+                          <button (click)="deleteGoal(goal)">
+                            <i class="fas fa-trash text-error"></i>
+                            Delete
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="mt-3">
+                    <div class="flex items-center justify-between text-sm mb-1">
+                      <span class="text-base-content/70">
+                        {{ formatCurrency(goal.currentAmount, goal.currencyId) }} / {{ formatCurrency(goal.targetAmount, goal.currencyId) }}
+                      </span>
+                      <span class="font-semibold" [ngClass]="getGoalStatusColor(goal.statusId)">
+                        {{ calculateProgress(goal.currentAmount, goal.targetAmount) }}%
+                      </span>
+                    </div>
+                    <progress 
+                      class="progress w-full"
+                      [ngClass]="{
+                        'progress-success': goal.statusId === GoalStatus.Active,
+                        'progress-info': goal.statusId === GoalStatus.Completed,
+                        'progress-warning': goal.statusId === GoalStatus.Paused,
+                        'progress-error': goal.statusId === GoalStatus.Cancelled
+                      }"
+                      [value]="goal.currentAmount" 
+                      [max]="goal.targetAmount">
+                    </progress>
+                  </div>
+
+                  <!-- Metadata -->
+                  <div class="flex items-center gap-4 mt-3 flex-wrap">
+                    <!-- Status Badge -->
+                    <span class="badge badge-sm"
+                      [ngClass]="{
+                        'badge-success': goal.statusId === GoalStatus.Active,
+                        'badge-info': goal.statusId === GoalStatus.Completed,
+                        'badge-warning': goal.statusId === GoalStatus.Paused,
+                        'badge-error': goal.statusId === GoalStatus.Cancelled
+                      }">
+                      <i [class]="'fas ' + getGoalStatusIcon(goal.statusId) + ' mr-1'"></i>
+                      {{ getGoalStatusLabel(goal.statusId) }}
+                    </span>
+
+                    <!-- Type Badge -->
+                    <span class="badge badge-sm badge-outline">
+                      {{ getProgressionTypeLabel(goal.progressionTypeId) }}
+                    </span>
+
+                    <!-- Installments Info -->
+                    @if (goal.numberOfInstallments) {
+                      <span class="text-xs text-base-content/70">
+                        <i class="fas fa-list-ol mr-1"></i>
+                        {{ goal.numberOfInstallments }} installments
+                      </span>
+                    }
+
+                    <!-- Date -->
+                    <time class="text-xs text-base-content/60" [attr.datetime]="goal.startDate">
+                      Started {{ getFormattedDate(goal.startDate) }}
+                    </time>
+                  </div>
+                </div>
+              </article>
+            </li>
+          } @empty {
+            <li class="text-center py-12">
+              <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-piggy-bank text-2xl text-base-content/50"></i>
+              </figure>
+              <h3 class="text-lg font-medium text-base-content mb-2">
+                No savings goals yet
+              </h3>
+              <p class="text-base-content/70 mb-4">Start saving by creating your first goal</p>
+              <button class="btn btn-primary" (click)="create()">
+                <i class="fas fa-plus mr-2"></i>
+                Create Goal
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </article>
+</section>

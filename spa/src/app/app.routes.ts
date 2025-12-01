@@ -8,7 +8,6 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { UpsertEventComponent } from './components/upsert-event/upsert-event.component';
 import { eventResolver } from './resolvers/event.resolver';
-import { UpsertSavingComponent } from './components/upsert-saving/upsert-saving.component';
 import { CollaboratorsComponent } from './components/collaborators/collaborators.component';
 import { UpsertCollaboratorComponent } from './components/upsert-collaborator/upsert-collaborator.component';
 import { authGuard } from './guards/auth.guard';
@@ -18,6 +17,9 @@ import { CollaboratorInvitationsComponent } from './components/collaborator-invi
 import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
 import { VerifyEmailPendingComponent } from './components/verify-email-pending/verify-email-pending.component';
 import { WarningUnsavedChanges } from './guards';
+import { UpsertSavingsGoalComponent } from './components/upsert-savings-goal/upsert-savings-goal.component';
+import { SavingsGoalDetailComponent } from './components/savings-goal-detail/savings-goal-detail.component';
+import { SavingsGoalsListComponent } from './components/savings-goals-list/savings-goals-list.component';
 
 export const routes: Routes = [
   {
@@ -51,18 +53,32 @@ export const routes: Routes = [
         canActivate: [authGuard]
       },
       {
-        path: 'update-saving/:id',
-        title: 'Update Saving',
-        loadComponent: () => UpsertSavingComponent,
-        resolve: { saving: eventResolver },
-        canActivate: [authGuard]
-      },
-      {
-        path: 'create-saving',
-        title: 'Create Saving',
-        loadComponent: () => UpsertSavingComponent,
-        resolve: { saving: eventResolver },
-        canActivate: [authGuard]
+        path: 'savings',
+        canActivate: [authGuard],
+        children: [
+          {
+            path: '',
+            title: 'Savings Goals',
+            loadComponent: () => SavingsGoalsListComponent
+          },
+          {
+            path: 'create',
+            title: 'Create Savings Goal',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () => UpsertSavingsGoalComponent
+          },
+          {
+            path: ':id',
+            title: 'Savings Goal Detail',
+            loadComponent: () => SavingsGoalDetailComponent
+          },
+          {
+            path: ':id/edit',
+            title: 'Edit Savings Goal',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () => UpsertSavingsGoalComponent
+          }
+        ]
       },
       // Collaborators
       {

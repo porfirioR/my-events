@@ -15,10 +15,9 @@ import { CurrentUserService } from './services/current-user.service';
 import { UsersController } from './controllers/users.controller';
 import { EventsController } from './controllers/events.controller';
 import { PaymentController } from './controllers/payments.controller';
-import { SavingsController } from './controllers/savings.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { TransactionController } from './controllers/transaction.controller';
-import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController } from './controllers';
+import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController, SavingsGoalsController } from './controllers';
 
 @Module({
   imports: [
@@ -33,7 +32,7 @@ import { CollaboratorInvitationsController, CollaboratorMatchesController, Colla
     UsersController,
     EventsController,
     PaymentController,
-    SavingsController,
+    SavingsGoalsController,
     ConfigurationController,
     CollaboratorMatchesController,
     CollaboratorMatchRequestsController,

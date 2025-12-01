@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core'
-import { RouterModule } from '@angular/router'
-import { DashboardComponent } from "../dashboard/dashboard.component";
-import { EventViewModel } from '../../models/view/event-view-model'
-import { useAuthStore, useLoadingStore } from '../../store'
+import { Component, inject } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { DashboardComponent } from '../dashboard/dashboard.component';
+import { EventViewModel } from '../../models/view/event-view-model';
+import { useAuthStore, useLoadingStore } from '../../store';
 import { NotificationService } from '../../services';
 
 @Component({
@@ -11,13 +11,13 @@ import { NotificationService } from '../../services';
   styleUrls: ['./home.component.css'],
   imports: [
     RouterModule,
-    DashboardComponent,
-  ]
+    DashboardComponent
+  ],
 })
 export class HomeComponent {
   private authStore = useAuthStore();
   private loadingStore = useLoadingStore();
-  protected eventFollows: EventViewModel[] = []
+  protected eventFollows: EventViewModel[] = [];
   protected isLoading = this.loadingStore.isLoading;
   protected currentUser = this.authStore.currentUser;
   protected userLoaded = this.authStore.isLoggedIn;

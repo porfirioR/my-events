@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { useLoadingStore, useTransactionStore } from '../../store';
-import { HelperService } from '../../services';
+import { FormatterHelperService } from '../../services';
 
 @Component({
   selector: 'app-balances',
@@ -19,6 +19,7 @@ export class BalancesComponent implements OnInit {
   private readonly transactionStore = useTransactionStore();
   private readonly loadingStore = useLoadingStore();
   private readonly location = inject(Location);
+  private formatterService = inject(FormatterHelperService);
 
   // Signals
   protected isLoading = this.loadingStore.isLoading;
@@ -32,8 +33,8 @@ export class BalancesComponent implements OnInit {
 
   // For Math functions in template
   protected math = Math;
-  protected formatCurrency =  HelperService.formatCurrency
-  protected getInitials = HelperService.getInitials
+  protected formatCurrency =  this.formatterService.formatCurrency
+  protected getInitials = FormatterHelperService.getInitials
 
   ngOnInit(): void {
     this.transactionStore.loadBalances();

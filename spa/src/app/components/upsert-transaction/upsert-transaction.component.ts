@@ -7,7 +7,7 @@ import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../.
 import { Configurations, ParticipantType, SplitType, WhoPaid } from '../../models/enums';
 import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionApiModel, TransactionSplitApiRequest, TransactionViewApiModel } from '../../models/api/transactions';
 import { ReimbursementFormGroup, TransactionFormGroup, TransactionSplitFormGroup } from '../../models/forms';
-import { AlertService, HelperService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { KeyValueViewModel } from '../../models/view';
 import { TextComponent } from '../inputs/text/text.component';
@@ -35,6 +35,8 @@ export class UpsertTransactionComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
   private readonly alertService = inject(AlertService);
+  private formatterService = inject(FormatterHelperService);
+
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
@@ -57,7 +59,7 @@ export class UpsertTransactionComponent implements OnInit {
   // Computed
   protected linkedCollaborators: Signal<KeyValueViewModel[]> = computed(() => {
     const linkedCollaborators = this.collaboratorStore.linkedCollaborators()
-    return HelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
+    return FormatterHelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
   });
   protected splitType = SplitType
   protected whoPaid = WhoPaid
@@ -339,7 +341,7 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   // ========== Formatters ==========
-  protected formatCurrency = (amount: number): string => HelperService.formatCurrency(amount)
+  protected formatCurrency = (amount: number): string => this.formatterService.formatCurrency(amount, 1)
 
   private getMaxValue(): number {
     const splitType = this.formGroup.value.splitType;

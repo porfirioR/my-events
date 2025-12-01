@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
-import { CreateTransactionSplitAccessRequest, ITransactionSplitAccessService, TransactionSplitAccessModel } from 'src/access/contract/transactions';
+import { CreateTransactionSplitAccessRequest, ITransactionSplitAccessService, TransactionSplitAccessModel } from '../../../access/contract/transactions';
 import { TransactionSplitEntity } from '../entities';
 
 @Injectable()

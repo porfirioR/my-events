@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
-import { CreateTransactionReimbursementAccessRequest, ITransactionReimbursementAccessService, TransactionReimbursementAccessModel } from 'src/access/contract/transactions';
+import { CreateTransactionReimbursementAccessRequest, ITransactionReimbursementAccessService, TransactionReimbursementAccessModel } from '../../../access/contract/transactions';
 import { TransactionReimbursementEntity } from '../entities';
 
 @Injectable()

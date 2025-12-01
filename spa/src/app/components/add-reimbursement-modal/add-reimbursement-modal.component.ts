@@ -1,7 +1,7 @@
 import { Component, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReimbursementFormGroup } from '../../models/forms';
-import { AlertService, HelperService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { TextComponent } from '../inputs/text/text.component';
 import { useTransactionStore } from '../../store';
@@ -24,7 +24,8 @@ export interface ReimbursementModalData {
 })
 export class AddReimbursementModalComponent {
   @ViewChild('reimbursementModal', { static: true }) reimbursementModal!: ElementRef<HTMLDialogElement>
-  
+  private formatterService = inject(FormatterHelperService);
+
   // Signals para manejar el estado
   private isOpen = signal<boolean>(false);
   protected modalData = signal<ReimbursementModalData | null>(null);
@@ -37,7 +38,7 @@ export class AddReimbursementModalComponent {
   private readonly transactionStore = useTransactionStore();
   private readonly alertService = inject(AlertService);
   protected formGroup!: FormGroup<ReimbursementFormGroup>;
-  protected formatCurrency = HelperService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency;
 
   constructor() {
     this.formGroup = new FormGroup<ReimbursementFormGroup>({
@@ -108,12 +109,12 @@ export class AddReimbursementModalComponent {
     this.submitTimestamp.set(Date.now());
 
     const request = new AddReimbursementApiRequest(
-      +this.formGroup.value.amount!, 
+      +this.formGroup.value.amount!,
       this.formGroup.value.description
     );
 
     this.transactionStore.addReimbursement({
-      transactionId: data.transactionId, 
+      transactionId: data.transactionId,
       request
     });
   }

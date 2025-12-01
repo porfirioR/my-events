@@ -32,7 +32,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
   public getAll = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
-      .select(DatabaseColumns.All)
+      .select<DatabaseColumns.All, CollaboratorEntity>(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
       .order(DatabaseColumns.DateCreated, { ascending: true });
 
@@ -45,7 +45,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
   public getUnlinkedCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
-      .select(DatabaseColumns.All)
+      .select<DatabaseColumns.All, CollaboratorEntity>(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.IsActive, true)
       .is(DatabaseColumns.Email, null)
@@ -60,7 +60,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
   public getLinkedCollaborators = async (userId: number): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
-      .select(DatabaseColumns.All)
+      .select<DatabaseColumns.All, CollaboratorEntity>(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.IsActive, true)
       .not(DatabaseColumns.Email, 'is', null)
@@ -78,7 +78,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, id)
       .eq(DatabaseColumns.UserId, userId)
-      .single();
+      .single<CollaboratorEntity>();
 
     if (error) {
       throw new Error(error.message);
@@ -174,7 +174,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
     total: number;
     internal: number;
     external: number;
-}> => {
+  }> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
       .select(`
@@ -202,7 +202,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
   public getMyCollaboratorByEmail = async (email: string, userId: number): Promise<CollaboratorAccessModel | null> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
-      .select(DatabaseColumns.All)
+      .select<DatabaseColumns.All, CollaboratorEntity>(DatabaseColumns.All)
       .eq(DatabaseColumns.Email, email)
       .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.IsActive, true)
@@ -219,7 +219,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
   public getByEmail = async (email: string): Promise<CollaboratorAccessModel | null> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
-      .select(DatabaseColumns.All)
+      .select<DatabaseColumns.All, CollaboratorEntity>(DatabaseColumns.All)
       .eq(DatabaseColumns.Email, email)
       .eq(DatabaseColumns.IsActive, true)
       .single();
@@ -234,7 +234,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
   public getExternalCollaboratorsByEmail = async (email: string): Promise<CollaboratorAccessModel[]> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Collaborators)
-      .select(DatabaseColumns.All)
+      .select<DatabaseColumns.All, CollaboratorEntity>(DatabaseColumns.All)
       .eq(DatabaseColumns.Email, email)
       .eq(DatabaseColumns.IsActive, true)
       .not(DatabaseColumns.Email, 'is', null);

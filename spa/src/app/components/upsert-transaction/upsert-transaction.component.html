@@ -28,11 +28,28 @@
         [disabled]="isLoading()"
       />
 
-      <app-text formControlName="totalAmount" type="number" label="Total Amount" id="totalAmount" name="totalAmount" [description]="'Total transaction amount on invoice'" />
-      <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
+      <app-text
+        formControlName="totalAmount"
+        type="number"
+        label="Total Amount"
+        id="totalAmount"
+        name="totalAmount"
+        [description]="'Total transaction amount on invoice'"
+      />
+      <app-text-area-input
+        formControlName="description"
+        label="Description"
+        id="description"
+        name="description"
+        placeholder="Description"
+      />
 
       <!-- Reimbursement Section -->
-      <app-check-box-input formControlName="hasReimbursement" id="hasReimbursement" [label]="'Add Reimbursement'" />
+      <app-check-box-input
+        formControlName="hasReimbursement"
+        id="hasReimbursement"
+        [label]="'Add Reimbursement'"
+      />
 
       @if (formGroup.controls.hasReimbursement.value) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">

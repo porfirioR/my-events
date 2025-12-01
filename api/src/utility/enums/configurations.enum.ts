@@ -1,5 +1,6 @@
 export enum Configurations {
-  Types = 'types',
-  Periods = 'periods',
+  SavingsProgressionTypes = 'savingsProgressionTypes',
+  SavingsStatuses = 'savingsStatuses',
+  InstallmentStatuses = 'installmentStatuses',
   Currencies = 'currencies',
 }
