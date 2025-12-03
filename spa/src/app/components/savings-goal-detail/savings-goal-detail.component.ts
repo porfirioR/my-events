@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, computed, signal } from '@angular/core';
+import { Component, OnInit, inject, computed, signal, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   FormControl,
@@ -95,6 +95,12 @@ export class SavingsGoalDetailComponent implements OnInit {
         Validators.min(1),
       ]),
     });
+
+    effect(() => {
+      if (this.isFreeForm() && this.activeTab() === 'installments') {
+        this.setActiveTab('deposits');
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -164,10 +170,12 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   protected openFreeFormModal(): void {
     const maxAmount = this.remaining();
+    this.freeFormDepositForm.reset()
     this.freeFormDepositForm.patchValue({
       amount: null,
       description: '',
     });
+    this.freeFormDepositForm.controls.amount.addValidators(Validators.max(maxAmount))
     this.showFreeFormModal.set(true);
   }
 
@@ -182,29 +190,21 @@ export class SavingsGoalDetailComponent implements OnInit {
     const goalId = this.goal()!.id;
     const values = this.freeFormDepositForm.value;
 
-    // Validar que no exceda el remaining
-    if (values.amount! > this.remaining()) {
-      this.alertService.showError(
-        `Amount cannot exceed remaining: ${this.formatterService.formatCurrency(
-          this.remaining(),
-          this.goal()!.currencyId
-        )}`
-      );
-      return;
-    }
-
     const request = new CreateFreeFormDepositApiRequest(
-      values.amount!,
+      +values.amount!,
       values.description || undefined
     );
+    this.isSubmitting.set(true);
 
     this.savingsStore.createFreeFormDeposit(goalId, request).subscribe({
       next: () => {
+        this.isSubmitting.set(false);
         this.alertService.showSuccess('Deposit created successfully');
         this.closeFreeFormModal();
         this.reloadData();
       },
       error: (e) => {
+        this.isSubmitting.set(false);
         this.alertService.showError('Failed to create deposit');
         throw e;
       },

@@ -126,10 +126,12 @@ export const routes: Routes = [
         children: [
           {
             path: '',
+            title: 'Transactions',
             loadComponent: () => import('./components/transactions/transactions.component').then(x => x.TransactionsComponent)
           },
           {
             path: 'new',
+            title: 'New Transaction',
             canDeactivate: [WarningUnsavedChanges],
             loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.UpsertTransactionComponent)
           },
