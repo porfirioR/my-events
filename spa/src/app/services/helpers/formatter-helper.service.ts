@@ -15,7 +15,7 @@ export class FormatterHelperService {
     switch (configurationType) {
       case Configurations.Currencies:
         const currency = (x as CurrencyApiModel)
-        moreData = `(${currency.symbol}/${currency.country})`
+        moreData = `Symbol: ${currency.symbol} - Country: ${currency.country}`
         value = currency.name
         break;
       case Configurations.Periods:

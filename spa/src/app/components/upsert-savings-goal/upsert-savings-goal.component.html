@@ -1,150 +1,197 @@
-<section class="flex flex-col items-center justify-center px-6 py-4 mx-auto lg:py-0">
-  <section
-    class="w-full bg-base-100 dark:bg-base-200 rounded-lg shadow-lg border border-base-300 md:mt-0 sm:max-w-3xl xl:p-0">
-    <main class="px-6 py-4 space-y-4 md:space-y-6 sm:p-8">
-      <header class="flex items-center justify-between">
-        <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl">
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <button
+          type="button"
+          class="btn btn-sm btn-ghost btn-circle"
+          [routerLink]="['/savings']"
+        >
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
           {{ isEditMode ? 'Edit Savings Goal' : 'New Savings Goal' }}
         </h1>
-      </header>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="cancel()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
 
-      <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()">
-        <!-- Nombre -->
-        <app-text formControlName="name" type="text" label="Goal Name" id="name" name="name"
-          [description]="'E.g., Emergency Fund, Vacation, New Car'" />
+    <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
+      <!-- Nombre -->
+      <app-text formControlName="name" type="text" label="Goal Name" id="name" name="name"
+        [description]="'E.g., Emergency Fund, Vacation, New Car'" 
+        [disabled]="saving" />
 
-        <!-- Descripción -->
-        <app-text-area-input formControlName="description" label="Description (optional)" id="description"
-          name="description" />
+      <!-- Descripción -->
+      <app-text-area-input
+        formControlName="description"
+        label="Description (optional)"
+        placeholder="Description"
+        id="description"
+        name="description"
+        [disabled]="saving"
+      />
 
-        <!-- Fecha de inicio -->
-        <app-date-input formControlName="startDate" label="Start Date" id="startDate" name="startDate" />
+      <!-- Fecha de inicio -->
+      <app-date-input formControlName="startDate" label="Start Date" id="startDate" name="startDate" 
+        [disabled]="saving" />
 
-        <!-- Moneda -->
-        <app-select-input formControlName="currencyId" id="currency" label="Currency" name="currency"
-          [list]="currencyList" />
+      <!-- Moneda -->
+      <app-select-input
+        formControlName="currencyId"
+        id="currency"
+        label="Currency"
+        name="currency"
+        [list]="currencyList"
+        [disabled]="saving"
+      />
 
-        <!-- Tipo de Progresión -->
-        <app-select-input formControlName="progressionTypeId" id="progressionType" label="Progression Type"
-          name="progressionType" [list]="progressionTypeList" [description]="'Select how you want to save'" />
+      <!-- Tipo de Progresión -->
+      <app-select-input
+        formControlName="progressionTypeId"
+        id="progressionType"
+        label="Progression Type"
+        name="progressionType"
+        [list]="progressionTypeList"
+        [description]="'Select how you want to save'"
+        [disabled]="saving"
+      />
 
-        <!-- FreeForm: Target Amount manual -->
-        @if (showTargetAmountInput()) {
-        <div class="mt-4 p-4 bg-info/10 border border-info rounded-lg">
-          <div class="flex items-start gap-2 mb-3">
-            <i class="fas fa-info-circle text-info mt-1"></i>
+      <!-- FreeForm: Target Amount manual -->
+      @if (showTargetAmountInput()) {
+      <div class="mt-4 p-4 bg-info/10 border border-info rounded-lg">
+        <div class="flex items-start gap-2 mb-3">
+          <i class="fas fa-info-circle text-info mt-1"></i>
+          <div>
+            <h3 class="font-semibold text-base-content">Free Form Savings</h3>
+            <p class="text-sm text-base-content/70">Set your target amount and deposit freely whenever you want.</p>
+          </div>
+        </div>
+
+        <app-text formControlName="targetAmount" type="number" label="Target Amount" id="targetAmount"
+          name="targetAmount" [description]="'Your savings goal'" 
+          [disabled]="saving" />
+      </div>
+      }
+
+      <!-- Otros tipos: Campos de cuotas -->
+      @if (showInstallmentFields()) {
+        <div class="mt-4 space-y-4 p-4 bg-base-100 dark:bg-base-200 rounded-lg border border-base-300">
+          <div class="flex items-start gap-2">
+            <i class="fas fa-calculator text-primary mt-1"></i>
             <div>
-              <h3 class="font-semibold text-base-content">Free Form Savings</h3>
-              <p class="text-sm text-base-content/70">Set your target amount and deposit freely whenever you want.</p>
+              <h3 class="font-semibold text-base-content">Installment Configuration</h3>
+              <p class="text-sm text-base-content/70">Configure your payment schedule</p>
             </div>
           </div>
+          
+          <app-text
+            formControlName="numberOfInstallments"
+            type="number"
+            label="Number of Installments"
+            id="numberOfInstallments"
+            name="numberOfInstallments"
+            [description]="'E.g., 52 for weekly over a year, 12 for monthly'"
+            [disabled]="saving"
+          />
 
-          <app-text formControlName="targetAmount" type="number" label="Target Amount" id="targetAmount"
-            name="targetAmount" [description]="'Your savings goal'" />
-        </div>
-        }
-
-        <!-- Otros tipos: Campos de cuotas -->
-        <!-- Dentro de la sección de Installment Configuration -->
-        @if (showInstallmentFields()) {
-          <div class="mt-4 space-y-4 p-4 bg-base-200 dark:bg-base-300 rounded-lg border border-base-300">
-            <div class="flex items-start gap-2">
-              <i class="fas fa-calculator text-primary mt-1"></i>
-              <div>
-                <h3 class="font-semibold text-base-content">Installment Configuration</h3>
-                <p class="text-sm text-base-content/70">Configure your payment schedule</p>
-              </div>
-            </div>
-            
+          <!-- Fixed: Mostrar Base Amount -->
+          @if (showBaseAmountField()) {
             <app-text
-              formControlName="numberOfInstallments"
+              formControlName="baseAmount"
               type="number"
-              label="Number of Installments"
-              id="numberOfInstallments"
-              name="numberOfInstallments"
-              [description]="'E.g., 52 for weekly over a year, 12 for monthly'"
+              label="Amount per Installment"
+              id="baseAmount"
+              name="baseAmount"
+              [description]="'Same amount for each installment'"
+              [disabled]="saving"
+            />
+          }
+
+          <!-- Ascending/Descending/Random: Mostrar Increment Amount -->
+          @if (showIncrementField()) {
+            <app-text
+              formControlName="incrementAmount"
+              type="number"
+              label="Increment Amount"
+              id="incrementAmount"
+              name="incrementAmount"
+              [description]="getIncrementDescription()"
+              [disabled]="saving"
             />
 
-            <!-- Fixed: Mostrar Base Amount -->
-            @if (showBaseAmountField()) {
-              <app-text
-                formControlName="baseAmount"
-                type="number"
-                label="Amount per Installment"
-                id="baseAmount"
-                name="baseAmount"
-                [description]="'Same amount for each installment'"
-              />
-            }
-
-            <!-- Ascending/Descending/Random: Mostrar Increment Amount -->
-            @if (showIncrementField()) {
-              <app-text
-                formControlName="incrementAmount"
-                type="number"
-                label="Increment Amount"
-                id="incrementAmount"
-                name="incrementAmount"
-                [description]="getIncrementDescription()"
-              />
-              
-              <!-- Mostrar el Base Amount calculado -->
-              @if (calculatedBaseAmount() !== null) {
-                <div class="alert alert-info ">
-                  <i class="fas fa-info-circle"></i>
-                  <div>
-                    <h4 class="font-semibold">First Installment</h4>
-                    <p>{{ formatCurrency(calculatedBaseAmount()!, formGroup.value.currencyId) }}</p>
-                  </div>
-                </div>
-              }
-            }
-
-            <!-- Mostrar target amount calculado -->
-            @if (calculatedTargetAmount() !== null) {
-              <div class="alert alert-success shadow-lg">
-                <div class="flex items-center gap-3">
-                  <i class="fas fa-piggy-bank text-2xl"></i>
-                  <div>
-                    <h4 class="font-semibold">Calculated Target Amount</h4>
-                    <p class="text-lg font-bold">{{ formatCurrency(calculatedTargetAmount()!, formGroup.value.currencyId) }}</p>
-                    <p class="text-xs opacity-80">
-                      {{ formGroup.value.numberOfInstallments }} installments
-                      @if (showIncrementField()) {
-                        <span> ({{ getProgressionDescription() }})</span>
-                      }
-                    </p>
-                  </div>
+            <!-- Mostrar el Base Amount calculado -->
+            @if (calculatedBaseAmount() !== null) {
+              <div class="alert alert-info alert-soft mt-1 border-2">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                  <h4 class="font-semibold">First Installment</h4>
+                  <p>{{ formatCurrency(calculatedBaseAmount()!, formGroup.value.currencyId) }}</p>
                 </div>
               </div>
             }
-          </div>
-        }
+          }
 
-        <!-- Fecha esperada de finalización (opcional) -->
-        <app-date-input formControlName="expectedEndDate" label="Expected End Date (optional)" id="expectedEndDate"
-          name="expectedEndDate" />
+          <!-- Mostrar target amount calculado -->
+          @if (calculatedTargetAmount() !== null) {
+            <div class="alert alert-success shadow-lg alert-soft">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-piggy-bank text-2xl"></i>
+                <div>
+                  <h4 class="font-semibold">Calculated Target Amount</h4>
+                  <p class="text-lg font-bold">{{ formatCurrency(calculatedTargetAmount()!, formGroup.value.currencyId) }}</p>
+                  <p class="text-xs opacity-80">
+                    {{ formGroup.value.numberOfInstallments }} installments
+                    @if (showIncrementField()) {
+                      <span> ({{ getProgressionDescription() }})</span>
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
 
-        <!-- Botones -->
-        <footer class="flex justify-between items-center pt-6 gap-4">
-          <button type="button" class="btn btn-outline btn-primary" [disabled]="saving" (click)="cancel()">
-            <i class="fas fa-arrow-left"></i>
-            Cancel
-          </button>
+      <!-- Fecha esperada de finalización (opcional) -->
+      <app-date-input formControlName="expectedEndDate" label="Expected End Date (optional)" id="expectedEndDate"
+        name="expectedEndDate" [disabled]="saving" />
 
-          @if (saving) {
-          <button type="button" class="btn btn-primary" disabled>
+      <!-- Action Buttons -->
+      <footer class="flex justify-between items-center pt-6 gap-4">
+        <button
+          type="button"
+          class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+          [disabled]="saving"
+          (click)="cancel()"
+        >
+          <i class="fas fa-arrow-left text-sm"></i>
+          Cancel
+        </button>
+
+        @if (saving) {
+          <button
+            type="button"
+            class="btn btn-primary flex items-center gap-2 loading-btn"
+          >
             <span class="loading loading-spinner loading-xs"></span>
             Saving...
           </button>
-          } @else {
-          <button type="submit" class="btn btn-primary" [disabled]="formGroup.invalid">
-            <i class="fas fa-cloud-arrow-up"></i>
+        } @else {
+          <button
+            role="button"
+            type="submit"
+            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="formGroup.invalid || saving"
+            [class.btn-disabled]="formGroup.invalid || saving"
+          >
+            <i class="fas fa-cloud-arrow-up text-sm"></i>
             Save Goal
           </button>
-          }
-        </footer>
-      </form>
-    </main>
-  </section>
+        }
+      </footer>
+    </form>
+  </article>
 </section>

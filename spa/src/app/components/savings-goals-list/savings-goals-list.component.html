@@ -1,5 +1,3 @@
-<!-- src/app/components/savings-goals-list/savings-goals-list.component.html -->
-
 <section aria-labelledby="savings-goals-heading" class="mb-8">
   <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
@@ -7,7 +5,7 @@
         <h2 id="savings-goals-heading" class="text-xl font-semibold text-base-content">
           Savings Goals
         </h2>
-        
+
         <div class="flex items-center gap-2 flex-wrap">
           <!-- Filtro por Estado -->
           <div class="btn-group">
@@ -115,7 +113,7 @@
                         <p class="text-sm text-base-content/70 mt-1">{{ goal.description }}</p>
                       }
                     </div>
-                    
+
                     <!-- Actions Menu -->
                     <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
                       <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
@@ -128,19 +126,32 @@
                             View Details
                           </button>
                         </li>
-                        <li>
-                          <button (click)="editGoal(goal)">
-                            <i class="fas fa-edit text-primary"></i>
-                            Edit
-                          </button>
-                        </li>
-                        <li><hr class="my-1 border-base-300"></li>
-                        <li>
-                          <button (click)="deleteGoal(goal)">
-                            <i class="fas fa-trash text-error"></i>
-                            Delete
-                          </button>
-                        </li>
+
+                        <!-- ✅ Solo mostrar Edit si NO está completed -->
+                        @if (goal.statusId !== GoalStatus.Completed) {
+                          <li>
+                            <button (click)="editGoal(goal)">
+                              <i class="fas fa-edit text-primary"></i>
+                              Edit
+                            </button>
+                          </li>
+                          <li><hr class="my-1 border-base-300"></li>
+                          <li>
+                            <button (click)="deleteGoal(goal)">
+                              <i class="fas fa-trash text-error"></i>
+                              Delete
+                            </button>
+                          </li>
+                        } @else {
+                          <!-- ✅ Para goals completed, mostrar info adicional -->
+                          <li><hr class="my-1 border-base-300"></li>
+                          <li>
+                            <span class="text-sm text-success font-medium px-2 py-1">
+                              <i class="fas fa-check-circle mr-1"></i>
+                              Goal Completed
+                            </span>
+                          </li>
+                        }
                       </ul>
                     </div>
                   </div>
@@ -171,7 +182,7 @@
                   <!-- Metadata -->
                   <div class="flex items-center gap-4 mt-3 flex-wrap">
                     <!-- Status Badge -->
-                    <span class="badge badge-sm"
+                    <span class="badge badge-sm badge-outline flex items-baseline"
                       [ngClass]="{
                         'badge-success': goal.statusId === GoalStatus.Active,
                         'badge-info': goal.statusId === GoalStatus.Completed,
@@ -183,7 +194,7 @@
                     </span>
 
                     <!-- Type Badge -->
-                    <span class="badge badge-sm badge-outline">
+                    <span class="badge badge-sm badge-outline flex items-baseline">
                       {{ getProgressionTypeLabel(goal.progressionTypeId) }}
                     </span>
 

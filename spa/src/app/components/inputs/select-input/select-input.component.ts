@@ -33,4 +33,15 @@ export class SelectInputComponent implements ControlValueAccessor {
 
   setDisabledState?(isDisabled: boolean): void { }
 
+
+  getSelectedDescription(): string {
+    const selectedValue = this.ngControl.control?.value;
+
+    if (!selectedValue || !this.list) {
+      return this.description || '';
+    }
+
+    const selectedItem = this.list.find(x => x.key === selectedValue);
+    return selectedItem?.moreData || this.description || '';
+  }
 }
