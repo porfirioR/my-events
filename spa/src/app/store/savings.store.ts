@@ -3,7 +3,7 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, tap, switchMap, catchError, throwError } from 'rxjs';
+import { pipe, tap, switchMap, catchError, of } from 'rxjs';
 import {
   SavingsGoalApiModel,
   SavingsInstallmentApiModel,
@@ -16,6 +16,7 @@ import {
 } from '../models/api/savings';
 import { GoalStatus } from '../models/enums';
 import { SavingsGoalApiService } from '../services';
+import { useLoadingStore } from './loading.store';
 
 export interface SavingsState {
   goals: SavingsGoalApiModel[];
@@ -25,19 +26,28 @@ export interface SavingsState {
   error: string | null;
   filterStatus: number | null;
   filterProgressionType: number | null;
+  isGoalsLoaded: boolean;
+  isInstallmentsLoaded: boolean;
+  isDepositsLoaded: boolean;
 }
+
+const initialState: SavingsState = {
+  goals: [],
+  selectedGoal: undefined,
+  installments: [],
+  deposits: [],
+  error: null,
+  filterStatus: null,
+  filterProgressionType: null,
+  isGoalsLoaded: false,
+  isInstallmentsLoaded: false,
+  isDepositsLoaded: false
+};
 
 export const SavingsStore = signalStore(
   { providedIn: 'root' },
-  withState<SavingsState>({
-    goals: [],
-    selectedGoal: undefined,
-    installments: [],
-    deposits: [],
-    error: null,
-    filterStatus: null,
-    filterProgressionType: null
-  }),
+  withState(initialState),
+  
   withComputed((store) => ({
     // Objetivos activos
     activeGoals: computed(() =>
@@ -99,19 +109,72 @@ export const SavingsStore = signalStore(
       [...store.deposits()].sort((a, b) =>
         new Date(b.depositDate).getTime() - new Date(a.depositDate).getTime()
       )
-    )
+    ),
+    
+    // Verificar si hay error
+    hasError: computed(() => !!store.error()),
+    
+    // Verificar si necesita cargar
+    needsLoadingGoals: computed(() => !store.isGoalsLoaded() && !store.error()),
+    needsLoadingInstallments: computed(() => !store.isInstallmentsLoaded() && !store.error()),
+    needsLoadingDeposits: computed(() => !store.isDepositsLoaded() && !store.error())
   })),
-  withMethods((store, savingsGoalApiService = inject(SavingsGoalApiService)) => ({
+  
+  withMethods((store, 
+    savingsGoalApiService = inject(SavingsGoalApiService),
+    loadingStore = useLoadingStore()
+  ) => ({
     // ==================== GOALS ====================
 
     loadGoals: rxMethod<void>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          if (store.isGoalsLoaded()) return;
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap(() => {
+          if (store.isGoalsLoaded()) {
+            loadingStore.setLoadingSuccess();
+            return of(null);
+          }
+
+          return savingsGoalApiService.getAll().pipe(
+            tap(goals => {
+              patchState(store, { 
+                goals,
+                isGoalsLoaded: true 
+              });
+              loadingStore.setLoadingSuccess();
+            }),
+            catchError(error => {
+              patchState(store, { error: 'Failed to load savings goals' });
+              console.error('Goals loading error:', error);
+              throw new Error(error);
+            })
+          );
+        })
+      )
+    ),
+
+    reloadGoals: rxMethod<void>(
+      pipe(
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null, isGoalsLoaded: false });
+        }),
         switchMap(() => savingsGoalApiService.getAll().pipe(
-          tap(goals => patchState(store, { goals })),
+          tap(goals => {
+            patchState(store, { 
+              goals,
+              isGoalsLoaded: true 
+            });
+            loadingStore.setLoadingSuccess();
+          }),
           catchError(error => {
-            patchState(store, { error: 'Failed to load savings goals' });
-            return throwError(() => error);
+            patchState(store, { error: 'Failed to reload savings goals' });
+            console.error('Goals reload error:', error);
+            throw new Error(error);
           })
         ))
       )
@@ -119,19 +182,28 @@ export const SavingsStore = signalStore(
 
     loadGoalById: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((id) => savingsGoalApiService.getById(id).pipe(
-          tap(goal => patchState(store, { selectedGoal: goal })),
+          tap(goal => {
+            patchState(store, { selectedGoal: goal });
+            loadingStore.setLoadingSuccess();
+          }),
           catchError(error => {
             patchState(store, { error: 'Failed to load savings goal' });
-            return throwError(() => error);
+            console.error('Load goal by ID error:', error);
+            throw new Error(error);
           })
         ))
       )
     ),
 
     createGoal: (request: CreateSavingsGoalApiRequest) => {
+      loadingStore.setLoading();
       patchState(store, { error: null });
+      
       return savingsGoalApiService.create(request).pipe(
         tap(goal => {
           const currentGoals = store.goals();
@@ -139,12 +211,20 @@ export const SavingsStore = signalStore(
             goals: [...currentGoals, goal],
             selectedGoal: goal
           });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to create savings goal' });
+          console.error('Create goal error:', error);
+          throw new Error(error);
         })
       );
     },
 
     updateGoal: (id: number, request: UpdateSavingsGoalApiRequest) => {
+      loadingStore.setLoading();
       patchState(store, { error: null });
+      
       return savingsGoalApiService.update(id, request).pipe(
         tap(updatedGoal => {
           const updatedGoals = store.goals().map(g =>
@@ -154,13 +234,22 @@ export const SavingsStore = signalStore(
             goals: updatedGoals,
             selectedGoal: updatedGoal
           });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to update savings goal' });
+          console.error('Update goal error:', error);
+          throw new Error(error);
         })
       );
     },
 
     deleteGoal: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((id) => savingsGoalApiService.delete(id).pipe(
           tap(() => {
             const updatedGoals = store.goals().filter(g => g.id !== id);
@@ -168,10 +257,12 @@ export const SavingsStore = signalStore(
               goals: updatedGoals,
               selectedGoal: undefined
             });
+            loadingStore.setLoadingSuccess();
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete savings goal' });
-            return throwError(() => error);
+            console.error('Delete goal error:', error);
+            throw new Error(error);
           })
         ))
       )
@@ -181,19 +272,31 @@ export const SavingsStore = signalStore(
 
     loadInstallments: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((goalId) => savingsGoalApiService.getInstallmentsByGoalId(goalId).pipe(
-          tap(installments => patchState(store, { installments })),
+          tap(installments => {
+            patchState(store, { 
+              installments,
+              isInstallmentsLoaded: true 
+            });
+            loadingStore.setLoadingSuccess();
+          }),
           catchError(error => {
             patchState(store, { error: 'Failed to load installments' });
-            return throwError(() => error);
+            console.error('Load installments error:', error);
+            throw new Error(error);
           })
         ))
       )
     ),
 
     payInstallment: (goalId: number, installmentId: number, request: PayInstallmentApiRequest) => {
+      loadingStore.setLoading();
       patchState(store, { error: null });
+      
       return savingsGoalApiService.payInstallment(goalId, installmentId, request).pipe(
         tap((deposit) => {
           // Actualizar la cuota en el estado
@@ -204,7 +307,7 @@ export const SavingsStore = signalStore(
           // Agregar el depósito
           const currentDeposits = store.deposits();
           
-          // Actualizar el goal (refrescar desde el servidor)
+          // Actualizar el goal
           const currentGoal = store.selectedGoal();
           if (currentGoal) {
             const updatedGoal = {
@@ -218,13 +321,22 @@ export const SavingsStore = signalStore(
               selectedGoal: updatedGoal
             });
           }
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to pay installment' });
+          console.error('Pay installment error:', error);
+          throw new Error(error);
         })
       );
     },
 
     skipInstallment: rxMethod<{ goalId: number; installmentId: number }>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap(({ goalId, installmentId }) =>
           savingsGoalApiService.skipInstallment(goalId, installmentId).pipe(
             tap(updatedInstallment => {
@@ -232,10 +344,12 @@ export const SavingsStore = signalStore(
                 i.id === installmentId ? updatedInstallment : i
               );
               patchState(store, { installments: updatedInstallments });
+              loadingStore.setLoadingSuccess();
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to skip installment' });
-              return throwError(() => error);
+              console.error('Skip installment error:', error);
+              throw new Error(error);
             })
           )
         )
@@ -243,13 +357,21 @@ export const SavingsStore = signalStore(
     ),
 
     addInstallments: (goalId: number, request: AddInstallmentsApiRequest) => {
+      loadingStore.setLoading();
       patchState(store, { error: null });
+      
       return savingsGoalApiService.addInstallments(goalId, request).pipe(
         tap(newInstallments => {
           const currentInstallments = store.installments();
           patchState(store, {
             installments: [...currentInstallments, ...newInstallments]
           });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to add installments' });
+          console.error('Add installments error:', error);
+          throw new Error(error);
         })
       );
     },
@@ -258,19 +380,31 @@ export const SavingsStore = signalStore(
 
     loadDeposits: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((goalId) => savingsGoalApiService.getDepositsByGoalId(goalId).pipe(
-          tap(deposits => patchState(store, { deposits })),
+          tap(deposits => {
+            patchState(store, { 
+              deposits,
+              isDepositsLoaded: true 
+            });
+            loadingStore.setLoadingSuccess();
+          }),
           catchError(error => {
             patchState(store, { error: 'Failed to load deposits' });
-            return throwError(() => error);
+            console.error('Load deposits error:', error);
+            throw new Error(error);
           })
         ))
       )
     ),
 
     createFreeFormDeposit: (goalId: number, request: CreateFreeFormDepositApiRequest) => {
+      loadingStore.setLoading();
       patchState(store, { error: null });
+      
       return savingsGoalApiService.createFreeFormDeposit(goalId, request).pipe(
         tap(deposit => {
           const currentDeposits = store.deposits();
@@ -287,21 +421,32 @@ export const SavingsStore = signalStore(
               selectedGoal: updatedGoal
             });
           }
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to create deposit' });
+          console.error('Create deposit error:', error);
+          throw new Error(error);
         })
       );
     },
 
     deleteDeposit: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((depositId) => savingsGoalApiService.deleteDeposit(depositId).pipe(
           tap(() => {
             const updatedDeposits = store.deposits().filter(d => d.id !== depositId);
             patchState(store, { deposits: updatedDeposits });
+            loadingStore.setLoadingSuccess();
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete deposit' });
-            return throwError(() => error);
+            console.error('Delete deposit error:', error);
+            throw new Error(error);
           })
         ))
       )
@@ -327,22 +472,16 @@ export const SavingsStore = signalStore(
       patchState(store, {
         selectedGoal: undefined,
         installments: [],
-        deposits: []
+        deposits: [],
+        isInstallmentsLoaded: false,
+        isDepositsLoaded: false
       }),
 
     clearError: () =>
       patchState(store, { error: null }),
 
     clearAll: () =>
-      patchState(store, {
-        goals: [],
-        selectedGoal: undefined,
-        installments: [],
-        deposits: [],
-        error: null,
-        filterStatus: null,
-        filterProgressionType: null
-      })
+      patchState(store, initialState)
   }))
 );
 

@@ -232,7 +232,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     const values = this.addInstallmentsForm.value;
 
     const request = new AddInstallmentsApiRequest(
-      values.numberOfNewInstallments!
+      +values.numberOfNewInstallments!
     );
     this.isSubmitting.set(true);
     this.savingsStore.addInstallments(goalId, request).subscribe({

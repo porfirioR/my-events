@@ -1,7 +1,7 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, tap, switchMap, catchError, throwError } from 'rxjs';
+import { pipe, tap, switchMap, catchError, of } from 'rxjs';
 import {
   TransactionViewApiModel,
   BalanceApiModel,
@@ -11,6 +11,7 @@ import {
   TransactionDetailApiModel,
 } from '../models/api/transactions';
 import { TransactionApiService } from '../services/api/transaction-api.service';
+import { useLoadingStore } from '.';
 
 export interface TransactionState {
   transactions: TransactionViewApiModel[];
@@ -20,19 +21,26 @@ export interface TransactionState {
   selectedBalance: BalanceApiModel | undefined;
   error: string | null;
   filter: string;
+  isTransactionsLoaded: boolean;
+  isBalancesLoaded: boolean;
 }
+
+const initialState: TransactionState = {
+  transactions: [],
+  balances: [],
+  selectedTransaction: undefined,
+  selectedBalance: undefined,
+  selectedTransactionDetails: undefined,
+  error: null,
+  filter: '',
+  isTransactionsLoaded: false,
+  isBalancesLoaded: false
+};
 
 export const TransactionStore = signalStore(
   { providedIn: 'root' },
-  withState<TransactionState>({
-    transactions: [],
-    balances: [],
-    selectedTransaction: undefined,
-    selectedBalance: undefined,
-    selectedTransactionDetails: undefined,
-    error: null,
-    filter: ''
-  }),
+  withState(initialState),
+
   withComputed((store) => ({
     // Transacciones que creé yo
     myCreatedTransactions: computed(() =>
@@ -95,17 +103,74 @@ export const TransactionStore = signalStore(
 
     // Total de transacciones
     totalCount: computed(() => store.transactions().length),
+
+    // Verificar si hay error
+    hasError: computed(() => !!store.error()),
+
+    // Verificar si necesita cargar transacciones
+    needsLoadingTransactions: computed(() => !store.isTransactionsLoaded() && !store.error()),
+
+    // Verificar si necesita cargar balances
+    needsLoadingBalances: computed(() => !store.isBalancesLoaded() && !store.error())
   })),
-  withMethods((store, transactionApiService = inject(TransactionApiService)) => ({
-    // Cargar todas mis transacciones
+  
+  withMethods((store, 
+    transactionApiService = inject(TransactionApiService),
+    loadingStore = useLoadingStore()
+  ) => ({
+    // Cargar todas mis transacciones si no están cargadas
     loadTransactions: rxMethod<void>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          if (store.isTransactionsLoaded()) return;
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap(() => {
+          if (store.isTransactionsLoaded()) {
+            loadingStore.setLoadingSuccess();
+            return of(null);
+          }
+          
+          return transactionApiService.getMyTransactions().pipe(
+            tap(transactions => {
+              patchState(store, { 
+                transactions, 
+                isTransactionsLoaded: true 
+              });
+              loadingStore.setLoadingSuccess();
+            }),
+            catchError(error => {
+              patchState(store, { error: 'Failed to load transactions' });
+              loadingStore.setLoadingFailed();
+              console.error('Transaction loading error:', error);
+              return of(null);
+            })
+          );
+        })
+      )
+    ),
+
+    // Forzar recarga de transacciones
+    reloadTransactions: rxMethod<void>(
+      pipe(
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null, isTransactionsLoaded: false });
+        }),
         switchMap(() => transactionApiService.getMyTransactions().pipe(
-          tap(transactions => patchState(store, { transactions })),
+          tap(transactions => {
+            patchState(store, { 
+              transactions, 
+              isTransactionsLoaded: true 
+            });
+            loadingStore.setLoadingSuccess();
+          }),
           catchError(error => {
-            patchState(store, { error: 'Failed to load transactions' });
-            return throwError(() => error);
+            patchState(store, { error: 'Failed to reload transactions' });
+            loadingStore.setLoadingFailed();
+            console.error('Transaction reload error:', error);
+            return of(null);
           })
         ))
       )
@@ -114,14 +179,20 @@ export const TransactionStore = signalStore(
     // Cargar transacción por ID
     loadTransactionById: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((id) => transactionApiService.getById(id).pipe(
           tap(transaction => {
             patchState(store, { selectedTransaction: transaction });
+            loadingStore.setLoadingSuccess();
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load transaction' });
-            return throwError(() => error);
+            loadingStore.setLoadingFailed();
+            console.error('Load transaction by ID error:', error);
+            return of(null);
           })
         ))
       )
@@ -129,13 +200,23 @@ export const TransactionStore = signalStore(
 
     // Crear transacción
     createTransaction: (request: CreateTransactionApiRequest) => {
+      loadingStore.setLoading();
       patchState(store, { error: null });
       return transactionApiService.createTransaction(request).pipe(
-        tap(() => {
-          // Recargar transacciones después de crear
-          // En la práctica, deberías agregar la nueva transacción al estado
-          // pero como devuelve TransactionApiModel y no TransactionViewApiModel,
-          // es más fácil recargar todo
+        switchMap(() => transactionApiService.getMyTransactions().pipe(
+          tap(transactions => {
+            patchState(store, { 
+              transactions,
+              isTransactionsLoaded: true 
+            });
+            loadingStore.setLoadingSuccess();
+          })
+        )),
+        catchError(error => {
+          patchState(store, { error: 'Failed to create transaction' });
+          loadingStore.setLoadingFailed();
+          console.error('Create transaction error:', error);
+          return of(null);
         })
       );
     },
@@ -143,31 +224,85 @@ export const TransactionStore = signalStore(
     // Agregar reintegro
     addReimbursement: rxMethod<{ transactionId: number; request: AddReimbursementApiRequest }>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap(({ transactionId, request }) => 
           transactionApiService.addReimbursement(transactionId, request).pipe(
             switchMap(() => transactionApiService.getMyTransactions().pipe(
-              tap(transactions => patchState(store, { transactions }))
-            )
-          ),
+              tap(transactions => {
+                patchState(store, { 
+                  transactions,
+                  isTransactionsLoaded: true 
+                });
+                loadingStore.setLoadingSuccess();
+              })
+            )),
             catchError(error => {
               patchState(store, { error: 'Failed to add reimbursement' });
-              return throwError(() => error);
+              loadingStore.setLoadingFailed();
+              console.error('Add reimbursement error:', error);
+              return of(null);
             })
           )
         )
       )
     ),
 
-    // Cargar todos los balances
+    // Cargar todos los balances si no están cargados
     loadBalances: rxMethod<void>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          if (store.isBalancesLoaded()) return;
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap(() => {
+          if (store.isBalancesLoaded()) {
+            loadingStore.setLoadingSuccess();
+            return of(null);
+          }
+          
+          return transactionApiService.getAllBalances().pipe(
+            tap(balances => {
+              patchState(store, { 
+                balances,
+                isBalancesLoaded: true 
+              });
+              loadingStore.setLoadingSuccess();
+            }),
+            catchError(error => {
+              patchState(store, { error: 'Failed to load balances' });
+              loadingStore.setLoadingFailed();
+              console.error('Balance loading error:', error);
+              return of(null);
+            })
+          );
+        })
+      )
+    ),
+
+    // Forzar recarga de balances
+    reloadBalances: rxMethod<void>(
+      pipe(
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null, isBalancesLoaded: false });
+        }),
         switchMap(() => transactionApiService.getAllBalances().pipe(
-          tap(balances => patchState(store, { balances })),
+          tap(balances => {
+            patchState(store, { 
+              balances,
+              isBalancesLoaded: true 
+            });
+            loadingStore.setLoadingSuccess();
+          }),
           catchError(error => {
-            patchState(store, { error: 'Failed to load balances' });
-            return throwError(() => error);
+            patchState(store, { error: 'Failed to reload balances' });
+            loadingStore.setLoadingFailed();
+            console.error('Balance reload error:', error);
+            return of(null);
           })
         ))
       )
@@ -176,12 +311,20 @@ export const TransactionStore = signalStore(
     // Cargar balance con un colaborador específico
     loadBalanceWithCollaborator: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((collaboratorId) => transactionApiService.getBalanceWithCollaborator(collaboratorId).pipe(
-          tap(balance => patchState(store, { selectedBalance: balance })),
+          tap(balance => {
+            patchState(store, { selectedBalance: balance });
+            loadingStore.setLoadingSuccess();
+          }),
           catchError(error => {
             patchState(store, { error: 'Failed to load balance' });
-            return throwError(() => error);
+            loadingStore.setLoadingFailed();
+            console.error('Load balance with collaborator error:', error);
+            return of(null);
           })
         ))
       )
@@ -190,48 +333,70 @@ export const TransactionStore = signalStore(
     // Eliminar transacción
     deleteTransaction: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((id) => transactionApiService.deleteTransaction(id).pipe(
           tap(() => {
             const updatedTransactions = store.transactions().filter(x => x.id !== id);
             patchState(store, { transactions: updatedTransactions });
+            loadingStore.setLoadingSuccess();
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete transaction' });
-            return throwError(() => error);
+            loadingStore.setLoadingFailed();
+            console.error('Delete transaction error:', error);
+            return of(null);
           })
         ))
       )
     ),
 
-    // settleTransaction transacción
+    // Liquidar transacción
     settleTransaction: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((id) => transactionApiService.settleTransaction(id).pipe(
           tap(() => {
-            const transactions = store.transactions()
-            const index = transactions.findIndex(x => x.id === id)
-            transactions.at(index)!.isSettled = true;
-            patchState(store, { transactions: transactions });
+            const transactions = [...store.transactions()];
+            const index = transactions.findIndex(x => x.id === id);
+            if (index !== -1) {
+              transactions[index] = { ...transactions[index], isSettled: true };
+              patchState(store, { transactions });
+            }
+            loadingStore.setLoadingSuccess();
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to settle transaction' });
-            return throwError(() => error);
+            loadingStore.setLoadingFailed();
+            console.error('Settle transaction error:', error);
+            return of(null);
           })
         ))
       )
     ),
+    
+    // Cargar detalles de transacción
     loadTransactionDetails: rxMethod<number>(
       pipe(
-        tap(() => patchState(store, { error: null })),
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
         switchMap((id) => transactionApiService.getTransactionDetails(id).pipe(
           tap(details => {
             patchState(store, { selectedTransactionDetails: details });
+            loadingStore.setLoadingSuccess();
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load transaction details' });
-            return throwError(() => error);
+            loadingStore.setLoadingFailed();
+            console.error('Load transaction details error:', error);
+            return of(null);
           })
         ))
       )
@@ -246,15 +411,7 @@ export const TransactionStore = signalStore(
       patchState(store, { selectedBalance: balance }),
     clearError: () => patchState(store, { error: null }),
     clearSelectedTransaction: () => patchState(store, { selectedTransaction: undefined }),
-    clearTransactions: () => patchState(store, {
-      transactions: [],
-      balances: [],
-      selectedTransaction: undefined,
-      selectedTransactionDetails: undefined,
-      selectedBalance: undefined,
-      error: null,
-      filter: ''
-    }),
+    clearTransactions: () => patchState(store, initialState),
     clearSelectedBalance: () => patchState(store, { selectedBalance: undefined }),
     clearSelectedTransactionDetails: () => patchState(store, { selectedTransactionDetails: undefined }),
   }))

@@ -16,7 +16,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { forkJoin, startWith } from 'rxjs';
+import { startWith } from 'rxjs';
 import { TextComponent } from '../inputs/text/text.component';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { DateInputComponent } from '../inputs/date-input/date-input.component';
@@ -26,10 +26,10 @@ import {
   UpdateSavingsGoalApiRequest,
 } from '../../models/api/savings';
 import { useSavingsStore } from '../../store/savings.store';
+import { useCurrencyStore } from '../../store/currency.store';
 import {
   AlertService,
   FormatterHelperService,
-  ConfigurationApiService,
 } from '../../services';
 import { KeyValueViewModel } from '../../models/view/key-value-view-model';
 import {
@@ -60,11 +60,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
-  private configurationApiService = inject(ConfigurationApiService);
   private formatterService = inject(FormatterHelperService);
   
   private savingsStore = useSavingsStore();
-  
+  private currencyStore = useCurrencyStore();
+
   protected isEditMode = false;
   protected saving = false;
   public ignorePreventUnsavedChanges = false;
@@ -97,7 +97,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   constructor() {
     const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd', 'UTC') as string;
-    
+
     // 1. PRIMERO: Crear el FormGroup
     this.formGroup = new FormGroup<SavingsGoalFormGroup>({
       id: new FormControl(null),
@@ -108,10 +108,10 @@ export class UpsertSavingsGoalComponent implements OnInit {
       progressionTypeId: new FormControl(null, [Validators.required]),
       targetAmount: new FormControl(null),
       numberOfInstallments: new FormControl(null),
-      baseAmount: new FormControl(null), // Ahora es calculado automáticamente
+      baseAmount: new FormControl(null),
       incrementAmount: new FormControl(null),
       expectedEndDate: new FormControl(null),
-      statusId: new FormControl(1) // Active por defecto
+      statusId: new FormControl(1)
     });
 
     // 2. SEGUNDO: Crear el signal desde el FormControl
@@ -121,13 +121,13 @@ export class UpsertSavingsGoalComponent implements OnInit {
       ),
       { initialValue: this.formGroup.controls.progressionTypeId.value }
     );
-    
+
     // 3. TERCERO: Crear los computed signals
     this.showInstallmentFields = computed(() => {
       const typeId = this.progressionTypeIdSignal();
       return typeId !== null && typeId !== ProgressionType.FreeForm;
     });
-    
+
     this.showIncrementField = computed(() => {
       const typeId = this.progressionTypeIdSignal();
       return typeId === ProgressionType.Ascending || 
@@ -140,36 +140,27 @@ export class UpsertSavingsGoalComponent implements OnInit {
       return typeId === ProgressionType.FreeForm;
     });
 
-    // NUEVO: Mostrar baseAmount solo para Fixed
     this.showBaseAmountField = computed(() => {
       const typeId = this.progressionTypeIdSignal();
       return typeId === ProgressionType.Fixed;
     });
 
-    // Effect para cargar goal si es edición
+    // Effect para cargar currencies cuando estén listas
+    effect(() => {
+      const currencies = this.currencyStore.getAllCurrencies();
+      if (currencies.length > 0) {
+        this.currencyList = FormatterHelperService.convertToList(currencies, Configurations.Currencies);
+        this.progressionTypeList = this.getProgressionTypeList();
+      }
+    });
+
+    // Effect para cargar goal cuando todo esté listo
     effect(() => {
       const goal = this.savingsStore.selectedGoal();
-      if (goal && this.isEditMode) {
-        const startDate = new DatePipe('en-US').transform(new Date(goal.startDate), 'yyyy-MM-dd', 'UTC') as string;
-        const expectedEndDate = goal.expectedEndDate 
-          ? new DatePipe('en-US').transform(new Date(goal.expectedEndDate), 'yyyy-MM-dd', 'UTC') as string
-          : null;
+      const hasCurrencies = this.currencyStore.isLoaded();
 
-        this.formGroup.patchValue({
-          id: goal.id,
-          name: goal.name,
-          description: goal.description,
-          startDate: startDate,
-          currencyId: goal.currencyId,
-          progressionTypeId: goal.progressionTypeId,
-          targetAmount: goal.targetAmount,
-          numberOfInstallments: goal.numberOfInstallments,
-          baseAmount: goal.baseAmount,
-          incrementAmount: goal.incrementAmount,
-          expectedEndDate: expectedEndDate,
-          statusId: goal.statusId
-        });
-        this.calculateBaseAndTarget();
+      if (goal && this.isEditMode && hasCurrencies) {
+        this.loadGoalIntoForm(goal);
       }
     });
 
@@ -193,19 +184,33 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.savingsStore.clearSelectedGoal();
     }
 
-    // Cargar catálogos
-    forkJoin([
-      this.configurationApiService.getCurrencies()
-    ]).subscribe({
-      next: ([currencies]) => {
-        this.currencyList = FormatterHelperService.convertToList(currencies, Configurations.Currencies);
-        this.progressionTypeList = this.getProgressionTypeList();
-      },
-      error: (e) => {
-        this.alertService.showError('Failed to load configuration data');
-        throw e;
-      }
+    // Cargar currencies desde el store
+    this.currencyStore.loadCurrencies();
+  }
+
+  private loadGoalIntoForm(goal: any): void {
+    const startDate = new DatePipe('en-US').transform(new Date(goal.startDate), 'yyyy-MM-dd', 'UTC') as string;
+    const expectedEndDate = goal.expectedEndDate 
+      ? new DatePipe('en-US').transform(new Date(goal.expectedEndDate), 'yyyy-MM-dd', 'UTC') as string
+      : null;
+
+    this.formGroup.patchValue({
+      id: goal.id,
+      name: goal.name,
+      description: goal.description,
+      startDate: startDate,
+      currencyId: goal.currencyId,
+      progressionTypeId: goal.progressionTypeId,
+      targetAmount: goal.targetAmount,
+      numberOfInstallments: goal.numberOfInstallments,
+      baseAmount: goal.baseAmount,
+      incrementAmount: goal.incrementAmount,
+      expectedEndDate: expectedEndDate,
+      statusId: goal.statusId
     });
+
+    this.updateFieldValidators();
+    this.calculateBaseAndTarget();
   }
 
   private getProgressionTypeList(): KeyValueViewModel[] {
@@ -220,7 +225,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   private updateFieldValidators(): void {
     const typeId = this.formGroup.controls.progressionTypeId.value;
-    
+
     // Reset validators
     this.formGroup.controls.targetAmount.clearValidators();
     this.formGroup.controls.numberOfInstallments.clearValidators();
@@ -228,52 +233,19 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.incrementAmount.clearValidators();
 
     if (typeId === ProgressionType.FreeForm) {
-      // FreeForm: solo targetAmount requerido
       this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
     } else if (typeId === ProgressionType.Fixed) {
-      // Fixed: numberOfInstallments y baseAmount requeridos
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.baseAmount.setValidators([Validators.required, Validators.min(1)]);
     } else if (typeId !== null) {
-      // Ascending/Descending/Random: numberOfInstallments e incrementAmount requeridos
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.incrementAmount.setValidators([Validators.required, Validators.min(1)]);
     }
 
-    // Update validity
     this.formGroup.controls.targetAmount.updateValueAndValidity();
     this.formGroup.controls.numberOfInstallments.updateValueAndValidity();
     this.formGroup.controls.baseAmount.updateValueAndValidity();
     this.formGroup.controls.incrementAmount.updateValueAndValidity();
-  }
-
-  private calculateTargetAmount(): void {
-    const typeId = this.formGroup.controls.progressionTypeId.value;
-    const numberOfInstallments =
-      this.formGroup.controls.numberOfInstallments.value;
-    const baseAmount = this.formGroup.controls.baseAmount.value;
-    const incrementAmount = this.formGroup.controls.incrementAmount.value;
-
-    if (
-      typeId === ProgressionType.FreeForm ||
-      !numberOfInstallments ||
-      !baseAmount
-    ) {
-      this.calculatedTargetAmount.set(null);
-      return;
-    }
-
-    try {
-      const calculated = SavingsCalculatorHelper.calculateTargetAmount(
-        typeId!,
-        +baseAmount,
-        numberOfInstallments,
-        incrementAmount || undefined
-      );
-      this.calculatedTargetAmount.set(calculated);
-    } catch (error) {
-      this.calculatedTargetAmount.set(null);
-    }
   }
 
   private calculateBaseAndTarget(): void {
@@ -296,9 +268,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     let calculatedBase: number;
 
-    // Calcular baseAmount según el tipo
     if (typeId === ProgressionType.Fixed) {
-      // Fixed: usa el baseAmount ingresado por el usuario
       if (!baseAmount) {
         this.calculatedBaseAmount.set(null);
         this.calculatedTargetAmount.set(null);
@@ -306,7 +276,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
       }
       calculatedBase = baseAmount;
     } else if (typeId === ProgressionType.Ascending) {
-      // Ascending: baseAmount = incrementAmount
       if (!incrementAmount) {
         this.calculatedBaseAmount.set(null);
         this.calculatedTargetAmount.set(null);
@@ -314,7 +283,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
       }
       calculatedBase = incrementAmount;
     } else if (typeId === ProgressionType.Descending) {
-      // Descending: baseAmount = incrementAmount × numberOfInstallments
       if (!incrementAmount) {
         this.calculatedBaseAmount.set(null);
         this.calculatedTargetAmount.set(null);
@@ -322,7 +290,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
       }
       calculatedBase = incrementAmount * numberOfInstallments;
     } else if (typeId === ProgressionType.Random) {
-      // Random: baseAmount = incrementAmount (similar a Ascending)
       if (!incrementAmount) {
         this.calculatedBaseAmount.set(null);
         this.calculatedTargetAmount.set(null);
@@ -335,10 +302,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
       return;
     }
 
-    // Actualizar el calculatedBaseAmount para mostrar en UI
     this.calculatedBaseAmount.set(calculatedBase);
 
-    // Calcular targetAmount usando el helper
     try {
       const calculated = SavingsCalculatorHelper.calculateTargetAmount(
         typeId!,
@@ -354,7 +319,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   protected save = (event?: Event): void => {
     event?.preventDefault();
-    
+
     if (this.formGroup.invalid) {
       this.formGroup.markAllAsTouched();
       return;
@@ -366,7 +331,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
     const values = this.formGroup.getRawValue();
     const typeId = values.progressionTypeId!;
     
-    // Determinar el baseAmount final a enviar
     let finalBaseAmount: number | undefined;
     let finalTargetAmount: number;
 
@@ -374,16 +338,16 @@ export class UpsertSavingsGoalComponent implements OnInit {
       finalTargetAmount = values.targetAmount!;
       finalBaseAmount = undefined;
     } else if (typeId === ProgressionType.Fixed) {
-      // Fixed: usa el baseAmount del form
       finalBaseAmount = values.baseAmount!;
       finalTargetAmount = this.calculatedTargetAmount() || 0;
     } else {
-      // Ascending/Descending/Random: usa el baseAmount calculado
       finalBaseAmount = this.calculatedBaseAmount() || undefined;
       finalTargetAmount = this.calculatedTargetAmount() || 0;
     }
-    const numberOfInstallments = values.numberOfInstallments || undefined
-    const incrementAmount = values.incrementAmount || undefined
+
+    const numberOfInstallments = values.numberOfInstallments || undefined;
+    const incrementAmount = values.incrementAmount || undefined;
+
     if (this.isEditMode) {
       const request = new UpdateSavingsGoalApiRequest(
         values.id!,
@@ -409,7 +373,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
         error: (e) => {
           this.formGroup.enable();
           this.saving = false;
-          this.alertService.showError('Failed to update savings goal');
           throw e;
         }
       });
@@ -455,7 +418,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   protected getIncrementDescription(): string {
     const typeId = this.formGroup.controls.progressionTypeId.value;
-    
+
     switch(typeId) {
       case ProgressionType.Ascending:
         return 'Each installment increases by this amount (Week 1: ₲1,000, Week 2: ₲2,000...)';
@@ -470,7 +433,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   protected getProgressionDescription(): string {
     const typeId = this.formGroup.controls.progressionTypeId.value;
-    
+
     switch(typeId) {
       case ProgressionType.Ascending:
         return 'increasing';
