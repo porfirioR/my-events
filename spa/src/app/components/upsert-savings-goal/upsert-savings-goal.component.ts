@@ -209,6 +209,10 @@ export class UpsertSavingsGoalComponent implements OnInit {
       statusId: goal.statusId
     });
 
+    this.formGroup.controls.numberOfInstallments.disable()
+    this.formGroup.controls.incrementAmount.disable()
+    this.formGroup.controls.progressionTypeId.disable()
+
     this.updateFieldValidators();
     this.calculateBaseAndTarget();
   }
