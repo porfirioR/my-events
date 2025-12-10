@@ -27,12 +27,12 @@ export const CurrencyStore = signalStore(
   withComputed((state) => ({
     // Computed para buscar currency por ID
     getCurrencyById: computed(() => (id: number) => 
-      state.currencies().find(c => c.id === id)
+      state.currencies().find(x => x.id === id)
     ),
     
     // Computed para formatear moneda
     formatCurrency: computed(() => (amount: number, currencyId: number) => {
-      const currency = state.currencies().find(c => c.id === currencyId);
+      const currency = state.currencies().find(x => x.id === currencyId);
       if (!currency) {
         console.warn(`Currency with ID ${currencyId} not found`);
         return amount.toString(); // Fallback

@@ -24,12 +24,12 @@ export class CustomErrorHandler implements ErrorHandler {
 
     if (error && error.error) {
       error = error.error;
-      
+
       if (error && error.type === 'HandledError') {
         this.alertService.showError(`${error.status} - ${error.title}`);
       } else if (error && error.status) {
         let additionalMessage = '';
-        
+
         if (error.errors) {
           for(const key in error.errors) {
             const child = error.errors[key];
@@ -49,8 +49,8 @@ export class CustomErrorHandler implements ErrorHandler {
           }
           additionalMessage = error.message;
         }
-        
-        this.alertService.showError(`${error.status} ${additionalMessage}`);
+
+        this.alertService.showError(additionalMessage);
       }
     } else if (error.status === 403 || error.status === 401) {
       // ✅ Manejar 401/403 con logout

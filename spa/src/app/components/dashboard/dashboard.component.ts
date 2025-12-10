@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
   useCollaboratorStore,
@@ -13,7 +13,7 @@ import { FormatterHelperService } from '../../services';
   styleUrls: ['./dashboard.component.css'],
   imports: [RouterModule],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent {
   private collaboratorStore = useCollaboratorStore();
   private transactionStore = useTransactionStore();
   private savingsStore = useSavingsStore();
@@ -49,19 +49,6 @@ export class DashboardComponent implements OnInit {
       )
       .slice(0, 3);
   });
-
-  ngOnInit(): void {
-    // Load Collaborators
-    if (this.collaboratorStore.totalCount() === 0) {
-      this.collaboratorStore.loadCollaborators();
-    }
-
-    // Load Transactions
-    this.transactionStore.loadTransactions();
-
-    // Load Savings Goals
-    this.savingsStore.loadGoals();
-  }
 
   // Helper Methods
   protected calculateProgress(goal: any): number {

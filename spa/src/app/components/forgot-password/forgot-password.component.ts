@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, signal } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { ForgotPasswordFormGroup } from '../../models/forms'
@@ -19,6 +19,8 @@ import { TextComponent } from '../inputs/text/text.component'
 export class ForgotPasswordComponent {
   protected formGroup: FormGroup<ForgotPasswordFormGroup>
   protected showMessage: boolean = false
+  protected isSubmitting = signal<boolean>(false);
+  
   constructor(
     private readonly userApiService: UserApiService,
     private readonly alertService: AlertService
@@ -28,20 +30,23 @@ export class ForgotPasswordComponent {
     })
   }
 
-  protected sendCode = (event: Event): void => {
-    event.preventDefault();
+  protected sendCode = (event?: Event): void => {
+    event?.preventDefault();
     if (this.formGroup.invalid) {
       return;
     }
+    this.isSubmitting.set(true);
     const email = this.formGroup.value.email!;
     this.showMessage = false;
     this.userApiService.forgotPassword(new ForgotPasswordApiRequest(email)).subscribe({
       next: (response) => {
         this.alertService.showSuccess(response.message);
         this.showMessage = true;
+        this.isSubmitting.set(false);
       },
       error: (e) => {
         this.showMessage = false;
+        this.isSubmitting.set(false);
         this.alertService.showError('An error occurred. Please try again.');
       },
     });

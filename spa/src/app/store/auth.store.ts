@@ -1,6 +1,7 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
 import { useCurrencyStore } from './currency.store'; // ✅ Importar currency store
+import { useCollaboratorStore, useSavingsStore, useTransactionStore } from '.';
 
 export interface AuthState {
   userId: number | null;
@@ -33,7 +34,10 @@ export const AuthStore = signalStore(
     ),
   })),
   withMethods((store, 
-    currencyStore = useCurrencyStore() // ✅ Inyectar currency store
+    currencyStore = useCurrencyStore(), // ✅ Inyectar stores
+    collaboratorStore = useCollaboratorStore(),
+    transactionStore = useTransactionStore(),
+    savingsStore = useSavingsStore(),
   ) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
     
@@ -50,6 +54,9 @@ export const AuthStore = signalStore(
       
       // ✅ Cargar currencies después de login exitoso
       currencyStore.loadCurrencies();
+      collaboratorStore.loadCollaborators();
+      transactionStore.loadTransactions();
+      savingsStore.loadGoals();
     },
 
     loginFailure: (error: string) => patchState(store, {
@@ -75,6 +82,9 @@ export const AuthStore = signalStore(
       
       // ✅ Limpiar currencies al logout
       currencyStore.clearCurrencies();
+      collaboratorStore.clearCollaborators();
+      transactionStore.clearTransactions()
+      savingsStore.clearAll()
     },
 
     updateEmailVerificationStatus: (isVerified: boolean) => {
@@ -95,6 +105,9 @@ export const AuthStore = signalStore(
 
       // ✅ Cargar currencies al restaurar sesión
       currencyStore.loadCurrencies();
+      collaboratorStore.loadCollaborators();
+      transactionStore.loadTransactions();
+      savingsStore.loadGoals();
     },
 
     clearError: () => patchState(store, { error: null })

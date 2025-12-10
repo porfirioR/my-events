@@ -1,5 +1,5 @@
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import {
@@ -71,8 +71,17 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .upsert(entity)
       .select()
       .single<SavingsGoalEntity>();
+    if (error) {
+      if (error.code === '23514') {
+        if (error.message.includes('check_current_not_exceed_target')) {
+          //todo: add currency format
+          throw new BadRequestException(`Current Amount (${entity.currentamount}) can't exceed Target Amount (${entity.targetamount}).`);
+        }
+        throw new BadRequestException(error.details);
+      }
+      throw new Error(error.message);
+    };
 
-    if (error) throw new Error(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
