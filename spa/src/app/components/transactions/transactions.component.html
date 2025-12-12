@@ -112,11 +112,11 @@
                       <!-- Amount - Más grande y prominente -->
                       <div class="text-right flex-shrink-0">
                         <p class="text-lg sm:text-xl font-bold text-base-content whitespace-nowrap">
-                          {{ formatCurrency(transaction.netAmount, 1) }}
+                          {{ formatCurrency(transaction.netAmount, 4) }}
                         </p>
                         @if (transaction.totalReimbursement > 0) {
                           <p class="text-xs text-base-content/50 whitespace-nowrap mt-0.5">
-                            <i class="fas fa-undo mr-1"></i>{{ formatCurrency(transaction.totalReimbursement, 1) }}
+                            <i class="fas fa-undo mr-1"></i>{{ formatCurrency(transaction.totalReimbursement, 4) }}
                           </p>
                         }
                       </div>
@@ -162,9 +162,9 @@
                           }"
                         ></i>
                         @if (transaction.iPaid > 0) {
-                          <span class="hidden sm:inline">Paid&nbsp;</span>{{ formatCurrency(transaction.iPaid, 1) }}
+                          <span class="hidden sm:inline">Paid&nbsp;</span>{{ formatCurrency(transaction.iPaid, 4) }}
                         } @else {
-                          <span class="hidden sm:inline">Received&nbsp;</span>{{ formatCurrency(transaction.theyPaid, 1) }}
+                          <span class="hidden sm:inline">Received&nbsp;</span>{{ formatCurrency(transaction.theyPaid, 4) }}
                         }
                       </span>
 
@@ -172,7 +172,7 @@
                       @if (transaction.iOwe > 0) {
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap border bg-red-100 text-red-700 border-red-300 dark:bg-error/20 dark:text-error dark:border-0">
                           <i class="fas fa-arrow-down text-[10px]"></i>
-                          <span class="hidden sm:inline">Owe&nbsp;</span>{{ formatCurrency(transaction.iOwe, 1) }}
+                          <span class="hidden sm:inline">Owe&nbsp;</span>{{ formatCurrency(transaction.iOwe, 4) }}
                         </span>
                       }
 
@@ -180,7 +180,7 @@
                       @if (transaction.theyOwe > 0) {
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap border bg-green-100 text-green-700 border-green-300 dark:bg-success/20 dark:text-success dark:border-0">
                           <i class="fas fa-arrow-up text-[10px]"></i>
-                          <span class="hidden sm:inline">Owed&nbsp;</span>{{ formatCurrency(transaction.theyOwe, 1) }}
+                          <span class="hidden sm:inline">Owed&nbsp;</span>{{ formatCurrency(transaction.theyOwe, 4) }}
                         </span>
                       }
 

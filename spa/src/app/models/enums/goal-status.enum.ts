@@ -13,7 +13,7 @@ export const GoalStatusLabels: Record<GoalStatus, string> = {
 };
 
 export const GoalStatusIcons: Record<GoalStatus, string> = {
-  [GoalStatus.Active]: 'fa-circle-play',
+  [GoalStatus.Active]: 'fa-clock-rotate-left',
   [GoalStatus.Completed]: 'fa-circle-check',
   [GoalStatus.Paused]: 'fa-circle-pause',
   [GoalStatus.Cancelled]: 'fa-circle-xmark'

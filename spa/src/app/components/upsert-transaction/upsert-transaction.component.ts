@@ -110,9 +110,7 @@ export class UpsertTransactionComponent implements OnInit {
           description: this.transaction.description,
           splitType: this.transaction.splitType,
           whoPaid: this.transaction.whoPaid,
-          // splits: this.transaction.splits,
           hasReimbursement: !!this.transaction.totalReimbursement,
-          // reimbursement: this.transaction.reimbursement
         });
       }
     });
@@ -128,8 +126,7 @@ export class UpsertTransactionComponent implements OnInit {
     if (id) {
       this.isEditMode = true;
       this.transactionId = parseInt(id);
-      // Load transaction data
-    this.transactionStore.loadTransactionById(this.transactionId)
+      this.transactionStore.loadTransactionById(this.transactionId)
     }
   }
 
@@ -244,6 +241,94 @@ export class UpsertTransactionComponent implements OnInit {
     }
   }
 
+  // ========== NUEVOS MÉTODOS: Cálculo de Deudas ==========
+  
+  /**
+   * Calcula cuánto DEBO yo al colaborador
+   */
+  protected calculateMyDebt(): number {
+    const whoPaid = this.formGroup.value.whoPaid;
+    
+    if (whoPaid === WhoPaid.User) {
+      // Si yo pagué, no debo nada
+      return 0;
+    }
+    
+    // Si ellos pagaron, yo les debo mi parte
+    // IMPORTANTE: Cuando "They Paid", el primer input dice "How much do you owe them?"
+    // y ese input controla customUserAmount()
+    // Por eso usamos calculateMySplit() que usa customUserAmount
+    const netAmount = this.calculateNetAmount();
+    const splitType = this.formGroup.value.splitType;
+    
+    switch (splitType) {
+      case this.splitType.Equal:
+        return netAmount / 2;
+      case this.splitType.Custom:
+        // Cuando "They Paid", customUserAmount representa lo que YO debo
+        return this.customUserAmount();
+      case this.splitType.Percentage:
+        // Cuando "They Paid", customUserAmount representa el % que YO debo
+        return (netAmount * this.customUserAmount()) / 100;
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * Calcula cuánto me DEBE el colaborador
+   */
+  protected calculateTheirDebt(): number {
+    const whoPaid = this.formGroup.value.whoPaid;
+    
+    if (whoPaid === WhoPaid.Collaborator) {
+      // Si ellos pagaron, no me deben nada
+      return 0;
+    }
+    
+    // Si yo pagué, ellos me deben su parte
+    // IMPORTANTE: Cuando "I Paid", el primer input dice "Their share percentage (they owe this %)"
+    // y ese input controla customUserAmount(), no customCollaboratorAmount()
+    // Por eso usamos calculateMySplit() que internamente usa customUserAmount
+    const netAmount = this.calculateNetAmount();
+    const splitType = this.formGroup.value.splitType;
+    
+    switch (splitType) {
+      case this.splitType.Equal:
+        return netAmount / 2;
+      case this.splitType.Custom:
+        // Cuando "I Paid", customUserAmount representa lo que ELLOS deben
+        return this.customUserAmount();
+      case this.splitType.Percentage:
+        // Cuando "I Paid", customUserAmount representa el % que ELLOS deben
+        return (netAmount * this.customUserAmount()) / 100;
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * Calcula el balance neto (positivo = me deben, negativo = yo debo)
+   */
+  protected calculateNetBalance(): number {
+    return this.calculateTheirDebt() - this.calculateMyDebt();
+  }
+
+  /**
+   * Retorna un mensaje descriptivo del balance
+   */
+  protected getBalanceMessage(): string {
+    const netBalance = this.calculateNetBalance();
+    
+    if (netBalance > 0) {
+      return `They owe you ${this.formatCurrency(netBalance)}`;
+    } else if (netBalance < 0) {
+      return `You owe them ${this.formatCurrency(Math.abs(netBalance))}`;
+    } else {
+      return `Balanced (${this.formatCurrency(0)})`;
+    }
+  }
+
   // ========== Reimbursement ==========
   private onReimbursementToggle(hasReimbursement: boolean | null): void {
     const reimbursementGroup = this.formGroup.controls.reimbursement;
@@ -270,32 +355,35 @@ export class UpsertTransactionComponent implements OnInit {
       return;
     }
 
-    // Validate splits
-    const mySplit = this.calculateMySplit();
-    const theirSplit = this.calculateTheirSplit();
-    const netAmount = this.calculateNetAmount();
+    const formValue = this.formGroup.value;
+    const whoPaid = formValue.whoPaid;
 
-    if (Math.abs((mySplit + theirSplit) - netAmount) > 0.01) {
-      this.errorMessage.set('Splits do not add up to the net amount');
+    // ✅ USAR LOS MÉTODOS CORREGIDOS: calculateMyDebt y calculateTheirDebt
+    const userDebtAmount = this.calculateMyDebt();
+    const collaboratorDebtAmount = this.calculateTheirDebt();
+
+    // Validar que las deudas sumen al netAmount
+    const netAmount = this.calculateNetAmount();
+    const totalDebt = userDebtAmount + collaboratorDebtAmount;
+    
+    if (Math.abs(totalDebt - netAmount) > 0.01) {
+      this.errorMessage.set('The debt amounts do not add up to the net amount');
       return;
     }
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-    const formValue = this.formGroup.value;
-    const whoPaid = formValue.whoPaid;
-
-    // Create splits
+    // Create splits con las DEUDAS correctas
     const splits: TransactionSplitApiRequest[] = [
       new TransactionSplitApiRequest(
         ParticipantType.User,
-        mySplit,
+        userDebtAmount,  // ✅ Cuánto DEBO yo
         this.formGroup.value.splitType === this.splitType.Percentage ? this.customUserAmount() : null
       ),
       new TransactionSplitApiRequest(
         ParticipantType.Collaborator,
-        theirSplit,
+        collaboratorDebtAmount,  // ✅ Cuánto me DEBEN ellos
         this.formGroup.value.splitType === this.splitType.Percentage ? this.customCollaboratorAmount() : null
       )
     ];
@@ -319,11 +407,11 @@ export class UpsertTransactionComponent implements OnInit {
       splits,
       reimbursement
     );
+
     // Submit
     this.transactionStore.createTransaction(request).subscribe({
       next: () => {
         this.alertService.showSuccess('Transaction created successfully')
-        // Reload transactions
         this.transactionStore.loadTransactions();
         this.ignorePreventUnsavedChanges = true
         this.router.navigate(['/transactions']);
@@ -341,7 +429,7 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   // ========== Formatters ==========
-  protected formatCurrency = (amount: number): string => this.formatterService.formatCurrency(amount, 1)
+  protected formatCurrency = (amount: number): string => this.formatterService.formatCurrency(amount, 4)
 
   private getMaxValue(): number {
     const splitType = this.formGroup.value.splitType;

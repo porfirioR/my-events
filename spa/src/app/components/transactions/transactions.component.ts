@@ -76,7 +76,7 @@ export class TransactionsComponent implements OnInit {
   }
 
   protected deleteTransaction(transaction: TransactionViewApiModel): void {
-    const confirmMsg = `Description: ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 1)}
+    const confirmMsg = `Description: ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 4)}
     This action cannot be undone.`
     this.alertService.showQuestionModal('Are you sure you want to delete this transaction?', confirmMsg).then(x => {
       if (x && x.isConfirmed) {
@@ -87,7 +87,7 @@ export class TransactionsComponent implements OnInit {
   }
 
   protected settleTransaction(transaction: TransactionViewApiModel): void {
-    const confirmMsg = `Confirm that this transaction has been settled? ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 1)}`
+    const confirmMsg = `Confirm that this transaction has been settled? ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 4)}`
     this.alertService.showQuestionModal('Mark as Settled?', confirmMsg).then(x => {
       if (x && x.isConfirmed) {
         this.transactionStore.settleTransaction(transaction.id);

@@ -133,7 +133,7 @@
           <i class="fas fa-list-ol mr-2"></i>
           Installments
           @if (pendingInstallments().length > 0) {
-          <span class="badge badge-sm badge-warning ml-2">{{ pendingInstallments().length }}</span>
+          <span class="badge badge-sm badge-outline badge-warning ml-2">{{ pendingInstallments().length }}</span>
           }
         </button>
       }
@@ -149,95 +149,95 @@
     <div class="p-6">
       <!-- Installments Tab -->
       @if (activeTab() === 'installments') {
-      @if (installments().length === 0) {
-      <div class="text-center py-12">
-        <i class="fas fa-info-circle text-4xl text-base-content/30 mb-4"></i>
-        <p class="text-base-content/70">No installments for this goal</p>
-        <p class="text-sm text-base-content/50">This is a FreeForm savings goal</p>
-      </div>
-      } @else {
-      <!-- Pending Installments -->
-      @if (pendingInstallments().length > 0) {
-      <div class="mb-6">
-        <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
-          <i class="fas fa-clock text-warning"></i>
-          Pending Installments
-        </h3>
-        <div class="space-y-2">
-          @for (installment of pendingInstallments(); track installment.id) {
-          <div
-            class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between hover:bg-base-300/50 transition-colors">
-            <div class="flex items-center gap-4">
-              <div class="badge badge-warning">
-                #{{ installment.installmentNumber }}
+        @if (installments().length === 0) {
+        <div class="text-center py-12">
+          <i class="fas fa-info-circle text-4xl text-base-content/30 mb-4"></i>
+          <p class="text-base-content/70">No installments for this goal</p>
+          <p class="text-sm text-base-content/50">This is a FreeForm savings goal</p>
+        </div>
+        } @else {
+        <!-- Pending Installments -->
+        @if (pendingInstallments().length > 0) {
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
+            <i class="fas fa-clock text-warning"></i>
+            Pending Installments
+          </h3>
+          <div class="space-y-2">
+            @for (installment of pendingInstallments(); track installment.id) {
+            <div
+              class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between hover:bg-base-300/50 transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="badge badge-outline badge-warning">
+                  #{{ installment.installmentNumber }}
+                </div>
+                <div>
+                  <p class="font-semibold text-base-content">
+                    {{ formatCurrency(installment.amount, g.currencyId) }}
+                  </p>
+                  @if (installment.dueDate) {
+                  <p class="text-xs text-base-content/60">
+                    Due: {{ getFormattedDate(installment.dueDate) }}
+                  </p>
+                  }
+                </div>
               </div>
-              <div>
-                <p class="font-semibold text-base-content">
-                  {{ formatCurrency(installment.amount, g.currencyId) }}
-                </p>
-                @if (installment.dueDate) {
-                <p class="text-xs text-base-content/60">
-                  Due: {{ getFormattedDate(installment.dueDate) }}
-                </p>
+              <div class="flex gap-2">
+                @if (g.statusId !== GoalStatus.Completed) {
+                  <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="openPayModal(installment)">
+                    <i class="fas fa-check-circle"></i>
+                    Pay
+                  </button>
+                  <button type="button" class="btn btn-sm btn-ghost" (click)="skipInstallment(installment)">
+                    <i class="fas fa-forward"></i>
+                    Skip
+                  </button>
+                } @else {
+                  <!-- ✅ Mostrar mensaje informativo si está completed -->
+                  <span class="text-sm text-success font-medium">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    Goal Completed
+                  </span>
                 }
               </div>
             </div>
-            <div class="flex gap-2">
-              @if (g.statusId !== GoalStatus.Completed) {
-                <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="openPayModal(installment)">
-                  <i class="fas fa-check-circle"></i>
-                  Pay
-                </button>
-                <button type="button" class="btn btn-sm btn-ghost" (click)="skipInstallment(installment)">
-                  <i class="fas fa-forward"></i>
-                  Skip
-                </button>
-              } @else {
-                <!-- ✅ Mostrar mensaje informativo si está completed -->
-                <span class="text-sm text-success font-medium">
-                  <i class="fas fa-check-circle mr-1"></i>
-                  Goal Completed
-                </span>
-              }
-            </div>
+            }
           </div>
-          }
         </div>
-      </div>
-      }
+        }
 
-      <!-- Paid Installments -->
-      @if (paidInstallments().length > 0) {
-      <div>
-        <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
-          <i class="fas fa-check-circle text-success"></i>
-          Paid Installments
-        </h3>
-        <div class="space-y-2">
-          @for (installment of paidInstallments(); track installment.id) {
-          <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between opacity-60">
-            <div class="flex items-center gap-4">
-              <div class="badge badge-soft badge-success">
-                #{{ installment.installmentNumber }}
+        <!-- Paid Installments -->
+        @if (paidInstallments().length > 0) {
+        <div>
+          <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
+            <i class="fas fa-check-circle text-success"></i>
+            Paid Installments
+          </h3>
+          <div class="space-y-2">
+            @for (installment of paidInstallments(); track installment.id) {
+            <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between opacity-60">
+              <div class="flex items-center gap-4">
+                <div class="badge badge-soft badge-success">
+                  #{{ installment.installmentNumber }}
+                </div>
+                <div>
+                  <p class="font-semibold text-base-content">
+                    {{ formatCurrency(installment.amount, g.currencyId) }}
+                  </p>
+                  @if (installment.paidDate) {
+                  <p class="text-xs text-base-content/60">
+                    Paid: {{ getFormattedDate(installment.paidDate) }}
+                  </p>
+                  }
+                </div>
               </div>
-              <div>
-                <p class="font-semibold text-base-content">
-                  {{ formatCurrency(installment.amount, g.currencyId) }}
-                </p>
-                @if (installment.paidDate) {
-                <p class="text-xs text-base-content/60">
-                  Paid: {{ getFormattedDate(installment.paidDate) }}
-                </p>
-                }
-              </div>
+              <i class="fas fa-check-circle text-success text-xl"></i>
             </div>
-            <i class="fas fa-check-circle text-success text-xl"></i>
+            }
           </div>
-          }
         </div>
-      </div>
-      }
-      }
+        }
+        }
       }
 
       <!-- Deposits Tab -->

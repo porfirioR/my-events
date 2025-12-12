@@ -74,7 +74,7 @@ export class TransactionDetailsComponent implements OnInit {
     const details = this.transactionDetails();
     if (!details) return;
 
-    const confirmMsg = `Mark this transaction as settled?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 1)}`;
+    const confirmMsg = `Mark this transaction as settled?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 4)}`;
     
     this.alertService.showQuestionModal('Mark as Settled?', confirmMsg).then(result => {
       if (result && result.isConfirmed) {
@@ -90,7 +90,7 @@ export class TransactionDetailsComponent implements OnInit {
     const details = this.transactionDetails();
     if (!details) return;
 
-    const confirmMsg = `Delete this transaction?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 1)}\n\nThis action cannot be undone.`;
+    const confirmMsg = `Delete this transaction?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 4)}\n\nThis action cannot be undone.`;
     
     this.alertService.showQuestionModal('Delete Transaction?', confirmMsg).then(result => {
       if (result && result.isConfirmed) {
