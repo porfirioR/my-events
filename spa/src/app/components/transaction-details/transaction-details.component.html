@@ -34,7 +34,7 @@
               <i class="fas fa-dollar-sign text-2xl"></i>
             </div>
             <div class="stat-title text-xs">Total Amount</div>
-            <div class="stat-value text-xl text-primary">{{ formatCurrency(transactionDetails()!.totalAmount, 1) }}</div>
+            <div class="stat-value text-xl text-primary">{{ formatCurrency(transactionDetails()!.totalAmount, 4) }}</div>
           </div>
         </article>
 
@@ -46,7 +46,7 @@
                 <i class="fas fa-undo text-2xl"></i>
               </div>
               <div class="stat-title text-xs">Reimbursement</div>
-              <div class="stat-value text-xl text-warning">{{ formatCurrency(transactionDetails()!.totalReimbursement, 1) }}</div>
+              <div class="stat-value text-xl text-warning">{{ formatCurrency(transactionDetails()!.totalReimbursement, 4) }}</div>
             </div>
           </article>
         }
@@ -59,7 +59,7 @@
                 <i class="fas fa-check-circle text-2xl"></i>
               </div>
               <div class="stat-title text-xs">Net Amount</div>
-              <div class="stat-value text-xl text-success">{{ formatCurrency(transactionDetails()!.netAmount, 1) }}</div>
+              <div class="stat-value text-xl text-success">{{ formatCurrency(transactionDetails()!.netAmount, 4) }}</div>
             </div>
           </article>
         }
@@ -240,7 +240,7 @@
                   <!-- Amount -->
                   <div class="text-right">
                     <p class="text-lg font-bold text-base-content">
-                      {{ formatCurrency(split.amount, 1) }}
+                      {{ formatCurrency(split.amount, 4) }}
                     </p>
                     @if (split.sharePercentage !== null) {
                       <p class="text-xs text-base-content/60">
@@ -320,7 +320,7 @@
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="font-semibold text-base-content">
-                        {{ formatCurrency(reimbursement.amount, 1) }}
+                        {{ formatCurrency(reimbursement.amount, 4) }}
                       </p>
                       @if (reimbursement.description) {
                         <p class="text-sm text-base-content/70 mt-1">

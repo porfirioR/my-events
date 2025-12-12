@@ -62,6 +62,7 @@
           </div>
         </div>
       }
+      
       <!-- Who Paid -->
       <section class="flex flex-col md:flex-row md:gap-4">
         <div class="form-control mb-4 md:flex-1">
@@ -126,17 +127,57 @@
           </div>
         </div>
       </section>
+
       <!-- Split Details -->
       @if (formGroup.controls.totalAmount.value && formGroup.controls.totalAmount.value > 0) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
           <h3 class="text-lg font-semibold mb-3">Split Details</h3>
 
-          <!-- Custom split inputs -->
-          @if (formGroup.value.splitType === splitType.Custom || formGroup.value.splitType === splitType.Percentage) {
-            <div class="mt-4 space-y-3">
+          <!-- Equal Split - Solo mostrar resultado -->
+          @if (formGroup.value.splitType === splitType.Equal) {
+            <div class="space-y-3">
+              <div class="alert alert-info alert-soft">
+                <i class="fas fa-info-circle"></i>
+                <span class="text-sm">Amount will be split equally between both participants</span>
+              </div>
+            </div>
+          }
+
+          <!-- Custom Split -->
+          @if (formGroup.value.splitType === splitType.Custom) {
+            <div class="space-y-4">
+              <!-- Explicación contextual -->
+              <div class="alert alert-info alert-soft text-xs">
+                <i class="fas fa-info-circle"></i>
+                <span>
+                  @if (formGroup.value.whoPaid === whoPaid.User) {
+                    You paid the full amount. Enter how much each person should cover.
+                  } @else {
+                    They paid the full amount. Enter how much each person should cover.
+                  }
+                </span>
+              </div>
+
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Your {{ formGroup.value.splitType === splitType.Percentage ? 'percentage' : 'amount' }}</span>
+                  <span class="label-text font-medium">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      <i class="fas fa-arrow-left text-success mr-1"></i>
+                      <i class="fas fa-user-friends text-primary mr-1"></i>
+                      Their portion of the expense:
+                    } @else {
+                      <i class="fas fa-arrow-right text-error mr-1"></i>
+                      <i class="fas fa-user text-primary mr-1"></i>
+                      Your portion of the expense:
+                    }
+                  </span>
+                  <span class="label-text-alt text-xs text-base-content/60">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      They will owe you this amount
+                    } @else {
+                      You will owe them this amount
+                    }
+                  </span>
                 </label>
                 <input
                   type="number"
@@ -144,13 +185,30 @@
                   [value]="customUserAmount()"
                   (input)="onCustomUserAmountChange($event)"
                   [min]="0"
-                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : calculateNetAmount()"
+                  [max]="calculateNetAmount()"
                   [step]="1"
+                  placeholder="Enter amount"
                 >
               </div>
+
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Their {{ formGroup.value.splitType === splitType.Percentage ? 'percentage' : 'amount' }}</span>
+                  <span class="label-text font-medium">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      <i class="fas fa-user text-primary mr-1"></i>
+                      Your portion of the expense:
+                    } @else {
+                      <i class="fas fa-user-friends text-primary mr-1"></i>
+                      Their portion of the expense:
+                    }
+                  </span>
+                  <span class="label-text-alt text-xs text-base-content/60">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      Your share (already paid by you)
+                    } @else {
+                      Their share (already paid by them)
+                    }
+                  </span>
                 </label>
                 <input
                   type="number"
@@ -158,26 +216,211 @@
                   [value]="customCollaboratorAmount()"
                   (input)="onCustomCollaboratorAmountChange($event)"
                   [min]="0"
-                  [max]="formGroup.value.splitType === splitType.Percentage ? 100 : calculateNetAmount()"
+                  [max]="calculateNetAmount()"
                   [step]="1"
+                  placeholder="Enter amount"
                 >
               </div>
             </div>
           }
-          <!-- Split calculation display -->
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-base-content/70">You:</span>
-              <span class="font-semibold">{{ formatCurrency(calculateMySplit()) }}</span>
+
+          <!-- Percentage Split -->
+          @if (formGroup.value.splitType === splitType.Percentage) {
+            <div class="space-y-4">
+              <!-- Explicación contextual -->
+              <div class="alert alert-info alert-soft text-xs">
+                <i class="fas fa-info-circle"></i>
+                <span>
+                  @if (formGroup.value.whoPaid === whoPaid.User) {
+                    You paid the full amount. Enter the percentage each person should cover.
+                  } @else {
+                    They paid the full amount. Enter the percentage each person should cover.
+                  }
+                </span>
+              </div>
+
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-medium">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      <i class="fas fa-arrow-left text-success mr-1"></i>
+                      <i class="fas fa-user-friends text-primary mr-1"></i>
+                      Their portion of the expense (%):
+                    } @else {
+                      <i class="fas fa-arrow-right text-error mr-1"></i>
+                      <i class="fas fa-user text-primary mr-1"></i>
+                      Your portion of the expense (%):
+                    }
+                  </span>
+                  <span class="label-text-alt text-xs text-base-content/60">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      They will owe you this percentage
+                    } @else {
+                      You will owe them this percentage
+                    }
+                  </span>
+                </label>
+                <div class="join w-full">
+                  <input
+                    type="number"
+                    class="px-3 py-2 border shadow-sm border-slate-300 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 block w-full rounded-md sm:text-sm focus:ring-1 transition-colors duration-200 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500 join-item flex-1"
+                    [value]="customUserAmount()"
+                    (input)="onCustomUserAmountChange($event)"
+                    [min]="0"
+                    [max]="100"
+                    [step]="1"
+                    placeholder="0"
+                  >
+                  <span class="btn btn-ghost join-item">%</span>
+                </div>
+              </div>
+
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-medium">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      <i class="fas fa-user text-primary mr-1"></i>
+                      Your portion of the expense (%):
+                    } @else {
+                      <i class="fas fa-user-friends text-primary mr-1"></i>
+                      Their portion of the expense (%):
+                    }
+                  </span>
+                  <span class="label-text-alt text-xs text-base-content/60">
+                    @if (formGroup.value.whoPaid === whoPaid.User) {
+                      Your share (already paid by you)
+                    } @else {
+                      Their share (already paid by them)
+                    }
+                  </span>
+                </label>
+                <div class="join w-full">
+                  <input
+                    type="number"
+                    class="px-3 py-2 border shadow-sm border-slate-300 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 block w-full rounded-md sm:text-sm focus:ring-1 transition-colors duration-200 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500 join-item flex-1" 
+                    [value]="customCollaboratorAmount()"
+                    (input)="onCustomCollaboratorAmountChange($event)"
+                    [min]="0"
+                    [max]="100"
+                    [step]="1"
+                    placeholder="0"
+                  >
+                  <span class="btn btn-ghost join-item">%</span>
+                </div>
+              </div>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-base-content/70">They:</span>
-              <span class="font-semibold">{{ formatCurrency(calculateTheirSplit()) }}</span>
+          }
+
+          <!-- Split Summary - Mejorado con información de deudas -->
+          <div class="bg-base-200 dark:bg-base-300 rounded-lg p-4 mt-4">
+            <h4 class="text-sm font-semibold text-base-content/70 mb-3">Division Breakdown</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">Your share:</span>
+                <span class="font-semibold">
+                  {{ formatCurrency(calculateMySplit()) }}
+                  @if (formGroup.value.splitType === splitType.Percentage) {
+                    <span class="text-xs text-base-content/60 ml-1">({{ customUserAmount() }}%)</span>
+                  }
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-base-content/70">Their share:</span>
+                <span class="font-semibold">
+                  {{ formatCurrency(calculateTheirSplit()) }}
+                  @if (formGroup.value.splitType === splitType.Percentage) {
+                    <span class="text-xs text-base-content/60 ml-1">({{ customCollaboratorAmount() }}%)</span>
+                  }
+                </span>
+              </div>
+              
+              <div class="divider my-2"></div>
+              
+              <!-- Debt Information -->
+              <div class="bg-base-100 dark:bg-base-200 rounded p-3 space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-base-content/70 flex items-center gap-1">
+                    <i class="fas fa-arrow-right text-error text-xs"></i>
+                    You owe them:
+                  </span>
+                  <span class="font-bold" [class.text-error]="calculateMyDebt() > 0">
+                    {{ formatCurrency(calculateMyDebt()) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-base-content/70 flex items-center gap-1">
+                    <i class="fas fa-arrow-left text-success text-xs"></i>
+                    They owe you:
+                  </span>
+                  <span class="font-bold" [class.text-success]="calculateTheirDebt() > 0">
+                    {{ formatCurrency(calculateTheirDebt()) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="divider my-2"></div>
+
+              <div class="flex justify-between items-center text-base font-bold">
+                <span>Net Balance:</span>
+                <span 
+                  [class.text-error]="calculateNetBalance() < 0" 
+                  [class.text-success]="calculateNetBalance() > 0"
+                  [class.text-base-content]="calculateNetBalance() === 0"
+                >
+                  {{ getBalanceMessage() }}
+                </span>
+              </div>
             </div>
-            <div class="divider my-2"></div>
-            <div class="flex justify-between items-center text-lg">
-              <span class="font-bold">Total:</span>
-              <span class="font-bold">{{ formatCurrency(calculateNetAmount()) }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Transaction Summary Card -->
+      @if (formGroup.controls.totalAmount.value && formGroup.controls.totalAmount.value > 0) {
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
+          <h4 class="text-sm font-semibold text-base-content/70 mb-3 flex items-center gap-2">
+            <i class="fas fa-receipt"></i>
+            Transaction Summary
+          </h4>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-base-content/70">Total Amount:</span>
+              <span class="font-semibold">{{ formatCurrency(formGroup.value.totalAmount || 0) }}</span>
+            </div>
+            @if (formGroup.value.hasReimbursement && formGroup.value.reimbursement?.amount) {
+              <div class="flex justify-between text-warning">
+                <span>
+                  <i class="fas fa-minus-circle mr-1"></i>
+                  Reimbursement:
+                </span>
+                <span class="font-semibold">-{{ formatCurrency(formGroup.value.reimbursement?.amount || 0) }}</span>
+              </div>
+            }
+            <div class="divider my-1"></div>
+            <div class="flex justify-between font-bold text-base">
+              <span>Amount to Split:</span>
+              <span>{{ formatCurrency(calculateNetAmount()) }}</span>
+            </div>
+            
+            <!-- Contextual Alert -->
+            <div class="mt-3">
+              @if (formGroup.value.whoPaid === whoPaid.User) {
+                <div class="alert alert-success alert-soft py-2 text-xs">
+                  <i class="fas fa-check-circle"></i>
+                  <div class="flex flex-col">
+                    <span class="font-semibold">You paid {{ formatCurrency(formGroup.value.totalAmount || 0) }}</span>
+                    <span class="text-xs opacity-80">They owe you {{ formatCurrency(calculateTheirDebt()) }}</span>
+                  </div>
+                </div>
+              } @else {
+                <div class="alert alert-warning alert-soft py-2 text-xs">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <div class="flex flex-col">
+                    <span class="font-semibold">They paid {{ formatCurrency(formGroup.value.totalAmount || 0) }}</span>
+                    <span class="text-xs opacity-80">You owe them {{ formatCurrency(calculateMyDebt()) }}</span>
+                  </div>
+                </div>
+              }
             </div>
           </div>
         </div>
