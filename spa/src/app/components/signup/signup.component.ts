@@ -2,11 +2,13 @@ import { Component, inject } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
 import { debounceTime, tap } from 'rxjs'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'  // ← Agregar TranslateService
 import { CreateUserApiRequest } from '../../models/api'
 import { SignupFormGroup } from '../../models/forms/sign-up-form-group'
 import { AlertService, UserApiService } from '../../services'
 import { TextComponent } from '../inputs/text/text.component'
 import { useAuthStore } from '../../store'
+import { LanguageSelectorComponent } from "../language-selector/language-selector.component";
 
 @Component({
   selector: 'app-signup',
@@ -15,7 +17,9 @@ import { useAuthStore } from '../../store'
   imports: [
     RouterModule,
     ReactiveFormsModule,
-    TextComponent
+    TranslateModule,
+    TextComponent,
+    LanguageSelectorComponent
   ]
 })
 export class SignupComponent {
@@ -23,8 +27,10 @@ export class SignupComponent {
   private userApiService = inject(UserApiService);
   private alertService = inject(AlertService);
   private authStore = useAuthStore();
+  private translate = inject(TranslateService);
+  
   protected isLoading = this.authStore.loginLoading;
-  protected signupError  = this.authStore.error;
+  protected signupError = this.authStore.error;
   protected formGroup: FormGroup<SignupFormGroup>
 
   constructor() {
@@ -51,14 +57,16 @@ export class SignupComponent {
     );
     this.userApiService.signUpUser(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified); // ACTUALIZAR
+        this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified);
         this.alertService.showSuccess(
-          `Account created successfully! Please check your email to verify your account.`
+          this.translate.instant('messages.accountCreated')
         );
         this.router.navigate(['/verify-email-pending']);
       },
       error: (error) => {
-        this.authStore.loginFailure('Signup failed. Please try again.');
+        this.authStore.loginFailure(
+          this.translate.instant('messages.signupFailed')
+        );
       },
     });
   };

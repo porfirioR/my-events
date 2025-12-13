@@ -210,7 +210,7 @@ export class TransactionManagerService implements ITransactionManagerService {
       const splits = await this.splitAccessService.getByTransaction(tx.id);
 
       for (const split of splits) {
-        // ✅ CORRECCIÓN: Solo considerar splits NO liquidados y NO pagadores
+        // ✅ Solo considerar splits NO liquidados y NO pagadores
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
           // Si el split es del colaborador → el colaborador me debe
           if (split.collaboratorId === collaboratorId) {
@@ -229,7 +229,7 @@ export class TransactionManagerService implements ITransactionManagerService {
       const splits = await this.splitAccessService.getByTransaction(x.id);
 
       for (const split of splits) {
-        // ✅ CORRECCIÓN: Solo considerar splits NO liquidados y NO pagadores
+        // ✅ Solo considerar splits NO liquidados y NO pagadores
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
           // En SU transacción:
           // - Si el split es del "otherCollaboratorId" (que soy yo) → yo le debo
@@ -246,11 +246,12 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     const netBalance = collaboratorOwes - userOwes;
 
+    // ✅ CORRECCIÓN: Usar los valores reales calculados, no derivarlos del netBalance
     return new BalanceModel(
       userId,
       collaboratorId,
-      netBalance < 0 ? Math.abs(netBalance) : 0,  // userOwes
-      netBalance > 0 ? netBalance : 0,             // collaboratorOwes
+      userOwes,           // ✅ Valor real calculado
+      collaboratorOwes,   // ✅ Valor real calculado
       netBalance,
     );
   };
@@ -500,7 +501,7 @@ export class TransactionManagerService implements ITransactionManagerService {
       const splits = await this.splitAccessService.getByTransaction(tx.id);
 
       for (const split of splits) {
-        // ✅ CORRECCIÓN: Solo splits NO liquidados, NO pagadores, y con monto > 0
+        // ✅ Solo splits NO liquidados, NO pagadores, y con monto > 0
         if (!split.isSettled && !split.isPayer && split.amount > 0) {
           if (split.collaboratorId === collaboratorId) {
             collaboratorOwes += split.amount;
@@ -514,11 +515,12 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     const netBalance = collaboratorOwes - userOwes;
 
+    // ✅ CORRECCIÓN: Usar los valores reales calculados, no derivarlos del netBalance
     return new BalanceModel(
       userId,
       collaboratorId,
-      netBalance < 0 ? Math.abs(netBalance) : 0,
-      netBalance > 0 ? netBalance : 0,
+      userOwes,           // ✅ Valor real calculado
+      collaboratorOwes,   // ✅ Valor real calculado
       netBalance,
     );
   }

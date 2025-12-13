@@ -1,50 +1,65 @@
 <section class="flex flex-col items-center justify-center px-6 py-4 mx-auto lg:py-0 min-h-screen">
   <section class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700 border-indigo-500 ring-indigo-500 ring-1">
     <main class="px-6 py-4 space-y-4 md:space-y-6 sm:p-8">
-      <h1 class=" uppercase font-bold flex items-start mb-6 text-2xl text-gray-900 dark:text-white">
-        My Events
-      </h1>
-      <h2 class="text-xl font-semiboldleading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-        Sign up to your account
+      <!-- Header with app name and language selector -->
+      <section class="flex justify-between items-center">
+        <h1 class="uppercase font-bold flex items-start mb-6 text-2xl text-gray-900 dark:text-white">
+          {{ 'auth.appName' | translate }}
+        </h1>
+        <app-language-selector/>
+      </section>
+
+      <!-- Sign up title -->
+      <h2 class="text-xl font-semibold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+        {{ 'auth.signUpTitle' | translate }}
       </h2>
 
+      <!-- Error message -->
       @if (signupError()) {
         <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400">
           {{ signupError() }}
         </div>
       }
 
+      <!-- Signup form -->
       <form class="space-y-4 md:space-y-6" (submit)="save($event)" [formGroup]="formGroup">
+        <!-- Email field -->
         <app-text
           formControlName="email"
           type="email"
-          placeholder="email@email.com"
+          [placeholder]="'auth.emailPlaceholder' | translate"
           autocomplete="email"
-          label="Your email"
+          [label]="'auth.email' | translate"
           id="email"
           name="email"
           [disabled]="isLoading()"
         />
+
+        <!-- Password field -->
         <app-text 
           formControlName="password"
           type="password"
-          placeholder="••••••••"
+          [placeholder]="'auth.passwordPlaceholder' | translate"
           autocomplete="new-password"
-          label="Password"
+          [label]="'auth.password' | translate"
           id="password"
           name="password"
           [disabled]="isLoading()"
         />
+
+        <!-- Repeat password field -->
         <app-text
           formControlName="repeatPassword" 
           type="password" 
-          placeholder="••••••••"
+          [placeholder]="'auth.repeatPasswordPlaceholder' | translate"
           autocomplete="new-password"
-          label="Repeat Password"
+          [label]="'auth.repeatPassword' | translate"
           id="repeatPassword"
           name="repeatPassword"
           [disabled]="isLoading()"
         />
+
+        <!-- Submit button -->
         <button
           type="submit"
           class="mt-2 w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
@@ -56,18 +71,20 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Signing up...
+              {{ 'auth.signingUp' | translate }}
             </span>
           } @else {
-            <span>Sign up</span>
+            <span>{{ 'auth.signUp' | translate }}</span>
           }
         </button>
+
+        <!-- Sign in link -->
         <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-          Do you have an account?
+          {{ 'auth.alreadyHaveAccount' | translate }}
           <a class="font-medium text-indigo-600 hover:underline dark:text-indigo-500"
             [routerLink]="['/login']"
           >
-            Sign in
+            {{ 'auth.signIn' | translate }}
           </a>
         </p>
       </form>

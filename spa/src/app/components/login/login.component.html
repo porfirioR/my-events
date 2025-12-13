@@ -1,48 +1,62 @@
 <section class="flex flex-col items-center justify-center px-6 py-4 mx-auto lg:py-0 min-h-screen">
   <section class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700 border-indigo-500 ring-indigo-500 ring-1">
     <main class="px-6 py-4 space-y-4 md:space-y-6 sm:p-8">
-      <h1 class=" uppercase font-bold flex items-start mb-6 text-2xl text-gray-900 dark:text-white">
-        My Events
-      </h1>
+      <section class="flex justify-between items-start">
+        <h1 class="uppercase font-bold flex items-start mb-6 text-2xl text-gray-900 dark:text-white">
+          {{ 'auth.appName' | translate }}
+        </h1>
+        <app-language-selector/>
+      </section>
+
+      <!-- Sign in title -->
       <h2 class="text-xl font-semibold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-        Sign in to your account
+        {{ 'auth.signInTitle' | translate }}
       </h2>
 
+      <!-- Error message -->
       @if (loginError()) {
         <div class="p-4 mb-4 text-sm text-red-600 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400">
           {{ loginError() }}
         </div>
       }
 
+      <!-- Login form -->
       <form class="space-y-4 md:space-y-6" (submit)="loginUser()" [formGroup]="formGroup">
+        <!-- Email field -->
         <app-text
           formControlName="email"
           type="email"
-          placeholder="email@email.com"
+          [placeholder]="'auth.emailPlaceholder' | translate"
           autocomplete="email"
-          label="Your email"
+          [label]="'auth.email' | translate"
           id="email"
           name="email"
           [disabled]="isLoading()"
         />
+
+        <!-- Password field -->
         <app-text
           formControlName="password"
           type="password"
-          placeholder="••••••••"
+          [placeholder]="'auth.passwordPlaceholder' | translate"
           autocomplete="new-password"
-          label="Password"
+          [label]="'auth.password' | translate"
           id="password"
           name="password"
           [disabled]="isLoading()"
         />
+
+        <!-- Forgot password link -->
         <article class="flex items-center justify-between">
           <a
             href="#"
             [routerLink]="['/forgot-password']"
             class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-500">
-            Forgot password?
+            {{ 'auth.forgotPassword' | translate }}
           </a>
         </article>
+
+        <!-- Submit button -->
         <button
           type="submit"
           class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
@@ -54,18 +68,20 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Signing in...
+              {{ 'auth.signingIn' | translate }}
             </span>
           } @else {
-            <span>Sign in</span>
+            <span>{{ 'auth.signIn' | translate }}</span>
           }
         </button>
+
+        <!-- Sign up link -->
         <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-          Don't have an account yet?
+          {{ 'auth.dontHaveAccount' | translate }}
           <a class="font-medium text-indigo-600 hover:underline dark:text-indigo-500"
             [routerLink]="['/signup']"
           >
-            Sign up
+            {{ 'auth.signUp' | translate }}
           </a>
         </p>
       </form>

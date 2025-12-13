@@ -139,11 +139,11 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p class="text-base-content/70">They owe you:</p>
-                        <p class="font-semibold">{{ formatCurrency(balance.collaboratorOwes, 4) }}</p>
+                        <p class="font-semibold text-success">{{ formatCurrency(balance.collaboratorOwes, 4) }}</p>
                       </div>
                       <div>
                         <p class="text-base-content/70">You owe them:</p>
-                        <p class="font-semibold">{{ formatCurrency(balance.userOwes, 4) }}</p>
+                        <p class="font-semibold text-error">{{ formatCurrency(balance.userOwes, 4) }}</p>
                       </div>
                     </div>
                     <div class="divider my-2"></div>

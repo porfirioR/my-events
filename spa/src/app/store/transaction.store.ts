@@ -87,17 +87,15 @@ export const TransactionStore = signalStore(
       return store.balances().reduce((sum, x) => sum + x.netBalance, 0);
     }),
 
-    // Cuánto me deben en total
+    // ✅ CORREGIDO: Cuánto me deben en total (suma de TODOS los collaboratorOwes)
     totalTheyOwe: computed(() => {
       return store.balances()
-        .filter(x => x.netBalance > 0)
         .reduce((sum, x) => sum + x.collaboratorOwes, 0);
     }),
 
-    // Cuánto debo en total
+    // ✅ CORREGIDO: Cuánto debo en total (suma de TODOS los userOwes)
     totalIOwe: computed(() => {
       return store.balances()
-        .filter(x => x.netBalance < 0)
         .reduce((sum, x) => sum + x.userOwes, 0);
     }),
 
