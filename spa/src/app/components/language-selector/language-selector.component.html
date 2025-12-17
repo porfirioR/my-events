@@ -8,7 +8,7 @@
   </div>
 
   <!-- Dropdown menu con todos los idiomas -->
-  <ul tabindex="0" class="dropdown-content menu bg-base-200 dark:bg-base-300 z-[1] w-52 p-2 shadow-lg mt-1">
+  <ul tabindex="0" class="dropdown-content menu bg-base-200 dark:bg-base-300 rounded-box z-[1] w-52 p-2 shadow-lg mt-1 border border-base-300 dark:border-base-content/20">
     @for (lang of availableLanguages; track lang.code) {
     <li>
       <button (click)="changeLanguage(lang.code)" [class.active]="lang.code === currentLanguage().code"
@@ -17,7 +17,7 @@
         <img [src]="lang.flagSvg" [alt]="lang.name + ' flag'" class="w-6 h-6 rounded-full object-cover">
 
         <!-- Nombre del idioma -->
-        <span class="flex-1">{{ lang.name }}</span>
+        <span class="flex-1 text-gray-900 dark:text-white">{{ lang.name }}</span>
 
         <!-- Check icon si está seleccionado -->
         @if (lang.code === currentLanguage().code) {

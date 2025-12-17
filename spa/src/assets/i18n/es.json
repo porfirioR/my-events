@@ -12,16 +12,26 @@
     "success": "Éxito",
     "confirm": "Confirmar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "total": "Total"
   },
   "auth": {
     "appName": "Mis Eventos",
     "signInTitle": "Inicia sesión en tu cuenta",
     "signUpTitle": "Regístrate en tu cuenta",
+    "forgotPasswordTitle": "Olvidé mi Contraseña",
+    "forgotPasswordInstructions": "Por favor completa el campo con tu correo electrónico que se utilizará para enviar el código de seguridad para restablecer la contraseña.",
+    "checkYourEmail": "Por favor revisa tu correo y sigue los pasos.",
+    "sendCode": "Enviar Código",
+    "sendingCode": "Enviando Código...",
+    "ifYouRememberPassword": "¿Si recuerdas tu contraseña? haz clic en",
     "signIn": "Iniciar sesión",
     "signingIn": "Iniciando sesión...",
     "signUp": "Registrarse",
     "signingUp": "Registrándose...",
+    "logIn": "Iniciar Sesión",
     "email": "Tu correo electrónico",
     "emailPlaceholder": "correo@correo.com",
     "password": "Contraseña",
@@ -89,17 +99,19 @@
     "sendInvitation": "Enviar Invitación",
     "invitationSent": "Invitación Enviada",
     "accept": "Aceptar",
-    "reject": "Rechazar"
+    "reject": "Rechazar",
+    "active": "activos",
+    "inactive": "inactivos"
   },
   "validation": {
     "required": "es requerido",
-    "email": "Por favor ingresa un correo válido",
+    "email": "Correo electrónico inválido",
     "minLength": "La longitud mínima es {{value}}",
     "maxLength": "La longitud máxima es {{value}}",
     "min": "El valor mínimo es {{value}}",
     "max": "El valor máximo es {{value}}",
     "passwordsDoNotMatch": "Las contraseñas no coinciden",
-    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres"
+    "passwordMinLength": "La contraseña debe tener al menos {{value}} caracteres"
   },
   "messages": {
     "transactionCreated": "Transacción creada exitosamente",
@@ -113,5 +125,36 @@
     "welcomeBack": "Bienvenido {{email}}",
     "loginFailed": "Error al iniciar sesión. Por favor verifica tus credenciales.",
     "signupFailed": "Error al registrarse. Por favor intenta nuevamente."
+  },
+  "dashboard": {
+    "metricsHeading": "Métricas del Dashboard",
+    "collaborators": "Colaboradores",
+    "transactions": "Transacciones",
+    "savingsGoals": "Metas de Ahorro",
+    "projects": "Proyectos",
+    "revenue": "Ingresos",
+    "active": "activos",
+    "inactive": "inactivos",
+    "unsettled": "pendientes",
+    "settled": "liquidadas",
+    "completed": "completadas",
+    "viewAll": "Ver Todas",
+    "recentActiveGoals": "Metas Activas Recientes",
+    "noActiveGoalsYet": "No hay metas de ahorro activas aún",
+    "startSavingMessage": "Comienza a ahorrar creando tu primera meta",
+    "createYourFirstGoal": "Crea Tu Primera Meta",
+    "viewMoreActiveGoals": "Ver {{count}} metas activas más",
+    "quickActions": "Acciones Rápidas",
+    "addCollaborator": "Agregar Colaborador",
+    "addTransaction": "Agregar Transacción",
+    "newSavingsGoal": "Nueva Meta de Ahorro",
+    "newProject": "Nuevo Proyecto",
+    "createEvent": "Crear Evento",
+    "balances": "Balances",
+    "budgetStatus": "Estado del Presupuesto",
+    "totalBudget": "Presupuesto Total",
+    "progress": "Progreso",
+    "used": "Usado",
+    "left": "Restante"
   }
 }

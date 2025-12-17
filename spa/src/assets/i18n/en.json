@@ -12,16 +12,26 @@
     "success": "Success",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "total": "Total"
   },
   "auth": {
     "appName": "My Events",
     "signInTitle": "Sign in to your account",
     "signUpTitle": "Sign up to your account",
+    "forgotPasswordTitle": "Forgot Password",
+    "forgotPasswordInstructions": "Please fill in the field with your email address that will be used to send the security code for the password reset.",
+    "checkYourEmail": "Please check your email and follow the steps.",
+    "sendCode": "Send Code",
+    "sendingCode": "Sending Code...",
+    "ifYouRememberPassword": "If you remember your password? click on",
     "signIn": "Sign in",
     "signingIn": "Signing in...",
     "signUp": "Sign up",
     "signingUp": "Signing up...",
+    "logIn": "Log In",
     "email": "Your email",
     "emailPlaceholder": "email@email.com",
     "password": "Password",
@@ -89,17 +99,19 @@
     "sendInvitation": "Send Invitation",
     "invitationSent": "Invitation Sent",
     "accept": "Accept",
-    "reject": "Reject"
+    "reject": "Reject",
+    "active": "active",
+    "inactive": "inactive"
   },
   "validation": {
-    "required": "This field is required",
-    "email": "Please enter a valid email",
+    "required": "is required",
+    "email": "Invalid email",
     "minLength": "Minimum length is {{value}}",
     "maxLength": "Maximum length is {{value}}",
     "min": "Minimum value is {{value}}",
     "max": "Maximum value is {{value}}",
     "passwordsDoNotMatch": "Passwords do not match",
-    "passwordMinLength": "Password must be at least 6 characters"
+    "passwordMinLength": "Password must be at least {{value}} characters"
   },
   "messages": {
     "transactionCreated": "Transaction created successfully",
@@ -113,5 +125,36 @@
     "welcomeBack": "Welcome {{email}}",
     "loginFailed": "Login failed. Please check your credentials.",
     "signupFailed": "Signup failed. Please try again."
+  },
+  "dashboard": {
+    "metricsHeading": "Dashboard Metrics",
+    "collaborators": "Collaborators",
+    "transactions": "Transactions",
+    "savingsGoals": "Savings Goals",
+    "projects": "Projects",
+    "revenue": "Revenue",
+    "active": "active",
+    "inactive": "inactive",
+    "unsettled": "unsettled",
+    "settled": "settled",
+    "completed": "completed",
+    "viewAll": "View All",
+    "recentActiveGoals": "Recent Active Goals",
+    "noActiveGoalsYet": "No active savings goals yet",
+    "startSavingMessage": "Start saving by creating your first goal",
+    "createYourFirstGoal": "Create Your First Goal",
+    "viewMoreActiveGoals": "View {{count}} more active goals",
+    "quickActions": "Quick Actions",
+    "addCollaborator": "Add Collaborator",
+    "addTransaction": "Add Transaction",
+    "newSavingsGoal": "New Savings Goal",
+    "newProject": "New Project",
+    "createEvent": "Create Event",
+    "balances": "Balances",
+    "budgetStatus": "Budget Status",
+    "totalBudget": "Total Budget",
+    "progress": "Progress",
+    "used": "Used",
+    "left": "Left"
   }
 }

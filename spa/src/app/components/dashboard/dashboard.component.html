@@ -2,14 +2,14 @@
   <!-- add min-h-screen when have more module min-h-screen-->
   <!-- Dashboard Metrics Section -->
   <section aria-labelledby="metrics-heading" class="mb-8 mt-6">
-    <h2 id="metrics-heading" class="sr-only">Dashboard Metrics</h2>
+    <h2 id="metrics-heading" class="sr-only">{{ 'dashboard.metricsHeading' | translate }}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       
       <!-- Collaborators Card -->
       <article [routerLink]="['collaborators']" class="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
         <header role="button" class="flex items-center justify-between">
           <div>
-            <h3 class="text-blue-100 dark:text-blue-50 text-sm font-medium">Collaborators</h3>
+            <h3 class="text-blue-100 dark:text-blue-50 text-sm font-medium">{{ 'dashboard.collaborators' | translate }}</h3>
             <data [value]="totalCollaborators()" class="text-3xl font-bold mt-1 text-white">{{totalCollaborators()}}</data>
           </div>
           <figure class="bg-blue-400 bg-opacity-30 dark:bg-blue-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
@@ -17,7 +17,10 @@
           </figure>
         </header>
         <footer class="mt-4">
-          <span class="text-blue-100 dark:text-blue-50 text-xs">{{activeCollaborators().length}} active, {{inactiveCollaborators().length}} inactive</span>
+          <span class="text-blue-100 dark:text-blue-50 text-xs">
+            {{activeCollaborators().length}} {{ 'collaborators.active' | translate }}, 
+            {{inactiveCollaborators().length}} {{ 'collaborators.inactive' | translate }}
+          </span>
         </footer>
       </article>
 
@@ -25,7 +28,7 @@
       <article [routerLink]="['transactions']" class="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
         <header class="flex items-center justify-between">
           <div>
-            <h3 class="text-green-100 dark:text-green-50 text-sm font-medium">Transactions</h3>
+            <h3 class="text-green-100 dark:text-green-50 text-sm font-medium">{{ 'dashboard.transactions' | translate }}</h3>
             <data value="12" class="text-3xl font-bold mt-1 text-white">{{myCreatedTransactions().length}}</data>
           </div>
           <figure class="bg-green-400 bg-opacity-30 dark:bg-green-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
@@ -33,15 +36,18 @@
           </figure>
         </header>
         <footer class="mt-4">
-          <span class="text-green-100 dark:text-green-50 text-xs">{{unsettledTransactions().length}} unsettled,  {{settledTransactions().length}} settled</span>
+          <span class="text-green-100 dark:text-green-50 text-xs">
+            {{unsettledTransactions().length}} {{ 'dashboard.unsettled' | translate }},
+            {{settledTransactions().length}} {{ 'dashboard.settled' | translate }}
+          </span>
         </footer>
       </article>
 
-      <!-- Savings Goals Card (NUEVO) -->
+      <!-- Savings Goals Card -->
       <article [routerLink]="['savings']" class="cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
         <header class="flex items-center justify-between">
           <div>
-            <h3 class="text-emerald-100 dark:text-emerald-50 text-sm font-medium">Savings Goals</h3>
+            <h3 class="text-emerald-100 dark:text-emerald-50 text-sm font-medium">{{ 'dashboard.savingsGoals' | translate }}</h3>
             <data [value]="savingsStats().total" class="text-3xl font-bold mt-1 text-white">{{savingsStats().total}}</data>
           </div>
           <figure class="bg-emerald-400 bg-opacity-30 dark:bg-emerald-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
@@ -49,15 +55,18 @@
           </figure>
         </header>
         <footer class="mt-4">
-          <span class="text-emerald-100 dark:text-emerald-50 text-xs">{{savingsStats().active}} active, {{savingsStats().completed}} completed</span>
+          <span class="text-emerald-100 dark:text-emerald-50 text-xs">
+            {{savingsStats().active}} {{ 'dashboard.active' | translate }}, 
+            {{savingsStats().completed}} {{ 'dashboard.completed' | translate }}
+          </span>
         </footer>
       </article>
 
-      <!-- Projects Card -->
+      <!-- Projects Card (hidden for now) -->
       <article class="cursor-pointer bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300 hidden">
         <header class="flex items-center justify-between">
           <div>
-            <h3 class="text-purple-100 dark:text-purple-50 text-sm font-medium">Projects</h3>
+            <h3 class="text-purple-100 dark:text-purple-50 text-sm font-medium">{{ 'dashboard.projects' | translate }}</h3>
             <data value="3" class="text-3xl font-bold mt-1 text-white">3</data>
           </div>
           <figure class="bg-purple-400 bg-opacity-30 dark:bg-purple-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
@@ -65,15 +74,15 @@
           </figure>
         </header>
         <footer class="mt-4">
-          <span class="text-purple-100 dark:text-purple-50 text-xs">2 active, 1 planning</span>
+          <span class="text-purple-100 dark:text-purple-50 text-xs">2 {{ 'dashboard.active' | translate }}, 1 planning</span>
         </footer>
       </article>
 
-      <!-- Revenue Card -->
+      <!-- Revenue Card (hidden for now) -->
       <article class="cursor-pointer bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-600 dark:to-orange-600 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300 hidden">
         <header class="flex items-center justify-between">
           <div>
-            <h3 class="text-yellow-100 dark:text-yellow-50 text-sm font-medium">Revenue</h3>
+            <h3 class="text-yellow-100 dark:text-yellow-50 text-sm font-medium">{{ 'dashboard.revenue' | translate }}</h3>
             <data value="24000" class="text-3xl font-bold mt-1 text-white">$24K</data>
           </div>
           <figure class="bg-yellow-400 bg-opacity-30 dark:bg-yellow-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
@@ -89,7 +98,7 @@
 
   <!-- Content Grid -->
   <article class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Savings Goals Detail Section (NUEVO) -->
+    <!-- Savings Goals Detail Section -->
     <section aria-labelledby="savings-heading" class="lg:col-span-2">
       <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
         <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
@@ -98,10 +107,10 @@
               <div class="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center">
                 <i class="fas fa-piggy-bank text-lg text-success" aria-hidden="true"></i>
               </div>
-              <h2 id="savings-heading" class="text-xl font-semibold text-base-content">Savings Goals</h2>
+              <h2 id="savings-heading" class="text-xl font-semibold text-base-content">{{ 'dashboard.savingsGoals' | translate }}</h2>
             </div>
             <button [routerLink]="['savings']" class="text-primary hover:text-primary-focus text-sm font-medium px-3 py-1 rounded-md hover:bg-primary/10 transition-colors cursor-pointer">
-              View All
+              {{ 'dashboard.viewAll' | translate }}
             </button>
           </div>
         </header>
@@ -111,17 +120,17 @@
             <!-- Stats Grid -->
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
               <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 text-center">
-                <div class="text-xs text-base-content/70 mb-1">Total</div>
+                <div class="text-xs text-base-content/70 mb-1">{{ 'common.total' | translate }}</div>
                 <div class="text-2xl font-bold text-base-content">{{ stats.total }}</div>
               </div>
 
               <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 text-center">
-                <div class="text-xs text-success mb-1">Active</div>
+                <div class="text-xs text-success mb-1">{{ 'dashboard.active' | translate }}</div>
                 <div class="text-2xl font-bold text-success">{{ stats.active }}</div>
               </div>
 
               <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 text-center">
-                <div class="text-xs text-info mb-1">Completed</div>
+                <div class="text-xs text-info mb-1">{{ 'dashboard.completed' | translate }}</div>
                 <div class="text-2xl font-bold text-info">{{ stats.completed }}</div>
               </div>
             </div>
@@ -129,7 +138,7 @@
             <!-- Active Goals List -->
             @if (activeGoals().length > 0) {
               <div>
-                <h3 class="text-sm font-semibold text-base-content/70 mb-3">Recent Active Goals</h3>
+                <h3 class="text-sm font-semibold text-base-content/70 mb-3">{{ 'dashboard.recentActiveGoals' | translate }}</h3>
                 <ul class="space-y-3" role="list">
                   @for (goal of activeGoals(); track goal.id) {
                     <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
@@ -168,7 +177,7 @@
                     type="button"
                     [routerLink]="['savings']"
                     class="w-full mt-4 py-2 text-sm text-primary hover:text-primary-focus hover:bg-primary/10 rounded-lg transition-colors duration-200">
-                    View {{ savingsStats().active - 3 }} more active goals
+                    {{ 'dashboard.viewMoreActiveGoals' | translate:{ count: savingsStats().active - 3 } }}
                   </button>
                 }
               </div>
@@ -178,198 +187,18 @@
                 <figure class="mx-auto w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mb-4">
                   <i class="fas fa-piggy-bank text-3xl text-success/50" aria-hidden="true"></i>
                 </figure>
-                <h3 class="text-lg font-medium text-base-content mb-2">No active savings goals yet</h3>
-                <p class="text-base-content/70 mb-4 text-sm">Start saving by creating your first goal</p>
+                <h3 class="text-lg font-medium text-base-content mb-2">{{ 'dashboard.noActiveGoalsYet' | translate }}</h3>
+                <p class="text-base-content/70 mb-4 text-sm">{{ 'dashboard.startSavingMessage' | translate }}</p>
                 <button 
                   type="button"
                   [routerLink]="['savings/create']"
                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-success hover:bg-success/90 rounded-lg transition-colors duration-200">
                   <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-                  Create Your First Goal
+                  {{ 'dashboard.createYourFirstGoal' | translate }}
                 </button>
               </div>
             }
           }
-        </div>
-      </article>
-    </section>
-
-    <!-- Recent Events Section -->
-    <section aria-labelledby="events-heading" class="lg:col-span-2 hidden">
-      <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
-        <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-          <div class="flex items-center justify-between">
-            <h2 id="events-heading" class="text-xl font-semibold text-base-content">Recent Events</h2>
-            <button class="text-primary hover:text-primary-focus text-sm font-medium px-3 py-1 rounded-md hover:bg-primary/10 transition-colors cursor-pointer">
-              View All
-            </button>
-          </div>
-        </header>
-
-        <div class="p-6">
-          <ul class="space-y-4" role="list">
-            
-            <!-- Event Item 1 -->
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-              <article class="flex items-center">
-                <figure class="flex-shrink-0 mr-4">
-                  <div class="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                    CC
-                  </div>
-                </figure>
-
-                <div class="flex-grow min-w-0">
-                  <header>
-                    <h3 class="font-semibold text-base-content truncate">Corporate Conference 2024</h3>
-                    <time datetime="2024-12-15" class="text-sm text-base-content/70">
-                      Dec 15, 2024 • 150 attendees
-                    </time>
-                  </header>
-
-                  <div class="flex items-center mt-2 space-x-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/20 text-success border border-success/30">
-                      Active
-                    </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-base-content/10 text-base-content/80 border border-base-content/20">
-                      Conference
-                    </span>
-                  </div>
-                </div>
-
-                <aside class="text-right ml-4">
-                  <data value="12500" class="font-bold text-success text-lg">$12.5K</data>
-                </aside>
-              </article>
-            </li>
-
-            <!-- Event Item 2 -->
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-              <article class="flex items-center">
-                <figure class="flex-shrink-0 mr-4">
-                  <div class="w-12 h-12 bg-indigo-500 dark:bg-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                    WS
-                  </div>
-                </figure>
-
-                <div class="flex-grow min-w-0">
-                  <header>
-                    <h3 class="font-semibold text-base-content truncate">Workshop Series</h3>
-                    <p class="text-sm text-base-content/70">Ongoing • 45 participants</p>
-                  </header>
-
-                  <div class="flex items-center mt-2 space-x-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-info/20 text-info border border-info/30">
-                      Ongoing
-                    </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-base-content/10 text-base-content/80 border border-base-content/20">
-                      Workshop
-                    </span>
-                  </div>
-                </div>
-
-                <aside class="text-right ml-4">
-                  <data value="4100" class="font-bold text-info text-lg">$4.1K</data>
-                </aside>
-              </article>
-            </li>
-
-            <!-- Event Item 3 -->
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-              <article class="flex items-center">
-                <figure class="flex-shrink-0 mr-4">
-                  <div class="w-12 h-12 bg-purple-500 dark:bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                    TL
-                  </div>
-                </figure>
-
-                <div class="flex-grow min-w-0">
-                  <header>
-                    <h3 class="font-semibold text-base-content truncate">Team Launch Event</h3>
-                    <time datetime="2025-01-10" class="text-sm text-base-content/70">
-                      Jan 10, 2025 • 80 attendees
-                    </time>
-                  </header>
-
-                  <div class="flex items-center mt-2 space-x-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/20 text-warning border border-warning/30">
-                      Planning
-                    </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-base-content/10 text-base-content/80 border border-base-content/20">
-                      Launch
-                    </span>
-                  </div>
-                </div>
-
-                <aside class="text-right ml-4">
-                  <data value="8200" class="font-bold text-warning text-lg">$8.2K</data>
-                </aside>
-              </article>
-            </li>
-
-            <!-- Event Item 4 (Duplicate for demo) -->
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-              <article class="flex items-center">
-                <figure class="flex-shrink-0 mr-4">
-                  <div class="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                    CC
-                  </div>
-                </figure>
-
-                <div class="flex-grow min-w-0">
-                  <header>
-                    <h3 class="font-semibold text-base-content truncate">Corporate Conference 2024</h3>
-                    <time datetime="2024-12-15" class="text-sm text-base-content/70">
-                      Dec 15, 2024 • 150 attendees
-                    </time>
-                  </header>
-
-                  <div class="flex items-center mt-2 space-x-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/20 text-success border border-success/30">
-                      Active
-                    </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-base-content/10 text-base-content/80 border border-base-content/20">
-                      Conference
-                    </span>
-                  </div>
-                </div>
-
-                <aside class="text-right ml-4">
-                  <data value="12500" class="font-bold text-success text-lg">$12.5K</data>
-                </aside>
-              </article>
-            </li>
-
-            <!-- Event Item 5 (Duplicate for demo) -->
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
-              <article class="flex items-center">
-                <figure class="flex-shrink-0 mr-4">
-                  <div class="w-12 h-12 bg-indigo-500 dark:bg-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                    WS
-                  </div>
-                </figure>
-
-                <div class="flex-grow min-w-0">
-                  <header>
-                    <h3 class="font-semibold text-base-content truncate">Workshop Series</h3>
-                    <p class="text-sm text-base-content/70">Ongoing • 45 participants</p>
-                  </header>
-
-                  <div class="flex items-center mt-2 space-x-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-info/20 text-info border border-info/30">
-                      Ongoing
-                    </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-base-content/10 text-base-content/80 border border-base-content/20">
-                      Workshop
-                    </span>
-                  </div>
-                </div>
-
-                <aside class="text-right ml-4">
-                  <data value="4100" class="font-bold text-info text-lg">$4.1K</data>
-                </aside>
-              </article>
-            </li>
-          </ul>
         </div>
       </article>
     </section>
@@ -380,7 +209,7 @@
       <section aria-labelledby="actions-heading">
         <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
           <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-            <h2 id="actions-heading" class="text-lg font-semibold text-base-content">Quick Actions</h2>
+            <h2 id="actions-heading" class="text-lg font-semibold text-base-content">{{ 'dashboard.quickActions' | translate }}</h2>
           </header>
 
           <nav class="p-6">
@@ -388,38 +217,37 @@
               <li>
                 <a [routerLink]="['collaborators/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-primary/10 hover:text-primary rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-user-plus mr-3 text-primary" aria-hidden="true"></i>
-                  <span>Add Collaborator</span>
+                  <span>{{ 'dashboard.addCollaborator' | translate }}</span>
                 </a>
               </li>
               <li>
                 <a [routerLink]="['transactions/new']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-warning/10 hover:text-warning rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-dollar-sign mr-3 text-warning" aria-hidden="true"></i>
-                  <span>Add Transaction</span>
+                  <span>{{ 'dashboard.addTransaction' | translate }}</span>
                 </a>
               </li>
-              <!-- NUEVO: Quick Action para Savings Goals -->
               <li>
                 <a [routerLink]="['savings/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-success/10 hover:text-success rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-piggy-bank mr-3 text-success" aria-hidden="true"></i>
-                  <span>New Savings Goal</span>
+                  <span>{{ 'dashboard.newSavingsGoal' | translate }}</span>
                 </a>
               </li>
               <li>
                 <a class="w-full flex items-center p-3 text-left text-base-content hover:bg-secondary/10 hover:text-secondary rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-project-diagram mr-3 text-secondary" aria-hidden="true"></i>
-                  <span>New Project</span>
+                  <span>{{ 'dashboard.newProject' | translate }}</span>
                 </a>
               </li>
               <li>
                 <a class="w-full flex items-center p-3 text-left text-base-content hover:bg-info/10 hover:text-info rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-plus mr-3 text-info" aria-hidden="true"></i>
-                  <span>Create Event</span>
+                  <span>{{ 'dashboard.createEvent' | translate }}</span>
                 </a>
               </li>
               <li>
                 <a [routerLink]="['transactions/balances']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-accent/10 hover:text-accent rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-balance-scale mr-3 text-accent" aria-hidden="true"></i>
-                  <span>Balances</span>
+                  <span>{{ 'dashboard.balances' | translate }}</span>
                 </a>
               </li>
             </ul>
@@ -427,17 +255,17 @@
         </article>
       </section>
 
-      <!-- Budget Status Section -->
+      <!-- Budget Status Section (hidden for now) -->
       <section aria-labelledby="budget-heading" class="hidden">
         <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
           <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-            <h2 id="budget-heading" class="text-lg font-semibold text-base-content">Budget Status</h2>
+            <h2 id="budget-heading" class="text-lg font-semibold text-base-content">{{ 'dashboard.budgetStatus' | translate }}</h2>
           </header>
 
           <div class="p-6">
             <dl class="space-y-4">
               <div class="flex justify-between items-center">
-                <dt class="text-sm text-base-content/70">Total Budget</dt>
+                <dt class="text-sm text-base-content/70">{{ 'dashboard.totalBudget' | translate }}</dt>
                 <dd class="font-bold text-base-content">
                   <data value="50000">$50,000</data>
                 </dd>
@@ -445,7 +273,7 @@
 
               <div>
                 <div class="flex justify-between items-center mb-2">
-                  <dt class="text-sm text-base-content/70">Progress</dt>
+                  <dt class="text-sm text-base-content/70">{{ 'dashboard.progress' | translate }}</dt>
                   <dd class="text-sm font-medium text-base-content">65%</dd>
                 </div>
 
@@ -462,13 +290,13 @@
 
               <div class="grid grid-cols-2 gap-4 pt-2">
                 <div class="text-center">
-                  <dt class="text-xs text-base-content/70">Used</dt>
+                  <dt class="text-xs text-base-content/70">{{ 'dashboard.used' | translate }}</dt>
                   <dd class="font-semibold text-error">
                     <data value="32400">$32,400</data>
                   </dd>
                 </div>
                 <div class="text-center">
-                  <dt class="text-xs text-base-content/70">Left</dt>
+                  <dt class="text-xs text-base-content/70">{{ 'dashboard.left' | translate }}</dt>
                   <dd class="font-semibold text-success">
                     <data value="17600">$17,600</data>
                   </dd>

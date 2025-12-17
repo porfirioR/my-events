@@ -5,6 +5,7 @@ import { AlertService, LocalService } from '../../services'
 import { ThemeService } from '../../services/theme.service'
 import { ModeType } from '../../constants'
 import { useAuthStore, useCollaboratorStore, useTransactionStore } from '../../store'
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component'
 
 @Component({
   selector: 'app-header',
@@ -13,6 +14,7 @@ import { useAuthStore, useCollaboratorStore, useTransactionStore } from '../../s
   imports: [
     RouterModule,
     ProfileComponent,
+    LanguageSelectorComponent,
   ]
 })
 export class HeaderComponent {

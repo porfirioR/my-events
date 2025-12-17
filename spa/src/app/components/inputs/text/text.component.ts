@@ -4,6 +4,7 @@ import { ControlValueAccessor, NgControl, ReactiveFormsModule } from '@angular/f
 import { FormErrorsComponent } from '../../form-errors/form-errors.component'
 import { InputType } from '../../../constants/input-type'
 import { AutocompleteType } from '../../../constants/autocomplete-type'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-text',
@@ -12,6 +13,7 @@ import { AutocompleteType } from '../../../constants/autocomplete-type'
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    TranslateModule,
     FormErrorsComponent,
   ]
 })
@@ -23,7 +25,7 @@ export class TextComponent implements ControlValueAccessor {
   @Input({required: true}) id: string = ''
   @Input({required: true}) name: string = ''
   @Input() autocomplete: AutocompleteType = 'off'
-  @Input() disabled: boolean = true
+  @Input() disabled: boolean = false
   protected passwordFieldType: 'password' | 'text' = 'password';
 
   constructor(@Self() public ngControl: NgControl) {

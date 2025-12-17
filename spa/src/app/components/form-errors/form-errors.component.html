@@ -1,28 +1,31 @@
 @if (ngControl.control?.touched) {
-  <footer>
+  <footer class="mt-2 mb-1">
     @if (ngControl.control?.errors; as error) {
-      <span class="label-text-alt text-error">
-        @if (error['required']) {
-          {{label}} is required
-        }
-        @if (error['minlength']) {
-          {{label}} must be greater than {{error['minlength']?.requiredLength}}
-        }
-        @if (error['maxlength']) {
-          {{label}} must be less than {{error['maxlength']?.requiredLength}}
-        }
-        @if (error['invalidRepeatPassword']) {
-          The Password is not equals.
-        }
-        @if (error['email']) {
-          Invalid Email
-        }
-        @if (error['min']) {
-          {{label}} must be greater than or equal to {{error['min']?.min}}
-        }
-        @if (error['max']) {
-          {{label}} must be less than or equal to {{error['max']?.max}}
-        }
+      <span class="label-text-alt text-error text-sm flex items-center gap-1">
+        <i class="fas fa-exclamation-circle text-xs mt-0.5"></i>
+        <span>
+          @if (error['required']) {
+            {{ label }} {{ 'validation.required' | translate }}
+          }
+          @if (error['minlength']) {
+            {{ 'validation.minLength' | translate:{ value: error['minlength']?.requiredLength } }}
+          }
+          @if (error['maxlength']) {
+            {{ 'validation.maxLength' | translate:{ value: error['maxlength']?.requiredLength } }}
+          }
+          @if (error['invalidRepeatPassword']) {
+            {{ 'validation.passwordsDoNotMatch' | translate }}
+          }
+          @if (error['email']) {
+            {{ 'validation.email' | translate }}
+          }
+          @if (error['min']) {
+            {{ 'validation.min' | translate:{ value: error['min']?.min } }}
+          }
+          @if (error['max']) {
+            {{ 'validation.max' | translate:{ value: error['max']?.max } }}
+          }
+        </span>
       </span>
     }
   </footer>

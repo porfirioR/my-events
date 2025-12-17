@@ -5,6 +5,8 @@ import { ForgotPasswordFormGroup } from '../../models/forms'
 import { AlertService, UserApiService } from '../../services'
 import { ForgotPasswordApiRequest } from '../../models/api'
 import { TextComponent } from '../inputs/text/text.component'
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-forgot-password',
@@ -13,7 +15,9 @@ import { TextComponent } from '../inputs/text/text.component'
   imports: [
     RouterModule,
     ReactiveFormsModule,
-    TextComponent
+    TranslateModule,
+    TextComponent,
+    LanguageSelectorComponent
   ]
 })
 export class ForgotPasswordComponent {
