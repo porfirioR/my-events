@@ -1,7 +1,8 @@
-import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core'; //Agregar signal
+import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { 
   ReceivedMatchRequestModel, 
   CollaboratorMatchRequestModel,
@@ -21,13 +22,13 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-collaborator-match-requests',
-  standalone: true,
   templateUrl: './collaborator-match-requests.component.html',
   styleUrls: ['./collaborator-match-requests.component.css'],
   imports: [
     CommonModule,
     RouterModule,
     FormsModule,
+    TranslateModule,
     TextComponent,
     ReactiveFormsModule,
     SelectInputComponent,
@@ -37,6 +38,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
   private alertService = inject(AlertService);
+  private translate = inject(TranslateService);  // ← Inyectar
   private loadingStore = useLoadingStore();
   private router = inject(Router);
   private readonly collaboratorStore = useCollaboratorStore();
@@ -46,7 +48,6 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   protected sentRequests: CollaboratorMatchRequestModel[] = [];
   protected activeTab: 'received' | 'sent' | 'create' = 'received';
 
-  // Estado de carga inicial separado
   protected initialLoading = signal(true);
   protected isLoading = this.loadingStore.isLoading;
 
@@ -96,14 +97,18 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       this.formGroup.value.collaboratorId
     ).subscribe({
       next: () => {
-        this.alertService.showSuccess('Match request accepted! Email assigned to your collaborator.');
+        this.alertService.showSuccess(
+          this.translate.instant('matchRequests.requestAccepted')
+        );
         this.showCollaboratorSelectionModal = false;
         this.pendingRequestToAccept = null;
         this.formGroup.controls.collaboratorId.setValue(null)
         this.loadAllData();
       },
       error: (error) => {
-        this.alertService.showError(error.error?.message || 'Failed to accept request');
+        this.alertService.showError(
+          error.error?.message || this.translate.instant('matchRequests.failedToAccept')
+        );
         this.loadingStore.setLoadingFailed();
       }
     });
@@ -116,16 +121,21 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   protected cancelRequest(request: CollaboratorMatchRequestModel): void {
-    const confirmMsg = 'Are you sure you want to cancel this request?';
+    const confirmMsg = this.translate.instant('matchRequests.confirmCancelRequest');
+    
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
       this.matchRequestApiService.cancelMatchRequest(request.id).subscribe({
         next: (response) => {
-          this.alertService.showSuccess(response.message || 'Request cancelled successfully');
+          this.alertService.showSuccess(
+            response.message || this.translate.instant('matchRequests.requestCancelled')
+          );
           this.loadAllData();
         },
         error: (error) => {
-          this.alertService.showError(error.error?.message || 'Failed to cancel request');
+          this.alertService.showError(
+            error.error?.message || this.translate.instant('matchRequests.failedToCancel')
+          );
           this.loadingStore.setLoadingFailed();
         }
       });
@@ -134,7 +144,9 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
   protected createMatchRequest(): void {
     if (this.formGroup.invalid) {
-      this.alertService.showInfo('Please fill in all fields');
+      this.alertService.showInfo(
+        this.translate.instant('matchRequests.pleaseFillAllFields')
+      );
       return;
     }
 
@@ -146,14 +158,18 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
     this.matchRequestApiService.createMatchRequest(request).subscribe({
       next: (response) => {
-        this.alertService.showSuccess(response.message);
+        this.alertService.showSuccess(
+          response.message || this.translate.instant('matchRequests.requestCreated')
+        );
         this.formGroup.reset();
         this.activeTab = 'sent';
         this.ignorePreventUnsavedChanges = true
         this.loadAllData();
       },
       error: (error) => {
-        this.alertService.showError(error.error?.message || 'Failed to create match request');
+        this.alertService.showError(
+          error.error?.message || this.translate.instant('matchRequests.failedToCreate')
+        );
         this.loadingStore.setLoadingFailed();
       }
     });
@@ -175,7 +191,6 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   protected getFormattedDate = (date: Date): string => FormatterHelperService.getFormattedDate(date);
 
   private loadAllData(): void {
-    //Solo usar loadingStore para acciones del usuario, no para carga inicial
     const isInitial = this.initialLoading();
     
     if (!isInitial) {
@@ -200,7 +215,9 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
         }
       },
       error: (error) => {
-        this.alertService.showError('Failed to load data');
+        this.alertService.showError(
+          this.translate.instant('matchRequests.failedToLoadData')
+        );
         if (isInitial) {
           this.initialLoading.set(false);
         } else {
@@ -211,17 +228,23 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   private acceptDirectly(request: ReceivedMatchRequestModel): void {
-    const confirmMsg = `Accept match request from ${request.requesterUserEmail}?`;
+    const confirmMsg = this.translate.instant('matchRequests.acceptMatchRequest', { 
+      email: request.requesterUserEmail 
+    });
 
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
       this.matchRequestApiService.acceptMatchRequest(request.id).subscribe({
         next: () => {
-          this.alertService.showSuccess('Match request accepted successfully!');
+          this.alertService.showSuccess(
+            this.translate.instant('matchRequests.requestAcceptedSuccess')
+          );
           this.loadAllData();
         },
         error: (error) => {
-          this.alertService.showError(error.error?.message || 'Failed to accept request');
+          this.alertService.showError(
+            error.error?.message || this.translate.instant('matchRequests.failedToAccept')
+          );
           this.loadingStore.setLoadingFailed();
         }
       });
@@ -230,7 +253,9 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
   private showCollaboratorSelection = (request: ReceivedMatchRequestModel): void => {
     if (this.internalCollaborators().length === 0) {
-      this.alertService.showError('You need to create an internal collaborator first to accept this invitation.');
+      this.alertService.showError(
+        this.translate.instant('matchRequests.needInternalCollaborator')
+      );
       return;
     }
 

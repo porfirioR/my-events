@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';  // ← Importar
+import { TranslateModule } from '@ngx-translate/core';
 import {
   useCollaboratorStore,
   useSavingsStore,

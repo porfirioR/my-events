@@ -1,12 +1,17 @@
-import { Component, signal } from '@angular/core'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { RouterModule } from '@angular/router'
-import { ForgotPasswordFormGroup } from '../../models/forms'
-import { AlertService, UserApiService } from '../../services'
-import { ForgotPasswordApiRequest } from '../../models/api'
-import { TextComponent } from '../inputs/text/text.component'
-import { LanguageSelectorComponent } from '../language-selector/language-selector.component'
-import { TranslateModule } from '@ngx-translate/core'
+import { Component, signal } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { ForgotPasswordFormGroup } from '../../models/forms';
+import { AlertService, UserApiService } from '../../services';
+import { ForgotPasswordApiRequest } from '../../models/api';
+import { TextComponent } from '../inputs/text/text.component';
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 @Component({
   selector: 'app-forgot-password',
@@ -17,21 +22,21 @@ import { TranslateModule } from '@ngx-translate/core'
     ReactiveFormsModule,
     TranslateModule,
     TextComponent,
-    LanguageSelectorComponent
-  ]
+    LanguageSelectorComponent,
+  ],
 })
 export class ForgotPasswordComponent {
-  protected formGroup: FormGroup<ForgotPasswordFormGroup>
-  protected showMessage: boolean = false
+  protected formGroup: FormGroup<ForgotPasswordFormGroup>;
+  protected showMessage: boolean = false;
   protected isSubmitting = signal<boolean>(false);
-  
+
   constructor(
     private readonly userApiService: UserApiService,
     private readonly alertService: AlertService
   ) {
     this.formGroup = new FormGroup<ForgotPasswordFormGroup>({
-      email: new FormControl(null, [Validators.required, Validators.email])
-    })
+      email: new FormControl(null, [Validators.required, Validators.email]),
+    });
   }
 
   protected sendCode = (event?: Event): void => {
@@ -42,18 +47,19 @@ export class ForgotPasswordComponent {
     this.isSubmitting.set(true);
     const email = this.formGroup.value.email!;
     this.showMessage = false;
-    this.userApiService.forgotPassword(new ForgotPasswordApiRequest(email)).subscribe({
-      next: (response) => {
-        this.alertService.showSuccess(response.message);
-        this.showMessage = true;
-        this.isSubmitting.set(false);
-      },
-      error: (e) => {
-        this.showMessage = false;
-        this.isSubmitting.set(false);
-        this.alertService.showError('An error occurred. Please try again.');
-      },
-    });
+    this.userApiService
+      .forgotPassword(new ForgotPasswordApiRequest(email))
+      .subscribe({
+        next: (response) => {
+          this.alertService.showSuccess(response.message);
+          this.showMessage = true;
+          this.isSubmitting.set(false);
+        },
+        error: (e) => {
+          this.showMessage = false;
+          this.isSubmitting.set(false);
+          this.alertService.showError('An error occurred. Please try again.');
+        },
+      });
   };
-
 }
