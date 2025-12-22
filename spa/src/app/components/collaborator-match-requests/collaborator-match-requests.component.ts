@@ -38,11 +38,11 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
   private alertService = inject(AlertService);
-  private translate = inject(TranslateService);  // ← Inyectar
+  private translate = inject(TranslateService);
   private loadingStore = useLoadingStore();
   private router = inject(Router);
   private readonly collaboratorStore = useCollaboratorStore();
-
+  private formatterService = inject(FormatterHelperService);
   private externalCollaborators: CollaboratorApiModel[] = [];
   protected receivedRequests: ReceivedMatchRequestModel[] = [];
   protected sentRequests: CollaboratorMatchRequestModel[] = [];
@@ -57,6 +57,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     const linkedCollaborators = this.collaboratorStore.unlinkedCollaborators()
     return FormatterHelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
   });
+
   public formGroup: FormGroup<MatchRequestFormGroup>;
   public ignorePreventUnsavedChanges = false
 
@@ -122,7 +123,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
   protected cancelRequest(request: CollaboratorMatchRequestModel): void {
     const confirmMsg = this.translate.instant('matchRequests.confirmCancelRequest');
-    
+
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
       this.matchRequestApiService.cancelMatchRequest(request.id).subscribe({
@@ -188,7 +189,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     }
   }
 
-  protected getFormattedDate = (date: Date): string => FormatterHelperService.getFormattedDate(date);
+  protected getFormattedDate = this.formatterService.getFormattedDate;
 
   private loadAllData(): void {
     const isInitial = this.initialLoading();

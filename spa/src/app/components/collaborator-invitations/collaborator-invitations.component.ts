@@ -9,7 +9,7 @@ import {
 import { CollaboratorInvitationApiService } from '../../services/api/collaborator-invitation-api.service';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
-import { AlertService } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { useLoadingStore } from '../../store';
 
 @Component({
@@ -27,6 +27,8 @@ export class CollaboratorInvitationsComponent implements OnInit {
   private loadingStore = useLoadingStore();
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private formatterService = inject(FormatterHelperService);
+  protected getFormattedDate = this.formatterService.getFormattedDate
 
   invitationsSummary: CollaboratorInvitationModel[] = [];
   selectedCollaboratorInvitations: ReceivedMatchRequestModel[] = [];
@@ -115,18 +117,6 @@ export class CollaboratorInvitationsComponent implements OnInit {
     }
   }
 
-  getFormattedDate(date: Date): string {
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - new Date(date).getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'today';
-    if (diffDays === 1) return 'yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    return `${Math.floor(diffDays / 365)} years ago`;
-  }
 
   backToList(): void {
     if (this.viewMode === 'details') {

@@ -26,7 +26,7 @@ export class TransactionDetailsComponent implements OnInit {
   protected transactionDetails = this.transactionStore.selectedTransactionDetails;
   
   protected formatCurrency = this.formatterService.formatCurrency;
-  protected getFormattedDate = FormatterHelperService.getFormattedDate;
+  protected getFormattedDate = this.formatterService.getFormattedDate;
 
   private transactionId: number = 0;
 

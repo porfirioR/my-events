@@ -26,7 +26,7 @@ export class CollaboratorsComponent implements OnInit {
   private readonly matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
-
+  private formatterService = inject(FormatterHelperService);
   protected collaborators = computed(() => {
     switch (this.filterType()) {
       case 'unlinked':
@@ -41,7 +41,7 @@ export class CollaboratorsComponent implements OnInit {
   protected filterType = signal<'all' | 'unlinked' | 'linked'>('all');
   protected pendingRequestsCount = signal(0);
   protected getInitials = FormatterHelperService.getInitials
-  protected getFormattedDate = FormatterHelperService.getFormattedDate
+  protected getFormattedDate = this.formatterService.getFormattedDate
 
   ngOnInit(): void {
     this.loadCollaborators();

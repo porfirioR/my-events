@@ -15,7 +15,13 @@
     "no": "No",
     "showPassword": "Mostrar contraseña",
     "hidePassword": "Ocultar contraseña",
-    "total": "Total"
+    "total": "Total",
+    "today": "hoy",
+    "yesterday": "ayer",
+    "daysAgo": " días atrás",
+    "weeksAgo": "semanas atrás",
+    "monthsAgo": "meses atrás",
+    "yearsAgo": "años atrás"
   },
   "auth": {
     "appName": "Mis Eventos",
@@ -233,6 +239,9 @@
     "requestAcceptedSuccess": "¡Solicitud aceptada exitosamente!",
     "needInternalCollaborator": "Necesitas crear un colaborador interno primero para aceptar esta invitación.",
     "failedToLoadData": "Error al cargar los datos"
+  },
+  "inputs": {
+    "selectOption": "Selecciona un {{label}}"
   },
   "Pending": "Pendiente",
   "Accepted": "Aceptada",

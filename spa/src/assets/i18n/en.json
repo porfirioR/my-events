@@ -15,7 +15,13 @@
     "no": "No",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "total": "Total"
+    "total": "Total",
+    "today": "today",
+    "yesterday": "yesterday",
+    "daysAgo": " days ago",
+    "weeksAgo": "weeks ago",
+    "monthsAgo": "months ago",
+    "yearsAgo": "years ago"
   },
   "auth": {
     "appName": "My Events",
@@ -233,6 +239,9 @@
     "requestAcceptedSuccess": "Match request accepted successfully!",
     "needInternalCollaborator": "You need to create an internal collaborator first to accept this invitation.",
     "failedToLoadData": "Failed to load data"
+  },
+  "inputs": {
+    "selectOption": "Select on {{label}}"
   },
   "Pending": "Pending",
   "Accepted": "Accepted",

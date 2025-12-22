@@ -189,8 +189,8 @@
                     <app-select-input
                       formControlName="collaboratorId"
                       id="collaboratorId"
-                      label="Unlinked Collaborator"
                       name="collaborator"
+                      [label]="'matchRequests.unlinkedCollaborator' | translate"
                       [list]="internalCollaborators()"
                       [disabled]="isLoading()"
                     />
@@ -200,7 +200,7 @@
                       type="email"
                       placeholder="collaborator@example.com"
                       autocomplete="email"
-                      label="Target Email"
+                      [label]="'matchRequests.targetEmail' | translate"
                       id="targetEmail"
                       name="targetEmail"
                       [disabled]="isLoading()"

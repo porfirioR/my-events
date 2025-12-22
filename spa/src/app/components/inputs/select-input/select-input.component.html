@@ -16,7 +16,7 @@
       'border-slate-300': ngControl.control && !ngControl.control.touched
     }"
   >
-    <option [ngValue]="null" hidden>Select one {{label}}</option>
+    <option [ngValue]="null" hidden>{{"inputs.selectOption" | translate: { label: label } }}</option>
     @for (item of list; track item.key) {
       <option class="dark:border-y-indigo-600 text-black" [ngValue]="item.key">{{item.value}}</option>
     }

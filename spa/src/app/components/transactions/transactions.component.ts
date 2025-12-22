@@ -30,7 +30,7 @@ export class TransactionsComponent implements OnInit {
   protected filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
 
   protected formatCurrency = this.formatterService.formatCurrency
-  protected getFormattedDate = FormatterHelperService.getFormattedDate;
+  protected getFormattedDate = this.formatterService.getFormattedDate;
 
   protected transactions = computed(() => {
     const filter = this.filterType();

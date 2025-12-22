@@ -37,7 +37,6 @@ export class SavingsGoalDetailComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
-
   private savingsStore = useSavingsStore();
 
   protected goal = this.savingsStore.selectedGoal;
@@ -294,5 +293,5 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel;
 
   protected formatCurrency = this.formatterService.formatCurrency;
-  protected getFormattedDate = FormatterHelperService.getFormattedDate;
+  protected getFormattedDate = this.formatterService.getFormattedDate;
 }
