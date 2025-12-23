@@ -293,5 +293,5 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel;
 
   protected formatCurrency = this.formatterService.formatCurrency;
-  protected getFormattedDate = this.formatterService.getFormattedDate;
+  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
 }

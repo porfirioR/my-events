@@ -41,7 +41,7 @@ export class CollaboratorsComponent implements OnInit {
   protected filterType = signal<'all' | 'unlinked' | 'linked'>('all');
   protected pendingRequestsCount = signal(0);
   protected getInitials = FormatterHelperService.getInitials
-  protected getFormattedDate = this.formatterService.getFormattedDate
+  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService)
 
   ngOnInit(): void {
     this.loadCollaborators();

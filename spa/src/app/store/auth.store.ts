@@ -1,6 +1,6 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
-import { useCurrencyStore } from './currency.store'; // ✅ Importar currency store
+import { useCurrencyStore } from './currency.store';
 import { useCollaboratorStore, useSavingsStore, useTransactionStore } from '.';
 
 export interface AuthState {

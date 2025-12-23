@@ -189,7 +189,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     }
   }
 
-  protected getFormattedDate = this.formatterService.getFormattedDate;
+  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
 
   private loadAllData(): void {
     const isInitial = this.initialLoading();

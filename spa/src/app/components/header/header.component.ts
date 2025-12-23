@@ -1,11 +1,12 @@
 import { Component, inject, ViewChild } from '@angular/core'
 import { Router, RouterModule } from '@angular/router'
-import { ProfileComponent } from "../profile/profile.component"
+import { TranslateModule } from '@ngx-translate/core'
 import { AlertService, LocalService } from '../../services'
 import { ThemeService } from '../../services/theme.service'
 import { ModeType } from '../../constants'
 import { useAuthStore, useCollaboratorStore, useTransactionStore } from '../../store'
 import { LanguageSelectorComponent } from '../language-selector/language-selector.component'
+import { ProfileComponent } from "../profile/profile.component"
 
 @Component({
   selector: 'app-header',
@@ -13,6 +14,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   styleUrl: './header.component.css',
   imports: [
     RouterModule,
+    TranslateModule,
     ProfileComponent,
     LanguageSelectorComponent,
   ]

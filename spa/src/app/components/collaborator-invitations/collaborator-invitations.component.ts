@@ -28,7 +28,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private formatterService = inject(FormatterHelperService);
-  protected getFormattedDate = this.formatterService.getFormattedDate
+  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService)
 
   invitationsSummary: CollaboratorInvitationModel[] = [];
   selectedCollaboratorInvitations: ReceivedMatchRequestModel[] = [];

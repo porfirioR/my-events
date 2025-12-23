@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { KeyValueViewModel } from '../../models/view/key-value-view-model';
 import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../../models/api';
 import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { useCurrencyStore } from '../../store';
-import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -45,10 +45,20 @@ export class FormatterHelperService {
     return new KeyValueViewModel(x.id, value, moreData)
   })
 
-  public getFormattedDate(date: Date, shortDate = false, longDate = false): string {
+  public getFormattedDate = (date: Date, shortDate = false, longDate = false): string => {
     const now = new Date();
+    const currentLang = this.translate.getCurrentLang() || this.translate.getFallbackLang() || 'en';
+    
+    // Mapeo de idioma a locale
+    const localeMap: { [key: string]: string } = {
+      'en': 'en-US',
+      'es': 'es-ES'
+    };
+
+    const locale = localeMap[currentLang] || 'en-US';
+
     if (longDate) {
-      return now.toLocaleDateString('en-US', {
+      return new Date(date).toLocaleDateString(locale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -64,7 +74,7 @@ export class FormatterHelperService {
     if (diffDays < 7) return `${diffDays}${this.translate.instant('common.daysAgo')}`;
 
     if (shortDate) {
-      return now.toLocaleDateString('en-US', {
+      return new Date(date).toLocaleDateString(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
