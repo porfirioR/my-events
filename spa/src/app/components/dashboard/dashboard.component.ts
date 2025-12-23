@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   useCollaboratorStore,
   useSavingsStore,
@@ -9,9 +10,13 @@ import { FormatterHelperService } from '../../services';
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [RouterModule],
+  imports: [
+    RouterModule,
+    TranslateModule
+  ],
 })
 export class DashboardComponent {
   private collaboratorStore = useCollaboratorStore();
@@ -42,10 +47,9 @@ export class DashboardComponent {
   protected activeGoals = computed(() => {
     return this.savingsStore
       .goals()
-      .filter((g) => g.statusId === 1)
+      .filter((x) => x.statusId === 1)
       .sort(
-        (a, b) =>
-          new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime()
+        (a, b) => new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime()
       )
       .slice(0, 3);
   });

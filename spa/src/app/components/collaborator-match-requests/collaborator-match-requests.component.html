@@ -11,7 +11,7 @@
             <i class="fas fa-arrow-left" aria-hidden="true"></i>
           </a>
           <h2 id="match-requests-heading" class="text-xl font-semibold text-base-content">
-            Match Requests
+            {{ 'matchRequests.title' | translate }}
           </h2>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
@@ -24,7 +24,7 @@
               (click)="activeTab = 'received'"
             >
               <i class="fas fa-inbox mr-1" aria-hidden="true"></i>
-              Received ({{ receivedRequests.length }})
+              {{ 'matchRequests.received' | translate }} ({{ receivedRequests.length }})
             </button>
             <button 
               type="button"
@@ -33,7 +33,7 @@
               (click)="activeTab = 'sent'"
             >
               <i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>
-              Sent ({{ sentRequests.length }})
+              {{ 'matchRequests.sent' | translate }} ({{ sentRequests.length }})
             </button>
           </div>
 
@@ -44,7 +44,7 @@
             (click)="activeTab = 'create'"
           >
             <i class="fas fa-plus mr-1" aria-hidden="true"></i>
-            Create New
+            {{ 'matchRequests.createNew' | translate }}
           </button>
         </div>
       </div>
@@ -54,7 +54,7 @@
       @if (initialLoading()) {
         <div class="flex justify-center items-center py-12">
           <span class="loading loading-spinner loading-lg"></span>
-          <p class="ml-3 text-base-content/70">Loading...</p>
+          <p class="ml-3 text-base-content/70">{{ 'matchRequests.loading' | translate }}</p>
         </div>
       } @else {
         <!-- Received Requests Tab -->
@@ -73,13 +73,13 @@
                           {{ request.requesterUserEmail }}
                         </h3>
                         <p class="text-sm text-base-content/70">
-                          Wants to match with:
+                          {{ 'matchRequests.wantsToMatch' | translate }}
                           <span>
                             {{ request.targetCollaboratorEmail }}
                           </span>
                         </p>
                         <p class="text-xs text-base-content/60 mt-1">
-                          They registered you as: <span class="font-medium">{{ request.requesterCollaboratorName }}</span>
+                          {{ 'matchRequests.theyRegisteredYou' | translate }} <span class="font-medium">{{ request.requesterCollaboratorName }}</span>
                         </p>
                         <time [attr.datetime]="request.requestedDate" class="text-xs text-base-content/60 mt-1 block">
                           {{ getFormattedDate(request.requestedDate) }}
@@ -93,7 +93,7 @@
                       (click)="acceptRequest(request)"
                     >
                       <i class="fas fa-check mr-1" aria-hidden="true"></i>
-                      Accept
+                      {{ 'matchRequests.accept' | translate }}
                     </button>
                   </article>
                 </li>
@@ -105,8 +105,8 @@
                   <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                     <i class="fas fa-inbox text-2xl text-base-content/50" aria-hidden="true"></i>
                   </figure>
-                  <h3 class="text-lg font-medium text-base-content mb-2">No received requests</h3>
-                  <p class="text-base-content/70">You don't have any pending match requests</p>
+                  <h3 class="text-lg font-medium text-base-content mb-2">{{ 'matchRequests.noReceivedRequests' | translate }}</h3>
+                  <p class="text-base-content/70">{{ 'matchRequests.noPendingRequests' | translate }}</p>
                 </li>
               }
             </ul>
@@ -129,12 +129,12 @@
                           {{ request.requesterCollaboratorName }} {{ request.requesterCollaboratorSurname }}
                         </h3>
                         <p class="text-sm text-base-content/70">
-                          Request to: {{ request.targetCollaboratorEmail }}
+                          {{ 'matchRequests.requestTo' | translate }} {{ request.targetCollaboratorEmail }}
                         </p>
                         <div class="flex items-center gap-2 mt-1">
                           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" 
                             [ngClass]="getStatusBadgeClass(request.status)">
-                            {{ request.status }}
+                            {{ request.status | translate }}
                           </span>
                           <time [attr.datetime]="request.requestedDate" class="text-xs text-base-content/60">
                             {{ getFormattedDate(request.requestedDate) }}
@@ -150,7 +150,7 @@
                         (click)="cancelRequest(request)"
                       >
                         <i class="fas fa-times mr-1" aria-hidden="true"></i>
-                        Cancel
+                        {{ 'matchRequests.cancel' | translate }}
                       </button>
                     }
                   </article>
@@ -163,11 +163,11 @@
                   <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                     <i class="fas fa-paper-plane text-2xl text-base-content/50" aria-hidden="true"></i>
                   </figure>
-                  <h3 class="text-lg font-medium text-base-content mb-2">No sent requests</h3>
-                  <p class="text-base-content/70 mb-4">You haven't sent any match requests yet</p>
+                  <h3 class="text-lg font-medium text-base-content mb-2">{{ 'matchRequests.noSentRequests' | translate }}</h3>
+                  <p class="text-base-content/70 mb-4">{{ 'matchRequests.haventSentAny' | translate }}</p>
                   <button class="btn btn-primary" (click)="activeTab = 'create'">
                     <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-                    Create Match Request
+                    {{ 'matchRequests.createMatchRequest' | translate }}
                   </button>
                 </li>
               }
@@ -181,7 +181,7 @@
             <section class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
               <main class="px-6 py-6 space-y-6">
                 <h3 class="text-xl font-bold text-base-content">
-                  Create Match Request
+                  {{ 'matchRequests.createMatchRequest' | translate }}
                 </h3>
 
                 <form [formGroup]="formGroup" (submit)="createMatchRequest()" class="space-y-6">
@@ -189,8 +189,8 @@
                     <app-select-input
                       formControlName="collaboratorId"
                       id="collaboratorId"
-                      label="Unlinked Collaborator"
                       name="collaborator"
+                      [label]="'matchRequests.unlinkedCollaborator' | translate"
                       [list]="internalCollaborators()"
                       [disabled]="isLoading()"
                     />
@@ -200,7 +200,7 @@
                       type="email"
                       placeholder="collaborator@example.com"
                       autocomplete="email"
-                      label="Target Email"
+                      [label]="'matchRequests.targetEmail' | translate"
                       id="targetEmail"
                       name="targetEmail"
                       [disabled]="isLoading()"
@@ -210,9 +210,9 @@
                   <div class="alert alert-info alert-soft">
                     <i class="fas fa-info-circle" aria-hidden="true"></i>
                     <div>
-                      <h4 class="font-semibold">About Match Requests</h4>
+                      <h4 class="font-semibold">{{ 'matchRequests.aboutMatchRequests' | translate }}</h4>
                       <p class="text-sm">
-                        Only unlinked collaborators (without email) can send match requests. When accepted, your collaborator will be assigned this email and linked with the target user's collaborator. You can only send one invitation per email.
+                        {{ 'matchRequests.aboutMatchRequestsDescription' | translate }}
                       </p>
                     </div>
                   </div>
@@ -225,7 +225,7 @@
                       (click)="exit()"
                     >
                       <i class="fas fa-arrow-left text-sm"></i>
-                      Cancel
+                      {{ 'matchRequests.cancel' | translate }}
                     </button>
 
                     @if (isLoading()) {
@@ -234,7 +234,7 @@
                         class="btn btn-primary flex items-center gap-2 loading-btn"
                       >
                         <span class="loading loading-spinner loading-xs"></span>
-                        Saving...
+                        {{ 'matchRequests.saving' | translate }}
                       </button>
                     } @else {
                       <button
@@ -245,7 +245,7 @@
                         [class.btn-disabled]="formGroup.invalid"
                       >
                         <i class="fas fa-cloud-arrow-up text-sm"></i>
-                        Save
+                        {{ 'matchRequests.save' | translate }}
                       </button>
                     }
                   </footer>
@@ -263,22 +263,24 @@
 @if (showCollaboratorSelectionModal) {
   <div class="modal modal-open">
     <div class="modal-box max-w-md">
-      <h3 class="font-bold text-lg mb-4">Select a Collaborator</h3>
+      <h3 class="font-bold text-lg mb-4">
+        {{ 'matchRequests.selectCollaborator' | translate }}
+      </h3>
 
       <div class="alert alert-info alert-soft mb-4">
         <i class="fas fa-info-circle"></i>
         <div class="text-sm">
           <p class="font-semibold">
-            {{ pendingRequestToAccept?.requesterUserEmail }} wants to match with you
+            {{ 'matchRequests.wantsToMatchWithYou' | translate:{ email: pendingRequestToAccept?.requesterUserEmail } }}
           </p>
           <p class="mt-2">
-            They registered you as: 
+            {{ 'matchRequests.theyRegisteredYou' | translate }}
           </p>
           <p class="text-dark">
             {{ pendingRequestToAccept?.requesterCollaboratorName }}
           </p>
           <p class="mt-2">
-            Select one of your unlinked collaborators to assign the email 
+            {{ 'matchRequests.selectUnlinkedCollaborator' | translate }} 
             <strong>{{ pendingRequestToAccept?.requesterUserEmail }}</strong>
           </p>
         </div>
@@ -294,7 +296,7 @@
         />
         <div class="text-ellipsis">
           <span class="label-text-alt text-base-content/60">
-            This collaborator will be assigned the email: 
+            {{ 'matchRequests.willBeAssignedEmail' | translate }} 
             <strong>{{ pendingRequestToAccept?.requesterUserEmail }}</strong>
           </span>
         </div>
@@ -302,7 +304,7 @@
       @if (internalCollaborators().length === 0) {
         <div class="alert alert-warning alert-soft mt-4">
           <i class="fas fa-exclamation-triangle"></i>
-          <span>You need to create an unlinked collaborator first.</span>
+          <span>{{ 'matchRequests.needUnlinkedCollaborator' | translate }}</span>
         </div>
       }
 
@@ -313,7 +315,7 @@
           [disabled]="isLoading()"
         >
           <i class="fas fa-arrow-left text-sm"></i>
-          Cancel
+          {{ 'matchRequests.cancel' | translate }}
         </button>
         <button 
           class="btn btn-primary"
@@ -321,10 +323,10 @@
           (click)="confirmAcceptWithCollaborator()">
           @if (isLoading()) {
             <span class="loading loading-spinner loading-xs"></span>
-            Processing...
+            {{ 'matchRequests.processing' | translate }}
           } @else {
             <i class="fas fa-check mr-2"></i>
-            Accept & Assign
+            {{ 'matchRequests.acceptAndAssign' | translate }}
           }
         </button>
       </footer>

@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { EventViewModel } from '../../models/view/event-view-model';
 import { useAuthStore, useLoadingStore } from '../../store';
@@ -11,6 +12,7 @@ import { NotificationService } from '../../services';
   styleUrls: ['./home.component.css'],
   imports: [
     RouterModule,
+    TranslateModule,
     DashboardComponent
   ],
 })

@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TransactionViewApiModel } from '../../models/api/transactions';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
@@ -11,9 +12,10 @@ import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-r
   standalone: true,
   imports: [
     CommonModule,
+    TranslateModule,
     AddReimbursementModalComponent,
     RouterLink
-],
+  ],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css']
 })
@@ -23,6 +25,7 @@ export class TransactionsComponent implements OnInit {
   private readonly collaboratorStore = useCollaboratorStore();
   private readonly loadingStore = useLoadingStore();
   private readonly alertService = inject(AlertService);
+  private readonly translate = inject(TranslateService);
   private formatterService = inject(FormatterHelperService);
 
   // Signals
@@ -30,7 +33,7 @@ export class TransactionsComponent implements OnInit {
   protected filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
 
   protected formatCurrency = this.formatterService.formatCurrency
-  protected getFormattedDate = FormatterHelperService.getFormattedDate;
+  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
 
   protected transactions = computed(() => {
     const filter = this.filterType();
@@ -76,22 +79,45 @@ export class TransactionsComponent implements OnInit {
   }
 
   protected deleteTransaction(transaction: TransactionViewApiModel): void {
-    const confirmMsg = `Description: ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 4)}
-    This action cannot be undone.`
-    this.alertService.showQuestionModal('Are you sure you want to delete this transaction?', confirmMsg).then(x => {
+    const description = transaction.description || this.translate.instant('transactions.noDescription');
+    const amount = this.formatCurrency(transaction.netAmount, 4);
+    
+    const confirmMsg = this.translate.instant('transactions.confirmDeleteDescription', {
+      description,
+      amount
+    });
+
+    this.alertService.showQuestionModal(
+      this.translate.instant('transactions.confirmDelete'), 
+      confirmMsg
+    ).then(x => {
       if (x && x.isConfirmed) {
         this.transactionStore.deleteTransaction(transaction.id);
-        this.alertService.showSuccess(`Transaction was delete successfully`);
+        this.alertService.showSuccess(
+          this.translate.instant('transactions.transactionDeleted')
+        );
       }
     })
   }
 
   protected settleTransaction(transaction: TransactionViewApiModel): void {
-    const confirmMsg = `Confirm that this transaction has been settled? ${transaction.description}, with amount: ${this.formatCurrency(transaction.netAmount, 4)}`
-    this.alertService.showQuestionModal('Mark as Settled?', confirmMsg).then(x => {
+    const description = transaction.description || this.translate.instant('transactions.noDescription');
+    const amount = this.formatCurrency(transaction.netAmount, 4);
+    
+    const confirmMsg = this.translate.instant('transactions.confirmSettleDescription', {
+      description,
+      amount
+    });
+
+    this.alertService.showQuestionModal(
+      this.translate.instant('transactions.confirmSettle'), 
+      confirmMsg
+    ).then(x => {
       if (x && x.isConfirmed) {
         this.transactionStore.settleTransaction(transaction.id);
-        this.alertService.showSuccess(`Transaction has been marked as settled`);
+        this.alertService.showSuccess(
+          this.translate.instant('transactions.transactionSettled')
+        );
       }
     })
   }

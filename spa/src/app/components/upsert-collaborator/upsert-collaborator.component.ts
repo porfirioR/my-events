@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, effect, inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TextComponent } from '../inputs/text/text.component';
 import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
 import { CollaboratorFormGroup } from '../../models/forms/collaborator-form-group';
@@ -17,6 +18,7 @@ import { AlertService } from '../../services';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    TranslateModule,
     TextComponent,
     CheckBoxInputComponent,
   ]
@@ -24,6 +26,7 @@ import { AlertService } from '../../services';
 export class UpsertCollaboratorComponent implements OnInit {
   private router = inject(Router);
   private alertService = inject(AlertService);
+  private translate = inject(TranslateService);
   private activatedRoute = inject(ActivatedRoute);
 
   private collaboratorStore = useCollaboratorStore();
@@ -84,10 +87,15 @@ export class UpsertCollaboratorComponent implements OnInit {
     this.collaboratorStore.upsertCollaborator(request).subscribe({
       next: () => {
         this.ignorePreventUnsavedChanges = true
-        this.alertService.showSuccess('Event save successfully')
+        this.alertService.showSuccess(
+          this.translate.instant('collaborators.eventSavedSuccessfully')
+        )
         this.exit()
       }, error: (e) => {
-        this.alertService.showError(request.id ? 'Failed to update collaborator' : 'Failed to create collaborator')
+        const errorMsg = request.id ? 
+          this.translate.instant('collaborators.failedToUpdate') : 
+          this.translate.instant('collaborators.failedToCreate');
+        this.alertService.showError(errorMsg)
         this.formGroup.enable()
         throw e
       }
@@ -95,5 +103,4 @@ export class UpsertCollaboratorComponent implements OnInit {
   }
 
   protected exit = () => this.router.navigate(['/collaborators']);
-
 }

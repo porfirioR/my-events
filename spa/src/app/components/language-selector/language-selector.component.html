@@ -1,0 +1,30 @@
+<div class="dropdown dropdown-end">
+  <!-- Button que muestra la bandera del idioma actual -->
+  <div tabindex="0" role="button" class="btn btn-ghost hover:border-primary">
+    <img class="w-6 h-6 object-cover"
+      [src]="currentLanguage().flagSvg"
+      [alt]="currentLanguage().name + ' flag'"
+    >
+  </div>
+
+  <!-- Dropdown menu con todos los idiomas -->
+  <ul tabindex="0" class="dropdown-content menu bg-base-200 dark:bg-base-300 rounded-box z-[1] w-52 p-2 shadow-lg mt-1 border border-base-300 dark:border-base-content/20">
+    @for (lang of availableLanguages; track lang.code) {
+    <li>
+      <button (click)="changeLanguage(lang.code)" [class.active]="lang.code === currentLanguage().code"
+        class="flex items-center gap-3 hover:bg-base-300 dark:hover:bg-base-100 rounded-lg transition-colors duration-200">
+        <!-- Bandera SVG -->
+        <img [src]="lang.flagSvg" [alt]="lang.name + ' flag'" class="w-6 h-6 rounded-full object-cover">
+
+        <!-- Nombre del idioma -->
+        <span class="flex-1 text-gray-900 dark:text-white">{{ lang.name }}</span>
+
+        <!-- Check icon si está seleccionado -->
+        @if (lang.code === currentLanguage().code) {
+        <i class="fas fa-check text-success"></i>
+        }
+      </button>
+    </li>
+    }
+  </ul>
+</div>

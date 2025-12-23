@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'  // ← Agregar TranslateService
 import { LoginFormGroup } from '../../models/forms'
 import { LoginUserApiRequest } from '../../models/api'
 import { AlertService, UserApiService } from '../../services'
 import { useAuthStore } from '../../store'
 import { TextComponent } from '../inputs/text/text.component'
+import { LanguageSelectorComponent } from "../language-selector/language-selector.component";
 
 @Component({
   selector: 'app-login',
@@ -14,7 +16,9 @@ import { TextComponent } from '../inputs/text/text.component'
   imports: [
     RouterModule,
     ReactiveFormsModule,
-    TextComponent
+    TranslateModule,
+    TextComponent,
+    LanguageSelectorComponent
   ]
 })
 export class LoginComponent {
@@ -22,6 +26,8 @@ export class LoginComponent {
   private userApiService = inject(UserApiService);
   private alertService = inject(AlertService);
   private authStore = useAuthStore();
+  private translate = inject(TranslateService);
+  
   protected isLoading = this.authStore.loginLoading;
   protected loginError = this.authStore.error;
 
@@ -48,17 +54,22 @@ export class LoginComponent {
         this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified);
 
         if (!user.isEmailVerified) {
-          this.alertService.showError('Please verify your email to access all features.');
+          this.alertService.showError(
+            this.translate.instant('messages.verifyEmailToAccess')
+          );
           this.router.navigate(['/verify-email-pending']);
         } else {
-          this.alertService.showSuccess(`Welcome ${user.email}`);
+          this.alertService.showSuccess(
+            this.translate.instant('messages.welcomeBack', { email: user.email })
+          );
           this.router.navigate(['']);
         }
       },
       error: () => {
-        this.authStore.loginFailure('Login failed. Please check your credentials.');
+        this.authStore.loginFailure(
+          this.translate.instant('messages.loginFailed')
+        );
       },
     });
   };
-
 }

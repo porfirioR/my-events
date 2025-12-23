@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { KeyValueViewModel } from '../../models/view/key-value-view-model';
 import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../../models/api';
 import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
@@ -9,6 +10,8 @@ import { useCurrencyStore } from '../../store';
 })
 export class FormatterHelperService {
   private currencyStore = useCurrencyStore();
+  private translate = inject(TranslateService);
+
   public static convertToList = (elements: BaseConfigurationApiModel[], configurationType: Configurations): KeyValueViewModel[] => elements.map(x => {
     let moreData = ''
     let value = ''
@@ -32,7 +35,7 @@ export class FormatterHelperService {
         const collaborator = x as CollaboratorApiModel
         moreData = `${collaborator.name} ${collaborator.surname}`
         if (collaborator.email) {
-          moreData += `- ${collaborator.email}`
+          moreData += ` - ${collaborator.email}`
         }
         value = moreData
         break;
@@ -42,41 +45,64 @@ export class FormatterHelperService {
     return new KeyValueViewModel(x.id, value, moreData)
   })
 
-  public static getFormattedDate(date: Date, shortDate = false, longDate = false): string {
+  public getFormattedDate = (date: Date, shortDate = false, longDate = false): string => {
     const now = new Date();
-    if (longDate) return now.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const currentLang = this.translate.getCurrentLang() || this.translate.getFallbackLang() || 'en';
+    
+    // Mapeo de idioma a locale
+    const localeMap: { [key: string]: string } = {
+      'en': 'en-US',
+      'es': 'es-ES'
+    };
+
+    const locale = localeMap[currentLang] || 'en-US';
+
+    if (longDate) {
+      return new Date(date).toLocaleDateString(locale, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
     const diffTime = Math.abs(now.getTime() - new Date(date).getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'today';
-    if (diffDays === 1) return 'yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (shortDate) return now.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    return `${Math.floor(diffDays / 365)} years ago`;
+    if (diffDays === 0) return this.translate.instant('common.today');
+    if (diffDays === 1) return this.translate.instant('common.yesterday');
+    if (diffDays < 7) return `${diffDays}${this.translate.instant('common.daysAgo')}`;
+
+    if (shortDate) {
+      return new Date(date).toLocaleDateString(locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} ${this.translate.instant('common.weeksAgo')}`;
+    }
+
+    if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months} ${this.translate.instant('common.monthsAgo')}`;
+    }
+
+    const years = Math.floor(diffDays / 365);
+    return `${years} ${this.translate.instant('common.yearsAgo')}`;
   }
 
   public formatCurrency = (amount: number, currencyId?: number | null): string => {
     return this.currencyStore.formatCurrency()(amount, currencyId ?? 1);
   }
 
-  // ✅ Método para obtener información de moneda
   public getCurrency = (currencyId: number): CurrencyApiModel | undefined => {
     return this.currencyStore.getCurrencyById()(currencyId);
   }
 
-  // ✅ Método para obtener símbolo de moneda
   public getCurrencySymbol = (currencyId: number): string => {
     const currency = this.getCurrency(currencyId);
     return currency?.symbol || '$';

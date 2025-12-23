@@ -1,5 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { RouterModule } from '@angular/router'
+import { TranslateModule } from '@ngx-translate/core'
 import { LocalService } from '../../services'
 
 @Component({
@@ -8,6 +9,7 @@ import { LocalService } from '../../services'
   styleUrls: ['./profile.component.css'],
   imports: [
     RouterModule,
+    TranslateModule,
   ]
 })
 export class ProfileComponent implements OnInit, OnDestroy {

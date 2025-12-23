@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { useLoadingStore, useTransactionStore } from '../../store';
 import { FormatterHelperService } from '../../services';
 
@@ -10,6 +11,7 @@ import { FormatterHelperService } from '../../services';
   standalone: true,
   imports: [
     CommonModule,
+    TranslateModule,
     RouterModule,
   ],
   templateUrl: './balances.component.html',

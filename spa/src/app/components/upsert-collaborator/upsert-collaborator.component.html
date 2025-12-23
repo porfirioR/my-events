@@ -10,21 +10,47 @@
           <i class="fas fa-arrow-left" aria-hidden="true"></i>
         </button>
         <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
-          {{ isEditMode ? 'Edit Collaborator' : 'Create Collaborator' }}
+          {{ isEditMode ? ('collaborators.editCollaborator' | translate) : ('collaborators.createCollaborator' | translate) }}
         </h1>
         <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="exit()">
           <i class="fas fa-times"></i>
         </button>
       </div>
     </header>
+
     <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
       <div class="space-y-4">
-        <app-text formControlName="name" type="text" label="Name" id="name" name="name" [disabled]="isLoading()"/>
-        <app-text formControlName="surname" type="text" label="Surname" id="surname" name="surname" [disabled]="isLoading()"/>
+        <app-text 
+          formControlName="name" 
+          type="text" 
+          [label]="'collaborators.name' | translate" 
+          id="name" 
+          name="name" 
+          [disabled]="isLoading()"
+        />
+        <app-text 
+          formControlName="surname" 
+          type="text" 
+          [label]="'collaborators.surname' | translate" 
+          id="surname" 
+          name="surname" 
+          [disabled]="isLoading()"
+        />
         @if (collaborator) {
-          <app-text formControlName="email" type="text" label="Email" id="email" name="email" [disabled]="isLoading()"/>
+          <app-text 
+            formControlName="email" 
+            type="text" 
+            [label]="'collaborators.email' | translate" 
+            id="email" 
+            name="email" 
+            [disabled]="isLoading()"
+          />
           <div class="pt-2">
-            <app-check-box-input formControlName="isActive" label="Is Active" [disabled]="isLoading()"/>
+            <app-check-box-input 
+              formControlName="isActive" 
+              [label]="'collaborators.isActiveLabel' | translate" 
+              [disabled]="isLoading()"
+            />
           </div>
         }
       </div>
@@ -37,7 +63,7 @@
           (click)="exit()"
         >
           <i class="fas fa-arrow-left text-sm"></i>
-          Cancel
+          {{ 'collaborators.cancel' | translate }}
         </button>
 
         @if (isLoading()) {
@@ -46,7 +72,7 @@
             class="btn btn-primary flex items-center gap-2 loading-btn"
           >
             <span class="loading loading-spinner loading-xs"></span>
-            Saving...
+            {{ 'collaborators.saving' | translate }}
           </button>
         } @else {
           <button
@@ -57,7 +83,7 @@
             [class.btn-disabled]="formGroup.invalid"
           >
             <i class="fas fa-cloud-arrow-up text-sm"></i>
-            Save
+            {{ 'collaborators.save' | translate }}
           </button>
         }
       </footer>

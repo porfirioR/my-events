@@ -2,7 +2,9 @@
   <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
-        <h2 id="collaborators-heading" class="text-xl font-semibold text-base-content">Collaborators</h2>
+        <h2 id="collaborators-heading" class="text-xl font-semibold text-base-content">
+          {{ 'collaborators.title' | translate }}
+        </h2>
         <div class="flex items-center gap-2 flex-wrap">
           <div class="btn-group">
             <button 
@@ -11,7 +13,7 @@
               [ngClass]="{'btn-active': filterType() === 'all'}"
               (click)="setFilter('all')"
             >
-              All
+              {{ 'collaborators.all' | translate }}
             </button>
             <button 
               type="button"
@@ -20,7 +22,7 @@
               (click)="setFilter('unlinked')"
             >
               <i class="fas fa-unlink mr-1"></i>
-              Unlinked
+              {{ 'collaborators.unlinked' | translate }}
             </button>
             <button 
               type="button"
@@ -29,7 +31,7 @@
               (click)="setFilter('linked')"
             >
               <i class="fas fa-link mr-1"></i>
-              Linked
+              {{ 'collaborators.linked' | translate }}
             </button>
           </div>
 
@@ -39,7 +41,7 @@
             (click)="viewMatchRequests()"
           >
             <i class="fas fa-envelope mr-1" aria-hidden="true"></i>
-            Requests
+            {{ 'collaborators.requests' | translate }}
             @if (pendingRequestsCount() > 0) {
               <span class="absolute -top-2 -right-2 badge badge-sm badge-error">
                 {{ pendingRequestsCount() }}
@@ -53,7 +55,7 @@
             (click)="create()"
           >
             <i class="fas fa-plus mr-1" aria-hidden="true"></i>
-            Add New
+            {{ 'collaborators.addNew' | translate }}
           </button>
         </div>
       </div>
@@ -63,7 +65,7 @@
       @if (isLoading()) {
         <div class="flex justify-center items-center py-12">
           <span class="loading loading-spinner loading-lg"></span>
-          <p class="ml-3 text-base-content/70">Loading collaborators...</p>
+          <p class="ml-3 text-base-content/70">{{ 'collaborators.loadingCollaborators' | translate }}</p>
         </div>
       } @else {
         <ul class="space-y-4" role="list">
@@ -92,11 +94,11 @@
                       {{ collaborator.email }}
                     } @else {
                       <i class="fas fa-user mr-1"></i>
-                      No email yet
+                      {{ 'collaborators.noEmailYet' | translate }}
                     }
                   </p>
                   <time [attr.datetime]="collaborator.dateCreated" class="text-xs text-base-content/60">
-                    Joined {{ getFormattedDate(collaborator.dateCreated) }}
+                    {{ 'collaborators.joined' | translate }} {{ getFormattedDate(collaborator.dateCreated) }}
                   </time>
 
                   <!-- Badges -->
@@ -115,9 +117,9 @@
                         }"
                         aria-hidden="true"
                       ></i>
-                      {{ collaborator.isActive ? 'Active' : 'Inactive' }}
+                      {{ collaborator.isActive ? ('collaborators.isActive' | translate) : ('collaborators.isInactive' | translate) }}
                     </span>
-                    
+
                     <!-- Type -->
                     <span class="badge badge-outline flex items-baseline"
                       [ngClass]="{
@@ -131,7 +133,7 @@
                           'fa-link': collaborator.type === 'LINKED'
                         }" aria-hidden="true"
                       ></i>
-                      {{ collaborator.type === 'UNLINKED' ? 'Unlinked' : 'Linked' }}
+                        {{ collaborator.type === 'UNLINKED' ? ('collaborators.unlinked' | translate) : ('collaborators.linked' | translate) }}
                     </span>
                   </div>
                 </div>
@@ -148,7 +150,7 @@
                         <button type="button" (click)="editCollaborator(collaborator)"
                           class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-primary/10 hover:text-primary">
                           <i class="fas fa-edit mr-3 text-primary" aria-hidden="true"></i>
-                          <span>Edit</span>
+                          <span>{{ 'collaborators.edit' | translate }}</span>
                         </button>
                       </li>
                       
@@ -158,11 +160,11 @@
                           <button type="button" (click)="sendMatchRequest(collaborator)"
                             class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-info/10 hover:text-info">
                             <i class="fas fa-paper-plane mr-3 text-info" aria-hidden="true"></i>
-                            <span>Send Match Request</span>
+                            <span>{{ 'collaborators.sendMatchRequest' | translate }}</span>
                           </button>
                         </li>
                       }
-                      
+
                       <!-- Toggle Status -->
                       <li>
                         <button type="button" (click)="toggleCollaboratorStatus(collaborator)"
@@ -178,17 +180,19 @@
                             }"
                             aria-hidden="true"
                           ></i>
-                          <span>{{ collaborator.isActive ? 'Deactivate' : 'Activate' }}</span>
+                          <span>
+                            {{ collaborator.isActive ? ('collaborators.deactivate' | translate) : ('collaborators.activate' | translate) }}
+                          </span>
                         </button>
                       </li>
-                      
+
                       <!-- Resend Invitation (solo LINKED) -->
                       @if (collaborator.type === 'LINKED') {
                         <li>
                           <button type="button" (click)="resendInvitation(collaborator)"
                             class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-info/10 hover:text-info">
                             <i class="fas fa-paper-plane mr-3 text-info" aria-hidden="true"></i>
-                            <span>Resend Invitation</span>
+                            <span>{{ 'collaborators.resendInvitation' | translate }}</span>
                           </button>
                         </li>
                       }
@@ -213,17 +217,19 @@
               </figure>
               <h3 class="text-lg font-medium text-base-content mb-2">
                 @if (filterType() === 'unlinked') {
-                  No unlinked collaborators yet
+                  {{ 'collaborators.noUnlinkedYet' | translate }}
                 } @else if (filterType() === 'linked') {
-                  No linked collaborators yet
+                  {{ 'collaborators.noLinkedYet' | translate }}
                 } @else {
-                  No collaborators yet
+                  {{ 'collaborators.noCollaboratorsYet' | translate }}
                 }
               </h3>
-              <p class="text-base-content/70 mb-4">Get started by adding your first collaborator</p>
+              <p class="text-base-content/70 mb-4">
+                {{ 'collaborators.getStartedMessage' | translate }}
+              </p>
               <button class="btn btn-primary" (click)="create()">
                 <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-                Add Collaborator
+                {{ 'collaborators.addCollaborator' | translate }}
               </button>
             </li>
           }

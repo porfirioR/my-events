@@ -10,28 +10,28 @@
           <li class="menu-title">Navigation</li>
           <li>
             <a [routerLink]="['']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+              <i class="fas fa-tachometer-alt mr-2"></i>{{ 'common.dashboard' | translate }}
             </a>
           </li>
           <li>
             <a [routerLink]="['collaborators']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-users mr-2"></i>Collaborators
+              <i class="fas fa-users mr-2"></i>{{ 'common.collaborators' | translate }}
             </a>
           </li>
           <li>
             <a [routerLink]="['transactions']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-dollar-sign mr-2"></i>Transactions
+              <i class="fas fa-dollar-sign mr-2"></i>{{ 'common.transactions' | translate }}
             </a>
           </li>
           <li>
             <a [routerLink]="['projects']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
-              <i class="fas fa-project-diagram mr-2"></i>Projects
+              <i class="fas fa-project-diagram mr-2"></i>{{ 'common.projects' | translate }}
             </a>
           </li>
           <li>
             <a routerLink="/savings" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-piggy-bank"></i>
-              <span>Savings Goals</span>
+              <span>{{ 'common.savingsGoals' | translate }}</span>
             </a>
           </li>
           <li>
@@ -58,13 +58,14 @@
           <li>
             <a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-sign-out-alt mr-2"></i>
-              Logout
+              <span>{{ 'auth.logout' | translate }}</span>
             </a>
           </li>
         </ul>
       </div>
     </article>
     <article class="navbar-end">
+      <app-language-selector/>
       <!-- User Profile -->
       <div class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle flex items-center justify-center">
@@ -80,7 +81,10 @@
           </li>
           <div class=" my-0"></div>
           <li>
-            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="openProfile()"><i class="fas fa-user mr-2"></i>Profile</a>
+            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg" (click)="openProfile()">
+              <i class="fas fa-user mr-2"></i>
+              {{ 'common.profile' | translate }}
+            </a>
           </li>
           <li class="hidden">
             <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
@@ -90,16 +94,19 @@
           <li (click)="toggleTheme()">
             <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               @if (currentTheme == 'light') {
-                <i class="fas fa-moon mr-2"></i>Dark Mode
+                <i class="fas fa-moon mr-2"></i>
+                {{ 'common.darkMode' | translate }}
               } @else {
-                <i class="fas fa-sun mr-2"></i>Light Mode
+                <i class="fas fa-sun mr-2"></i>
+                {{ 'common.lightMode' | translate }}
               }
             </a>
           </li>
           <div class="divider my-1"></div>
           <li>
             <a class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg" (click)="logOut()">
-              <i class="fas fa-sign-out-alt mr-2"></i>Logout
+              <i class="fas fa-sign-out-alt mr-2"></i>
+              {{ 'auth.logout' | translate }}
             </a>
           </li>
         </ul>
