@@ -4,8 +4,12 @@
     <header class="mb-6">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-base-content">Balances</h2>
-          <p class="text-base-content/70 mt-1">See who owes you and who you owe</p>
+          <h2 class="text-2xl font-bold text-base-content">
+            {{ 'balances.title' | translate }}
+          </h2>
+          <p class="text-base-content/70 mt-1">
+            {{ 'balances.subtitle' | translate }}
+          </p>
         </div>
         <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="goBack()">
           <i class="fas fa-times"></i>
@@ -21,9 +25,9 @@
           <div class="stat-figure text-success">
             <i class="fas fa-arrow-up text-3xl"></i>
           </div>
-          <div class="stat-title">They Owe Me</div>
+          <div class="stat-title">{{ 'balances.theyOweMe' | translate }}</div>
           <div class="stat-value text-success">{{ formatCurrency(totalTheyOwe(), 4) }}</div>
-          <div class="stat-desc">Money to receive</div>
+          <div class="stat-desc">{{ 'balances.moneyToReceive' | translate }}</div>
         </div>
       </article>
 
@@ -33,9 +37,9 @@
           <div class="stat-figure text-error">
             <i class="fas fa-arrow-down text-3xl"></i>
           </div>
-          <div class="stat-title">I Owe Them</div>
+          <div class="stat-title">{{ 'balances.iOweThem' | translate }}</div>
           <div class="stat-value text-error">{{ formatCurrency(totalIOwe(), 4) }}</div>
-          <div class="stat-desc">Money to pay</div>
+          <div class="stat-desc">{{ 'balances.moneyToPay' | translate }}</div>
         </div>
       </article>
 
@@ -51,7 +55,7 @@
           >
             <i class="fas fa-balance-scale text-2xl"></i>
           </div>
-          <div class="stat-title">Net Balance</div>
+          <div class="stat-title">{{ 'balances.netBalance' | translate }}</div>
           <div class="stat-value text-primary"
             [ngClass]="{
               'text-success': totalBalance() > 0,
@@ -60,7 +64,7 @@
             }"
           >
           {{ formatCurrency(totalBalance(), 4) }}</div>
-          <div class="stat-desc">Overall balance</div>
+          <div class="stat-desc">{{ 'balances.overallBalance' | translate }}</div>
         </div>
       </article>
     </section>
@@ -68,14 +72,18 @@
     <!-- Balances List -->
     <section class="bg-base-200 dark:bg-base-300 mb-6">
       <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-        <h3 class="text-lg font-semibold text-base-content">Balances by Collaborator</h3>
+        <h3 class="text-lg font-semibold text-base-content">
+          {{ 'balances.balancesByCollaborator' | translate }}
+        </h3>
       </header>
 
       <main class="p-6">
         @if (isLoading()) {
           <article class="flex justify-center items-center py-12">
             <span class="loading loading-spinner loading-lg"></span>
-            <p class="ml-3 text-base-content/70">Loading balances...</p>
+            <p class="ml-3 text-base-content/70">
+              {{ 'balances.loadingBalances' | translate }}
+            </p>
           </article>
         } @else {
           <ul class="space-y-4" role="list">
@@ -116,19 +124,25 @@
                       <p class="text-lg font-bold text-success">
                         +{{ formatCurrency(balance.collaboratorOwes, 4) }}
                       </p>
-                      <p class="text-xs text-base-content/60">They owe you</p>
+                      <p class="text-xs text-base-content/60">
+                        {{ 'balances.theyOweYou' | translate }}
+                      </p>
                     } @else if (balance.netBalance < 0) {
                       <!-- I owe them -->
                       <p class="text-lg font-bold text-error">
                         -{{ formatCurrency(balance.userOwes, 4) }}
                       </p>
-                      <p class="text-xs text-base-content/60">You owe them</p>
+                      <p class="text-xs text-base-content/60">
+                        {{ 'balances.youOweThem' | translate }}
+                      </p>
                     } @else {
                       <!-- Settled -->
                       <p class="text-lg font-bold text-base-content/50">
                         {{ formatCurrency(0, 4) }}
                       </p>
-                      <p class="text-xs text-base-content/60">Settled</p>
+                      <p class="text-xs text-base-content/60">
+                        {{ 'balances.settled' | translate }}
+                      </p>
                     }
                   </div>
                 </article>
@@ -138,17 +152,17 @@
                   <div class="mt-4 pt-4 border-t border-base-300">
                     <div class="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p class="text-base-content/70">They owe you:</p>
+                        <p class="text-base-content/70">{{ 'balances.theyOweYou' | translate }}:</p>
                         <p class="font-semibold text-success">{{ formatCurrency(balance.collaboratorOwes, 4) }}</p>
                       </div>
                       <div>
-                        <p class="text-base-content/70">You owe them:</p>
+                        <p class="text-base-content/70">{{ 'balances.youOweThem' | translate }}:</p>
                         <p class="font-semibold text-error">{{ formatCurrency(balance.userOwes, 4) }}</p>
                       </div>
                     </div>
                     <div class="divider my-2"></div>
                     <div class="flex justify-between items-center">
-                      <span class="font-bold">Net Balance:</span>
+                      <span class="font-bold">{{ 'balances.netBalance' | translate }}:</span>
                       <span class="font-bold text-lg"
                         [ngClass]="{
                           'text-success': balance.netBalance > 0,
@@ -173,7 +187,10 @@
                       'fa-chevron-up': expandedBalanceId() === balance.collaboratorId
                     }"
                   ></i>
-                  {{ expandedBalanceId() === balance.collaboratorId ? 'Hide' : 'Show' }} Details
+                  {{ expandedBalanceId() === balance.collaboratorId ? 
+                    ('balances.hideDetails' | translate) : 
+                    ('balances.showDetails' | translate) 
+                  }}
                 </button>
               </li>
             }
@@ -184,11 +201,11 @@
                 <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                   <i class="fas fa-balance-scale text-2xl text-base-content/50"></i>
                 </figure>
-                <h3 class="text-lg font-medium text-base-content mb-2">No balances yet</h3>
-                <p class="text-base-content/70 mb-4">Create transactions to see your balances here</p>
+                <h3 class="text-lg font-medium text-base-content mb-2">{{ 'balances.noBalances' | translate }}</h3>
+                <p class="text-base-content/70 mb-4">{{ 'balances.createTransactions' | translate }}</p>
                 <a class="btn btn-primary" [routerLink]="['/transactions/new']">
                   <i class="fas fa-plus mr-2"></i>
-                  Create Transaction
+                  {{ 'balances.createTransaction' | translate }}
                 </a>
               </li>
             }
@@ -201,7 +218,7 @@
     <footer class="bg-base-200 dark:bg-base-300 flex justify-between items-center py-4 px-2 md:px-4 gap-4">
       <a type="button" class="btn btn-outline btn-primary" [routerLink]="['/transactions']">
         <i class="fas fa-arrow-left mr-2"></i>
-        Close
+        {{ 'balances.close' | translate }}
       </a>
       <a class="btn btn-outline btn-primary" [routerLink]="['/transactions/new']">
         <i class="fas fa-plus"></i>

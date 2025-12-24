@@ -137,10 +137,12 @@ export const routes: Routes = [
           },
           {
             path: 'balances',
+            title: 'Balances',
             loadComponent: () => import('./components/balances/balances.component').then(x => x.BalancesComponent)
           },
           {
             path: ':id',
+            title: 'Transaction Details',
             loadComponent: () => import('./components/transaction-details/transaction-details.component').then(x => x.TransactionDetailsComponent)
           }
         ]

@@ -2,13 +2,17 @@ import { Component, OnInit, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';  // ← Importar
 import { useTransactionStore, useLoadingStore } from '../../store';
 import { FormatterHelperService, AlertService } from '../../services';
 
 @Component({
   selector: 'app-transaction-details',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    TranslateModule
+  ],
   templateUrl: './transaction-details.component.html',
   styleUrls: ['./transaction-details.component.css']
 })
@@ -17,6 +21,7 @@ export class TransactionDetailsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly alertService = inject(AlertService);
+  private readonly translate = inject(TranslateService);
   private formatterService = inject(FormatterHelperService);
 
   private readonly transactionStore = useTransactionStore();
@@ -74,12 +79,23 @@ export class TransactionDetailsComponent implements OnInit {
     const details = this.transactionDetails();
     if (!details) return;
 
-    const confirmMsg = `Mark this transaction as settled?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 4)}`;
-    
-    this.alertService.showQuestionModal('Mark as Settled?', confirmMsg).then(result => {
+    const description = details.description || this.translate.instant('transactionDetails.noDescription');
+    const amount = this.formatCurrency(details.netAmount, 4);
+
+    const confirmMsg = this.translate.instant('transactionDetails.confirmSettleMessage', {
+      description,
+      amount
+    });
+
+    this.alertService.showQuestionModal(
+      this.translate.instant('transactionDetails.confirmSettle'),
+      confirmMsg
+    ).then(result => {
       if (result && result.isConfirmed) {
         this.transactionStore.settleTransaction(details.id);
-        this.alertService.showSuccess('Transaction marked as settled');
+        this.alertService.showSuccess(
+          this.translate.instant('transactions.transactionSettled')
+        );
         // Reload details
         this.transactionStore.loadTransactionDetails(this.transactionId);
       }
@@ -90,12 +106,23 @@ export class TransactionDetailsComponent implements OnInit {
     const details = this.transactionDetails();
     if (!details) return;
 
-    const confirmMsg = `Delete this transaction?\n${details.description}\nAmount: ${this.formatCurrency(details.netAmount, 4)}\n\nThis action cannot be undone.`;
-    
-    this.alertService.showQuestionModal('Delete Transaction?', confirmMsg).then(result => {
+    const description = details.description || this.translate.instant('transactionDetails.noDescription');
+    const amount = this.formatCurrency(details.netAmount, 4);
+
+    const confirmMsg = this.translate.instant('transactionDetails.deleteTransactionMessage', {
+      description,
+      amount
+    });
+
+    this.alertService.showQuestionModal(
+      this.translate.instant('transactionDetails.deleteTransaction'),
+      confirmMsg
+    ).then(result => {
       if (result && result.isConfirmed) {
         this.transactionStore.deleteTransaction(details.id);
-        this.alertService.showSuccess('Transaction deleted successfully');
+        this.alertService.showSuccess(
+          this.translate.instant('transactions.transactionDeleted')
+        );
         this.navigateToTransactions();
       }
     });

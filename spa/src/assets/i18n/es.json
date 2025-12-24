@@ -115,6 +115,37 @@
     "confirmSettleDescription": "¿Confirmas que esta transacción ha sido liquidada? {{description}}, con monto: {{amount}}",
     "transactionSettled": "La transacción ha sido marcada como liquidada"
   },
+  "transactionDetails": {
+    "title": "Detalles de la Transacción",
+    "subtitle": "Información completa de la transacción",
+    "loadingTransaction": "Cargando transacción...",
+    "totalAmount": "Monto Total",
+    "reimbursement": "Reintegro",
+    "netAmount": "Monto Neto",
+    "status": "Estado",
+    "transactionInformation": "Información de la Transacción",
+    "description": "Descripción",
+    "noDescription": "Sin descripción",
+    "collaborator": "Colaborador",
+    "date": "Fecha",
+    "splitType": "Tipo de División",
+    "whoPaid": "Quién Pagó",
+    "createdBy": "Creado Por",
+    "me": "Yo",
+    "splitDetails": "Detalles de División",
+    "paid": "Pagado",
+    "reimbursements": "Reintegros",
+    "back": "Volver",
+    "reimburse": "Reintegrar",
+    "settle": "Liquidar",
+    "notFound": "Transacción no encontrada",
+    "notFoundMessage": "La transacción que buscas no existe o no tienes acceso a ella.",
+    "backToTransactions": "Volver a Transacciones",
+    "confirmSettle": "¿Marcar como Liquidada?",
+    "confirmSettleMessage": "¿Marcar esta transacción como liquidada?\n{{description}}\nMonto: {{amount}}",
+    "deleteTransaction": "¿Eliminar Transacción?",
+    "deleteTransactionMessage": "¿Eliminar esta transacción?\n{{description}}\nMonto: {{amount}}\n\nEsta acción no se puede deshacer."
+  },
   "balances": {
     "title": "Balances",
     "subtitle": "Ve quién te debe y a quién le debes",
@@ -128,7 +159,13 @@
     "showDetails": "Mostrar Detalles",
     "hideDetails": "Ocultar Detalles",
     "noBalances": "No hay balances aún",
-    "createTransactions": "Crea transacciones para ver tus balances aquí"
+    "createTransactions": "Crea transacciones para ver tus balances aquí",
+    "loadingBalances": "Cargando balances...",
+    "theyOweYou": "Te deben",
+    "youOweThem": "Les debes",
+    "settled": "Liquidado",
+    "createTransaction": "Crear Transacción",
+    "close": "Cerrar"
   },
   "collaborators": {
     "title": "Colaboradores",
@@ -281,5 +318,7 @@
   },
   "Pending": "Pendiente",
   "Accepted": "Aceptada",
-  "EmailNotFound": "Email no encontrado"
+  "EmailNotFound": "Email no encontrado",
+  "You": "Vos",
+  "user": "Usuario"
 }

@@ -103,7 +103,6 @@
     "owe": "Owe",
     "owed": "Owed",
     "mine": "Mine",
-    "view": "View",
     "viewDetails": "View Details",
     "markAsSettled": "Mark as Settled",
     "noTransactionsYet": "No transactions yet",
@@ -114,6 +113,37 @@
     "confirmSettle": "Mark as Settled?",
     "confirmSettleDescription": "Confirm that this transaction has been settled? {{description}}, with amount: {{amount}}",
     "transactionSettled": "Transaction has been marked as settled"
+  },
+  "transactionDetails": {
+    "title": "Transaction Details",
+    "subtitle": "Complete transaction information",
+    "loadingTransaction": "Loading transaction...",
+    "totalAmount": "Total Amount",
+    "reimbursement": "Reimbursement",
+    "netAmount": "Net Amount",
+    "status": "Status",
+    "transactionInformation": "Transaction Information",
+    "description": "Description",
+    "noDescription": "No description",
+    "collaborator": "Collaborator",
+    "date": "Date",
+    "splitType": "Split Type",
+    "whoPaid": "Who Paid",
+    "createdBy": "Created By",
+    "me": "Me",
+    "splitDetails": "Split Details",
+    "paid": "Paid",
+    "reimbursements": "Reimbursements",
+    "back": "Back",
+    "reimburse": "Reimburse",
+    "settle": "Settle",
+    "notFound": "Transaction not found",
+    "notFoundMessage": "The transaction you're looking for doesn't exist or you don't have access to it.",
+    "backToTransactions": "Back to Transactions",
+    "confirmSettle": "Mark as Settled?",
+    "confirmSettleMessage": "Mark this transaction as settled?\n{{description}}\nAmount: {{amount}}",
+    "deleteTransaction": "Delete Transaction?",
+    "deleteTransactionMessage": "Delete this transaction?\n{{description}}\nAmount: {{amount}}\n\nThis action cannot be undone."
   },
   "balances": {
     "title": "Balances",
@@ -128,7 +158,13 @@
     "showDetails": "Show Details",
     "hideDetails": "Hide Details",
     "noBalances": "No balances yet",
-    "createTransactions": "Create transactions to see your balances here"
+    "createTransactions": "Create transactions to see your balances here",
+    "loadingBalances": "Loading balances...",
+    "theyOweYou": "They owe you",
+    "youOweThem": "You owe them",
+    "settled": "Settled",
+    "createTransaction": "Create Transaction",
+    "close": "Close"
   },
   "collaborators": {
     "title": "Collaborators",
@@ -281,5 +317,7 @@
   },
   "Pending": "Pending",
   "Accepted": "Accepted",
-  "EmailNotFound": "Email not found"
+  "EmailNotFound": "Email not found",
+  "You": "You",
+  "user": "user"
 }
