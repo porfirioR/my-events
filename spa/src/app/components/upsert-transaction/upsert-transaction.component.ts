@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
 import { Configurations, ParticipantType, SplitType, WhoPaid } from '../../models/enums';
 import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionApiModel, TransactionSplitApiRequest, TransactionViewApiModel } from '../../models/api/transactions';
@@ -22,6 +23,7 @@ import { debounceTime, tap } from 'rxjs';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    TranslateModule,
     SelectInputComponent,
     TextComponent,
     TextAreaInputComponent,
@@ -35,6 +37,7 @@ export class UpsertTransactionComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
   private readonly alertService = inject(AlertService);
+  private readonly translate = inject(TranslateService);
   private formatterService = inject(FormatterHelperService);
 
   private readonly transactionStore = useTransactionStore();
@@ -255,9 +258,6 @@ export class UpsertTransactionComponent implements OnInit {
     }
     
     // Si ellos pagaron, yo les debo mi parte
-    // IMPORTANTE: Cuando "They Paid", el primer input dice "How much do you owe them?"
-    // y ese input controla customUserAmount()
-    // Por eso usamos calculateMySplit() que usa customUserAmount
     const netAmount = this.calculateNetAmount();
     const splitType = this.formGroup.value.splitType;
     
@@ -265,10 +265,8 @@ export class UpsertTransactionComponent implements OnInit {
       case this.splitType.Equal:
         return netAmount / 2;
       case this.splitType.Custom:
-        // Cuando "They Paid", customUserAmount representa lo que YO debo
         return this.customUserAmount();
       case this.splitType.Percentage:
-        // Cuando "They Paid", customUserAmount representa el % que YO debo
         return (netAmount * this.customUserAmount()) / 100;
       default:
         return 0;
@@ -287,9 +285,6 @@ export class UpsertTransactionComponent implements OnInit {
     }
     
     // Si yo pagué, ellos me deben su parte
-    // IMPORTANTE: Cuando "I Paid", el primer input dice "Their share percentage (they owe this %)"
-    // y ese input controla customUserAmount(), no customCollaboratorAmount()
-    // Por eso usamos calculateMySplit() que internamente usa customUserAmount
     const netAmount = this.calculateNetAmount();
     const splitType = this.formGroup.value.splitType;
     
@@ -297,10 +292,8 @@ export class UpsertTransactionComponent implements OnInit {
       case this.splitType.Equal:
         return netAmount / 2;
       case this.splitType.Custom:
-        // Cuando "I Paid", customUserAmount representa lo que ELLOS deben
         return this.customUserAmount();
       case this.splitType.Percentage:
-        // Cuando "I Paid", customUserAmount representa el % que ELLOS deben
         return (netAmount * this.customUserAmount()) / 100;
       default:
         return 0;
@@ -321,11 +314,17 @@ export class UpsertTransactionComponent implements OnInit {
     const netBalance = this.calculateNetBalance();
     
     if (netBalance > 0) {
-      return `They owe you ${this.formatCurrency(netBalance)}`;
+      return this.translate.instant('upsertTransaction.theyOweYouBalance', {
+        amount: this.formatCurrency(netBalance)
+      });
     } else if (netBalance < 0) {
-      return `You owe them ${this.formatCurrency(Math.abs(netBalance))}`;
+      return this.translate.instant('upsertTransaction.youOweThemBalance', {
+        amount: this.formatCurrency(Math.abs(netBalance))
+      });
     } else {
-      return `Balanced (${this.formatCurrency(0)})`;
+      return this.translate.instant('upsertTransaction.balanced', {
+        amount: this.formatCurrency(0)
+      });
     }
   }
 
@@ -367,7 +366,9 @@ export class UpsertTransactionComponent implements OnInit {
     const totalDebt = userDebtAmount + collaboratorDebtAmount;
     
     if (Math.abs(totalDebt - netAmount) > 0.01) {
-      this.errorMessage.set('The debt amounts do not add up to the net amount');
+      this.errorMessage.set(
+        this.translate.instant('upsertTransaction.debtAmountsError')
+      );
       return;
     }
 
@@ -411,13 +412,17 @@ export class UpsertTransactionComponent implements OnInit {
     // Submit
     this.transactionStore.createTransaction(request).subscribe({
       next: () => {
-        this.alertService.showSuccess('Transaction created successfully')
+        this.alertService.showSuccess(
+          this.translate.instant('upsertTransaction.transactionCreatedSuccess')
+        );
         this.transactionStore.loadTransactions();
         this.ignorePreventUnsavedChanges = true
         this.router.navigate(['/transactions']);
       },
       error: (error) => {
-        this.errorMessage.set(error.error?.message || 'Failed to create transaction');
+        this.errorMessage.set(
+          error.error?.message || this.translate.instant('upsertTransaction.transactionCreatedError')
+        );
         this.isSubmitting.set(false);
       }
     });
