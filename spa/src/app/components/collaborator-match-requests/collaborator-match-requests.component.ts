@@ -55,7 +55,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   protected pendingRequestToAccept: ReceivedMatchRequestModel | null = null;
   protected internalCollaborators: Signal<KeyValueViewModel[]> = computed(() => {
     const linkedCollaborators = this.collaboratorStore.unlinkedCollaborators()
-    return FormatterHelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
+    return this.formatterService.convertToList(linkedCollaborators, Configurations.Collaborator)
   });
 
   public formGroup: FormGroup<MatchRequestFormGroup>;

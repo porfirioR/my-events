@@ -59,7 +59,7 @@ export class UpsertTransactionComponent implements OnInit {
   // Computed
   protected linkedCollaborators: Signal<KeyValueViewModel[]> = computed(() => {
     const linkedCollaborators = this.collaboratorStore.linkedCollaborators()
-    return FormatterHelperService.convertToList(linkedCollaborators, Configurations.Collaborator)
+    return this.formatterService.convertToList(linkedCollaborators, Configurations.Collaborator)
   });
   protected splitType = SplitType
   protected whoPaid = WhoPaid

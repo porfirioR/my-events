@@ -2,17 +2,26 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AlertService, LocalService, UserApiService } from '../../services';
 import { TextComponent } from '../inputs/text/text.component';
 import { ResendVerificationEmailApiRequest } from '../../models/api/auth';
 import { ResendFormGroup } from '../../models/forms';
 import { useAuthStore } from '../../store';
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 @Component({
   selector: 'app-verify-email-pending',
   templateUrl: './verify-email-pending.component.html',
   styleUrls: ['./verify-email-pending.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TextComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    TranslateModule,
+    TextComponent,
+    LanguageSelectorComponent
+  ],
 })
 export class VerifyEmailPendingComponent {
   private router = inject(Router);

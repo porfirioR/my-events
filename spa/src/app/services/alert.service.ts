@@ -1,10 +1,12 @@
-import { Injectable } from '@angular/core'
+import { inject, Injectable } from '@angular/core'
+import { TranslateService } from '@ngx-translate/core';
 import { SweetAlertIcon, SweetAlertResult } from 'sweetalert2'
 
 @Injectable({
   providedIn: 'root'
 })
 export class AlertService {
+  private translate = inject(TranslateService);
 
   private async getSwal(): Promise<typeof Swal> {
     const { default: Swal } = await import('sweetalert2');
@@ -26,8 +28,8 @@ export class AlertService {
         : text,
       icon: icon,
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: this.translate.instant('inputs.yes'),
+      cancelButtonText: this.translate.instant('inputs.no'),
       reverseButtons: true,
       focusCancel: true,
       customClass: {

@@ -1,20 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useSavingsStore } from '../../store';
-import { AlertService, FormatterHelperService, } from '../../services';
+import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 
 @Component({
   selector: 'app-savings-goals-list',
   templateUrl: './savings-goals-list.component.html',
   styleUrls: ['./savings-goals-list.component.css'],
-  imports: [CommonModule, RouterModule]
+  imports: [CommonModule, RouterModule, TranslateModule]
 })
 export class SavingsGoalsListComponent implements OnInit {
   private router = inject(Router);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
+  private translate = inject(TranslateService);
 
   private savingsStore = useSavingsStore();
   private loadingStore = useLoadingStore();
@@ -73,22 +75,24 @@ export class SavingsGoalsListComponent implements OnInit {
 
   protected async deleteGoal(goal: any): Promise<void> {
     const result = await this.alertService.showQuestionModal(
-      'Delete Savings Goal',
-      `Are you sure you want to delete "${goal.name}"? This action cannot be undone.`,
+      this.translate.instant('savingsGoals.deleteGoalTitle'),
+      this.translate.instant('savingsGoals.deleteGoalMessage', { name: goal.name }),
       'warning'
     );
 
     if (result.value) {
       this.savingsStore.deleteGoal(goal.id);
-      this.alertService.showSuccess('Savings goal deleted successfully');
+      this.alertService.showSuccess(
+        this.translate.instant('savingsGoals.goalDeletedSuccess')
+      );
     }
   }
 
-  protected getGoalStatusLabel = FormatterHelperService.getGoalStatusLabel;
-  protected getGoalStatusIcon = FormatterHelperService.getGoalStatusIcon;
-  protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor;
-  protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel;
-  protected getProgressionTypeIcon = FormatterHelperService.getProgressionTypeIcon;
+  protected getGoalStatusLabel = FormatterHelperService.getGoalStatusLabel.bind(this.formatterService);
+  protected getGoalStatusIcon = FormatterHelperService.getGoalStatusIcon.bind(this.formatterService);
+  protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor.bind(this.formatterService);
+  protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel.bind(this.formatterService);
+  protected getProgressionTypeIcon = FormatterHelperService.getProgressionTypeIcon.bind(this.formatterService);
   protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
 

@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useSavingsStore } from '../../store/savings.store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, ProgressionType } from '../../models/enums';
@@ -28,6 +29,7 @@ import { ProgressionTypeFormGroup } from '../../models/forms';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    TranslateModule,
     TextComponent,
     TextAreaInputComponent,
   ],
@@ -37,6 +39,7 @@ export class SavingsGoalDetailComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
+  private translate = inject(TranslateService);
   private savingsStore = useSavingsStore();
 
   protected goal = this.savingsStore.selectedGoal;
@@ -153,13 +156,17 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.payInstallment(goalId, installmentId, request).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.alertService.showSuccess('Installment paid successfully');
+        this.alertService.showSuccess(
+          this.translate.instant('savingsGoalDetail.installmentPaidSuccess')
+        );
         this.closePayModal();
         this.reloadData();
       },
       error: (e) => {
         this.isSubmitting.set(false);
-        this.alertService.showError('Failed to pay installment');
+        this.alertService.showError(
+          this.translate.instant('savingsGoalDetail.installmentPaidError')
+        );
         throw e;
       },
     });
@@ -198,13 +205,17 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.createFreeFormDeposit(goalId, request).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.alertService.showSuccess('Deposit created successfully');
+        this.alertService.showSuccess(
+          this.translate.instant('savingsGoalDetail.depositCreatedSuccess')
+        );
         this.closeFreeFormModal();
         this.reloadData();
       },
       error: (e) => {
         this.isSubmitting.set(false);
-        this.alertService.showError('Failed to create deposit');
+        this.alertService.showError(
+          this.translate.instant('savingsGoalDetail.depositCreatedError')
+        );
         throw e;
       },
     });
@@ -237,7 +248,9 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.addInstallments(goalId, request).subscribe({
       next: () => {
         this.alertService.showSuccess(
-          `${values.numberOfNewInstallments} installments added successfully`
+          this.translate.instant('savingsGoalDetail.installmentsAddedSuccess', {
+            count: values.numberOfNewInstallments
+          })
         );
         this.isSubmitting.set(false);
         this.closeAddInstallmentsModal();
@@ -245,7 +258,9 @@ export class SavingsGoalDetailComponent implements OnInit {
       },
       error: (e) => {
         this.isSubmitting.set(false);
-        this.alertService.showError('Failed to add installments');
+        this.alertService.showError(
+          this.translate.instant('savingsGoalDetail.installmentsAddedError')
+        );
         throw e;
       },
     });
@@ -255,8 +270,10 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   protected async skipInstallment(installment: any): Promise<void> {
     const result = await this.alertService.showQuestionModal(
-      'Skip Installment',
-      `Are you sure you want to skip installment #${installment.installmentNumber}?`,
+      this.translate.instant('savingsGoalDetail.skipInstallmentTitle'),
+      this.translate.instant('savingsGoalDetail.skipInstallmentMessage', {
+        number: installment.installmentNumber
+      }),
       'warning'
     );
 
@@ -266,7 +283,9 @@ export class SavingsGoalDetailComponent implements OnInit {
         goalId,
         installmentId: installment.id,
       });
-      this.alertService.showSuccess('Installment skipped');
+      this.alertService.showSuccess(
+        this.translate.instant('savingsGoalDetail.installmentSkipped')
+      );
     }
   }
 
@@ -287,11 +306,11 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadDeposits(goalId);
   }
 
-  protected getGoalStatusLabel = FormatterHelperService.getGoalStatusLabel;
-  protected getGoalStatusIcon = FormatterHelperService.getGoalStatusIcon;
-  protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor;
-  protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel;
+  protected getGoalStatusLabel = FormatterHelperService.getGoalStatusLabel.bind(this.formatterService);
+  protected getGoalStatusIcon = FormatterHelperService.getGoalStatusIcon.bind(this.formatterService);
+  protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor.bind(this.formatterService);
+  protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel.bind(this.formatterService);
 
-  protected formatCurrency = this.formatterService.formatCurrency;
+  protected formatCurrency = this.formatterService.formatCurrency.bind(this.formatterService);
   protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
 }

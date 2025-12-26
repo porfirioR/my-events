@@ -1,15 +1,22 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertService, LocalService, UserApiService } from '../../services';
 import { useAuthStore } from '../../store';
 import { VerifyEmailApiRequest } from '../../models/api/auth';
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 @Component({
   selector: 'app-verify-email',
   templateUrl: './verify-email.component.html',
   styleUrls: ['./verify-email.component.css'],
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    LanguageSelectorComponent
+  ],
 })
 export class VerifyEmailComponent implements OnInit {
   private router = inject(Router);
@@ -18,6 +25,7 @@ export class VerifyEmailComponent implements OnInit {
   private alertService = inject(AlertService);
   private authStore = useAuthStore();
   private localService = inject(LocalService);
+  private translate = inject(TranslateService);
 
   protected isVerifying = signal(true);
   protected verificationSuccess = signal(false);
@@ -28,7 +36,7 @@ export class VerifyEmailComponent implements OnInit {
 
     if (!token) {
       this.isVerifying.set(false);
-      this.errorMessage = 'Invalid verification link. No token provided.';
+      this.errorMessage = this.translate.instant('auth.invalidVerificationLink');
       return;
     }
 
@@ -44,7 +52,9 @@ export class VerifyEmailComponent implements OnInit {
         this.verificationSuccess.set(true);
         this.authStore.logout();
         this.localService.cleanCredentials();
-        this.alertService.showSuccess('Email verified successfully!');
+        this.alertService.showSuccess(
+          this.translate.instant('auth.emailVerifiedSuccessMessage')
+        );
 
         setTimeout(() => {
           this.router.navigate(['']);
@@ -52,11 +62,10 @@ export class VerifyEmailComponent implements OnInit {
       },
       error: (error) => {
         this.isVerifying.set(false);
-        this.verificationSuccess.set(false)
-        this.errorMessage = 'Invalid or expired verification token. Please request a new one.';
-        this.alertService.showError(this.errorMessage);
+        this.verificationSuccess.set(false);
+        this.errorMessage = this.translate.instant('auth.invalidOrExpiredToken');
+        this.alertService.showError(this.errorMessage || undefined);
       },
     });
   }
-
 }

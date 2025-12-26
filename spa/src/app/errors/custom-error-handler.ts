@@ -1,6 +1,7 @@
 // errors/custom-error-handler.ts
 import { ErrorHandler, Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { AlertService, LocalService } from '../services';
 import { useAuthStore } from '../store';
 
@@ -11,6 +12,7 @@ export class CustomErrorHandler implements ErrorHandler {
   private alertService = inject(AlertService);
   private localService = inject(LocalService)
   private router = inject(Router);
+  private translate = inject(TranslateService);
   // ✅ Usar AuthStore en lugar de LocalService
   private authStore = useAuthStore();
 
@@ -42,7 +44,7 @@ export class CustomErrorHandler implements ErrorHandler {
           if (error.message === 'Invalid Token') {
             this.localService.cleanCredentials()
             this.authStore.logout();
-            this.alertService.showError('Your session has expired. Please login again.');
+            this.alertService.showError(this.translate.instant('auth.sessionExpired'));
             localStorage.setItem('theme', 'light')
             this.router.navigate(['/login']);
             return;
