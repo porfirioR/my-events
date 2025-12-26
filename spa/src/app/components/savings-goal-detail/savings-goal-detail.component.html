@@ -22,21 +22,21 @@
         @if (g.statusId !== GoalStatus.Completed) {
           <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="editGoal()">
             <i class="fas fa-edit"></i>
-            Edit
+            {{ 'savingsGoalDetail.edit' | translate }}
           </button>
         }
 
         @if (canAddInstallments()) {
           <button type="button" class="btn btn-sm btn-secondary" (click)="openAddInstallmentsModal()">
             <i class="fas fa-plus"></i>
-            Add Installments
+            {{ 'savingsGoalDetail.addInstallments' | translate }}
           </button>
         }
 
         @if (isFreeForm() && g.statusId === GoalStatus.Active) {
           <button type="button" class="btn btn-sm btn-accent" (click)="openFreeFormModal()">
             <i class="fas fa-hand-holding-dollar"></i>
-            Add Deposit
+            {{ 'savingsGoalDetail.addDeposit' | translate }}
           </button>
         }
       </div>
@@ -53,17 +53,17 @@
         }"
       >
         <i [class]="'fas ' + getGoalStatusIcon(g.statusId) + ' mr-1'"></i>
-        {{getGoalStatusLabel(g.statusId)}}
+        {{ getGoalStatusLabel(g.statusId) | translate }}
       </span>
 
       <span class="badge badge-sm badge-outline flex items-baseline">
-        {{ getProgressionTypeLabel(g.progressionTypeId) }}
+        {{ getProgressionTypeLabel(g.progressionTypeId) | translate }}
       </span>
 
       @if (g.numberOfInstallments) {
       <span class="text-sm text-base-content/70">
         <i class="fas fa-list-ol mr-1"></i>
-        {{ g.numberOfInstallments }} installments
+        {{ g.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
       </span>
       }
     </div>
@@ -71,7 +71,7 @@
     <!-- Progress Section -->
     <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-sm font-semibold text-base-content">Progress</span>
+        <span class="text-sm font-semibold text-base-content">{{ 'savingsGoalDetail.progress' | translate }}</span>
         <span class="text-2xl font-bold" [ngClass]="getGoalStatusColor(g.statusId)">
           {{ progress() }}%
         </span>
@@ -87,15 +87,15 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mt-2 text-sm">
         <div>
-          <span class="text-base-content/70">Current:</span>
+          <span class="text-base-content/70">{{ 'savingsGoalDetail.current' | translate }}</span>
           <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.currentAmount, g.currencyId) }}</span>
         </div>
         <div>
-          <span class="text-base-content/70">Target:</span>
+          <span class="text-base-content/70">{{ 'savingsGoalDetail.target' | translate }}</span>
           <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.targetAmount, g.currencyId) }}</span>
         </div>
         <div>
-          <span class="text-base-content/70">Remaining:</span>
+          <span class="text-base-content/70">{{ 'savingsGoalDetail.remaining' | translate }}</span>
           <span class="font-semibold text-warning ml-1">{{ formatCurrency(remaining(), g.currencyId) }}</span>
         </div>
       </div>
@@ -105,18 +105,18 @@
     <div class="flex items-center gap-4 mt-4 text-sm text-base-content/70 ml-4">
       <div>
         <i class="fas fa-calendar-start mr-1"></i>
-        Started: {{ getFormattedDate(g.startDate) }}
+        {{ 'savingsGoalDetail.started' | translate }} {{ getFormattedDate(g.startDate) }}
       </div>
       @if (g.expectedEndDate) {
         <div>
           <i class="fas fa-calendar-check mr-1"></i>
-          Expected: {{ getFormattedDate(g.expectedEndDate) }}
+          {{ 'savingsGoalDetail.expected' | translate }} {{ getFormattedDate(g.expectedEndDate) }}
         </div>
       }
       @if (g.completedDate) {
       <div class="text-success">
         <i class="fas fa-check-circle mr-1"></i>
-        Completed: {{ getFormattedDate(g.completedDate) }}
+        {{ 'savingsGoalDetail.completed' | translate }} {{ getFormattedDate(g.completedDate) }}
       </div>
       }
     </div>
@@ -131,7 +131,7 @@
         <button role="tab" class="tab" [class.tab-active]="activeTab() === 'installments'"
           (click)="setActiveTab('installments')">
           <i class="fas fa-list-ol mr-2"></i>
-          Installments
+          {{ 'savingsGoalDetail.installments' | translate }}
           @if (pendingInstallments().length > 0) {
           <span class="badge badge-sm badge-outline badge-warning ml-2">{{ pendingInstallments().length }}</span>
           }
@@ -140,7 +140,7 @@
       
       <button role="tab" class="tab" [class.tab-active]="activeTab() === 'deposits'" (click)="setActiveTab('deposits')">
         <i class="fas fa-money-bill-wave mr-2"></i>
-        Deposits
+        {{ 'savingsGoalDetail.deposits' | translate }}
         <span class="badge badge-sm badge-ghost ml-2">{{ deposits().length }}</span>
       </button>
     </div>
@@ -152,8 +152,8 @@
         @if (installments().length === 0) {
         <div class="text-center py-12">
           <i class="fas fa-info-circle text-4xl text-base-content/30 mb-4"></i>
-          <p class="text-base-content/70">No installments for this goal</p>
-          <p class="text-sm text-base-content/50">This is a FreeForm savings goal</p>
+          <p class="text-base-content/70">{{ 'savingsGoalDetail.noInstallments' | translate }}</p>
+          <p class="text-sm text-base-content/50">{{ 'savingsGoalDetail.freeFormGoal' | translate }}</p>
         </div>
         } @else {
         <!-- Pending Installments -->
@@ -161,7 +161,7 @@
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
             <i class="fas fa-clock text-warning"></i>
-            Pending Installments
+            {{ 'savingsGoalDetail.pendingInstallments' | translate }}
           </h3>
           <div class="space-y-2">
             @for (installment of pendingInstallments(); track installment.id) {
@@ -177,7 +177,7 @@
                   </p>
                   @if (installment.dueDate) {
                   <p class="text-xs text-base-content/60">
-                    Due: {{ getFormattedDate(installment.dueDate) }}
+                    {{ 'savingsGoalDetail.due' | translate }} {{ getFormattedDate(installment.dueDate) }}
                   </p>
                   }
                 </div>
@@ -186,17 +186,17 @@
                 @if (g.statusId !== GoalStatus.Completed) {
                   <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="openPayModal(installment)">
                     <i class="fas fa-check-circle"></i>
-                    Pay
+                    {{ 'savingsGoalDetail.pay' | translate }}
                   </button>
                   <button type="button" class="btn btn-sm btn-ghost" (click)="skipInstallment(installment)">
                     <i class="fas fa-forward"></i>
-                    Skip
+                    {{ 'savingsGoalDetail.skip' | translate }}
                   </button>
                 } @else {
                   <!-- ✅ Mostrar mensaje informativo si está completed -->
                   <span class="text-sm text-success font-medium">
                     <i class="fas fa-check-circle mr-1"></i>
-                    Goal Completed
+                    {{ 'savingsGoalDetail.goalCompleted' | translate }}
                   </span>
                 }
               </div>
@@ -211,7 +211,7 @@
         <div>
           <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
             <i class="fas fa-check-circle text-success"></i>
-            Paid Installments
+            {{ 'savingsGoalDetail.paidInstallments' | translate }}
           </h3>
           <div class="space-y-2">
             @for (installment of paidInstallments(); track installment.id) {
@@ -226,7 +226,7 @@
                   </p>
                   @if (installment.paidDate) {
                   <p class="text-xs text-base-content/60">
-                    Paid: {{ getFormattedDate(installment.paidDate) }}
+                    {{ 'savingsGoalDetail.paid' | translate }} {{ getFormattedDate(installment.paidDate) }}
                   </p>
                   }
                 </div>
@@ -245,7 +245,7 @@
         @if (deposits().length === 0) {
         <div class="text-center py-12">
           <i class="fas fa-money-bill-wave text-4xl text-base-content/30 mb-4"></i>
-          <p class="text-base-content/70">No deposits yet</p>
+          <p class="text-base-content/70">{{ 'savingsGoalDetail.noDepositsYet' | translate }}</p>
         </div>
         } @else {
         <div class="space-y-3">
@@ -266,7 +266,7 @@
                 @if (deposit.installmentId) {
                 <p class="text-xs text-info mt-1">
                   <i class="fas fa-link mr-1"></i>
-                  Linked to installment
+                  {{ 'savingsGoalDetail.linkedToInstallment' | translate }}
                 </p>
                 }
               </div>
@@ -283,7 +283,7 @@
   <!-- Loading State -->
   <div class="flex justify-center items-center py-12">
     <span class="loading loading-spinner loading-lg"></span>
-    <p class="ml-3 text-base-content/70">Loading savings goal...</p>
+    <p class="ml-3 text-base-content/70">{{ 'savingsGoalDetail.loadingGoal' | translate }}</p>
   </div>
   }
 </section>
@@ -293,33 +293,44 @@
 <dialog class="modal modal-open">
   <div class="modal-box">
     <h3 class="font-bold text-lg mb-4">
-      Pay Installment #{{ selectedInstallment()?.installmentNumber }}
+      {{ 'savingsGoalDetail.payInstallmentTitle' | translate: { number: selectedInstallment()?.installmentNumber } }}
     </h3>
 
     <form [formGroup]="payForm" (submit)="payInstallment()">
-      <app-text formControlName="amount" type="number" label="Installment amount" id="amount" name="Amount"
-        [description]="'Installment amount: ' + formatCurrency(selectedInstallment()?.amount, goal()?.currencyId)" />
+      <app-text 
+        formControlName="amount" 
+        type="number" 
+        [label]="'savingsGoalDetail.installmentAmount' | translate"
+        id="amount" 
+        name="Amount"
+        [description]="'savingsGoalDetail.installmentAmountDescription' | translate: { amount: formatCurrency(selectedInstallment()?.amount, goal()?.currencyId) }" 
+      />
 
-      <app-text-area-input formControlName="description" label="Description (optional)" placeholder="Add a note..."
-        id="description" name="description" />
+      <app-text-area-input 
+        formControlName="description" 
+        [label]="'savingsGoalDetail.descriptionOptional' | translate"
+        [placeholder]="'savingsGoalDetail.addNote' | translate"
+        id="description" 
+        name="description" 
+      />
 
       <div class="modal-action">
         <button type="button"
           class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
           (click)="closePayModal()">
-          Cancel
+          {{ 'savingsGoalDetail.cancel' | translate }}
         </button>
         @if (isSubmitting()) {
           <button type="button" class="btn btn-primary flex items-center gap-2 loading-btn">
             <span class="loading loading-spinner loading-xs"></span>
-            Saving...
+            {{ 'savingsGoalDetail.saving' | translate }}
           </button>
         } @else {
           <button role="button" type="submit"
             class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
             [disabled]="payForm.invalid || isSubmitting()" [class.btn-disabled]="payForm.invalid || isSubmitting()">
             <i class="fas fa-cloud-arrow-up text-sm"></i>
-            Pay Installment
+            {{ 'savingsGoalDetail.payInstallmentButton' | translate }}
           </button>
         }
       </div>
@@ -333,42 +344,42 @@
 @if (showFreeFormModal()) {
 <dialog class="modal modal-open">
   <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">Add Deposit</h3>
+    <h3 class="font-bold text-lg mb-4">{{ 'savingsGoalDetail.addDepositTitle' | translate }}</h3>
 
     <form [formGroup]="freeFormDepositForm" (submit)="createFreeFormDeposit()">
       <app-text
         formControlName="amount"
         type="number"
-        label="Amount"
+        [label]="'savingsGoalDetail.amount' | translate"
         id="amount"
         name="Amount"
-        [description]="'Remaining to goal: ' + formatCurrency(remaining(), goal()?.currencyId)"
+        [description]="'savingsGoalDetail.remainingToGoal' | translate: { amount: formatCurrency(remaining(), goal()?.currencyId) }"
       />
 
       <app-text-area-input
         formControlName="description"
-        label="Description
-        (optional)"
-        placeholder="Add a note..."
-        id="description" name="description"
+        [label]="'savingsGoalDetail.descriptionOptional' | translate"
+        [placeholder]="'savingsGoalDetail.addNote' | translate"
+        id="description" 
+        name="description"
       />
 
       <div class="modal-action">
         <button type="button" class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105" (click)="closeFreeFormModal()">
-          Cancel
+          {{ 'savingsGoalDetail.cancel' | translate }}
         </button>
 
         @if (isSubmitting()) {
           <button type="button" class="btn btn-primary flex items-center gap-2 loading-btn">
             <span class="loading loading-spinner loading-xs"></span>
-            Saving...
+            {{ 'savingsGoalDetail.saving' | translate }}
           </button>
         } @else {
           <button role="button" type="submit"
             class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
             [disabled]="freeFormDepositForm.invalid || isSubmitting()" [class.btn-disabled]="freeFormDepositForm.invalid || isSubmitting()">
             <i class="fas fa-hand-holding-dollar text-sm"></i>
-            Add Deposit
+            {{ 'savingsGoalDetail.addDepositButton' | translate }}
           </button>
         }
       </div>
@@ -382,24 +393,24 @@
 @if (showAddInstallmentsModal()) {
 <dialog class="modal modal-open">
   <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">Add More Installments</h3>
+    <h3 class="font-bold text-lg mb-4">{{ 'savingsGoalDetail.addMoreInstallmentsTitle' | translate }}</h3>
 
     <form [formGroup]="addInstallmentsForm" (submit)="addInstallments()">
       <app-text
         formControlName="numberOfNewInstallments"
         type="number"
-        label="Number of Installments"
+        [label]="'savingsGoalDetail.numberOfInstallments' | translate"
         id="numberOfNewInstallments"
         name="numberOfNewInstallments"
-        placeholder="E.g., 10"
-        description="This will extend your savings goal"
+        [placeholder]="'savingsGoalDetail.numberOfInstallmentsPlaceholder' | translate"
+        [description]="'savingsGoalDetail.extendGoalDescription' | translate"
       />
 
       <div class="modal-action">
         <button type="button"
           class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
           (click)="closeAddInstallmentsModal()">
-          Cancel
+          {{ 'savingsGoalDetail.cancel' | translate }}
         </button>
         @if (isSubmitting()) {
           <button
@@ -407,7 +418,7 @@
             class="btn btn-primary flex items-center gap-2 loading-btn"
           >
             <span class="loading loading-spinner loading-xs"></span>
-            Saving...
+            {{ 'savingsGoalDetail.saving' | translate }}
           </button>
         } @else {
           <button
@@ -416,7 +427,7 @@
             [disabled]="addInstallmentsForm.invalid || isSubmitting()"
           >
             <i class="fas fa-cloud-arrow-up text-sm"></i>
-            Add Installments
+            {{ 'savingsGoalDetail.addInstallmentsButton' | translate }}
           </button>
         }
       </div>

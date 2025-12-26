@@ -1,13 +1,25 @@
 <dialog class="modal" role="none" id="reimbursementModal" #reimbursementModal>
   <main class="modal-box">
-    <h3 class="font-bold text-lg">Add Reimbursement</h3>
+    <h3 class="font-bold text-lg">{{ 'addReimbursementModal.title' | translate }}</h3>
     <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
-      <app-text formControlName="amount" type="number" label="Reimbursement Amount" id="amount" name="amount" />
-      <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
+      <app-text 
+        formControlName="amount" 
+        type="number" 
+        [label]="'addReimbursementModal.reimbursementAmount' | translate"
+        id="amount" 
+        name="amount" 
+      />
+      <app-text-area-input 
+        formControlName="description" 
+        [label]="'addReimbursementModal.description' | translate"
+        [placeholder]="'addReimbursementModal.description' | translate"
+        id="description" 
+        name="description" 
+      />
 
       <div class="alert alert-info alert-soft">
         <i class="fas fa-info-circle"></i>
-        <span>Transaction total: {{formatCurrency(modalData()?.maxAmount ?? 0, 1)}}</span>
+        <span>{{ 'addReimbursementModal.transactionTotal' | translate: { amount: formatCurrency(modalData()?.maxAmount ?? 0, 1) } }}</span>
       </div>
       
       <footer class="flex justify-between items-center pt-6 gap-4">
@@ -18,7 +30,7 @@
           (click)="close()"
         >
           <i class="fas fa-arrow-left text-sm"></i>
-          Cancel
+          {{ 'addReimbursementModal.cancel' | translate }}
         </button>
         @if (isSubmitting()) {
           <button
@@ -26,7 +38,7 @@
             class="btn btn-primary flex items-center gap-2 loading-btn"
           >
             <span class="loading loading-spinner loading-xs"></span>
-            Saving...
+            {{ 'addReimbursementModal.saving' | translate }}
           </button>
         } @else {
           <button
@@ -35,7 +47,7 @@
             [disabled]="formGroup.invalid || isSubmitting()"
           >
             <i class="fas fa-cloud-arrow-up text-sm"></i>
-            Save
+            {{ 'addReimbursementModal.save' | translate }}
           </button>
         }
       </footer>

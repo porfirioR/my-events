@@ -8,9 +8,9 @@ import {
   PushTokenApiModel,
   PushTokenApiRequest,
   UserApiModel,
-} from '../models/api';
-import { LocalService } from './local.service';
-import { ResendVerificationEmailApiRequest, ResetPasswordApiRequest, SignApiModel, VerifyEmailApiRequest } from '../models/api/auth';
+} from '../../models/api';
+import { LocalService } from '../local.service';
+import { ResendVerificationEmailApiRequest, ResetPasswordApiRequest, SignApiModel, VerifyEmailApiRequest } from '../../models/api/auth';
 
 @Injectable({
   providedIn: 'root',

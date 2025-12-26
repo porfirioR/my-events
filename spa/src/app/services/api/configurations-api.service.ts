@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
-import { CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../models/api'
-import { Configurations } from '../models/enums'
+import { CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../../models/api'
+import { Configurations } from '../../models/enums'
 
 @Injectable({
   providedIn: 'root'

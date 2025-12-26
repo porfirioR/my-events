@@ -1,9 +1,13 @@
 <section class="flex flex-col items-center justify-center px-6 py-4 mx-auto lg:py-0 min-h-screen">
   <article class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700 border-indigo-500 ring-indigo-500 ring-1">
     <main class="px-6 py-8 space-y-6">
-      <h1 class=" uppercase font-bold flex items-start mb-6 text-2xl text-gray-900 dark:text-white">
-        My Events
-      </h1>
+      <section class="flex justify-between items-start">
+        <h1 class="uppercase font-bold flex items-start mb-6 text-2xl text-gray-900 dark:text-white">
+          {{ 'auth.appName' | translate }}
+        </h1>
+        <app-language-selector/>
+      </section>
+
       <div class="flex justify-center">
         <div class="rounded-full bg-indigo-100 dark:bg-indigo-900 p-4">
           <i class="fas fa-envelope text-5xl text-indigo-600 dark:text-indigo-400"></i>
@@ -12,10 +16,10 @@
 
       <header class="text-center">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Verify Your Email
+          {{ 'auth.verifyEmailTitle' | translate }}
         </h2>
         <p class="text-gray-600 dark:text-gray-400">
-          We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.
+          {{ 'auth.verifyEmailMessage' | translate }}
         </p>
       </header>
 
@@ -24,11 +28,11 @@
         <div class="flex items-start">
           <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-0.5 mr-3"></i>
           <div class="text-sm text-blue-800 dark:text-blue-300">
-            <p class="font-medium mb-1">Didn't receive the email?</p>
+            <p class="font-medium mb-1">{{ 'auth.didntReceiveEmail' | translate }}</p>
             <ul class="list-disc list-inside space-y-1 text-xs">
-              <li>Check your spam or junk folder</li>
-              <li>Make sure you entered the correct email address</li>
-              <li>Wait a few minutes for the email to arrive</li>
+              <li>{{ 'auth.checkSpamFolder' | translate }}</li>
+              <li>{{ 'auth.checkCorrectEmail' | translate }}</li>
+              <li>{{ 'auth.waitFewMinutes' | translate }}</li>
             </ul>
           </div>
         </div>
@@ -39,9 +43,9 @@
         <app-text
           formControlName="email"
           type="email"
-          placeholder="email@email.com"
+          [placeholder]="'auth.emailPlaceholder' | translate"
           autocomplete="email"
-          label="Email Address"
+          [label]="'auth.emailAddress' | translate"
           id="email"
           name="email"
           [disabled]="isLoading() || coolDownSeconds() > 0"
@@ -58,12 +62,12 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Sending...
+              {{ 'auth.sending' | translate }}
             </span>
           } @else if (coolDownSeconds() > 0) {
-            <span>Resend in {{ coolDownSeconds() }}s</span>
+            <span>{{ 'auth.resendIn' | translate: { seconds: coolDownSeconds() } }}</span>
           } @else {
-            <span>Resend Verification Email</span>
+            <span>{{ 'auth.resendVerificationEmail' | translate }}</span>
           }
         </button>
       </form>
@@ -75,7 +79,7 @@
           class="w-full text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 font-medium text-sm transition-colors cursor-pointer"
           (click)="logout()"
         >
-          Logout
+          {{ 'auth.logout' | translate }}
         </button>
       </div>
     </main>

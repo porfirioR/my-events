@@ -4,8 +4,12 @@
     <header class="mb-6">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-base-content">Transaction Details</h2>
-          <p class="text-base-content/70 mt-1">Complete transaction information</p>
+          <h2 class="text-2xl font-bold text-base-content">
+            {{ 'transactionDetails.title' | translate }}
+          </h2>
+          <p class="text-base-content/70 mt-1">
+            {{ 'transactionDetails.subtitle' | translate }}
+          </p>
         </div>
         <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="navigateToTransactions()">
           <i class="fas fa-times"></i>
@@ -16,7 +20,9 @@
     @if (isLoading()) {
       <div class="flex justify-center items-center py-12">
         <span class="loading loading-spinner loading-lg"></span>
-        <p class="ml-3 text-base-content/70">Loading transaction...</p>
+        <p class="ml-3 text-base-content/70">
+          {{ 'transactionDetails.loadingTransaction' | translate }}
+        </p>
       </div>
     } @else if (transactionDetails()) {
       <!-- Summary Stats -->
@@ -33,7 +39,9 @@
             <div class="stat-figure text-primary">
               <i class="fas fa-dollar-sign text-2xl"></i>
             </div>
-            <div class="stat-title text-xs">Total Amount</div>
+            <div class="stat-title text-xs">
+              {{ 'transactionDetails.totalAmount' | translate }}
+            </div>
             <div class="stat-value text-xl text-primary">{{ formatCurrency(transactionDetails()!.totalAmount, 4) }}</div>
           </div>
         </article>
@@ -45,7 +53,9 @@
               <div class="stat-figure text-warning">
                 <i class="fas fa-undo text-2xl"></i>
               </div>
-              <div class="stat-title text-xs">Reimbursement</div>
+              <div class="stat-title text-xs">
+                {{ 'transactionDetails.reimbursement' | translate }}
+              </div>
               <div class="stat-value text-xl text-warning">{{ formatCurrency(transactionDetails()!.totalReimbursement, 4) }}</div>
             </div>
           </article>
@@ -58,7 +68,9 @@
               <div class="stat-figure text-success">
                 <i class="fas fa-check-circle text-2xl"></i>
               </div>
-              <div class="stat-title text-xs">Net Amount</div>
+              <div class="stat-title text-xs">
+                {{ 'transactionDetails.netAmount' | translate }}
+              </div>
               <div class="stat-value text-xl text-success">{{ formatCurrency(transactionDetails()!.netAmount, 4) }}</div>
             </div>
           </article>
@@ -80,14 +92,19 @@
                 }"
               ></i>
             </div>
-            <div class="stat-title text-xs">Status</div>
+            <div class="stat-title text-xs">
+              {{ 'transactionDetails.status' | translate }}
+            </div>
             <div class="stat-value text-base"
               [ngClass]="{
                 'text-success': transactionDetails()!.isSettled,
                 'text-warning': !transactionDetails()!.isSettled
               }"
             >
-              {{ transactionDetails()!.isSettled ? 'Settled' : 'Pending' }}
+              {{ transactionDetails()!.isSettled ? 
+                ('transactions.settled' | translate) : 
+                ('transactions.pending' | translate) 
+              }}
             </div>
           </div>
         </article>
@@ -96,7 +113,9 @@
       <!-- Main Info Card -->
       <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
         <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-          <h3 class="text-lg font-semibold text-base-content">Transaction Information</h3>
+          <h3 class="text-lg font-semibold text-base-content">
+            {{ 'transactionDetails.transactionInformation' | translate }}
+          </h3>
         </header>
 
         <main class="p-6">
@@ -104,15 +123,19 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Description -->
             <div>
-              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Description</label>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">
+                {{ 'transactionDetails.description' | translate }}
+              </label>
               <p class="text-base text-base-content font-medium mt-1">
-                {{ transactionDetails()!.description || 'No description' }}
+                {{ transactionDetails()!.description || ('transactionDetails.noDescription' | translate) }}
               </p>
             </div>
 
             <!-- Collaborator -->
             <div>
-              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Collaborator</label>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">
+                {{ 'transactionDetails.collaborator' | translate }}
+              </label>
               <div class="flex items-center gap-2 mt-1">
                 <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-semibold text-sm">
                   {{ getInitials(transactionDetails()!.collaboratorName + ' ' + transactionDetails()!.collaboratorSurname) }}
@@ -135,7 +158,9 @@
           <div class="grid grid-cols-2 gap-6">
             <!-- Date -->
             <div>
-              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Date</label>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">
+                {{ 'transactionDetails.date' | translate }}
+              </label>
               <p class="text-base text-base-content mt-1">
                 <i class="fas fa-calendar mr-2"></i>
                 {{ getFormattedDate(transactionDetails()!.transactionDate) }}
@@ -144,7 +169,9 @@
 
             <!-- Split Type -->
             <div>
-              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Split Type</label>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">
+                {{ 'transactionDetails.splitType' | translate }}
+              </label>
               <p class="text-base text-base-content mt-1">
                 <i class="fas mr-2"
                   [ngClass]="{
@@ -159,7 +186,9 @@
 
             <!-- Who Paid -->
             <div>
-              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Who Paid</label>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">
+                {{ 'transactionDetails.whoPaid' | translate }}
+              </label>
               <p class="text-base text-base-content mt-1">
                 <i class="fas mr-2"
                   [ngClass]="{
@@ -167,23 +196,28 @@
                     'fa-user-friends text-info': transactionDetails()!.whoPaid === 'collaborator'
                   }"
                 ></i>
-                {{ transactionDetails()!.whoPaid === 'user' ? 'I Paid' : 'They Paid' }}
+                {{ transactionDetails()!.whoPaid === 'user' ? 
+                  ('transactions.iPaid' | translate) : 
+                  ('transactions.theyPaid' | translate) 
+                }}
               </p>
             </div>
 
             <!-- Created By -->
             <div>
-              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">Created By</label>
+              <label class="text-xs text-base-content/60 uppercase tracking-wide font-semibold">
+                {{ 'transactionDetails.createdBy' | translate }}
+              </label>
               <div class="mt-1">
                 @if (transactionDetails()!.createdByMe) {
                   <span class="badge badge-primary gap-1">
                     <i class="fas fa-user-check"></i>
-                    Me
+                    {{ 'transactionDetails.me' | translate }}
                   </span>
                 } @else {
                   <span class="badge badge-info gap-1">
                     <i class="fas fa-users"></i>
-                    Collaborator
+                    {{ 'transactionDetails.collaborator' | translate }}
                   </span>
                 }
               </div>
@@ -195,7 +229,9 @@
       <!-- Splits Section -->
       <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
         <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-          <h3 class="text-lg font-semibold text-base-content">Split Details</h3>
+          <h3 class="text-lg font-semibold text-base-content">
+            {{ 'transactionDetails.splitDetails' | translate }}
+          </h3>
         </header>
 
         <main class="p-6">
@@ -224,13 +260,13 @@
                       ></i>
                     </div>
                     <div>
-                      <p class="font-semibold text-base-content">{{ split.participantName }}</p>
+                      <p class="font-semibold text-base-content">{{ split.participantName | translate}}</p>
                       <div class="flex items-center gap-2 mt-1">
-                        <span class="text-xs text-base-content/60">{{ split.participantType }}</span>
+                        <span class="text-xs text-base-content/60">{{ split.participantType | translate}}</span>
                         @if (split.isPayer) {
                           <span class="badge badge-xs badge-success gap-1">
                             <i class="fas fa-check"></i>
-                            Paid
+                            {{ 'transactionDetails.paid' | translate }}
                           </span>
                         }
                       </div>
@@ -265,7 +301,9 @@
                 (click)="goBack()"
               >
                 <i class="fas fa-arrow-left text-primary"></i>
-                <span>Back</span>
+                <span>
+                  {{ 'transactionDetails.back' | translate }}
+                </span>
               </button>
   
               @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
@@ -276,7 +314,9 @@
                     (click)="addReimbursement()"
                   >
                     <i class="fas fa-undo text-warning"></i>
-                    <span>Reimburse</span>
+                    <span>
+                      {{ 'transactionDetails.reimburse' | translate }}
+                    </span>
                   </button>
                 }
                 <button
@@ -285,7 +325,9 @@
                   (click)="settleTransaction()"
                 >
                   <i class="fas fa-check text-success"></i>
-                  <span>Settle</span>
+                  <span>
+                    {{ 'transactionDetails.settle' | translate }}
+                  </span>
                 </button>
               }
               
@@ -309,7 +351,7 @@
           <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
             <h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
               <i class="fas fa-undo text-warning"></i>
-              Reimbursements
+              {{ 'transactionDetails.reimbursements' | translate }}
             </h3>
           </header>
 
@@ -348,7 +390,7 @@
                 (click)="goBack()"
               >
                 <i class="fas fa-arrow-left text-primary"></i>
-                <span>Back</span>
+                <span>{{ 'transactionDetails.back' | translate }}</span>
               </button>
 
               @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
@@ -359,7 +401,7 @@
                     (click)="addReimbursement()"
                   >
                     <i class="fas fa-undo text-warning"></i>
-                    <span>Reimburse</span>
+                    <span>{{ 'transactionDetails.reimburse' | translate }}</span>
                   </button>
                 }
                 <button
@@ -368,7 +410,7 @@
                   (click)="settleTransaction()"
                 >
                   <i class="fas fa-check text-success"></i>
-                  <span>Settle</span>
+                  <span>{{ 'transactionDetails.settle' | translate }}</span>
                 </button>
               }
               
@@ -394,7 +436,7 @@
           (click)="goBack()"
         >
           <i class="fas fa-arrow-left mr-2"></i>
-          Back
+          {{ 'transactionDetails.back' | translate }}
         </button>
 
         @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
@@ -406,7 +448,7 @@
                 (click)="addReimbursement()"
               >
                 <i class="fas fa-undo mr-2"></i>
-                Add Reimbursement
+                {{ 'transactions.addReimbursement' | translate }}
               </button>
             }
             <button
@@ -415,7 +457,7 @@
               (click)="settleTransaction()"
             >
               <i class="fas fa-check-double mr-2"></i>
-              Mark as Settled
+              {{ 'transactions.markAsSettled' | translate }}
             </button>
           </div>
         }
@@ -427,7 +469,7 @@
             (click)="deleteTransaction()"
           >
             <i class="fas fa-trash mr-2"></i>
-            Delete
+            {{ 'common.delete' | translate }}
           </button>
         }
       </footer>
@@ -438,11 +480,13 @@
         <figure class="mx-auto w-20 h-20 bg-base-200 dark:bg-base-300 rounded-full flex items-center justify-center mb-4">
           <i class="fas fa-exclamation-circle text-3xl text-error"></i>
         </figure>
-        <h3 class="text-lg font-semibold text-base-content mb-2">Transaction not found</h3>
-        <p class="text-base-content/70 mb-6">The transaction you're looking for doesn't exist or you don't have access to it.</p>
+        <h3 class="text-lg font-semibold text-base-content mb-2">{{ 'transactionDetails.notFound' | translate }}</h3>
+        <p class="text-base-content/70 mb-6">
+          {{ 'transactionDetails.notFoundMessage' | translate }}
+        </p>
         <button class="btn btn-primary" (click)="navigateToTransactions()">
           <i class="fas fa-arrow-left mr-2"></i>
-          Back to Transactions
+          {{ 'transactionDetails.backToTransactions' | translate }}
         </button>
       </div>
     }

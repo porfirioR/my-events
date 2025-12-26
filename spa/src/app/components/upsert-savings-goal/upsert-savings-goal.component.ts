@@ -1,5 +1,3 @@
-// src/app/components/upsert-savings-goal/upsert-savings-goal.component.ts
-
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   Component,
@@ -17,6 +15,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { startWith } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TextComponent } from '../inputs/text/text.component';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { DateInputComponent } from '../inputs/date-input/date-input.component';
@@ -50,6 +49,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    TranslateModule,
     TextComponent,
     SelectInputComponent,
     DateInputComponent,
@@ -61,6 +61,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
+  private translate = inject(TranslateService);
   
   private savingsStore = useSavingsStore();
   private currencyStore = useCurrencyStore();
@@ -149,7 +150,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     effect(() => {
       const currencies = this.currencyStore.getAllCurrencies();
       if (currencies.length > 0) {
-        this.currencyList = FormatterHelperService.convertToList(currencies, Configurations.Currencies);
+        this.currencyList = this.formatterService.convertToList(currencies, Configurations.Currencies);
         this.progressionTypeList = this.getProgressionTypeList();
       }
     });
@@ -219,11 +220,31 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   private getProgressionTypeList(): KeyValueViewModel[] {
     return [
-      new KeyValueViewModel(ProgressionType.Fixed, ProgressionTypeLabels[ProgressionType.Fixed], ProgressionTypeDescriptions[ProgressionType.Fixed]),
-      new KeyValueViewModel(ProgressionType.Ascending, ProgressionTypeLabels[ProgressionType.Ascending], ProgressionTypeDescriptions[ProgressionType.Ascending]),
-      new KeyValueViewModel(ProgressionType.Descending, ProgressionTypeLabels[ProgressionType.Descending], ProgressionTypeDescriptions[ProgressionType.Descending]),
-      new KeyValueViewModel(ProgressionType.Random, ProgressionTypeLabels[ProgressionType.Random], ProgressionTypeDescriptions[ProgressionType.Random]),
-      new KeyValueViewModel(ProgressionType.FreeForm, ProgressionTypeLabels[ProgressionType.FreeForm], ProgressionTypeDescriptions[ProgressionType.FreeForm])
+      new KeyValueViewModel(
+        ProgressionType.Fixed,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.Fixed]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.Fixed])
+      ),
+      new KeyValueViewModel(
+        ProgressionType.Ascending,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.Ascending]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.Ascending])
+      ),
+      new KeyValueViewModel(
+        ProgressionType.Descending,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.Descending]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.Descending])
+      ),
+      new KeyValueViewModel(
+        ProgressionType.Random,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.Random]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.Random])
+      ),
+      new KeyValueViewModel(
+        ProgressionType.FreeForm,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.FreeForm]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.FreeForm])
+      )
     ];
   }
 
@@ -371,7 +392,9 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.savingsStore.updateGoal(values.id!, request).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
-          this.alertService.showSuccess('Savings goal updated successfully');
+          this.alertService.showSuccess(
+            this.translate.instant('upsertSavingsGoal.goalUpdatedSuccess')
+          );
           this.exit();
         },
         error: (e) => {
@@ -397,13 +420,17 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.savingsStore.createGoal(request).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
-          this.alertService.showSuccess('Savings goal created successfully');
+          this.alertService.showSuccess(
+            this.translate.instant('upsertSavingsGoal.goalCreatedSuccess')
+          );
           this.exit();
         },
         error: (e) => {
           this.formGroup.enable();
           this.saving = false;
-          this.alertService.showError('Failed to create savings goal');
+          this.alertService.showError(
+            this.translate.instant('upsertSavingsGoal.goalCreatedError')
+          );
           throw e;
         }
       });
@@ -425,13 +452,13 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     switch(typeId) {
       case ProgressionType.Ascending:
-        return 'Each installment increases by this amount (Week 1: ₲1,000, Week 2: ₲2,000...)';
+        return this.translate.instant('upsertSavingsGoal.incrementDescAscending');
       case ProgressionType.Descending:
-        return 'Each installment decreases by this amount (starts high, ends low)';
+        return this.translate.instant('upsertSavingsGoal.incrementDescDescending');
       case ProgressionType.Random:
-        return 'Amounts are shuffled randomly based on this increment';
+        return this.translate.instant('upsertSavingsGoal.incrementDescRandom');
       default:
-        return 'Amount to increase/decrease per installment';
+        return this.translate.instant('upsertSavingsGoal.incrementDescDefault');
     }
   }
 
@@ -440,11 +467,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     switch(typeId) {
       case ProgressionType.Ascending:
-        return 'increasing';
+        return this.translate.instant('upsertSavingsGoal.increasing');
       case ProgressionType.Descending:
-        return 'decreasing';
+        return this.translate.instant('upsertSavingsGoal.decreasing');
       case ProgressionType.Random:
-        return 'random order';
+        return this.translate.instant('upsertSavingsGoal.randomOrder');
       default:
         return '';
     }

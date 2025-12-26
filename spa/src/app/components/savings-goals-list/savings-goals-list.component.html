@@ -3,7 +3,7 @@
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <h2 id="savings-goals-heading" class="text-xl font-semibold text-base-content">
-          Savings Goals
+          {{ 'savingsGoals.title' | translate }}
         </h2>
 
         <div class="flex items-center gap-2 flex-wrap">
@@ -15,7 +15,7 @@
               [ngClass]="{'btn-active': filterStatus() === null}"
               (click)="setStatusFilter(null)"
             >
-              All
+              {{ 'savingsGoals.all' | translate }}
             </button>
             <button 
               type="button"
@@ -24,7 +24,7 @@
               (click)="setStatusFilter(GoalStatus.Active)"
             >
               <i class="fas fa-clock-rotate-left mr-1"></i>
-              Active
+              {{ 'savingsGoals.active' | translate }}
             </button>
             <button 
               type="button"
@@ -33,7 +33,7 @@
               (click)="setStatusFilter(GoalStatus.Completed)"
             >
               <i class="fas fa-circle-check mr-1"></i>
-              Completed
+              {{ 'savingsGoals.completed' | translate }}
             </button>
           </div>
 
@@ -41,26 +41,26 @@
           <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-sm btn-outline">
               <i class="fas fa-filter mr-1"></i>
-              Type
+              {{ 'savingsGoals.type' | translate }}
             </label>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-52 border border-base-300">
               <li>
-                <button (click)="setProgressionTypeFilter(null)">All Types</button>
+                <button (click)="setProgressionTypeFilter(null)">{{ 'savingsGoals.allTypes' | translate }}</button>
               </li>
               <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Fixed)">Fixed</button>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Fixed)">{{ 'savingsGoals.fixed' | translate }}</button>
               </li>
               <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Ascending)">Ascending</button>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Ascending)">{{ 'savingsGoals.ascending' | translate }}</button>
               </li>
               <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Descending)">Descending</button>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Descending)">{{ 'savingsGoals.descending' | translate }}</button>
               </li>
               <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Random)">Random</button>
+                <button (click)="setProgressionTypeFilter(ProgressionType.Random)">{{ 'savingsGoals.random' | translate }}</button>
               </li>
               <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.FreeForm)">Free Form</button>
+                <button (click)="setProgressionTypeFilter(ProgressionType.FreeForm)">{{ 'savingsGoals.freeForm' | translate }}</button>
               </li>
             </ul>
           </div>
@@ -71,7 +71,7 @@
             (click)="create()"
           >
             <i class="fas fa-plus mr-1" aria-hidden="true"></i>
-            New Goal
+            {{ 'savingsGoals.newGoal' | translate }}
           </button>
         </div>
       </div>
@@ -81,7 +81,7 @@
       @if (isLoading()) {
         <div class="flex justify-center items-center py-12">
           <span class="loading loading-spinner loading-lg"></span>
-          <p class="ml-3 text-base-content/70">Loading savings goals...</p>
+          <p class="ml-3 text-base-content/70">{{ 'savingsGoals.loadingGoals' | translate }}</p>
         </div>
       } @else {
         <ul class="space-y-4" role="list">
@@ -123,7 +123,7 @@
                         <li>
                           <button (click)="viewDetail(goal)">
                             <i class="fas fa-eye text-info"></i>
-                            View Details
+                            {{ 'savingsGoals.viewDetails' | translate }}
                           </button>
                         </li>
 
@@ -132,14 +132,14 @@
                           <li>
                             <button (click)="editGoal(goal)">
                               <i class="fas fa-edit text-primary"></i>
-                              Edit
+                              {{ 'savingsGoals.edit' | translate }}
                             </button>
                           </li>
                           <li><hr class="my-1 border-base-300"></li>
                           <li>
                             <button (click)="deleteGoal(goal)">
                               <i class="fas fa-trash text-error"></i>
-                              Delete
+                              {{ 'savingsGoals.delete' | translate }}
                             </button>
                           </li>
                         } @else {
@@ -148,7 +148,7 @@
                           <li>
                             <span class="text-sm text-success font-medium px-2 py-1">
                               <i class="fas fa-check-circle mr-1"></i>
-                              Goal Completed
+                              {{ 'savingsGoals.goalCompleted' | translate }}
                             </span>
                           </li>
                         }
@@ -190,25 +190,25 @@
                         'badge-error': goal.statusId === GoalStatus.Cancelled
                       }">
                       <i [class]="'fas ' + getGoalStatusIcon(goal.statusId) + ' mr-1'"></i>
-                      {{ getGoalStatusLabel(goal.statusId) }}
+                      {{ getGoalStatusLabel(goal.statusId) | translate }}
                     </span>
 
                     <!-- Type Badge -->
                     <span class="badge badge-sm badge-outline flex items-baseline">
-                      {{ getProgressionTypeLabel(goal.progressionTypeId) }}
+                      {{ getProgressionTypeLabel(goal.progressionTypeId) | translate }}
                     </span>
 
                     <!-- Installments Info -->
                     @if (goal.numberOfInstallments) {
                       <span class="text-xs text-base-content/70">
                         <i class="fas fa-list-ol mr-1"></i>
-                        {{ goal.numberOfInstallments }} installments
+                        {{ goal.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
                       </span>
                     }
 
                     <!-- Date -->
                     <time class="text-xs text-base-content/60" [attr.datetime]="goal.startDate">
-                      Started {{ getFormattedDate(goal.startDate) }}
+                      {{ 'savingsGoals.started' | translate }} {{ getFormattedDate(goal.startDate) }}
                     </time>
                   </div>
                 </div>
@@ -220,12 +220,12 @@
                 <i class="fas fa-piggy-bank text-2xl text-base-content/50"></i>
               </figure>
               <h3 class="text-lg font-medium text-base-content mb-2">
-                No savings goals yet
+                {{ 'savingsGoals.noGoalsYet' | translate }}
               </h3>
-              <p class="text-base-content/70 mb-4">Start saving by creating your first goal</p>
+              <p class="text-base-content/70 mb-4">{{ 'savingsGoals.startSavingMessage' | translate }}</p>
               <button class="btn btn-primary" (click)="create()">
                 <i class="fas fa-plus mr-2"></i>
-                Create Goal
+                {{ 'savingsGoals.createGoal' | translate }}
               </button>
             </li>
           }

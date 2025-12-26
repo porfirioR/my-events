@@ -192,7 +192,7 @@
                 <button 
                   type="button"
                   [routerLink]="['savings/create']"
-                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-success hover:bg-success/90 rounded-lg transition-colors duration-200">
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors duration-200 cursor-pointer ">
                   <i class="fas fa-plus mr-2" aria-hidden="true"></i>
                   {{ 'dashboard.createYourFirstGoal' | translate }}
                 </button>
@@ -227,8 +227,8 @@
                 </a>
               </li>
               <li>
-                <a [routerLink]="['savings/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-success/10 hover:text-success rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-piggy-bank mr-3 text-success" aria-hidden="true"></i>
+                <a [routerLink]="['savings/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-primary/10 hover:text-primary rounded-lg transition-colors duration-200 cursor-pointer">
+                  <i class="fas fa-piggy-bank mr-3 text-primary" aria-hidden="true"></i>
                   <span>{{ 'dashboard.newSavingsGoal' | translate }}</span>
                 </a>
               </li>

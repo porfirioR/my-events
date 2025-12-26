@@ -4,8 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { CreateSavingsGoalApiRequest, MessageModel, SavingsGoalApiModel, UpdateSavingsGoalApiRequest } from '../models/api';
-import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel } from '../models/api/savings';
+import { CreateSavingsGoalApiRequest, MessageModel, SavingsGoalApiModel, UpdateSavingsGoalApiRequest } from '../../models/api';
+import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel } from '../../models/api/savings';
 
 @Injectable({
   providedIn: 'root'

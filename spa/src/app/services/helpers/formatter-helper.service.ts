@@ -12,13 +12,13 @@ export class FormatterHelperService {
   private currencyStore = useCurrencyStore();
   private translate = inject(TranslateService);
 
-  public static convertToList = (elements: BaseConfigurationApiModel[], configurationType: Configurations): KeyValueViewModel[] => elements.map(x => {
+  public convertToList = (elements: BaseConfigurationApiModel[], configurationType: Configurations): KeyValueViewModel[] => elements.map(x => {
     let moreData = ''
     let value = ''
     switch (configurationType) {
       case Configurations.Currencies:
         const currency = (x as CurrencyApiModel)
-        moreData = `Symbol: ${currency.symbol} - Country: ${currency.country}`
+        moreData = this.translate.instant('inputs.currency', {symbol: currency.symbol, country: currency.country})
         value = currency.name
         break;
       case Configurations.Periods:

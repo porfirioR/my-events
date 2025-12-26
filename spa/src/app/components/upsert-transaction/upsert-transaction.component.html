@@ -10,7 +10,7 @@
           <i class="fas fa-arrow-left" aria-hidden="true"></i>
         </button>
         <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
-          {{ isEditMode ? 'Edit Transaction' : 'New Transaction' }}
+          {{ isEditMode ? ('upsertTransaction.editTitle' | translate) : ('upsertTransaction.newTitle' | translate) }}
         </h1>
         <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="goBack()">
           <i class="fas fa-times"></i>
@@ -22,7 +22,7 @@
       <app-select-input
         formControlName="collaboratorId"
         id="collaboratorId"
-        label="Collaborator"
+        [label]="'upsertTransaction.collaborator' | translate"
         name="collaborator"
         [list]="linkedCollaborators()"
         [disabled]="isLoading()"
@@ -31,34 +31,45 @@
       <app-text
         formControlName="totalAmount"
         type="number"
-        label="Total Amount"
+        [label]="'upsertTransaction.totalAmount' | translate"
         id="totalAmount"
         name="totalAmount"
-        [description]="'Total transaction amount on invoice'"
+        [description]="'upsertTransaction.totalAmountDescription' | translate"
       />
       <app-text-area-input
         formControlName="description"
-        label="Description"
+        [label]="'upsertTransaction.description' | translate"
         id="description"
         name="description"
-        placeholder="Description"
+        [placeholder]="'upsertTransaction.descriptionPlaceholder' | translate"
       />
 
       <!-- Reimbursement Section -->
       <app-check-box-input
         formControlName="hasReimbursement"
         id="hasReimbursement"
-        [label]="'Add Reimbursement'"
+        [label]="'upsertTransaction.addReimbursement' | translate"
       />
 
       @if (formGroup.controls.hasReimbursement.value) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
-          <h3 class="text-lg font-semibold mb-3">Reimbursement Details</h3>
-          <app-text formControlName="amount" type="number" label="Amount" id="amount" name="amount" />
-          <app-text-area-input formControlName="description" label="Description" id="description" name="description" />
+          <h3 class="text-lg font-semibold mb-3">{{ 'upsertTransaction.reimbursementDetails' | translate }}</h3>
+          <app-text 
+            formControlName="amount" 
+            type="number" 
+            [label]="'upsertTransaction.amount' | translate"
+            id="amount" 
+            name="amount" 
+          />
+          <app-text-area-input 
+            formControlName="description" 
+            [label]="'upsertTransaction.description' | translate"
+            id="description" 
+            name="description" 
+          />
           <div class="alert alert-info alert-soft mt-3">
             <i class="fas fa-info-circle"></i>
-            <span>Net amount after reimbursement: {{ formatCurrency(calculateNetAmount()) }}</span>
+            <span>{{ 'upsertTransaction.netAmountAfterReimbursement' | translate: { amount: formatCurrency(calculateNetAmount()) } }}</span>
           </div>
         </div>
       }
@@ -67,7 +78,7 @@
       <section class="flex flex-col md:flex-row md:gap-4">
         <div class="form-control mb-4 md:flex-1">
           <label class="label">
-            <span class="label-text">Who Paid?</span>
+            <span class="label-text">{{ 'upsertTransaction.whoPaid' | translate }}</span>
           </label>
           <div class="btn-group w-full">
             <button 
@@ -77,7 +88,7 @@
               (click)="setWhoPaid(whoPaid.User)"
             >
               <i class="fas fa-user mr-2"></i>
-              I Paid
+              {{ 'upsertTransaction.iPaid' | translate }}
             </button>
             <button 
               type="button"
@@ -86,7 +97,7 @@
               (click)="setWhoPaid(whoPaid.Collaborator)"
             >
               <i class="fas fa-user-friends mr-2"></i>
-              They Paid
+              {{ 'upsertTransaction.theyPaid' | translate }}
             </button>
           </div>
         </div>
@@ -94,7 +105,7 @@
         <!-- Split Type -->
         <div class="form-control mb-4 md:flex-1">
           <label class="label">
-            <span class="label-text">Split Type</span>
+            <span class="label-text">{{ 'upsertTransaction.splitType' | translate }}</span>
           </label>
           <div class="btn-group w-full">
             <button 
@@ -104,7 +115,7 @@
               (click)="setSplitType(splitType.Equal)"
             >
               <i class="fas fa-equals mr-1"></i>
-              Equal
+              {{ 'upsertTransaction.equal' | translate }}
             </button>
             <button 
               type="button"
@@ -113,7 +124,7 @@
               (click)="setSplitType(splitType.Custom)"
             >
               <i class="fas fa-sliders-h mr-1"></i>
-              Custom
+              {{ 'upsertTransaction.custom' | translate }}
             </button>
             <button 
               type="button"
@@ -122,7 +133,7 @@
               (click)="setSplitType(splitType.Percentage)"
             >
               <i class="fas fa-percent mr-1"></i>
-              Percentage
+              {{ 'upsertTransaction.percentage' | translate }}
             </button>
           </div>
         </div>
@@ -131,14 +142,14 @@
       <!-- Split Details -->
       @if (formGroup.controls.totalAmount.value && formGroup.controls.totalAmount.value > 0) {
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
-          <h3 class="text-lg font-semibold mb-3">Split Details</h3>
+          <h3 class="text-lg font-semibold mb-3">{{ 'upsertTransaction.splitDetails' | translate }}</h3>
 
           <!-- Equal Split - Solo mostrar resultado -->
           @if (formGroup.value.splitType === splitType.Equal) {
             <div class="space-y-3">
               <div class="alert alert-info alert-soft">
                 <i class="fas fa-info-circle"></i>
-                <span class="text-sm">Amount will be split equally between both participants</span>
+                <span class="text-sm">{{ 'upsertTransaction.equalSplitInfo' | translate }}</span>
               </div>
             </div>
           }
@@ -151,9 +162,9 @@
                 <i class="fas fa-info-circle"></i>
                 <span>
                   @if (formGroup.value.whoPaid === whoPaid.User) {
-                    You paid the full amount. Enter how much each person should cover.
+                    {{ 'upsertTransaction.youPaidFullAmount' | translate }}
                   } @else {
-                    They paid the full amount. Enter how much each person should cover.
+                    {{ 'upsertTransaction.theyPaidFullAmount' | translate }}
                   }
                 </span>
               </div>
@@ -164,18 +175,18 @@
                     @if (formGroup.value.whoPaid === whoPaid.User) {
                       <i class="fas fa-arrow-left text-success mr-1"></i>
                       <i class="fas fa-user-friends text-primary mr-1"></i>
-                      Their portion of the expense:
+                      {{ 'upsertTransaction.theirPortionExpense' | translate }}
                     } @else {
                       <i class="fas fa-arrow-right text-error mr-1"></i>
                       <i class="fas fa-user text-primary mr-1"></i>
-                      Your portion of the expense:
+                      {{ 'upsertTransaction.yourPortionExpense' | translate }}
                     }
                   </span>
                   <span class="label-text-alt text-xs text-base-content/60">
                     @if (formGroup.value.whoPaid === whoPaid.User) {
-                      They will owe you this amount
+                      {{ 'upsertTransaction.theyWillOweYou' | translate }}
                     } @else {
-                      You will owe them this amount
+                      {{ 'upsertTransaction.youWillOweThem' | translate }}
                     }
                   </span>
                 </label>
@@ -187,7 +198,7 @@
                   [min]="0"
                   [max]="calculateNetAmount()"
                   [step]="1"
-                  placeholder="Enter amount"
+                  [placeholder]="'upsertTransaction.enterAmount' | translate"
                 >
               </div>
 
@@ -196,17 +207,17 @@
                   <span class="label-text font-medium">
                     @if (formGroup.value.whoPaid === whoPaid.User) {
                       <i class="fas fa-user text-primary mr-1"></i>
-                      Your portion of the expense:
+                      {{ 'upsertTransaction.yourPortionExpense' | translate }}
                     } @else {
                       <i class="fas fa-user-friends text-primary mr-1"></i>
-                      Their portion of the expense:
+                      {{ 'upsertTransaction.theirPortionExpense' | translate }}
                     }
                   </span>
                   <span class="label-text-alt text-xs text-base-content/60">
                     @if (formGroup.value.whoPaid === whoPaid.User) {
-                      Your share (already paid by you)
+                      {{ 'upsertTransaction.yourShareAlreadyPaid' | translate }}
                     } @else {
-                      Their share (already paid by them)
+                      {{ 'upsertTransaction.theirShareAlreadyPaid' | translate }}
                     }
                   </span>
                 </label>
@@ -218,7 +229,7 @@
                   [min]="0"
                   [max]="calculateNetAmount()"
                   [step]="1"
-                  placeholder="Enter amount"
+                  [placeholder]="'upsertTransaction.enterAmount' | translate"
                 >
               </div>
             </div>
@@ -232,9 +243,9 @@
                 <i class="fas fa-info-circle"></i>
                 <span>
                   @if (formGroup.value.whoPaid === whoPaid.User) {
-                    You paid the full amount. Enter the percentage each person should cover.
+                    {{ 'upsertTransaction.youPaidFullPercentage' | translate }}
                   } @else {
-                    They paid the full amount. Enter the percentage each person should cover.
+                    {{ 'upsertTransaction.theyPaidFullPercentage' | translate }}
                   }
                 </span>
               </div>
@@ -245,18 +256,18 @@
                     @if (formGroup.value.whoPaid === whoPaid.User) {
                       <i class="fas fa-arrow-left text-success mr-1"></i>
                       <i class="fas fa-user-friends text-primary mr-1"></i>
-                      Their portion of the expense (%):
+                      {{ 'upsertTransaction.theirPortionPercentage' | translate }}
                     } @else {
                       <i class="fas fa-arrow-right text-error mr-1"></i>
                       <i class="fas fa-user text-primary mr-1"></i>
-                      Your portion of the expense (%):
+                      {{ 'upsertTransaction.yourPortionPercentage' | translate }}
                     }
                   </span>
                   <span class="label-text-alt text-xs text-base-content/60">
                     @if (formGroup.value.whoPaid === whoPaid.User) {
-                      They will owe you this percentage
+                      {{ 'upsertTransaction.theyWillOwePercentage' | translate }}
                     } @else {
-                      You will owe them this percentage
+                      {{ 'upsertTransaction.youWillOwePercentage' | translate }}
                     }
                   </span>
                 </label>
@@ -280,17 +291,17 @@
                   <span class="label-text font-medium">
                     @if (formGroup.value.whoPaid === whoPaid.User) {
                       <i class="fas fa-user text-primary mr-1"></i>
-                      Your portion of the expense (%):
+                      {{ 'upsertTransaction.yourPortionPercentage' | translate }}
                     } @else {
                       <i class="fas fa-user-friends text-primary mr-1"></i>
-                      Their portion of the expense (%):
+                      {{ 'upsertTransaction.theirPortionPercentage' | translate }}
                     }
                   </span>
                   <span class="label-text-alt text-xs text-base-content/60">
                     @if (formGroup.value.whoPaid === whoPaid.User) {
-                      Your share (already paid by you)
+                      {{ 'upsertTransaction.yourShareAlreadyPaid' | translate }}
                     } @else {
-                      Their share (already paid by them)
+                      {{ 'upsertTransaction.theirShareAlreadyPaid' | translate }}
                     }
                   </span>
                 </label>
@@ -313,10 +324,10 @@
 
           <!-- Split Summary - Mejorado con información de deudas -->
           <div class="bg-base-200 dark:bg-base-300 rounded-lg p-4 mt-4">
-            <h4 class="text-sm font-semibold text-base-content/70 mb-3">Division Breakdown</h4>
+            <h4 class="text-sm font-semibold text-base-content/70 mb-3">{{ 'upsertTransaction.divisionBreakdown' | translate }}</h4>
             <div class="space-y-2 text-sm">
               <div class="flex justify-between items-center">
-                <span class="text-base-content/70">Your share:</span>
+                <span class="text-base-content/70">{{ 'upsertTransaction.yourShare' | translate }}</span>
                 <span class="font-semibold">
                   {{ formatCurrency(calculateMySplit()) }}
                   @if (formGroup.value.splitType === splitType.Percentage) {
@@ -325,7 +336,7 @@
                 </span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-base-content/70">Their share:</span>
+                <span class="text-base-content/70">{{ 'upsertTransaction.theirShare' | translate }}</span>
                 <span class="font-semibold">
                   {{ formatCurrency(calculateTheirSplit()) }}
                   @if (formGroup.value.splitType === splitType.Percentage) {
@@ -341,7 +352,7 @@
                 <div class="flex justify-between items-center">
                   <span class="text-base-content/70 flex items-center gap-1">
                     <i class="fas fa-arrow-right text-error text-xs"></i>
-                    You owe them:
+                    {{ 'upsertTransaction.youOweThem' | translate }}
                   </span>
                   <span class="font-bold" [class.text-error]="calculateMyDebt() > 0">
                     {{ formatCurrency(calculateMyDebt()) }}
@@ -350,7 +361,7 @@
                 <div class="flex justify-between items-center">
                   <span class="text-base-content/70 flex items-center gap-1">
                     <i class="fas fa-arrow-left text-success text-xs"></i>
-                    They owe you:
+                    {{ 'upsertTransaction.theyOweYou' | translate }}
                   </span>
                   <span class="font-bold" [class.text-success]="calculateTheirDebt() > 0">
                     {{ formatCurrency(calculateTheirDebt()) }}
@@ -361,7 +372,7 @@
               <div class="divider my-2"></div>
 
               <div class="flex justify-between items-center text-base font-bold">
-                <span>Net Balance:</span>
+                <span>{{ 'upsertTransaction.netBalance' | translate }}</span>
                 <span 
                   [class.text-error]="calculateNetBalance() < 0" 
                   [class.text-success]="calculateNetBalance() > 0"
@@ -380,25 +391,25 @@
         <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4">
           <h4 class="text-sm font-semibold text-base-content/70 mb-3 flex items-center gap-2">
             <i class="fas fa-receipt"></i>
-            Transaction Summary
+            {{ 'upsertTransaction.transactionSummary' | translate }}
           </h4>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
-              <span class="text-base-content/70">Total Amount:</span>
+              <span class="text-base-content/70">{{ 'upsertTransaction.totalAmount' | translate }}</span>
               <span class="font-semibold">{{ formatCurrency(formGroup.value.totalAmount || 0) }}</span>
             </div>
             @if (formGroup.value.hasReimbursement && formGroup.value.reimbursement?.amount) {
               <div class="flex justify-between text-warning">
                 <span>
                   <i class="fas fa-minus-circle mr-1"></i>
-                  Reimbursement:
+                  {{ 'upsertTransaction.reimbursement' | translate }}
                 </span>
                 <span class="font-semibold">-{{ formatCurrency(formGroup.value.reimbursement?.amount || 0) }}</span>
               </div>
             }
             <div class="divider my-1"></div>
             <div class="flex justify-between font-bold text-base">
-              <span>Amount to Split:</span>
+              <span>{{ 'upsertTransaction.amountToSplit' | translate }}</span>
               <span>{{ formatCurrency(calculateNetAmount()) }}</span>
             </div>
             
@@ -408,16 +419,16 @@
                 <div class="alert alert-success alert-soft py-2 text-xs">
                   <i class="fas fa-check-circle"></i>
                   <div class="flex flex-col">
-                    <span class="font-semibold">You paid {{ formatCurrency(formGroup.value.totalAmount || 0) }}</span>
-                    <span class="text-xs opacity-80">They owe you {{ formatCurrency(calculateTheirDebt()) }}</span>
+                    <span class="font-semibold">{{ 'upsertTransaction.youPaidAmount' | translate: { amount: formatCurrency(formGroup.value.totalAmount || 0) } }}</span>
+                    <span class="text-xs opacity-80">{{ 'upsertTransaction.theyOweYouAmount' | translate: { amount: formatCurrency(calculateTheirDebt()) } }}</span>
                   </div>
                 </div>
               } @else {
                 <div class="alert alert-warning alert-soft py-2 text-xs">
                   <i class="fas fa-exclamation-circle"></i>
                   <div class="flex flex-col">
-                    <span class="font-semibold">They paid {{ formatCurrency(formGroup.value.totalAmount || 0) }}</span>
-                    <span class="text-xs opacity-80">You owe them {{ formatCurrency(calculateMyDebt()) }}</span>
+                    <span class="font-semibold">{{ 'upsertTransaction.theyPaidAmount' | translate: { amount: formatCurrency(formGroup.value.totalAmount || 0) } }}</span>
+                    <span class="text-xs opacity-80">{{ 'upsertTransaction.youOweThemAmount' | translate: { amount: formatCurrency(calculateMyDebt()) } }}</span>
                   </div>
                 </div>
               }
@@ -443,7 +454,7 @@
           (click)="goBack()"
         >
           <i class="fas fa-arrow-left text-sm"></i>
-          Cancel
+          {{ 'upsertTransaction.cancel' | translate }}
         </button>
         @if (isSubmitting()) {
           <button
@@ -451,7 +462,7 @@
             class="btn btn-primary flex items-center gap-2 loading-btn"
           >
             <span class="loading loading-spinner loading-xs"></span>
-            Saving...
+            {{ 'upsertTransaction.saving' | translate }}
           </button>
         } @else {
           <button
@@ -462,7 +473,7 @@
             [class.btn-disabled]="formGroup.invalid || isSubmitting()"
           >
             <i class="fas fa-cloud-arrow-up text-sm"></i>
-            Save
+            {{ 'upsertTransaction.save' | translate }}
           </button>
         }
       </footer>

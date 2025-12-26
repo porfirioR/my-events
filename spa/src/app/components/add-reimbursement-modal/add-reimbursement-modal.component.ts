@@ -1,5 +1,6 @@
 import { Component, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ReimbursementFormGroup } from '../../models/forms';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
@@ -18,6 +19,7 @@ export interface ReimbursementModalData {
   styleUrls: ['./add-reimbursement-modal.component.css'],
   imports: [
     ReactiveFormsModule,
+    TranslateModule,
     TextComponent,
     TextAreaInputComponent,
   ]
@@ -25,6 +27,7 @@ export interface ReimbursementModalData {
 export class AddReimbursementModalComponent {
   @ViewChild('reimbursementModal', { static: true }) reimbursementModal!: ElementRef<HTMLDialogElement>
   private formatterService = inject(FormatterHelperService);
+  private translate = inject(TranslateService);
 
   // Signals para manejar el estado
   private isOpen = signal<boolean>(false);
@@ -129,13 +132,17 @@ export class AddReimbursementModalComponent {
   private handleSuccess(): void {
     this.isSubmitting.set(false);
     this.submitTimestamp.set(0);
-    this.alertService.showSuccess('Reimbursement added successfully');
+    this.alertService.showSuccess(
+      this.translate.instant('addReimbursementModal.reimbursementAddedSuccess')
+    );
     this.closed.emit(true);
     this.close();
   }
 
   private handleError(): void {
-    this.alertService.showError('Failed to add reimbursement');
+    this.alertService.showError(
+      this.translate.instant('addReimbursementModal.reimbursementAddedError')
+    );
     this.isSubmitting.set(false);
     this.submitTimestamp.set(0);
   }
