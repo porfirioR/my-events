@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
 
 export type Language = 'en' | 'es';
 
@@ -15,6 +16,7 @@ export interface LanguageOption {
 })
 export class TranslationService {
   private translate = inject(TranslateService);
+  private router = inject(Router);
   
   private readonly STORAGE_KEY = 'app-language';
   
@@ -79,6 +81,8 @@ export class TranslationService {
     this.translate.use(lang);
     localStorage.setItem(this.STORAGE_KEY, lang);
     document.documentElement.lang = lang;
+
+    this.refreshPageTitle();
   }
 
   /**
@@ -119,5 +123,23 @@ export class TranslationService {
     );
     const nextIndex = (currentIndex + 1) % this.availableLanguages.length;
     this.setLanguage(this.availableLanguages[nextIndex].code);
+  }
+
+  /**
+   * ✅ NUEVO: Refresca el título de la página navegando a la misma ruta
+   * Esto fuerza la actualización del título traducido
+   */
+  private refreshPageTitle(): void {
+    const currentUrl = this.router.url;
+    
+    // Solo refrescar si no estamos en una ruta de autenticación sin guard
+    // para evitar navegación innecesaria en login/signup
+    if (currentUrl === '/' || currentUrl === '') {
+      return;
+    }
+    
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigateByUrl(currentUrl);
+    });
   }
 }

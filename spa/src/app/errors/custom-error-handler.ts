@@ -1,5 +1,4 @@
-// errors/custom-error-handler.ts
-import { ErrorHandler, Injectable, inject } from '@angular/core';
+import { ErrorHandler, Injectable, inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AlertService, LocalService } from '../services';
@@ -9,12 +8,27 @@ import { useAuthStore } from '../store';
   providedIn: 'root'
 })
 export class CustomErrorHandler implements ErrorHandler {
-  private alertService = inject(AlertService);
-  private localService = inject(LocalService)
-  private router = inject(Router);
-  private translate = inject(TranslateService);
-  // ✅ Usar AuthStore en lugar de LocalService
-  private authStore = useAuthStore();
+  private injector = inject(Injector);
+
+  private get alertService(): AlertService {
+    return this.injector.get(AlertService);
+  }
+
+  private get localService(): LocalService {
+    return this.injector.get(LocalService);
+  }
+
+  private get router(): Router {
+    return this.injector.get(Router);
+  }
+
+  private get translate(): TranslateService {
+    return this.injector.get(TranslateService);
+  }
+
+  private get authStore() {
+    return useAuthStore();
+  }
 
   handleError(error: any): void {
     console.error('Global Error Handler:', error);
@@ -42,10 +56,10 @@ export class CustomErrorHandler implements ErrorHandler {
         } else if (error.message) {
           // ✅ Manejar JWT expirado con AuthStore
           if (error.message === 'Invalid Token') {
-            this.localService.cleanCredentials()
+            this.localService.cleanCredentials();
             this.authStore.logout();
             this.alertService.showError(this.translate.instant('auth.sessionExpired'));
-            localStorage.setItem('theme', 'light')
+            localStorage.setItem('theme', 'light');
             this.router.navigate(['/login']);
             return;
           }

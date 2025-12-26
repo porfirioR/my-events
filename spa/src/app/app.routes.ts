@@ -1,13 +1,9 @@
-// app.routes.ts
 import { Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
-import { MyEventsComponent } from './components/my-events/my-events.component';
 import { LoginComponent } from './components/login/login.component';
 import { SignupComponent } from './components/signup/signup.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
-import { UpsertEventComponent } from './components/upsert-event/upsert-event.component';
-import { eventResolver } from './resolvers/event.resolver';
 import { CollaboratorsComponent } from './components/collaborators/collaborators.component';
 import { UpsertCollaboratorComponent } from './components/upsert-collaborator/upsert-collaborator.component';
 import { authGuard } from './guards/auth.guard';
@@ -30,26 +26,6 @@ export const routes: Routes = [
         path: '',
         title: 'Principal',
         loadComponent: () => HomeComponent,
-        canActivate: [authGuard]
-      },
-      {
-        path: 'my-events',
-        title: 'My events',
-        loadComponent: () => MyEventsComponent,
-        canActivate: [authGuard]
-      },
-      {
-        path: 'create-event',
-        title: 'Create Event',
-        loadComponent: () => UpsertEventComponent,
-        resolve: { event: eventResolver },
-        canActivate: [authGuard]
-      },
-      {
-        path: 'my-events/update-event/:id',
-        title: 'Update Event',
-        loadComponent: () => UpsertEventComponent,
-        resolve: { event: eventResolver },
         canActivate: [authGuard]
       },
       {

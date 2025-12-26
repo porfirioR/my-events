@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -36,12 +36,6 @@ export class TransactionDetailsComponent implements OnInit {
   private transactionId: number = 0;
 
   constructor() {
-    effect(() => {
-      const details = this.transactionDetails();
-      if (details) {
-        console.log('Transaction Details:', details);
-      }
-    });
   }
 
   ngOnInit(): void {

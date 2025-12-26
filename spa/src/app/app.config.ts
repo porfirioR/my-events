@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideRouter } from '@angular/router';
+import { provideRouter, TitleStrategy } from '@angular/router';
 import { routes } from './app.routes';
 import { headerInterceptor } from './interceptors/header.interceptor';
 import { jwtInterceptor } from './interceptors/jwt.interceptor';
@@ -17,6 +17,7 @@ import { urlInterceptor } from './interceptors/url.interceptor';
 import { loadingInterceptor } from './interceptors/loading.interceptor';
 import { provideTranslateService } from '@ngx-translate/core';
 import {provideTranslateHttpLoader} from "@ngx-translate/http-loader";
+import { AppTitleStrategy } from './services';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -31,6 +32,7 @@ export const appConfig: ApplicationConfig = {
         urlInterceptor,
       ])
     ),
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
     {
       provide: ErrorHandler,
       useClass: CustomErrorHandler,
@@ -40,7 +42,7 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideTranslateService({
-      defaultLanguage: 'en',
+      fallbackLang: 'en',
       loader: provideTranslateHttpLoader({
         prefix: './assets/i18n/',
         suffix: '.json'
