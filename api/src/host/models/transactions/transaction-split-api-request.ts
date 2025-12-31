@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, Min, Max } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, Min, Max, IsBoolean } from 'class-validator';
 import { ParticipantType } from '../../../utility/enums';
 
 export class TransactionSplitApiRequest {
@@ -16,4 +16,7 @@ export class TransactionSplitApiRequest {
   @Min(0, { message: 'sharePercentage debe ser al menos 0' })
   @Max(100, { message: 'sharePercentage no puede exceder 100' })
   sharePercentage?: number;
+
+  @IsBoolean({ message: 'isPayer debe ser un booleano' })
+  isPayer: boolean;
 }

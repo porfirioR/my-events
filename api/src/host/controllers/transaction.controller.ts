@@ -40,15 +40,13 @@ export class TransactionController {
 
     // Mapear splits del API request al manager request
     const splits = apiRequest.splits.map((split) => {
-      const isPayer = this.determinePayer(split.participantType, apiRequest.whoPaid);
-
       return new TransactionSplitRequest(
         split.participantType,
         split.participantType === ParticipantType.User ? userId : null,
         split.participantType === ParticipantType.Collaborator ? apiRequest.collaboratorId : null,
         split.amount,
         split.sharePercentage || null,
-        isPayer,
+        split.isPayer
       );
     });
 
@@ -159,17 +157,5 @@ export class TransactionController {
   async getTransactionDetails(@Param('id', ParseIntPipe) id: number): Promise<TransactionDetailModel> {
     const userId = await this.currentUserService.getCurrentUserId();
     return await this.transactionManagerService.getTransactionDetail(id, userId);
-  }
-
-  // ========== Métodos Privados de Helpers ==========
-
-  private determinePayer(participantType: ParticipantType, whoPaid: WhoPaid): boolean {
-    if (whoPaid === WhoPaid.USER && participantType === ParticipantType.User) {
-      return true;
-    }
-    if (whoPaid === WhoPaid.COLLABORATOR && participantType === ParticipantType.Collaborator) {
-      return true;
-    }
-    return false;
   }
 }
