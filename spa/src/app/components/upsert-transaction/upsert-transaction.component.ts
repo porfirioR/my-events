@@ -355,17 +355,14 @@ export class UpsertTransactionComponent implements OnInit {
     }
 
     const formValue = this.formGroup.value;
-    const whoPaid = formValue.whoPaid;
-
-    // ✅ USAR LOS MÉTODOS CORREGIDOS: calculateMyDebt y calculateTheirDebt
-    const userDebtAmount = this.calculateMyDebt();
-    const collaboratorDebtAmount = this.calculateTheirDebt();
-
-    // Validar que las deudas sumen al netAmount
     const netAmount = this.calculateNetAmount();
-    const totalDebt = userDebtAmount + collaboratorDebtAmount;
-    
-    if (Math.abs(totalDebt - netAmount) > 0.01) {
+
+    const mySplit = this.calculateMySplit();
+    const theirSplit = this.calculateTheirSplit();
+
+    const totalSplits = mySplit + theirSplit;
+
+    if (Math.abs(totalSplits - netAmount) > 0.01) {
       this.errorMessage.set(
         this.translate.instant('upsertTransaction.debtAmountsError')
       );
@@ -375,19 +372,29 @@ export class UpsertTransactionComponent implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-    // Create splits con las DEUDAS correctas
-    const splits: TransactionSplitApiRequest[] = [
-      new TransactionSplitApiRequest(
-        ParticipantType.User,
-        userDebtAmount,  // ✅ Cuánto DEBO yo
-        this.formGroup.value.splitType === this.splitType.Percentage ? this.customUserAmount() : null
-      ),
-      new TransactionSplitApiRequest(
-        ParticipantType.Collaborator,
-        collaboratorDebtAmount,  // ✅ Cuánto me DEBEN ellos
-        this.formGroup.value.splitType === this.splitType.Percentage ? this.customCollaboratorAmount() : null
-      )
-    ];
+    // ✅ Determinar quién es el pagador (isPayer)
+    const userIsPayer = formValue.whoPaid === WhoPaid.User;
+    const collaboratorIsPayer = formValue.whoPaid === WhoPaid.Collaborator;
+
+    // ✅ Create splits con las PARTES correctas
+  const splits: TransactionSplitApiRequest[] = [
+    {
+      participantType: ParticipantType.User,
+      amount: mySplit,
+      isPayer: userIsPayer,
+      sharePercentage: this.formGroup.value.splitType === this.splitType.Percentage 
+        ? this.customUserAmount() 
+        : undefined
+    },
+    {
+      participantType: ParticipantType.Collaborator,
+      amount: theirSplit,
+      isPayer: collaboratorIsPayer,
+      sharePercentage: this.formGroup.value.splitType === this.splitType.Percentage 
+        ? this.customCollaboratorAmount() 
+        : undefined
+    }
+  ];
 
     // Create reimbursement if needed
     let reimbursement: ReimbursementApiRequest | null = null;
@@ -404,7 +411,7 @@ export class UpsertTransactionComponent implements OnInit {
       +formValue.totalAmount!,
       formValue.description!,
       formValue.splitType!,
-      whoPaid!,
+      formValue.whoPaid!,
       splits,
       reimbursement
     );

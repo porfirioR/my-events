@@ -142,7 +142,7 @@ export const TransactionStore = signalStore(
               patchState(store, { error: 'Failed to load transactions' });
               loadingStore.setLoadingFailed();
               console.error('Transaction loading error:', error);
-              return of(null);
+              throw new Error(error);
             })
           );
         })
@@ -168,7 +168,7 @@ export const TransactionStore = signalStore(
             patchState(store, { error: 'Failed to reload transactions' });
             loadingStore.setLoadingFailed();
             console.error('Transaction reload error:', error);
-            return of(null);
+            throw new Error(error);
           })
         ))
       )
@@ -190,7 +190,7 @@ export const TransactionStore = signalStore(
             patchState(store, { error: 'Failed to load transaction' });
             loadingStore.setLoadingFailed();
             console.error('Load transaction by ID error:', error);
-            return of(null);
+            throw new Error(error);
           })
         ))
       )
@@ -214,7 +214,7 @@ export const TransactionStore = signalStore(
           patchState(store, { error: 'Failed to create transaction' });
           loadingStore.setLoadingFailed();
           console.error('Create transaction error:', error);
-          return of(null);
+          throw new Error(error);
         })
       );
     },
@@ -241,7 +241,7 @@ export const TransactionStore = signalStore(
               patchState(store, { error: 'Failed to add reimbursement' });
               loadingStore.setLoadingFailed();
               console.error('Add reimbursement error:', error);
-              return of(null);
+              throw new Error(error);
             })
           )
         )
@@ -261,7 +261,7 @@ export const TransactionStore = signalStore(
             loadingStore.setLoadingSuccess();
             return of(null);
           }
-          
+
           return transactionApiService.getAllBalances().pipe(
             tap(balances => {
               patchState(store, { 
@@ -274,7 +274,7 @@ export const TransactionStore = signalStore(
               patchState(store, { error: 'Failed to load balances' });
               loadingStore.setLoadingFailed();
               console.error('Balance loading error:', error);
-              return of(null);
+              throw new Error(error);
             })
           );
         })
@@ -300,7 +300,7 @@ export const TransactionStore = signalStore(
             patchState(store, { error: 'Failed to reload balances' });
             loadingStore.setLoadingFailed();
             console.error('Balance reload error:', error);
-            return of(null);
+            throw new Error(error);
           })
         ))
       )
@@ -322,7 +322,7 @@ export const TransactionStore = signalStore(
             patchState(store, { error: 'Failed to load balance' });
             loadingStore.setLoadingFailed();
             console.error('Load balance with collaborator error:', error);
-            return of(null);
+            throw new Error(error);
           })
         ))
       )
@@ -345,7 +345,7 @@ export const TransactionStore = signalStore(
             patchState(store, { error: 'Failed to delete transaction' });
             loadingStore.setLoadingFailed();
             console.error('Delete transaction error:', error);
-            return of(null);
+            throw new Error(error);
           })
         ))
       )
@@ -372,7 +372,7 @@ export const TransactionStore = signalStore(
             patchState(store, { error: 'Failed to settle transaction' });
             loadingStore.setLoadingFailed();
             console.error('Settle transaction error:', error);
-            return of(null);
+            throw new Error(error);
           })
         ))
       )
@@ -394,7 +394,7 @@ export const TransactionStore = signalStore(
             patchState(store, { error: 'Failed to load transaction details' });
             loadingStore.setLoadingFailed();
             console.error('Load transaction details error:', error);
-            return of(null);
+            throw new Error(error);
           })
         ))
       )
