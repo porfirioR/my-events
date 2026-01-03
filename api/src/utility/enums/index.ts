@@ -9,3 +9,4 @@ export { ProgressionType } from './progression-type.enum';
 export { TravelStatus } from './travel-status.enum';
 export { TravelOperationStatus } from './travel-operation-status.enum';
 export { TravelSplitType } from './travel-split-type.enum';
+export { ApprovalStatus } from './approval-status.enum';
