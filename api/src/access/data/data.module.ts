@@ -38,6 +38,12 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     SavingsGoalAccessService,
     SavingsInstallmentAccessService,
     SavingsDepositAccessService,
+    PaymentMethodAccessService,
+    TravelAccessService,
+    TravelMemberAccessService,
+    TravelOperationAccessService,
+    TravelOperationParticipantAccessService,
+    TravelOperationApprovalAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,

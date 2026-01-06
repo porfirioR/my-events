@@ -33,9 +33,7 @@ export class TravelOperationApprovalAccessService
     return this.mapEntityToAccessModel(data);
   };
 
-  public createMultiple = async (
-    requests: CreateApprovalAccessRequest[],
-  ): Promise<TravelOperationApprovalAccessModel[]> => {
+  public createMultiple = async (requests: CreateApprovalAccessRequest[]): Promise<TravelOperationApprovalAccessModel[]> => {
     const entities = requests.map(this.mapRequestToEntity);
 
     const { data, error } = await this.dbContext
@@ -204,10 +202,10 @@ export class TravelOperationApprovalAccessService
   // Private methods
   private mapEntityToAccessModel = (entity: TravelOperationApprovalEntity): TravelOperationApprovalAccessModel => {
     return new TravelOperationApprovalAccessModel(
-      entity.id!,
       entity.operationid,
       entity.memberid,
       entity.status,
+      entity.id!,
       entity.approvaldate ? new Date(entity.approvaldate) : null,
       entity.rejectionreason || null,
     );

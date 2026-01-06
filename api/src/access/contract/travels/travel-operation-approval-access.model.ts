@@ -1,10 +1,10 @@
 export class TravelOperationApprovalAccessModel {
   constructor(
-    public id: number,
     public operationId: number,
     public memberId: number,
     public status: string,
-    public approvalDate: Date | null,
-    public rejectionReason: string | null,
+    public id: number | null = null,
+    public approvalDate: Date | null = null,
+    public rejectionReason: string | null = null,
   ) {}
 }
