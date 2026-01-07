@@ -1,0 +1,175 @@
+<section aria-labelledby="travels-heading" class="mb-8">
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
+    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <h2 id="travels-heading" class="text-xl font-semibold text-base-content">
+          {{ 'travels.title' | translate }}
+        </h2>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Filtro por Estado -->
+          <div class="btn-group">
+            <button 
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === null}"
+              (click)="setStatusFilter(null)"
+            >
+              {{ 'travels.all' | translate }}
+            </button>
+            <button 
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === 'Active'}"
+              (click)="setStatusFilter('Active')"
+            >
+              <i class="fas fa-plane-departure mr-1"></i>
+              {{ 'travels.active' | translate }}
+            </button>
+            <button 
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === 'Finalized'}"
+              (click)="setStatusFilter('Finalized')"
+            >
+              <i class="fas fa-check-circle mr-1"></i>
+              {{ 'travels.finalized' | translate }}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            (click)="create()"
+          >
+            <i class="fas fa-plus mr-1" aria-hidden="true"></i>
+            {{ 'travels.newTravel' | translate }}
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-6">
+      @if (isLoading()) {
+        <div class="flex justify-center items-center py-12">
+          <span class="loading loading-spinner loading-lg"></span>
+          <p class="ml-3 text-base-content/70">{{ 'travels.loadingTravels' | translate }}</p>
+        </div>
+      } @else {
+        <ul class="space-y-4" role="list">
+          @for (travel of travels(); track travel.id) {
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
+                (click)="viewDetail(travel)">
+              <article class="flex items-start gap-4">
+                <!-- Icon -->
+                <figure class="flex-shrink-0">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md"
+                    [ngClass]="{
+                      'bg-success': travel.status === 'Active',
+                      'bg-info': travel.status === 'Finalized'
+                    }">
+                    <i [class]="'fas ' + getTravelStatusIcon(travel.status)"></i>
+                  </div>
+                </figure>
+
+                <!-- Content -->
+                <div class="flex-grow min-w-0">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-grow">
+                      <h3 class="font-semibold text-base-content text-lg">
+                        {{ travel.name }}
+                      </h3>
+                      @if (travel.description) {
+                        <p class="text-sm text-base-content/70 mt-1">{{ travel.description }}</p>
+                      }
+                    </div>
+
+                    <!-- Actions Menu -->
+                    <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
+                      <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </label>
+                      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
+                        <li>
+                          <button (click)="viewDetail(travel)">
+                            <i class="fas fa-eye text-info"></i>
+                            {{ 'travels.viewDetails' | translate }}
+                          </button>
+                        </li>
+
+                        @if (travel.status === 'Active') {
+                          <li>
+                            <button (click)="editTravel(travel)">
+                              <i class="fas fa-edit text-primary"></i>
+                              {{ 'travels.edit' | translate }}
+                            </button>
+                          </li>
+                          <li>
+                            <button (click)="finalizeTravel(travel)">
+                              <i class="fas fa-flag-checkered text-success"></i>
+                              {{ 'travels.finalize' | translate }}
+                            </button>
+                          </li>
+                        }
+
+                        @if (travel.status === 'Finalized') {
+                          <li><hr class="my-1 border-base-300"></li>
+                          <li>
+                            <button (click)="deleteTravel(travel)">
+                              <i class="fas fa-trash text-error"></i>
+                              {{ 'travels.delete' | translate }}
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- Metadata -->
+                  <div class="flex items-center gap-4 mt-3 flex-wrap">
+                    <!-- Status Badge -->
+                    <span class="badge badge-sm badge-outline flex items-baseline"
+                      [ngClass]="getTravelStatusBadgeClass(travel.status)">
+                      <i [class]="'fas ' + getTravelStatusIcon(travel.status) + ' mr-1'"></i>
+                      {{ 'travels.' + travel.status.toLowerCase() | translate }}
+                    </span>
+
+                    <!-- Dates -->
+                    @if (travel.startDate) {
+                      <span class="text-xs text-base-content/70">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        {{ getFormattedDate(travel.startDate) }}
+                        @if (travel.endDate) {
+                          - {{ getFormattedDate(travel.endDate) }}
+                        }
+                      </span>
+                    }
+
+                    <!-- Created Date -->
+                    <time class="text-xs text-base-content/60" [attr.datetime]="travel.dateCreated">
+                      {{ 'travels.created' | translate }} {{ getFormattedDate(travel.dateCreated) }}
+                    </time>
+                  </div>
+                </div>
+              </article>
+            </li>
+          } @empty {
+            <li class="text-center py-12">
+              <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-suitcase-rolling text-2xl text-base-content/50"></i>
+              </figure>
+              <h3 class="text-lg font-medium text-base-content mb-2">
+                {{ 'travels.noTravelsYet' | translate }}
+              </h3>
+              <p class="text-base-content/70 mb-4">{{ 'travels.startTrackingMessage' | translate }}</p>
+              <button class="btn btn-primary" (click)="create()">
+                <i class="fas fa-plus mr-2"></i>
+                {{ 'travels.createTravel' | translate }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </article>
+</section>

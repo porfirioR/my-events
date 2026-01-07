@@ -5,6 +5,7 @@ import {
   useCollaboratorStore,
   useSavingsStore,
   useTransactionStore,
+  useTravelStore,
 } from '../../store';
 import { FormatterHelperService } from '../../services';
 
@@ -22,6 +23,7 @@ export class DashboardComponent {
   private collaboratorStore = useCollaboratorStore();
   private transactionStore = useTransactionStore();
   private savingsStore = useSavingsStore();
+  private travelStore = useTravelStore();
   private formatterService = inject(FormatterHelperService);
 
   unsettledTransactions = this.transactionStore.unsettledTransactions;
@@ -40,6 +42,15 @@ export class DashboardComponent {
       completed: goals.filter((x) => x.statusId === 2).length,
       paused: goals.filter((x) => x.statusId === 3).length,
       cancelled: goals.filter((x) => x.statusId === 4).length,
+    };
+  });
+
+  protected travelStats = computed(() => {
+    const travels = this.travelStore.travels();
+    return {
+      total: travels.length,
+      active: travels.filter((x) => x.status === 'Active').length,
+      finalized: travels.filter((x) => x.status === 'Finalized').length,
     };
   });
 

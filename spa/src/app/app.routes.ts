@@ -26,7 +26,7 @@ export const routes: Routes = [
         path: '',
         title: 'Principal',
         loadComponent: () => HomeComponent,
-        canActivate: [authGuard]
+        canActivate: [authGuard],
       },
       {
         path: 'savings',
@@ -35,66 +35,66 @@ export const routes: Routes = [
           {
             path: '',
             title: 'Savings Goals',
-            loadComponent: () => SavingsGoalsListComponent
+            loadComponent: () => SavingsGoalsListComponent,
           },
           {
             path: 'create',
             title: 'Create Savings Goal',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertSavingsGoalComponent
+            loadComponent: () => UpsertSavingsGoalComponent,
           },
           {
             path: ':id',
             title: 'Savings Goal Detail',
-            loadComponent: () => SavingsGoalDetailComponent
+            loadComponent: () => SavingsGoalDetailComponent,
           },
           {
             path: ':id/edit',
             title: 'Edit Savings Goal',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertSavingsGoalComponent
-          }
-        ]
+            loadComponent: () => UpsertSavingsGoalComponent,
+          },
+        ],
       },
       // Collaborators
       {
         path: 'collaborators',
         title: 'Collaborators',
         loadComponent: () => CollaboratorsComponent,
-        canActivate: [authGuard]
+        canActivate: [authGuard],
       },
       {
         path: 'collaborators/create',
         title: 'Add Collaborator',
         canDeactivate: [WarningUnsavedChanges],
         loadComponent: () => UpsertCollaboratorComponent,
-        canActivate: [authGuard]
+        canActivate: [authGuard],
       },
       {
         path: 'collaborators/edit/:id',
         title: 'Edit Collaborator',
         canDeactivate: [WarningUnsavedChanges],
         loadComponent: () => UpsertCollaboratorComponent,
-        canActivate: [authGuard]
+        canActivate: [authGuard],
       },
       {
         path: 'collaborators/match-requests',
         title: 'Match Requests',
         canDeactivate: [WarningUnsavedChanges],
         loadComponent: () => CollaboratorMatchRequestsComponent,
-        canActivate: [authGuard]
+        canActivate: [authGuard],
       },
       {
         path: 'collaborators/invitations',
         title: 'Invitations Summary',
         loadComponent: () => CollaboratorInvitationsComponent,
-        canActivate: [authGuard]
+        canActivate: [authGuard],
       },
       {
         path: 'collaborators/:collaboratorId/invitations',
         title: 'Collaborator Invitations',
         loadComponent: () => CollaboratorInvitationsComponent,
-        canActivate: [authGuard]
+        canActivate: [authGuard],
       },
       {
         path: 'transactions',
@@ -103,25 +103,37 @@ export const routes: Routes = [
           {
             path: '',
             title: 'Transactions',
-            loadComponent: () => import('./components/transactions/transactions.component').then(x => x.TransactionsComponent)
+            loadComponent: () =>
+              import('./components/transactions/transactions.component').then(
+                (x) => x.TransactionsComponent
+              ),
           },
           {
             path: 'new',
             title: 'New Transaction',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => import('./components/upsert-transaction/upsert-transaction.component').then(x => x.UpsertTransactionComponent)
+            loadComponent: () =>
+              import(
+                './components/upsert-transaction/upsert-transaction.component'
+              ).then((x) => x.UpsertTransactionComponent),
           },
           {
             path: 'balances',
             title: 'Balances',
-            loadComponent: () => import('./components/balances/balances.component').then(x => x.BalancesComponent)
+            loadComponent: () =>
+              import('./components/balances/balances.component').then(
+                (x) => x.BalancesComponent
+              ),
           },
           {
             path: ':id',
             title: 'Transaction Details',
-            loadComponent: () => import('./components/transaction-details/transaction-details.component').then(x => x.TransactionDetailsComponent)
-          }
-        ]
+            loadComponent: () =>
+              import(
+                './components/transaction-details/transaction-details.component'
+              ).then((x) => x.TransactionDetailsComponent),
+          },
+        ],
       },
       // Opcional: Si creas el componente de stats
       // {
@@ -130,41 +142,105 @@ export const routes: Routes = [
       //   loadComponent: () => import('./components/collaborators/collaborator-stats.component').then(m => m.CollaboratorStatsComponent),
       //   canActivate: [authGuard]
       // },
-      
-      
-    ]
+      {
+        path: 'travels',
+        canActivate: [authGuard],
+        children: [
+          {
+            path: '',
+            title: 'Travels',
+            loadComponent: () =>
+              import('./components/travels-list/travels-list.component').then(
+                (x) => x.TravelsListComponent
+              ),
+          },
+          {
+            path: 'create',
+            title: 'Create Travel',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () =>
+              import('./components/upsert-travel/upsert-travel.component').then(
+                (x) => x.UpsertTravelComponent
+              ),
+          },
+          {
+            path: ':id',
+            title: 'Travel Detail',
+            loadComponent: () =>
+              import('./components/travel-detail/travel-detail.component').then(
+                (x) => x.TravelDetailComponent
+              ),
+          },
+          {
+            path: ':id/edit',
+            title: 'Edit Travel',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () =>
+              import('./components/upsert-travel/upsert-travel.component').then(
+                (x) => x.UpsertTravelComponent
+              ),
+          },
+          // {
+          //   path: ':travelId/operations/create',
+          //   title: 'New Operation',
+          //   canDeactivate: [WarningUnsavedChanges],
+          //   loadComponent: () =>
+          //     import(
+          //       './components/upsert-operation/upsert-operation.component'
+          //     ).then((x) => x.UpsertOperationComponent),
+          // },
+          // {
+          //   path: ':travelId/operations/:operationId',
+          //   title: 'Operation Detail',
+          //   loadComponent: () =>
+          //     import(
+          //       './components/operation-detail/operation-detail.component'
+          //     ).then((x) => x.OperationDetailComponent),
+          // },
+          // {
+          //   path: ':travelId/operations/:operationId/edit',
+          //   title: 'Edit Operation',
+          //   canDeactivate: [WarningUnsavedChanges],
+          //   loadComponent: () =>
+          //     import(
+          //       './components/upsert-operation/upsert-operation.component'
+          //     ).then((x) => x.UpsertOperationComponent),
+          // },
+        ],
+      },
+    ],
   },
   // Rutas de autenticación (guest)
   {
     path: 'login',
     title: 'Login',
     loadComponent: () => LoginComponent,
-    canActivate: [guestGuard]
+    canActivate: [guestGuard],
   },
   {
     path: 'signup',
     title: 'Signup',
     loadComponent: () => SignupComponent,
-    canActivate: [guestGuard]
+    canActivate: [guestGuard],
   },
   {
     path: 'forgot-password',
     title: 'Forgot password',
     loadComponent: () => ForgotPasswordComponent,
-    canActivate: [guestGuard]
+    canActivate: [guestGuard],
   },
   {
     path: 'reset-password',
     title: 'Reset password',
     loadComponent: () => ResetPasswordComponent,
-    canActivate: [guestGuard]
+    canActivate: [guestGuard],
   },
-  { 
+  {
     path: 'verify-email',
-    loadComponent: () => VerifyEmailComponent
+    loadComponent: () => VerifyEmailComponent,
   },
-  { 
+  {
     path: 'verify-email-pending',
-    loadComponent: () => VerifyEmailPendingComponent
+    loadComponent: () => VerifyEmailPendingComponent,
   },
 ];

@@ -35,6 +35,12 @@
             </a>
           </li>
           <li>
+            <a routerLink="/travels" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
+              <i class="fas fa-suitcase-rolling "></i>
+              <span>{{ 'common.travels' | translate }}</span>
+            </a>
+          </li>
+          <li>
             <a [routerLink]="['events']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
               <i class="fas fa-calendar mr-2"></i>Events
             </a>

@@ -87,7 +87,7 @@ export class TravelManagerService {
     const accessModel = await this.travelAccessService.create(accessRequest);
 
     // Agregar al creador como primer miembro del viaje
-    const creatorCollaborator = await this.collaboratorAccessService.getById(0, request.userId); // Necesitamos un colaborador del usuario creador
+    // const creatorCollaborator = await this.collaboratorAccessService.getById(0, request.userId); // Necesitamos un colaborador del usuario creador
     // TODO: Determinar cómo obtener el collaboratorId del usuario creador
 
     return this.mapTravelAccessToModel(accessModel);
