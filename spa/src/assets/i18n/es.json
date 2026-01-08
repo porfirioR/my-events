@@ -338,6 +338,44 @@
     "requestAcceptedSuccess": "¡Solicitud aceptada exitosamente!",
     "needInternalCollaborator": "Necesitas crear un colaborador interno primero para aceptar esta invitación.",
     "failedToLoadData": "Error al cargar los datos"
+  },"operations": {
+    "newTitle": "Nueva Operación",
+    "editTitle": "Editar Operación",
+    "currency": "Moneda",
+    "paymentMethod": "Método de Pago",
+    "amount": "Monto",
+    "enterAmount": "Ingresá el monto",
+    "transactionDate": "Fecha de Transacción",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Ej., Cena en restaurante, Nafta para el auto",
+    "whoPaid": "¿Quién Pagó?",
+    "splitType": "Tipo de División",
+    "equal": "Equitativo",
+    "custom": "Personalizado",
+    "percentage": "Porcentaje",
+    "selectParticipants": "Seleccionar Participantes",
+    "noMembersAvailable": "No hay miembros disponibles",
+    "backToTravel": "Volver al Viaje",
+    "participantsRequired": "Selecciona al menos un participante",
+    "splitSummary": "Resumen de División",
+    "totalAmount": "Monto Total",
+    "participants": "Participantes",
+    "perPerson": "Por Persona",
+    "operationCreatedSuccess": "Operación creada exitosamente",
+    "operationCreatedError": "Error al crear la operación",
+    "operationUpdatedSuccess": "Operación actualizada exitosamente",
+    "operationUpdatedError": "Error al actualizar la operación",
+    "operationDetails": "Detalles de la Operación",
+    "unknownMember": "Miembro desconocido",
+    "createdDate": "Creada",
+    "splitCalculation": "Cálculo de División",
+    "status": "Estado",
+    "pendingApprovalMessage": "Esperando aprobación de todos los participantes",
+    "approvedMessage": "Esta operación ha sido aprobada",
+    "rejectedMessage": "Esta operación ha sido rechazada",
+    "approvals": "Aprobaciones",
+    "quickActions": "Acciones Rápidas",
+    "operationNotFound": "Operación no encontrada"
   },
   "inputs": {
     "selectOption": "Selecciona un {{label}}",
@@ -566,7 +604,10 @@
     "Travels": "Viajes",
     "Create Travel": "Crear Viaje",
     "Travel Detail": "Detalle del Viaje",
-    "Edit Travel": "Editar Viaje"
+    "Edit Travel": "Editar Viaje",
+    "New Operation": "Nueva Operación",
+    "Operation Detail": "Detalle de Operación",
+    "Edit Operation": "Editar Operación"
   },
   "travels": {
     "title": "Viajes",
@@ -668,5 +709,8 @@
   "Amounts decrease by a fixed increment": "Las cantidades disminuyen en un incremento fijo",
   "Amounts are shuffled randomly": "Las cantidades se barajan aleatoriamente",
   "No predefined installments, deposit freely": "Sin cuotas predefinidas, deposita libremente",
-  "Invitation resent successfully": "Invitación reenviada correctamente"
+  "Invitation resent successfully": "Invitación reenviada correctamente",
+  "Bank":"Banco",
+  "Cash":"Efectivo",
+  "Card":"Tarjeta"
 }

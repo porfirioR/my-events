@@ -53,7 +53,7 @@ const initialState: TravelState = {
 export const TravelStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  
+
   withComputed((store) => ({
     // Viajes activos
     activeTravels: computed(() =>
@@ -349,7 +349,7 @@ export const TravelStore = signalStore(
     addMember: (travelId: number, request: AddTravelMemberApiRequest) => {
       loadingStore.setLoading();
       patchState(store, { error: null });
-      
+
       return travelApiService.addTravelMember(travelId, request).pipe(
         tap(member => {
           const currentMembers = store.members();
@@ -412,6 +412,22 @@ export const TravelStore = signalStore(
       )
     ),
 
+    loadOperationById: (operationId: number) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+      
+      return travelApiService.getTravelOperationById(operationId).pipe(
+        tap(() => {
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to load operation' });
+          console.error('Load operation error:', error);
+          throw new Error(error);
+        })
+      );
+    },
+
     createOperation: (travelId: number, request: CreateTravelOperationApiRequest) => {
       loadingStore.setLoading();
       patchState(store, { error: null });
@@ -435,11 +451,11 @@ export const TravelStore = signalStore(
     updateOperation: (travelId: number, operationId: number, request: UpdateTravelOperationApiRequest) => {
       loadingStore.setLoading();
       patchState(store, { error: null });
-      
+
       return travelApiService.updateTravelOperation(travelId, operationId, request).pipe(
         tap(updatedOperation => {
-          const updatedOperations = store.operations().map(o =>
-            o.id === operationId ? updatedOperation : o
+          const updatedOperations = store.operations().map(x =>
+            x.id === operationId ? updatedOperation : x
           );
           patchState(store, { operations: updatedOperations });
           loadingStore.setLoadingSuccess();

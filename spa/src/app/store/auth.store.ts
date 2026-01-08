@@ -1,7 +1,7 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
 import { useCurrencyStore } from './currency.store';
-import { useCollaboratorStore, useSavingsStore, useTransactionStore } from '.';
+import { useCollaboratorStore, useSavingsStore, useTransactionStore, useTravelStore } from '.';
 
 export interface AuthState {
   userId: number | null;
@@ -38,6 +38,7 @@ export const AuthStore = signalStore(
     collaboratorStore = useCollaboratorStore(),
     transactionStore = useTransactionStore(),
     savingsStore = useSavingsStore(),
+    travelStore = useTravelStore(),
   ) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
     
@@ -57,6 +58,7 @@ export const AuthStore = signalStore(
       collaboratorStore.loadCollaborators();
       transactionStore.loadTransactions();
       savingsStore.loadGoals();
+      travelStore.loadTravels();
     },
 
     loginFailure: (error: string) => patchState(store, {
@@ -103,11 +105,11 @@ export const AuthStore = signalStore(
         isEmailVerified
       });
 
-      // ✅ Cargar currencies al restaurar sesión
       currencyStore.loadCurrencies();
       collaboratorStore.loadCollaborators();
       transactionStore.loadTransactions();
       savingsStore.loadGoals();
+      travelStore.loadTravels();
     },
 
     clearError: () => patchState(store, { error: null })

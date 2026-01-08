@@ -43,11 +43,12 @@ export class UpsertTravelComponent implements OnInit {
   protected isLoading = this.loadingStore.isLoading;
   protected selectedTravel = this.travelStore.selectedTravel;
 
-  public formGroup: FormGroup<TravelFormGroup>;
-  public ignorePreventUnsavedChanges = false;
   protected isEditMode = false;
   protected travel?: TravelApiModel;
   protected currencyList: KeyValueViewModel[] = [];
+
+  public formGroup: FormGroup<TravelFormGroup>;
+  public ignorePreventUnsavedChanges = false;
 
   constructor() {
     const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd', 'UTC') as string;

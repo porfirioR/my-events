@@ -338,6 +338,45 @@
     "needInternalCollaborator": "You need to create an internal collaborator first to accept this invitation.",
     "failedToLoadData": "Failed to load data"
   },
+  "operations": {
+    "newTitle": "New Operation",
+    "editTitle": "Edit Operation",
+    "currency": "Currency",
+    "paymentMethod": "Payment Method",
+    "amount": "Amount",
+    "enterAmount": "Enter amount",
+    "transactionDate": "Transaction Date",
+    "description": "Description",
+    "descriptionPlaceholder": "E.g., Dinner at restaurant, Gas for car",
+    "whoPaid": "Who Paid?",
+    "splitType": "Split Type",
+    "equal": "Equal",
+    "custom": "Custom",
+    "percentage": "Percentage",
+    "selectParticipants": "Select Participants",
+    "noMembersAvailable": "No members available",
+    "backToTravel": "Back to Travel",
+    "participantsRequired": "Select at least one participant",
+    "splitSummary": "Split Summary",
+    "totalAmount": "Total Amount",
+    "participants": "Participants",
+    "perPerson": "Per Person",
+    "operationCreatedSuccess": "Operation created successfully",
+    "operationCreatedError": "Failed to create operation",
+    "operationUpdatedSuccess": "Operation updated successfully",
+    "operationUpdatedError": "Failed to update operation",
+    "operationDetails": "Operation Details",
+    "unknownMember": "Unknown member",
+    "createdDate": "Created",
+    "splitCalculation": "Split Calculation",
+    "status": "Status",
+    "pendingApprovalMessage": "Waiting for approval from all participants",
+    "approvedMessage": "This operation has been approved",
+    "rejectedMessage": "This operation has been rejected",
+    "approvals": "Approvals",
+    "quickActions": "Quick Actions",
+    "operationNotFound": "Operation not found"
+  },
   "inputs": {
     "selectOption": "Select on {{label}}",
     "yes":"Yes",
@@ -565,7 +604,10 @@
     "Travels": "Travels",
     "Create Travel": "Create Travel",
     "Travel Detail": "Travel Detail",
-    "Edit Travel": "Edit Travel"
+    "Edit Travel": "Edit Travel",
+    "New Operation": "New Operation",
+    "Operation Detail": "Operation Detail",
+    "Edit Operation": "Edit Operation"
   },
   "travels": {
     "title": "Travels",
@@ -667,5 +709,8 @@
   "Amounts decrease by a fixed increment": "Amounts decrease by a fixed increment",
   "Amounts are shuffled randomly": "Amounts are shuffled randomly",
   "No predefined installments, deposit freely": "No predefined installments, deposit freely",
-  "Invitation resent successfully": "Invitation resent successfully"
+  "Invitation resent successfully": "Invitation resent successfully",
+  "Bank":"Bank",
+  "Cash":"Cash",
+  "Card":"Card"
 }

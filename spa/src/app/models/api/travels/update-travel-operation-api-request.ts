@@ -6,7 +6,7 @@ export class UpdateTravelOperationApiRequest {
     public amount: number,
     public description: string,
     public splitType: string,
-    public transactionDate: string,
+    public transactionDate: Date,
     public participantMemberIds: number[]
   ) {}
 }

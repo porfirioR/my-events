@@ -180,32 +180,32 @@ export const routes: Routes = [
                 (x) => x.UpsertTravelComponent
               ),
           },
-          // {
-          //   path: ':travelId/operations/create',
-          //   title: 'New Operation',
-          //   canDeactivate: [WarningUnsavedChanges],
-          //   loadComponent: () =>
-          //     import(
-          //       './components/upsert-operation/upsert-operation.component'
-          //     ).then((x) => x.UpsertOperationComponent),
-          // },
-          // {
-          //   path: ':travelId/operations/:operationId',
-          //   title: 'Operation Detail',
-          //   loadComponent: () =>
-          //     import(
-          //       './components/operation-detail/operation-detail.component'
-          //     ).then((x) => x.OperationDetailComponent),
-          // },
-          // {
-          //   path: ':travelId/operations/:operationId/edit',
-          //   title: 'Edit Operation',
-          //   canDeactivate: [WarningUnsavedChanges],
-          //   loadComponent: () =>
-          //     import(
-          //       './components/upsert-operation/upsert-operation.component'
-          //     ).then((x) => x.UpsertOperationComponent),
-          // },
+          {
+            path: ':travelId/operations/create',
+            title: 'New Operation',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () =>
+              import(
+                './components/upsert-operation/upsert-operation.component'
+              ).then((x) => x.UpsertOperationComponent),
+          },
+          {
+            path: ':travelId/operations/:operationId',
+            title: 'Operation Detail',
+            loadComponent: () =>
+              import(
+                './components/operation-detail/operation-detail.component'
+              ).then((x) => x.OperationDetailComponent),
+          },
+          {
+            path: ':travelId/operations/:operationId/edit',
+            title: 'Edit Operation',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () =>
+              import(
+                './components/upsert-operation/upsert-operation.component'
+              ).then((x) => x.UpsertOperationComponent),
+          },
         ],
       },
     ],

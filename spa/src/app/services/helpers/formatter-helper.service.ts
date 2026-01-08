@@ -4,6 +4,7 @@ import { KeyValueViewModel } from '../../models/view/key-value-view-model';
 import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../../models/api';
 import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { useCurrencyStore } from '../../store';
+import { PaymentMethodApiModel } from '../../models/api/travels';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +31,10 @@ export class FormatterHelperService {
         const currentType = x as TypeApiModel
         moreData = currentType.description
         value = currentType.name
+        break;
+      case Configurations.PaymentMethod:
+        const paymentMethod = x as PaymentMethodApiModel
+        value = this.translate.instant(paymentMethod.name)
         break;
       case Configurations.Collaborator:
         const collaborator = x as CollaboratorApiModel

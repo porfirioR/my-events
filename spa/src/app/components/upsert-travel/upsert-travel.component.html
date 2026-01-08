@@ -5,14 +5,16 @@
         <button
           type="button"
           class="btn btn-sm btn-ghost btn-circle"
-          [routerLink]="['/travels']"
+          [routerLink]="travel?.id ? ['/travels', travel!.id || ''] : ['/travels']"
         >
           <i class="fas fa-arrow-left" aria-hidden="true"></i>
         </button>
         <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
           {{ isEditMode ? ('travels.editTitle' | translate) : ('travels.newTitle' | translate) }}
         </h1>
-        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="cancel()">
+        <button type="button" class="btn btn-ghost btn-sm btn-circle"
+          [routerLink]="travel?.id ? ['/travels', travel!.id || ''] : ['/travels']"
+        >
           <i class="fas fa-times"></i>
         </button>
       </div>
