@@ -20,7 +20,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
     const { data, error } = await this.dbContext
       .from(TableEnum.TravelMembers)
       .insert(entity)
-      .select() 
+      .select()
       .single<TravelMemberEntity>();
 
     if (error) {
@@ -127,6 +127,21 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
 
     return count || 0;
   };
+
+  public isUserInTravel = async (travelId: number, userId: number): Promise<boolean> => {
+  const { data, error } = await this.dbContext
+    .from(TableEnum.TravelMembers)
+    .select(DatabaseColumns.EntityId)
+    .eq(DatabaseColumns.TravelId, travelId)
+    .eq(DatabaseColumns.UserId, userId)
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data?.length || 0) > 0;
+};
 
   // Private methods
   private mapEntityToAccessModel = (entity: TravelMemberEntity): TravelMemberAccessModel => {

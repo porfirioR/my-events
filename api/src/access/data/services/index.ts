@@ -27,7 +27,6 @@ export { TransactionSplitAccessService } from './transaction-split-access.servic
 export { TransactionReimbursementAccessService } from './transaction-reimbursement-access.service';
 
 export { UserAccessService } from './user-access.service';
-export {} from './';
 export { PaymentMethodAccessService } from './payment-method-access.service';
 export { TravelAccessService } from './travel-access.service';
 export { TravelMemberAccessService } from './travel-member-access.service';

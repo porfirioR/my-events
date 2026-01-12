@@ -475,12 +475,12 @@ CREATE TABLE travelmembers (
     userid INT NOT NULL,
     collaboratorid INT NOT NULL,
     joineddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (travelid) REFERENCES travels(id) ON DELETE CASCADE,
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (collaboratorid) REFERENCES collaborators(id),
-    
-    CONSTRAINT unique_travel_collaborator UNIQUE (travelid, collaboratorid)
+
+    CONSTRAINT unique_travel_user UNIQUE (travelid, userid)
 );
 
 -- =====================================================

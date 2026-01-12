@@ -35,4 +35,5 @@ export interface ITravelMemberAccessService {
    * Obtener cantidad de miembros en un viaje
    */
   getMemberCount(travelId: number): Promise<number>;
+  isUserInTravel(travelId: number, userId: number): Promise<boolean>;
 }
