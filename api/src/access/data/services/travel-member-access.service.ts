@@ -20,7 +20,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
     const { data, error } = await this.dbContext
       .from(TableEnum.TravelMembers)
       .insert(entity)
-      .select()
+      .select() 
       .single<TravelMemberEntity>();
 
     if (error) {
