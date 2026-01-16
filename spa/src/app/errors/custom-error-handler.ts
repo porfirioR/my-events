@@ -3,12 +3,14 @@ import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AlertService, LocalService } from '../services';
 import { useAuthStore } from '../store';
+import { AuthStore } from '../store/auth.store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomErrorHandler implements ErrorHandler {
   private injector = inject(Injector);
+  private authStore = inject(AuthStore);
 
   private get alertService(): AlertService {
     return this.injector.get(AlertService);
@@ -24,10 +26,6 @@ export class CustomErrorHandler implements ErrorHandler {
 
   private get translate(): TranslateService {
     return this.injector.get(TranslateService);
-  }
-
-  private get authStore() {
-    return useAuthStore();
   }
 
   handleError(error: any): void {
