@@ -158,15 +158,6 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
     if (splitError) throw new Error(splitError.message);
     if (splitData && splitData.length > 0) return false;
 
-    const { data: memberData, error: memberError } = await this.dbContext
-      .from(TableEnum.ProjectMembers)
-      .select('id')
-      .eq(DatabaseColumns.CollaboratorId, collaboratorId)
-      .limit(1);
-
-    if (memberError) throw new Error(memberError.message);
-    if (memberData && memberData.length > 0) return false;
-
     return true;
   };
 

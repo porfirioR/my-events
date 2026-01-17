@@ -25,7 +25,7 @@ const initialState: CollaboratorState = {
 export const CollaboratorStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  
+
   withComputed((store) => ({
     // Colaboradores activos
     activeCollaborators: computed(() => 

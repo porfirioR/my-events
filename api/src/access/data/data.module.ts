@@ -5,12 +5,12 @@ import { UtilityModule } from '../../utility/utility.module';
 import { DbContextService } from './services/db-context.service';
 import { EventAccessService } from './services/event-access.service';
 import { EventFollowAccessService } from './services/event-follow-access.service';
-import { CollaboratorMatchAccessService, ConfigurationAccessService, EmailVerificationTokenAccessService, PasswordResetTokenAccessService, SavingsGoalAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService } from './services';
+import { CollaboratorMatchAccessService, ConfigurationAccessService, EmailVerificationTokenAccessService, PasswordResetTokenAccessService, PaymentMethodAccessService, SavingsGoalAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService, TravelAccessService, TravelMemberAccessService, TravelOperationAccessService, TravelOperationApprovalAccessService, TravelOperationParticipantAccessService } from './services';
 import { CollaboratorAccessService } from './services/collaborator-access.service';
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
 import { UserAccessService } from './services/user-access.service';
-import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { SavingsInstallmentAccessService } from './services/savings-installment-access.service';
 import { SavingsDepositAccessService } from './services/savings-deposit-access.service';
 
@@ -38,6 +38,12 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     SavingsGoalAccessService,
     SavingsInstallmentAccessService,
     SavingsDepositAccessService,
+    PaymentMethodAccessService,
+    TravelAccessService,
+    TravelMemberAccessService,
+    TravelOperationAccessService,
+    TravelOperationParticipantAccessService,
+    TravelOperationApprovalAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,
@@ -78,12 +84,38 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
       provide: SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE,
       useExisting: ConfigurationAccessService,
     },
+    {
+      provide: TRAVEL_TOKENS.ACCESS_SERVICE,
+      useExisting: TravelAccessService,
+    },
+    {
+      provide: TRAVEL_TOKENS.MEMBER_ACCESS_SERVICE,
+      useExisting: TravelMemberAccessService,
+    },
+    {
+      provide: TRAVEL_TOKENS.OPERATION_ACCESS_SERVICE,
+      useExisting: TravelOperationAccessService,
+    },
+    {
+      provide: TRAVEL_TOKENS.OPERATION_PARTICIPANT_ACCESS_SERVICE,
+      useExisting: TravelOperationParticipantAccessService,
+    },
+    {
+      provide: TRAVEL_TOKENS.OPERATION_APPROVAL_ACCESS_SERVICE,
+      useExisting: TravelOperationApprovalAccessService,
+    },
+    {
+      provide: TRAVEL_TOKENS.PAYMENT_METHOD_ACCESS_SERVICE,
+      useExisting: PaymentMethodAccessService,
+    }
   ],
   exports: [
     EventAccessService,
     EventFollowAccessService,
     UserAccessService,
     PaymentAccessService,
+    PasswordResetTokenAccessService,
+    EmailVerificationTokenAccessService,
     COLLABORATOR_TOKENS.ACCESS_SERVICE,
     COLLABORATOR_TOKENS.MATCH_ACCESS_SERVICE,
     COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE,
@@ -94,8 +126,12 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     SAVINGS_TOKENS.INSTALLMENT_ACCESS_SERVICE,
     SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE,
     SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE,
-    PasswordResetTokenAccessService,
-    EmailVerificationTokenAccessService,
+    TRAVEL_TOKENS.ACCESS_SERVICE,
+    TRAVEL_TOKENS.MEMBER_ACCESS_SERVICE,
+    TRAVEL_TOKENS.OPERATION_ACCESS_SERVICE,
+    TRAVEL_TOKENS.OPERATION_PARTICIPANT_ACCESS_SERVICE,
+    TRAVEL_TOKENS.OPERATION_APPROVAL_ACCESS_SERVICE,
+    TRAVEL_TOKENS.PAYMENT_METHOD_ACCESS_SERVICE,
   ],
 })
 export class DataModule {}

@@ -62,6 +62,25 @@
         </footer>
       </article>
 
+      <!-- Travels Card -->
+      <article [routerLink]="['travels']" class="cursor-pointer bg-gradient-to-r from-orange-500 to-red-500 dark:from-orange-600 dark:to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
+        <header class="flex items-center justify-between">
+          <div>
+            <h3 class="text-orange-100 dark:text-orange-50 text-sm font-medium">{{ 'dashboard.travels' | translate }}</h3>
+            <data [value]="travelStats().total" class="text-3xl font-bold mt-1 text-white">{{travelStats().total}}</data>
+          </div>
+          <figure class="bg-orange-400 bg-opacity-30 dark:bg-orange-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
+            <i class="fas fa-suitcase-rolling text-xl text-white" aria-hidden="true"></i>
+          </figure>
+        </header>
+        <footer class="mt-4">
+          <span class="text-orange-100 dark:text-orange-50 text-xs">
+            {{travelStats().active}} {{ 'dashboard.active' | translate }}, 
+            {{travelStats().finalized}} {{ 'dashboard.finalized' | translate }}
+          </span>
+        </footer>
+      </article>
+
       <!-- Projects Card (hidden for now) -->
       <article class="cursor-pointer bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300 hidden">
         <header class="flex items-center justify-between">
@@ -230,6 +249,12 @@
                 <a [routerLink]="['savings/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-primary/10 hover:text-primary rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-piggy-bank mr-3 text-primary" aria-hidden="true"></i>
                   <span>{{ 'dashboard.newSavingsGoal' | translate }}</span>
+                </a>
+              </li>
+              <li>
+                <a [routerLink]="['travels/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-warning/10 hover:text-warning rounded-lg transition-colors duration-200 cursor-pointer">
+                  <i class="fas fa-suitcase-rolling mr-3 text-warning" aria-hidden="true"></i>
+                  <span>{{ 'dashboard.newTravel' | translate }}</span>
                 </a>
               </li>
               <li>

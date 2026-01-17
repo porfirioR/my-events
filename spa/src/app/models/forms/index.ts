@@ -11,3 +11,4 @@ export { TransactionFormGroup } from './transaction-form-group';
 export { TransactionSplitFormGroup } from './transaction-split-form-group';
 export { ResendFormGroup } from './resend-form-group';
 export { ProgressionTypeFormGroup } from './progression-type-form-group';
+export { TravelFormGroup } from './travel-form-group';

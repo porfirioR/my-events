@@ -83,7 +83,7 @@ export class CollaboratorManagerService {
     const canDelete = await this.collaboratorAccessService.canDeleteCollaborator(collaboratorId);
     return {
       canDelete,
-      reason: canDelete ? undefined : 'El colaborador está asociado a transacciones existentes y no puede ser eliminado. Puede desactivarlo en su lugar.'
+      reason: canDelete ? undefined : 'collaborators.collaboratorAssociatedToTransactions'
     };
   };
 
@@ -102,46 +102,42 @@ export class CollaboratorManagerService {
     // 1. Validar que el colaborador pertenece al usuario
     const collaborator = await this.collaboratorAccessService.getById(request.collaboratorId, userId);
     if (!collaborator) {
-      throw new NotFoundException('Collaborator not found');
+      throw new NotFoundException('matchRequests.collaboratorNotFound');
     }
 
     // 2. Validar que es colaborador INTERNO (sin email)
     if (collaborator.email) {
-      throw new BadRequestException('This collaborator is already linked. Only unlinked collaborators can request matches.');
+      throw new BadRequestException('matchRequests.collaboratorAlreadyLinked');
     }
 
-    // 3.VALIDAR QUE EL EMAIL NO ESTÉ ASIGNADO A OTRO COLABORADOR MÍO
+    // 3. VALIDAR QUE EL EMAIL NO ESTÉ ASIGNADO A OTRO COLABORADOR MÍO
     const myCollaboratorWithEmail = await this.collaboratorAccessService.getMyCollaboratorByEmail(
       request.targetEmail,
       userId
     );
 
     if (myCollaboratorWithEmail) {
-      throw new BadRequestException('This email is already assigned to another one of your collaborators');
+      throw new BadRequestException('matchRequests.emailAlreadyAssignedToCollaborator');
     }
 
-    // 4.VALIDAR QUE NO HAYA INVITADO ANTES (INCLUSO SI FUE ACEPTADA/RECHAZADA)
+    // 4. VALIDAR QUE NO HAYA INVITADO ANTES (INCLUSO SI FUE ACEPTADA/RECHAZADA)
     const existingRequest = await this.matchRequestAccessService.hasEverSentRequest(
       request.collaboratorId,
       request.targetEmail
     );
 
     if (existingRequest) {
-      throw new BadRequestException(
-        'You have already sent an invitation to this email. You cannot send multiple invitations to the same email.'
-      );
+      throw new BadRequestException('matchRequests.alreadySentInvitationToEmail');
     }
 
-    // 5.VALIDACIÓN BIDIRECCIONAL - Verificar si YA ME INVITARON
+    // 5. VALIDACIÓN BIDIRECCIONAL - Verificar si YA ME INVITARON
     const receivedInvitation = await this.matchRequestAccessService.hasReceivedPendingInvitation(
       request.targetEmail,
       userId
     );
 
     if (receivedInvitation) {
-      throw new BadRequestException(
-        'This email has already sent you a match request. Please check your received invitations.'
-      );
+      throw new BadRequestException('matchRequests.emailAlreadySentMatchRequest');
     }
 
     // 6. Buscar si existe un colaborador externo con ese email
@@ -151,7 +147,7 @@ export class CollaboratorManagerService {
 
     let matchRequest: CollaboratorMatchRequestAccessModel;
     let emailExists = false;
-    let message = '';
+    let messageKey = '';
 
     if (targetCollaborators.length === 0) {
       // Email NO existe en el sistema
@@ -164,14 +160,14 @@ export class CollaboratorManagerService {
 
       matchRequest = await this.matchRequestAccessService.createRequest(requestData);
       emailExists = false;
-      message = `Match request created. When a user registers with '${request.targetEmail}', they will be notified of your invitation.`;
+      messageKey = 'matchRequests.requestCreatedEmailNotFound';
 
     } else {
       const targetCollaborator = targetCollaborators[0];
 
       // Verificar que no sea del mismo usuario
       if (targetCollaborator.userId === userId) {
-        throw new BadRequestException('Cannot match with your own collaborator');
+        throw new BadRequestException('matchRequests.cannotMatchOwnCollaborator');
       }
 
       // Verificar que no exista ya un match ACEPTADO
@@ -181,7 +177,7 @@ export class CollaboratorManagerService {
       );
 
       if (existingMatch) {
-        throw new BadRequestException('These collaborators are already matched');
+        throw new BadRequestException('matchRequests.collaboratorsAlreadyMatched');
       }
 
       const requestData: CreateMatchRequestAccessRequest = {
@@ -193,7 +189,7 @@ export class CollaboratorManagerService {
 
       matchRequest = await this.matchRequestAccessService.createRequest(requestData);
       emailExists = true;
-      message = `Match request sent to user with email '${request.targetEmail}'`;
+      messageKey = 'matchRequests.requestSentToUser';
 
       await this.sendMatchRequestNotification(matchRequest);
     }
@@ -202,7 +198,7 @@ export class CollaboratorManagerService {
       matchRequest.id,
       matchRequest.status,
       emailExists,
-      message,
+      messageKey, // Return message key instead of hardcoded message
       matchRequest.targetUserId || undefined
     );
   };
@@ -314,16 +310,16 @@ export class CollaboratorManagerService {
     const request = await this.matchRequestAccessService.getById(requestId, userId);
 
     if (!request) {
-      throw new NotFoundException('Match request not found');
+      throw new NotFoundException('matchRequests.matchRequestNotFound');
     }
 
-    //CAMBIO: Validación más flexible
+    // CAMBIO: Validación más flexible
     if (request.targetUserId !== null && request.targetUserId !== userId) {
-      throw new BadRequestException('You are not authorized to accept this request');
+      throw new BadRequestException('matchRequests.notAuthorizedToAccept');
     }
 
     if (request.status !== MatchRequestStatus.Pending) {
-      throw new BadRequestException('This request is not pending');
+      throw new BadRequestException('matchRequests.requestNotPending');
     }
 
     // Si targetUserId es NULL, asignarlo ahora
@@ -335,7 +331,7 @@ export class CollaboratorManagerService {
     // Obtener el email del usuario SOLICITANTE
     const requesterUser = (await this.userAccessService.getUsers()).find(x => x.id === request.requesterUserId);
     if (!requesterUser) {
-      throw new NotFoundException('Requester user not found');
+      throw new NotFoundException('matchRequests.requesterUserNotFound');
     }
     const requesterEmail = requesterUser.email;
 
@@ -352,18 +348,16 @@ export class CollaboratorManagerService {
     // Si NO tengo colaborador con ese email, asignar uno interno
     if (!myCollaborator) {
       if (!collaboratorId) {
-        throw new BadRequestException(
-          `You need to select one of your internal collaborators to assign the email '${requesterEmail}' and complete the match.`
-        );
+        throw new BadRequestException('matchRequests.needSelectCollaboratorToAssignEmail');
       }
 
       const internalCollaborator = await this.collaboratorAccessService.getById(collaboratorId, userId);
       if (!internalCollaborator) {
-        throw new NotFoundException('Collaborator not found');
+        throw new NotFoundException('matchRequests.selectedCollaboratorNotFound');
       }
 
       if (internalCollaborator.email) {
-        throw new BadRequestException('The selected collaborator already has an email. Please select an internal collaborator (without email).');
+        throw new BadRequestException('matchRequests.selectedCollaboratorAlreadyHasEmail');
       }
 
       // Asignar el email del SOLICITANTE a MI colaborador
@@ -393,7 +387,7 @@ export class CollaboratorManagerService {
 
     const match = await this.matchAccessService.createMatch(matchData);
 
-    //AHORA el update funcionará porque targetUserId ya tiene valor
+    // AHORA el update funcionará porque targetUserId ya tiene valor
     await this.matchRequestAccessService.updateStatus(
       requestId,
       MatchRequestStatus.Accepted,
@@ -403,7 +397,7 @@ export class CollaboratorManagerService {
     await this.sendMatchAcceptedNotification(match);
 
     return this.getMatchModel(match);
-  };
+  };;
 
 //Actualizar getMatchModel
 private getMatchModel = (accessModel: CollaboratorMatchAccessModel): CollaboratorMatchModel => {
@@ -482,15 +476,15 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
     const request = await this.matchRequestAccessService.getById(requestId, userId);
     
     if (!request) {
-      throw new NotFoundException('Match request not found');
+      throw new NotFoundException('matchRequests.matchRequestNotFound');
     }
 
     if (request.requesterUserId !== userId) {
-      throw new BadRequestException('You can only cancel requests that you sent');
+      throw new BadRequestException('matchRequests.onlyCreatorCanCancel');
     }
 
     if (request.status !== MatchRequestStatus.Pending && request.status !== MatchRequestStatus.EmailNotFound) {
-      throw new BadRequestException('Cannot cancel a request that has already been accepted');
+      throw new BadRequestException('matchRequests.cannotCancelAcceptedRequest');
     }
 
     await this.matchRequestAccessService.deleteRequest(requestId, userId);
@@ -549,12 +543,12 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
     const match = await this.matchAccessService.getMatchById(matchId);
 
     if (!match) {
-      throw new NotFoundException('Match not found');
+      throw new NotFoundException('matchRequests.matchNotFound');
     }
 
     // Verificar que el usuario sea parte del match
     if (match.user1Id !== userId && match.user2Id !== userId) {
-      throw new BadRequestException('You are not authorized to delete this match');
+      throw new BadRequestException('matchRequests.notAuthorizedToDeleteMatch');
     }
 
     await this.matchAccessService.deleteMatch(matchId);
@@ -569,47 +563,47 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
    * - Leti (como usuaria) me invitó a mi email
    * - Este método me muestra la invitación de Leti hacia mi colaborador
    */
-public getInvitationsForCollaborator = async (userId: number, collaboratorId: number): Promise<ReceivedMatchRequestModel[]> => {
-  const collaborator = await this.collaboratorAccessService.getById(collaboratorId, userId);
-  
-  if (!collaborator) {
-    throw new NotFoundException('Collaborator not found');
-  }
+  public getInvitationsForCollaborator = async (userId: number, collaboratorId: number): Promise<ReceivedMatchRequestModel[]> => {
+    const collaborator = await this.collaboratorAccessService.getById(collaboratorId, userId);
 
-  if (!collaborator.email) {
-    throw new BadRequestException('Only external collaborators can receive invitations');
-  }
+    if (!collaborator) {
+      throw new NotFoundException('matchRequests.collaboratorNotFound');
+    }
 
-  const requests = await this.matchRequestAccessService.getReceivedRequests(
-    userId,
-    MatchRequestStatus.Pending
-  );
+    if (!collaborator.email) {
+      throw new BadRequestException('matchRequests.onlyExternalCollaboratorsCanReceiveInvitations');
+    }
 
-  const collaboratorRequests = requests.filter(
-    req => req.targetCollaboratorEmail.toLowerCase() === collaborator.email.toLowerCase()
-  );
-
-  return Promise.all(collaboratorRequests.map(async (req) => {
-    const requesterCollab = await this.collaboratorAccessService.getById(
-      req.requesterCollaboratorId,
-      req.requesterUserId
+    const requests = await this.matchRequestAccessService.getReceivedRequests(
+      userId,
+      MatchRequestStatus.Pending
     );
 
-    //Obtener el email del usuario solicitante
-    const requesterUser = (await this.userAccessService.getUsers()).find(x => x.id === req.requesterUserId);
-    const requesterUserEmail = requesterUser?.email || 'Unknown';
-
-    return new ReceivedMatchRequestModel(
-      req.id,
-      req.requesterUserId,
-      req.requesterCollaboratorId,
-      requesterUserEmail, //Email del usuario que invita
-      requesterCollab ? `${requesterCollab.name} ${requesterCollab.surname}` : 'Unknown',
-      req.targetCollaboratorEmail,
-      req.requestedDate
+    const collaboratorRequests = requests.filter(
+      req => req.targetCollaboratorEmail.toLowerCase() === collaborator.email.toLowerCase()
     );
-  }));
-};
+
+    return Promise.all(collaboratorRequests.map(async (req) => {
+      const requesterCollab = await this.collaboratorAccessService.getById(
+        req.requesterCollaboratorId,
+        req.requesterUserId
+      );
+
+      // Obtener el email del usuario solicitante
+      const requesterUser = (await this.userAccessService.getUsers()).find(x => x.id === req.requesterUserId);
+      const requesterUserEmail = requesterUser?.email || 'Unknown';
+
+      return new ReceivedMatchRequestModel(
+        req.id,
+        req.requesterUserId,
+        req.requesterCollaboratorId,
+        requesterUserEmail, // Email del usuario que invita
+        requesterCollab ? `${requesterCollab.name} ${requesterCollab.surname}` : 'Unknown',
+        req.targetCollaboratorEmail,
+        req.requestedDate
+      );
+    }));
+  };
 
   /**
    * Obtener todos los colaboradores con información de matching enriquecida
@@ -649,11 +643,11 @@ public getInvitationsForCollaborator = async (userId: number, collaboratorId: nu
     const collaborator = await this.collaboratorAccessService.getById(collaboratorId, userId);
     
     if (!collaborator) {
-      throw new NotFoundException('Collaborator not found');
+      throw new NotFoundException('matchRequests.collaboratorNotFound');
     }
 
     if (!collaborator.email) {
-      throw new BadRequestException('Only external collaborators can receive invitations');
+      throw new BadRequestException('matchRequests.onlyExternalCollaboratorsCanReceiveInvitations');
     }
 
     await this.sendInvitationEmail(collaborator);

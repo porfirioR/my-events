@@ -1,0 +1,109 @@
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <button
+          type="button"
+          class="btn btn-sm btn-ghost btn-circle"
+          [routerLink]="travel?.id ? ['/travels', travel!.id || ''] : ['/travels']"
+        >
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
+          {{ isEditMode ? ('travels.editTitle' | translate) : ('travels.newTitle' | translate) }}
+        </h1>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle"
+          [routerLink]="travel?.id ? ['/travels', travel!.id || ''] : ['/travels']"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+
+    <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
+      <!-- Nombre -->
+      <app-text 
+        formControlName="name" 
+        type="text" 
+        [label]="'travels.travelName' | translate"
+        id="name" 
+        name="name"
+        [description]="'travels.travelNameExample' | translate"
+        [disabled]="isLoading()" 
+      />
+
+      <!-- Descripción -->
+      <app-text-area-input
+        formControlName="description"
+        [label]="'travels.descriptionOptional' | translate"
+        [placeholder]="'travels.descriptionPlaceholder' | translate"
+        id="description"
+        name="description"
+        [disabled]="isLoading()"
+      />
+
+      <!-- Fecha de inicio -->
+      <app-date-input 
+        formControlName="startDate" 
+        [label]="'travels.startDate' | translate"
+        id="startDate" 
+        name="startDate" 
+        [disabled]="isLoading()" 
+      />
+
+      <!-- Fecha de fin (opcional) -->
+      <app-date-input 
+        formControlName="endDate" 
+        [label]="'travels.endDateOptional' | translate"
+        id="endDate"
+        name="endDate" 
+        [disabled]="isLoading()" 
+      />
+
+      <!-- Moneda por defecto -->
+      <app-select-input
+        formControlName="defaultCurrencyId"
+        id="currency"
+        [label]="'travels.defaultCurrency' | translate"
+        name="currency"
+        [list]="currencyList"
+        [description]="'travels.currencyDescription' | translate"
+        [disabled]="isLoading()"
+      />
+
+      <!-- Action Buttons -->
+      <footer class="flex justify-between items-center pt-6 gap-4">
+        <button
+          type="button"
+          class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+          [disabled]="isLoading()"
+          (click)="cancel()"
+        >
+          <i class="fas fa-arrow-left text-sm"></i>
+          {{ 'travels.cancel' | translate }}
+        </button>
+
+        @if (isLoading()) {
+          <button
+            type="button"
+            class="btn btn-primary flex items-center gap-2 loading-btn"
+          >
+            <span class="loading loading-spinner loading-xs"></span>
+            {{ 'travels.saving' | translate }}
+          </button>
+        } @else {
+          <button
+            role="button"
+            type="submit"
+            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="formGroup.invalid"
+            [class.btn-disabled]="formGroup.invalid"
+          >
+            <i class="fas fa-cloud-arrow-up text-sm"></i>
+            {{ 'travels.saveTravel' | translate }}
+          </button>
+        }
+      </footer>
+    </form>
+  </article>
+</section>

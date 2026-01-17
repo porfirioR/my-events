@@ -2,8 +2,6 @@
 
 -- Tipos ENUM personalizados
 CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');
-CREATE TYPE projectstatus AS ENUM ('Active', 'Finalized');
-CREATE TYPE transactionstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE approvalstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE splittype AS ENUM ('Equal', 'Custom', 'Percentage');
 
@@ -113,96 +111,6 @@ CREATE INDEX idx_matches_user1 ON collaboratormatches(user1id);
 CREATE INDEX idx_matches_user2 ON collaboratormatches(user2id);
 CREATE INDEX idx_matches_collaborators ON collaboratormatches(collaborator1id, collaborator2id);
 
--- Tabla de proyectos
-CREATE TABLE projects (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(200) NOT NULL,
-    description TEXT,
-    userid INT NOT NULL,
-    status projectstatus DEFAULT 'Active',
-    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    finalizeddate TIMESTAMP,
-    FOREIGN KEY (userid) REFERENCES users(id)
-);
-
--- Índices para proyectos
-CREATE INDEX idx_projects_createdbyuser ON projects(userid);
-CREATE INDEX idx_projects_status ON projects(status);
-
--- Miembros del proyecto
-CREATE TABLE projectmembers (
-    id SERIAL PRIMARY KEY,
-    projectid INT NOT NULL,
-    userid INT NOT NULL,
-    collaboratorid INT NOT NULL,
-    email VARCHAR(150), -- NULL si colaborador interno, valor si externo
-    joineddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (projectid) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (userid) REFERENCES users(id),
-    FOREIGN KEY (collaboratorid) REFERENCES collaborators(id),
-    CONSTRAINT uniqueprojectcollaborator UNIQUE (projectid, collaboratorid)
-);
-
--- Índices para project members
-CREATE INDEX idx_projectmembers_projectuser ON projectmembers(projectid, userid);
-CREATE INDEX idx_projectmembers_userprojects ON projectmembers(userid, projectid);
-CREATE INDEX idx_projectmembers_projectemail ON projectmembers(projectid, email);
-CREATE INDEX idx_projectmembers_collaboratorprojects ON projectmembers(collaboratorid);
-CREATE INDEX idx_projectmembers_projectuseremail ON projectmembers(projectid, userid, email);
-
--- Transacciones de proyecto
-CREATE TABLE projecttransactions (
-    id SERIAL PRIMARY KEY,
-    projectid INT NOT NULL,
-    createdbymemberid INT NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    status transactionstatus DEFAULT 'Pending',
-    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    approveddate TIMESTAMP,
-    FOREIGN KEY (projectid) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (createdbymemberid) REFERENCES projectmembers(id)
-);
-
--- Índices para project transactions
-CREATE INDEX idx_projecttransactions_projectstatus ON projecttransactions(projectid, status);
-CREATE INDEX idx_projecttransactions_createdbymember ON projecttransactions(createdbymemberid);
-CREATE INDEX idx_projecttransactions_statusdate ON projecttransactions(status, datecreated);
-
--- Aprobaciones de transacciones
-CREATE TABLE projecttransactionapprovals (
-    id SERIAL PRIMARY KEY,
-    transactionid INT NOT NULL,
-    memberid INT NOT NULL,
-    status approvalstatus DEFAULT 'Pending',
-    approvaldate TIMESTAMP,
-    rejectionreason TEXT,
-    FOREIGN KEY (transactionid) REFERENCES projecttransactions(id) ON DELETE CASCADE,
-    FOREIGN KEY (memberid) REFERENCES projectmembers(id),
-    CONSTRAINT uniqueapproval UNIQUE (transactionid, memberid)
-);
-
--- Índices para approvals
-CREATE INDEX idx_transactionapprovals_transactionstatus ON projecttransactionapprovals(transactionid, status);
-CREATE INDEX idx_transactionapprovals_memberstatus ON projecttransactionapprovals(memberid, status);
-
--- Liquidaciones finales
-CREATE TABLE projectsettlements (
-    id SERIAL PRIMARY KEY,
-    projectid INT NOT NULL,
-    debtormemberid INT NOT NULL,
-    creditormemberid INT NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    issettled BOOLEAN DEFAULT FALSE,
-    settlementdate TIMESTAMP,
-    FOREIGN KEY (projectid) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (debtormemberid) REFERENCES projectmembers(id),
-    FOREIGN KEY (creditormemberid) REFERENCES projectmembers(id)
-);
-
--- Índices para settlements
-CREATE INDEX idx_projectsettlements_projectsettled ON projectsettlements(projectid, issettled);
-CREATE INDEX idx_projectsettlements_debtorcreditor ON projectsettlements(debtormemberid, creditormemberid);
 
 -- ===== SISTEMA SEPARADO DE TRANSACCIONES GENERALES =====
 
@@ -499,3 +407,186 @@ SELECT
 FROM savingsinstallments si
 INNER JOIN installmentstatus ist ON si.statusid = ist.id
 INNER JOIN savingsgoals sg ON si.savingsgoalid = sg.id;
+
+--nuevas tablas
+
+CREATE TYPE travelstatus AS ENUM ('Active', 'Finalized');
+CREATE TYPE traveloperationstatus AS ENUM ('Pending', 'Approved', 'Rejected');
+CREATE TYPE travelsplittype AS ENUM ('All', 'Selected');
+
+-- =====================================================
+-- PARTE 3: ACTUALIZAR TABLA CURRENCIES
+-- =====================================================
+
+-- Agregar columna decimalplaces
+ALTER TABLE currencies ADD COLUMN IF NOT EXISTS decimalplaces INT DEFAULT 2;
+
+-- Actualizar valores según moneda
+UPDATE currencies SET decimalplaces = 0 WHERE id = 4; -- Guaraníes
+UPDATE currencies SET decimalplaces = 2 WHERE id IN (1,2,3,5,6,7); -- USD, EUR, GBP, ARS, BRL, Other
+
+-- =====================================================
+-- PARTE 4: CREAR TABLA PAYMENTMETHODS
+-- =====================================================
+
+CREATE TABLE paymentmethods (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insertar métodos de pago
+INSERT INTO paymentmethods (id, name) VALUES
+(1, 'Card'),
+(2, 'Cash'),
+(3, 'Bank')
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- PARTE 5: CREAR TABLA TRAVELS
+-- =====================================================
+
+CREATE TABLE travels (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    createdbyuserid INT NOT NULL,
+    status travelstatus DEFAULT 'Active',
+    startdate DATE,
+    enddate DATE,
+    defaultcurrencyid INT,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastupdatedbyuserid INT,
+    updatedat TIMESTAMP,
+    finalizeddate TIMESTAMP,
+    
+    FOREIGN KEY (createdbyuserid) REFERENCES users(id),
+    FOREIGN KEY (defaultcurrencyid) REFERENCES currencies(id),
+    FOREIGN KEY (lastupdatedbyuserid) REFERENCES users(id)
+);
+
+-- =====================================================
+-- PARTE 6: CREAR TABLA TRAVELMEMBERS
+-- =====================================================
+
+CREATE TABLE travelmembers (
+    id SERIAL PRIMARY KEY,
+    travelid INT NOT NULL,
+    userid INT NOT NULL,
+    collaboratorid INT NOT NULL,
+    joineddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (travelid) REFERENCES travels(id) ON DELETE CASCADE,
+    FOREIGN KEY (userid) REFERENCES users(id),
+    FOREIGN KEY (collaboratorid) REFERENCES collaborators(id),
+
+    CONSTRAINT unique_travel_user UNIQUE (travelid, userid)
+);
+
+-- =====================================================
+-- PARTE 7: CREAR TABLA TRAVELOPERATIONS
+-- =====================================================
+
+CREATE TABLE traveloperations (
+    id SERIAL PRIMARY KEY,
+    travelid INT NOT NULL,
+    createdbyuserid INT NOT NULL,
+    currencyid INT NOT NULL,
+    paymentmethodid INT NOT NULL,
+    whopaidmemberid INT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    splittype travelsplittype DEFAULT 'All',
+    status traveloperationstatus DEFAULT 'Pending',
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    transactiondate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastupdatedbyuserid INT,
+    updatedat TIMESTAMP,
+    
+    FOREIGN KEY (travelid) REFERENCES travels(id) ON DELETE CASCADE,
+    FOREIGN KEY (createdbyuserid) REFERENCES users(id),
+    FOREIGN KEY (currencyid) REFERENCES currencies(id),
+    FOREIGN KEY (paymentmethodid) REFERENCES paymentmethods(id),
+    FOREIGN KEY (whopaidmemberid) REFERENCES travelmembers(id),
+    FOREIGN KEY (lastupdatedbyuserid) REFERENCES users(id),
+    
+    CONSTRAINT check_amount_positive CHECK (amount > 0)
+);
+
+-- =====================================================
+-- PARTE 8: CREAR TABLA TRAVELOPERATIONPARTICIPANTS
+-- =====================================================
+
+CREATE TABLE traveloperationparticipants (
+    id SERIAL PRIMARY KEY,
+    operationid INT NOT NULL,
+    travelmemberid INT NOT NULL,
+    shareamount DECIMAL(15,2) NOT NULL,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+    FOREIGN KEY (travelmemberid) REFERENCES travelmembers(id) ON DELETE CASCADE,
+    
+    CONSTRAINT check_shareamount_not_negative CHECK (shareamount >= 0),
+    CONSTRAINT unique_participant_per_operation UNIQUE (operationid, travelmemberid)
+);
+
+-- =====================================================
+-- PARTE 9: CREAR TABLA TRAVELOPERATIONAPPROVALS
+-- =====================================================
+
+CREATE TABLE traveloperationapprovals (
+    id SERIAL PRIMARY KEY,
+    operationid INT NOT NULL,
+    memberid INT NOT NULL,
+    status approvalstatus DEFAULT 'Pending',
+    approvaldate TIMESTAMP,
+    rejectionreason TEXT,
+    
+    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+    FOREIGN KEY (memberid) REFERENCES travelmembers(id),
+    
+    CONSTRAINT unique_approval UNIQUE (operationid, memberid)
+);
+
+-- =====================================================
+-- PARTE 10: CREAR ÍNDICES
+-- =====================================================
+
+-- Índices para paymentmethods
+CREATE INDEX idx_paymentmethods_name ON paymentmethods(name);
+
+-- Índices para travels
+CREATE INDEX idx_travels_createdbyuser ON travels(createdbyuserid);
+CREATE INDEX idx_travels_status ON travels(status);
+CREATE INDEX idx_travels_userid_status ON travels(createdbyuserid, status);
+CREATE INDEX idx_travels_defaultcurrency ON travels(defaultcurrencyid);
+
+-- Índices para travelmembers
+CREATE INDEX idx_travelmembers_travel ON travelmembers(travelid);
+CREATE INDEX idx_travelmembers_user ON travelmembers(userid);
+CREATE INDEX idx_travelmembers_collaborator ON travelmembers(collaboratorid);
+CREATE INDEX idx_travelmembers_traveluser ON travelmembers(travelid, userid);
+CREATE INDEX idx_travelmembers_usertravels ON travelmembers(userid, travelid);
+CREATE INDEX idx_travelmembers_collaboratortravels ON travelmembers(collaboratorid);
+
+-- Índices para traveloperations
+CREATE INDEX idx_traveloperations_travel ON traveloperations(travelid);
+CREATE INDEX idx_traveloperations_travelstatus ON traveloperations(travelid, status);
+CREATE INDEX idx_traveloperations_createdbyuser ON traveloperations(createdbyuserid);
+CREATE INDEX idx_traveloperations_statusdate ON traveloperations(status, datecreated);
+CREATE INDEX idx_traveloperations_currency ON traveloperations(currencyid);
+CREATE INDEX idx_traveloperations_paymentmethod ON traveloperations(paymentmethodid);
+CREATE INDEX idx_traveloperations_whopaid ON traveloperations(whopaidmemberid);
+CREATE INDEX idx_traveloperations_transactiondate ON traveloperations(transactiondate);
+
+-- Índices para traveloperationparticipants
+CREATE INDEX idx_traveloperationparticipants_operation ON traveloperationparticipants(operationid);
+CREATE INDEX idx_traveloperationparticipants_member ON traveloperationparticipants(travelmemberid);
+CREATE INDEX idx_traveloperationparticipants_operation_member ON traveloperationparticipants(operationid, travelmemberid);
+
+-- Índices para traveloperationapprovals
+CREATE INDEX idx_traveloperationapprovals_operation ON traveloperationapprovals(operationid);
+CREATE INDEX idx_traveloperationapprovals_member ON traveloperationapprovals(memberid);
+CREATE INDEX idx_traveloperationapprovals_operationstatus ON traveloperationapprovals(operationid, status);
+CREATE INDEX idx_traveloperationapprovals_memberstatus ON traveloperationapprovals(memberid, status);

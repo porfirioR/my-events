@@ -257,20 +257,8 @@ export class UpsertTransactionComponent implements OnInit {
       return 0;
     }
     
-    // Si ellos pagaron, yo les debo mi parte
-    const netAmount = this.calculateNetAmount();
-    const splitType = this.formGroup.value.splitType;
-    
-    switch (splitType) {
-      case this.splitType.Equal:
-        return netAmount / 2;
-      case this.splitType.Custom:
-        return this.customUserAmount();
-      case this.splitType.Percentage:
-        return (netAmount * this.customUserAmount()) / 100;
-      default:
-        return 0;
-    }
+    // Si ellos pagaron, yo les debo MI parte (lo que me corresponde pagar)
+    return this.calculateMySplit();
   }
 
   /**
@@ -284,20 +272,8 @@ export class UpsertTransactionComponent implements OnInit {
       return 0;
     }
     
-    // Si yo pagué, ellos me deben su parte
-    const netAmount = this.calculateNetAmount();
-    const splitType = this.formGroup.value.splitType;
-    
-    switch (splitType) {
-      case this.splitType.Equal:
-        return netAmount / 2;
-      case this.splitType.Custom:
-        return this.customUserAmount();
-      case this.splitType.Percentage:
-        return (netAmount * this.customUserAmount()) / 100;
-      default:
-        return 0;
-    }
+    // Si yo pagué, ellos me deben SU parte (lo que les corresponde pagar)
+    return this.calculateTheirSplit();
   }
 
   /**

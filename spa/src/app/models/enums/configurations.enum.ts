@@ -3,4 +3,5 @@ export enum Configurations {
   Periods = 'periods',
   Currencies = 'currencies',
   Collaborator = 'Collaborator',
+  PaymentMethod = 'PaymentMethod',
 }

@@ -11,9 +11,6 @@ export enum TableEnum {
   Collaborators = 'collaborators',
   Transactions = 'transactions',
   TransactionSplits = 'transactionsplits',
-  Projects = 'projects',
-  ProjectMembers = 'projectmembers',
-  ProjectTransactions = 'projecttransactions',
   CollaboratorMatches = 'collaboratormatches',
   CollaboratorMatchRequests = 'collaboratormatchrequests',
   TransactionReimbursements = "transactionreimbursements",
@@ -25,4 +22,12 @@ export enum TableEnum {
   SavingsProgressionTypes = 'savingsprogressiontypes',
   SavingsStatus = 'savingsstatus',
   InstallmentStatus = 'installmentstatus',
+  
+  // ===== TRAVEL MODULE TABLES =====
+  Travels = 'travels',
+  TravelMembers = 'travelmembers',
+  TravelOperations = 'traveloperations',
+  TravelOperationParticipants = 'traveloperationparticipants',
+  TravelOperationApprovals = 'traveloperationapprovals',
+  PaymentMethods = 'paymentmethods',
 }

@@ -5,7 +5,8 @@ import { AuthModule } from '../access/auth/auth.module';
 import { DataModule } from '../access/data/data.module';
 import { TransactionManagerService } from './services/transaction.manager.service';
 import { TRANSACTION_TOKENS } from '../utility/constants';
-import { SAVINGS_TOKENS } from '../utility/constants/injection-tokens.const';
+import { SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants/injection-tokens.const';
+import { TravelManagerService } from './services/travel-manager.service';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SAVINGS_TOKENS } from '../utility/constants/injection-tokens.const';
     ConfigurationManagerService,
     CollaboratorManagerService,
     TransactionManagerService,
+    TravelManagerService,
     {
       provide: TRANSACTION_TOKENS.MANAGER_SERVICE,
       useExisting: TransactionManagerService,
@@ -30,6 +32,10 @@ import { SAVINGS_TOKENS } from '../utility/constants/injection-tokens.const';
     {
       provide: SAVINGS_TOKENS.MANAGER_SERVICE,
       useExisting: SavingsManagerService,
+    },
+    {
+      provide: TRAVEL_TOKENS.MANAGER_SERVICE,
+      useExisting: TravelManagerService,
     },
   ],
   exports: [
@@ -41,6 +47,7 @@ import { SAVINGS_TOKENS } from '../utility/constants/injection-tokens.const';
     CollaboratorManagerService,
     TRANSACTION_TOKENS.MANAGER_SERVICE,
     SAVINGS_TOKENS.MANAGER_SERVICE,
+    TRAVEL_TOKENS.MANAGER_SERVICE,
   ]
 })
 export class ManagerModule {}

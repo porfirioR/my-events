@@ -11,6 +11,7 @@ import { CollaboratorApiService } from '../../services/api/collaborator-api.serv
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
 import { AlertService, FormatterHelperService } from '../../services';
 import { useLoadingStore } from '../../store';
+import { MessageTranslationService } from '../../services/helpers';
 
 @Component({
   selector: 'app-collaborator-invitations',
@@ -24,6 +25,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
   private collaboratorApiService = inject(CollaboratorApiService);
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private alertService = inject(AlertService);
+  private messageTranslationService = inject(MessageTranslationService);
   private loadingStore = useLoadingStore();
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -58,7 +60,8 @@ export class CollaboratorInvitationsComponent implements OnInit {
         this.loadingStore.setLoadingSuccess();
       },
       error: (error) => {
-        this.alertService.showError('Failed to load invitations summary');
+        const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+        this.alertService.showError(errorMessage);
         this.loadingStore.setLoadingFailed();
       }
     });
@@ -70,7 +73,8 @@ export class CollaboratorInvitationsComponent implements OnInit {
         this.selectedCollaborator = collaborator;
       },
       error: (error) => {
-        this.alertService.showError('Failed to load collaborator details');
+        const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+        this.alertService.showError(errorMessage);
         this.router.navigate(['/collaborators']);
       }
     });
@@ -84,7 +88,8 @@ export class CollaboratorInvitationsComponent implements OnInit {
         this.loadingStore.setLoadingSuccess();
       },
       error: (error) => {
-        this.alertService.showError('Failed to load collaborator invitations');
+        const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+        this.alertService.showError(errorMessage);
         this.loadingStore.setLoadingFailed();
       }
     });
@@ -94,29 +99,36 @@ export class CollaboratorInvitationsComponent implements OnInit {
     this.router.navigate(['/collaborators', invitation.collaborator.id, 'invitations']);
   }
 
-  // Aceptar invitación desde este componente
+  // Accept invitation from this component
   acceptInvitation(invitation: ReceivedMatchRequestModel): void {
     const confirmMsg = `Accept match request from ${invitation.requesterCollaboratorName}?`;
     
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
       this.matchRequestApiService.acceptMatchRequest(invitation.id).subscribe({
-        next: () => {
-          this.alertService.showSuccess('Match request accepted successfully!');
-          // Recargar las invitaciones
+        next: (response) => {
+          // Use message translation service for success message
+          const message = this.messageTranslationService.translateSuccessMessage(
+            response, 
+            'matchRequests.requestAcceptedSuccess'
+          );
+          this.alertService.showSuccess(message);
+          
+          // Reload invitations
           if (this.selectedCollaborator) {
             this.loadCollaboratorInvitations(this.selectedCollaborator.id);
           }
           this.loadingStore.setLoadingSuccess();
         },
         error: (error) => {
-          this.alertService.showError(error.error?.message || 'Failed to accept request');
+          // Use message translation service for error handling
+          const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+          this.alertService.showError(errorMessage);
           this.loadingStore.setLoadingFailed();
         }
       });
     }
   }
-
 
   backToList(): void {
     if (this.viewMode === 'details') {
