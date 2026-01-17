@@ -116,7 +116,7 @@ export class CollaboratorsController {
   async resendInvitation(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
     const userId = await this.currentUserService.getCurrentUserId();
     await this.collaboratorManagerService.resendInvitation(userId, id);
-    return new MessageModel('Invitation resent successfully');
+    return new MessageModel('matchRequests.invitationResent');
   }
 
   /**

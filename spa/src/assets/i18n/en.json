@@ -236,7 +236,8 @@
     "failedToResend": "Failed to resend invitation",
     "eventSavedSuccessfully": "Event saved successfully",
     "failedToUpdate": "Failed to update collaborator",
-    "failedToCreate": "Failed to create collaborator"
+    "failedToCreate": "Failed to create collaborator",
+    "collaboratorAssociatedToTransactions": "The collaborator is associated with existing transactions and cannot be deleted. You can deactivate them instead."
   },
   "validation": {
     "required": "is required",
@@ -336,7 +337,30 @@
     "acceptMatchRequest": "Accept match request from {{email}}?",
     "requestAcceptedSuccess": "Match request accepted successfully!",
     "needInternalCollaborator": "You need to create an internal collaborator first to accept this invitation.",
-    "failedToLoadData": "Failed to load data"
+    "failedToLoadData": "Failed to load data",
+    "requestCreatedEmailNotFound": "Match request created. When a user registers with '{{email}}', they will be notified of your invitation.",
+    "requestSentToUser": "Match request sent to user with email '{{email}}'",
+    "cannotMatchOwnCollaborator": "Cannot match with your own collaborator",
+    "collaboratorsAlreadyMatched": "These collaborators are already matched",
+    "emailAlreadyAssignedToCollaborator": "This email is already assigned to another one of your collaborators",
+    "alreadySentInvitationToEmail": "You have already sent an invitation to this email. You cannot send multiple invitations to the same email.",
+    "emailAlreadySentMatchRequest": "This email has already sent you a match request. Please check your received invitations.",
+    "needSelectCollaboratorToAssignEmail": "You need to select one of your internal collaborators to assign the email '{{email}}' and complete the match.",
+    "collaboratorNotFound": "Collaborator not found",
+    "collaboratorAlreadyLinked": "This collaborator is already linked. Only unlinked collaborators can request matches.",
+    "matchRequestNotFound": "Match request not found",
+    "notAuthorizedToAccept": "You are not authorized to accept this request",
+    "requestNotPending": "This request is not pending",
+    "requesterUserNotFound": "Requester user not found",
+    "selectedCollaboratorNotFound": "Selected collaborator not found",
+    "selectedCollaboratorAlreadyHasEmail": "The selected collaborator already has an email. Please select an internal collaborator (without email).",
+    "onlyCreatorCanCancel": "You can only cancel requests that you sent",
+    "cannotCancelAcceptedRequest": "Cannot cancel a request that has already been accepted",
+    "matchNotFound": "Match not found",
+    "notAuthorizedToDeleteMatch": "You are not authorized to delete this match",
+    "onlyExternalCollaboratorsCanReceiveInvitations": "Only external collaborators can receive invitations",
+    "matchDeleted": "Match deleted successfully",
+    "invitationResent": "Invitation resent successfully"
   },
   "operations": {
     "newTitle": "New Operation",
@@ -712,5 +736,8 @@
   "Invitation resent successfully": "Invitation resent successfully",
   "Bank":"Bank",
   "Cash":"Cash",
-  "Card":"Card"
+  "Card":"Card",
+  "Good bye.": "Good bye.",
+  "Unsuccessful operation": "Unsuccessful operation",
+  "Successful operation": "Successful operation"
 }

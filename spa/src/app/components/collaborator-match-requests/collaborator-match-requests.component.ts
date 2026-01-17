@@ -19,6 +19,7 @@ import { SelectInputComponent } from '../inputs/select-input/select-input.compon
 import { KeyValueViewModel } from '../../models/view';
 import { Configurations } from '../../models/enums';
 import { forkJoin } from 'rxjs';
+import { MessageTranslationService } from '../../services/helpers';
 
 @Component({
   selector: 'app-collaborator-match-requests',
@@ -39,6 +40,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   private collaboratorApiService = inject(CollaboratorApiService);
   private alertService = inject(AlertService);
   private translate = inject(TranslateService);
+  private messageTranslationService = inject(MessageTranslationService);
   private loadingStore = useLoadingStore();
   private router = inject(Router);
   private readonly collaboratorStore = useCollaboratorStore();
@@ -97,19 +99,23 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       this.pendingRequestToAccept.id,
       this.formGroup.value.collaboratorId
     ).subscribe({
-      next: () => {
-        this.alertService.showSuccess(
-          this.translate.instant('matchRequests.requestAccepted')
+      next: (response) => {
+        // Use message translation service for backend response
+        const message = this.messageTranslationService.translateSuccessMessage(
+          response, 
+          'matchRequests.requestAccepted'
         );
+        this.alertService.showSuccess(message);
+        
         this.showCollaboratorSelectionModal = false;
         this.pendingRequestToAccept = null;
         this.formGroup.controls.collaboratorId.setValue(null)
         this.loadAllData();
       },
       error: (error) => {
-        this.alertService.showError(
-          error.error?.message || this.translate.instant('matchRequests.failedToAccept')
-        );
+        // Use message translation service for error handling
+        const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+        this.alertService.showError(errorMessage);
         this.loadingStore.setLoadingFailed();
       }
     });
@@ -128,15 +134,18 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       this.loadingStore.setLoading();
       this.matchRequestApiService.cancelMatchRequest(request.id).subscribe({
         next: (response) => {
-          this.alertService.showSuccess(
-            response.message || this.translate.instant('matchRequests.requestCancelled')
+          // Use message translation service for success message
+          const message = this.messageTranslationService.translateSuccessMessage(
+            response, 
+            'matchRequests.requestCancelled'
           );
+          this.alertService.showSuccess(message);
           this.loadAllData();
         },
         error: (error) => {
-          this.alertService.showError(
-            error.error?.message || this.translate.instant('matchRequests.failedToCancel')
-          );
+          // Use message translation service for error handling
+          const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+          this.alertService.showError(errorMessage);
           this.loadingStore.setLoadingFailed();
         }
       });
@@ -159,18 +168,23 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
     this.matchRequestApiService.createMatchRequest(request).subscribe({
       next: (response) => {
-        this.alertService.showSuccess(
-          response.message || this.translate.instant('matchRequests.requestCreated')
+        // Use message translation service for backend response with email parameter
+        const message = this.messageTranslationService.translateBackendMessage(
+          response.message || 'matchRequests.requestCreated',
+          'matchRequests.requestCreated',
+          { email: this.formGroup.value.targetEmail }
         );
+        this.alertService.showSuccess(message);
+        
         this.formGroup.reset();
         this.activeTab = 'sent';
         this.ignorePreventUnsavedChanges = true
         this.loadAllData();
       },
       error: (error) => {
-        this.alertService.showError(
-          error.error?.message || this.translate.instant('matchRequests.failedToCreate')
-        );
+        // Use message translation service for error handling
+        const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+        this.alertService.showError(errorMessage);
         this.loadingStore.setLoadingFailed();
       }
     });
@@ -216,9 +230,10 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
         }
       },
       error: (error) => {
-        this.alertService.showError(
-          this.translate.instant('matchRequests.failedToLoadData')
-        );
+        // Use message translation service for error handling
+        const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+        this.alertService.showError(errorMessage);
+        
         if (isInitial) {
           this.initialLoading.set(false);
         } else {
@@ -236,16 +251,19 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
       this.matchRequestApiService.acceptMatchRequest(request.id).subscribe({
-        next: () => {
-          this.alertService.showSuccess(
-            this.translate.instant('matchRequests.requestAcceptedSuccess')
+        next: (response) => {
+          // Use message translation service for success message
+          const message = this.messageTranslationService.translateSuccessMessage(
+            response, 
+            'matchRequests.requestAcceptedSuccess'
           );
+          this.alertService.showSuccess(message);
           this.loadAllData();
         },
         error: (error) => {
-          this.alertService.showError(
-            error.error?.message || this.translate.instant('matchRequests.failedToAccept')
-          );
+          // Use message translation service for error handling
+          const errorMessage = this.messageTranslationService.translateErrorMessage(error);
+          this.alertService.showError(errorMessage);
           this.loadingStore.setLoadingFailed();
         }
       });

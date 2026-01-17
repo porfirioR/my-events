@@ -8,7 +8,7 @@ export class TravelMemberModel {
     public collaboratorSurname: string,
     public collaboratorEmail: string | null,
     public joinedDate: Date,
-    public source?: 'MyCollaborator' | 'CreatorCollaborator' | 'Me',  // ✅ NUEVO
-    public canAddToMyCollaborators?: boolean,                          // ✅ NUEVO
+    public source?: 'MyCollaborator' | 'CreatorCollaborator' | 'Me',
+    public canAddToMyCollaborators?: boolean,
   ) {}
 }

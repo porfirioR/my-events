@@ -237,7 +237,8 @@
     "failedToResend": "Error al reenviar la invitación",
     "eventSavedSuccessfully": "Evento guardado exitosamente",
     "failedToUpdate": "Error al actualizar el colaborador",
-    "failedToCreate": "Error al crear el colaborador"
+    "failedToCreate": "Error al crear el colaborador",
+    "collaboratorAssociatedToTransactions": "El colaborador está asociado a transacciones existentes y no puede ser eliminado. Puede desactivarlo en su lugar."
   },
   "validation": {
     "required": "es requerido",
@@ -337,8 +338,32 @@
     "acceptMatchRequest": "¿Aceptar solicitud de vinculación de {{email}}?",
     "requestAcceptedSuccess": "¡Solicitud aceptada exitosamente!",
     "needInternalCollaborator": "Necesitas crear un colaborador interno primero para aceptar esta invitación.",
-    "failedToLoadData": "Error al cargar los datos"
-  },"operations": {
+    "failedToLoadData": "Error al cargar los datos",
+    "requestCreatedEmailNotFound": "Solicitud de vinculación creada. Cuando un usuario se registre con '{{email}}', será notificado de tu invitación.",
+    "requestSentToUser": "Solicitud de vinculación enviada al usuario con email '{{email}}'",
+    "cannotMatchOwnCollaborator": "No puedes vincularte con tu propio colaborador",
+    "collaboratorsAlreadyMatched": "Estos colaboradores ya están vinculados",
+    "emailAlreadyAssignedToCollaborator": "Este email ya está asignado a otro de tus colaboradores",
+    "alreadySentInvitationToEmail": "Ya has enviado una invitación a este email. No puedes enviar múltiples invitaciones al mismo email.",
+    "emailAlreadySentMatchRequest": "Este email ya te ha enviado una solicitud de vinculación. Por favor revisa tus invitaciones recibidas.",
+    "needSelectCollaboratorToAssignEmail": "Necesitas seleccionar uno de tus colaboradores internos para asignarle el email '{{email}}' y completar la vinculación.",
+    "collaboratorNotFound": "Colaborador no encontrado",
+    "collaboratorAlreadyLinked": "Este colaborador ya está vinculado. Solo los colaboradores no vinculados pueden solicitar vinculaciones.",
+    "matchRequestNotFound": "Solicitud de vinculación no encontrada",
+    "notAuthorizedToAccept": "No estás autorizado para aceptar esta solicitud",
+    "requestNotPending": "Esta solicitud no está pendiente",
+    "requesterUserNotFound": "Usuario solicitante no encontrado",
+    "selectedCollaboratorNotFound": "Colaborador seleccionado no encontrado",
+    "selectedCollaboratorAlreadyHasEmail": "El colaborador seleccionado ya tiene un email. Por favor selecciona un colaborador interno (sin email).",
+    "onlyCreatorCanCancel": "Solo puedes cancelar solicitudes que tú enviaste",
+    "cannotCancelAcceptedRequest": "No puedes cancelar una solicitud que ya ha sido aceptada",
+    "matchNotFound": "Vinculación no encontrada",
+    "notAuthorizedToDeleteMatch": "No estás autorizado para eliminar esta vinculación",
+    "onlyExternalCollaboratorsCanReceiveInvitations": "Solo los colaboradores externos pueden recibir invitaciones",
+    "matchDeleted": "Vinculación eliminada exitosamente",
+    "invitationResent": "Invitación reenviada exitosamente"
+  },
+  "operations": {
     "newTitle": "Nueva Operación",
     "editTitle": "Editar Operación",
     "currency": "Moneda",
@@ -712,5 +737,8 @@
   "Invitation resent successfully": "Invitación reenviada correctamente",
   "Bank":"Banco",
   "Cash":"Efectivo",
-  "Card":"Tarjeta"
+  "Card":"Tarjeta",
+  "Good bye.": "Hasta luego",
+  "Unsuccessful operation": "Operación fallida",
+  "Successful operation": "Operación exitosa"
 }

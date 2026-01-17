@@ -47,8 +47,9 @@ export class AlertService {
   }
 
   public showSuccess = (title: string = 'Successful operation'): void => {
+    const translateTitle = this.translate.instant(title);
     this.getSwal().then(x => x.mixin({
-      title,
+      title: translateTitle,
       toast: true,
       position: 'bottom-end',
       showConfirmButton: false,
@@ -63,8 +64,9 @@ export class AlertService {
   }
 
   public showError = (text: string = ''): void => {
+    const translateTitle = this.translate.instant('Unsuccessful operation');
     this.getSwal().then(x => x.fire({
-      title: 'Unsuccessful operation',
+      title: translateTitle,
       text,
       icon: 'error',
       confirmButtonText: 'Ok',
