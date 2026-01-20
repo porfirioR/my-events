@@ -39,7 +39,11 @@ export class BalancesComponent implements OnInit {
   protected getInitials = FormatterHelperService.getInitials
 
   ngOnInit(): void {
-    this.transactionStore.loadBalances();
+    // Always reload both transactions and balances to get the most current data
+    // Balances are calculated from transactions, so we need both datasets fresh
+    // This ensures we reflect any new transactions, settlements, or payments
+    this.transactionStore.reloadTransactions();
+    this.transactionStore.reloadBalances();
   }
 
   protected toggleBalanceDetails(collaboratorId: number): void {
