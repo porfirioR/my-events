@@ -5,12 +5,19 @@ import { Injectable } from '@angular/core'
 })
 export class LocalService {
   private readonly emailKey = 'email'
+  private readonly nameKey = 'name'
+  private readonly surnameKey = 'surname'
   private readonly userKey = 'user'
   private readonly jwtToken = 'jwt'
   private readonly isEmailVerified = 'isEmailVerified'
 
   public getEmail = (): string | null => localStorage.getItem(this.emailKey) ?? ''
   public setEmail = (email: string): void => localStorage.setItem(this.emailKey, email)
+  public setName = (name: string): void => localStorage.setItem(this.nameKey, name)
+  public getName = (): string | null => localStorage.getItem(this.nameKey) ?? ''
+
+  public setSurname = (surname: string): void => localStorage.setItem(this.surnameKey, surname)
+  public getSurname = (): string | null => localStorage.getItem(this.surnameKey) ?? ''
 
   public getUserId = (): number => +(localStorage.getItem(this.userKey) ?? -1)
   public setUserId = (id: number): void => localStorage.setItem(this.userKey, id.toString())

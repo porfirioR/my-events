@@ -54,11 +54,13 @@ export class AppComponent {
     const token = this.localService.getJwtToken();
     const userString = this.localService.getUserId();
     const email = this.localService.getEmail();
+    const name = this.localService.getName();
+    const surname = this.localService.getSurname();
     const isEmailVerified = this.localService.getEmailVerified();
 
     if (token && userString) {
       try {
-        this.authStore.restoreSession(userString, token, email!, isEmailVerified);
+        this.authStore.restoreSession(userString, token, email!, name!, surname!, isEmailVerified);
       } catch (error) {
         this.localService.cleanCredentials();
         this.authStore.logout();

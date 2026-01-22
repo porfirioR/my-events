@@ -6,6 +6,8 @@ import { useCollaboratorStore, useSavingsStore, useTransactionStore, useTravelSt
 export interface AuthState {
   userId: number | null;
   email: string | null;
+  name: string | null;
+  surname: string | null;
   token: string | null;
   isAuthenticated: boolean;
   isEmailVerified: boolean;
@@ -18,6 +20,8 @@ export const AuthStore = signalStore(
   withState<AuthState>({
     userId: null,
     email: null,
+    name: null,
+    surname: null,
     token: null,
     isAuthenticated: false,
     isEmailVerified: false,
@@ -27,33 +31,34 @@ export const AuthStore = signalStore(
   withComputed((store) => ({
     isLoggedIn: computed(() => store.isAuthenticated() && !!store.token()),
     currentUser: computed(() => store.userId()),
-    currentUserName: computed(() => store.email()?.split('@')[0]),
+    currentUserName: computed(() => `${store.name()} ${store.surname()}`),
     currentUserEmail: computed(() => store.email()),
     needsEmailVerification: computed(() => 
       store.isAuthenticated() && !store.isEmailVerified()
     ),
   })),
   withMethods((store, 
-    currencyStore = useCurrencyStore(), // ✅ Inyectar stores
+    currencyStore = useCurrencyStore(),
     collaboratorStore = useCollaboratorStore(),
     transactionStore = useTransactionStore(),
     savingsStore = useSavingsStore(),
     travelStore = useTravelStore(),
   ) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
-    
-    loginSuccess: (userId: number, token: string, email: string, isEmailVerified: boolean = false) => {
+
+    loginSuccess: (userId: number, token: string, email: string, name: string, surname: string, isEmailVerified: boolean = false) => {
       patchState(store, {
         userId,
         email,
+        name,
+        surname,
         token,
         isAuthenticated: true,
         isEmailVerified: isEmailVerified,
         loginLoading: false,
         error: null
       });
-      
-      // ✅ Cargar currencies después de login exitoso
+
       currencyStore.loadCurrencies();
       collaboratorStore.loadCollaborators();
       transactionStore.loadTransactions();
@@ -64,6 +69,8 @@ export const AuthStore = signalStore(
     loginFailure: (error: string) => patchState(store, {
       userId: null,
       email: null,
+      name: null,
+      surname: null,
       token: null,
       isAuthenticated: false,
       loginLoading: false,
@@ -75,14 +82,15 @@ export const AuthStore = signalStore(
       patchState(store, {
         userId: null,
         email: null,
+        name: null,
+        surname: null,
         token: null,
         isAuthenticated: false,
         isEmailVerified: false,
         loginLoading: false,
         error: null
       });
-      
-      // ✅ Limpiar currencies al logout
+
       currencyStore.clearCurrencies();
       collaboratorStore.clearCollaborators();
       transactionStore.clearTransactions()
@@ -94,10 +102,12 @@ export const AuthStore = signalStore(
     },
 
     // Restaurar sesión desde localStorage
-    restoreSession: (userId: number, token: string, email: string, isEmailVerified: boolean) => {
+    restoreSession: (userId: number, token: string, email: string, name: string, surname: string, isEmailVerified: boolean) => {
       patchState(store, {
         userId,
         email,
+        name,
+        surname,
         token,
         isAuthenticated: true,
         loginLoading: false,

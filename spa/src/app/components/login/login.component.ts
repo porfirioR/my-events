@@ -51,7 +51,7 @@ export class LoginComponent {
     );
     this.userApiService.loginUser(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified);
+        this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.isEmailVerified);
 
         if (!user.isEmailVerified) {
           this.alertService.showError(

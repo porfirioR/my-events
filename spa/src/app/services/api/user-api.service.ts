@@ -23,16 +23,10 @@ export class UserApiService {
     private readonly localService: LocalService
   ) {}
 
-  public getUsers = (): Observable<UserApiModel[]> =>
-    this.httpClient.get<UserApiModel[]>(`${this.section}`);
-
-  public getByUserId = (id: number): Observable<UserApiModel[]> =>
-    this.httpClient.get<UserApiModel[]>(`${this.section}/${id}`);
-
   /**
    * Login de usuario
    */
-  public loginUser = (request: CreateUserApiRequest): Observable<SignApiModel> => {
+  public loginUser = (request: LoginUserApiRequest): Observable<SignApiModel> => {
     const credentials = `${request.email}:${request.password}`;
     let headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -98,6 +92,8 @@ export class UserApiService {
 
   private setInLocaleStorage = (user: SignApiModel): void => {
     this.localService.setEmail(user.email);
+    this.localService.setName(user.name);
+    this.localService.setSurname(user.surname);
     this.localService.setJwtToken(user.token);
     this.localService.setUserId(user.id);
     this.localService.setEmailVerified(user.isEmailVerified);

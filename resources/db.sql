@@ -9,9 +9,15 @@ CREATE TYPE splittype AS ENUM ('Equal', 'Custom', 'Percentage');
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) NOT NULL UNIQUE,
+    name VARCHAR(25) NOT NULL,
+    surname VARCHAR(25) NOT NULL, 
     password VARCHAR(255) NOT NULL,
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_users_name ON users(name);
+CREATE INDEX idx_users_surname ON users(surname);
+CREATE INDEX idx_users_fullname ON users(name, surname);
 
 CREATE TABLE passwordresettokens (
     id SERIAL PRIMARY KEY,

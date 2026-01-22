@@ -23,6 +23,28 @@
 
       <!-- Signup form -->
       <form class="space-y-4 md:space-y-6" (submit)="save($event)" [formGroup]="formGroup">
+        <!-- Name field -->
+        <app-text
+          formControlName="name"
+          type="text"
+          [placeholder]="'auth.namePlaceholder' | translate"
+          autocomplete="name"
+          [label]="'auth.name' | translate"
+          id="name"
+          name="name"
+          [disabled]="isLoading()"
+        />
+        <!-- Surname field -->
+        <app-text
+          formControlName="surname"
+          type="text"
+          [placeholder]="'auth.surnamePlaceholder' | translate"
+          autocomplete="username"
+          [label]="'auth.surname' | translate"
+          id="surname"
+          name="surname"
+          [disabled]="isLoading()"
+        />
         <!-- Email field -->
         <app-text
           formControlName="email"

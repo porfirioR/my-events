@@ -63,7 +63,7 @@ export class ResetPasswordComponent {
 
     this.userApiService.resetPassword(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified);
+        this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.isEmailVerified);
         this.alertService.showSuccess('Password reset successfully! You are now logged in.');
         this.router.navigate(['']);
       },

@@ -111,7 +111,7 @@ export const TransactionStore = signalStore(
     // Verificar si necesita cargar balances
     needsLoadingBalances: computed(() => !store.isBalancesLoaded() && !store.error())
   })),
-  
+
   withMethods((store, 
     transactionApiService = inject(TransactionApiService),
     loadingStore = useLoadingStore()
