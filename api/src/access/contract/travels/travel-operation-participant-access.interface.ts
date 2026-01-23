@@ -40,4 +40,9 @@ export interface ITravelOperationParticipantAccessService {
    * Obtener total de participantes en una operación
    */
   getParticipantCount(operationId: number): Promise<number>;
+
+  /**
+   * Remover participante específico
+   */
+  removeParticipant(operationId: number, memberId: number): Promise<void>;
 }

@@ -199,6 +199,16 @@ export class TravelOperationApprovalAccessService
     return count || 0;
   };
 
+  public removeApproval = async (operationId: number, memberId: number): Promise<void> => {
+    const { error } = await this.dbContext
+      .from(TableEnum.TravelOperationApprovals)
+      .delete()
+      .eq(DatabaseColumns.OperationId, operationId)
+      .eq(DatabaseColumns.MemberId, memberId);
+
+    if (error) throw new Error(error.message);
+  };
+
   // Private methods
   private mapEntityToAccessModel = (entity: TravelOperationApprovalEntity): TravelOperationApprovalAccessModel => {
     return new TravelOperationApprovalAccessModel(

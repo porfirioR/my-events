@@ -315,6 +315,24 @@ export class TravelsController {
     return new MessageModel('Operation deleted successfully');
   }
 
+  /**
+   * Salir de una operación
+   * POST /api/travels/operations/:operationId/leave
+   */
+  @Post('operations/:operationId/leave')
+  async leaveOperation(
+    @Param('operationId', ParseIntPipe) operationId: number,
+  ): Promise<MessageModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    const result = await this.travelManagerService.leaveOperation(operationId, userId);
+    
+    return new MessageModel(
+      result.operationDeleted 
+        ? 'You left the operation. Since no participants remain, the operation was deleted.'
+        : 'You successfully left the operation. Amounts have been recalculated.'
+    );
+  }
+
   // ==================== OPERATION APPROVALS ====================
 
   /**

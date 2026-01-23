@@ -58,14 +58,14 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS emailverifiedat TIMESTAMP NULL;
 -- Eliminar columna 'code' antigua (ejecutar después de migrar datos si es necesario)
 ALTER TABLE users DROP COLUMN IF EXISTS code;
 
--- Colaboradores - email NULL = interno, email valor = externo
+-- Colaboradores
 CREATE TABLE collaborators (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
-    email VARCHAR(150), -- NULL = colaborador INTERNO, valor = colaborador EXTERNO
+    email VARCHAR(150),
     userid INT NOT NULL,
-    isactive BOOLEAN DEFAULT TRUE, --AGREGAR para soft delete
+    isactive BOOLEAN DEFAULT TRUE,
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );
@@ -81,7 +81,7 @@ CREATE TABLE collaboratormatchrequests (
     id SERIAL PRIMARY KEY,
     requesteruserid INT NOT NULL,
     requestercollaboratorid INT NOT NULL,
-    targetuserid INT NULL, -- ✅ NULL permitido cuando email no existe
+    targetuserid INT NULL,
     targetcollaboratoremail VARCHAR(150) NOT NULL,
     status matchstatus DEFAULT 'Pending',
     requesteddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -596,3 +596,92 @@ CREATE INDEX idx_traveloperationapprovals_operation ON traveloperationapprovals(
 CREATE INDEX idx_traveloperationapprovals_member ON traveloperationapprovals(memberid);
 CREATE INDEX idx_traveloperationapprovals_operationstatus ON traveloperationapprovals(operationid, status);
 CREATE INDEX idx_traveloperationapprovals_memberstatus ON traveloperationapprovals(memberid, status);
+
+-- =====================================================
+-- PARTE 11: ACTUALIZACIONES FUTURAS
+-- =====================================================
+
+CREATE TABLE traveloperationpayments (
+    id SERIAL PRIMARY KEY,
+    operationid INT NOT NULL,
+    travelmemberid INT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    paymentdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+    FOREIGN KEY (travelmemberid) REFERENCES travelmembers(id),
+    
+    CONSTRAINT check_payment_positive CHECK (amount > 0)
+);
+
+-- =====================================================
+-- PARTE 12: CATEGORÍAS DE OPERACIONES
+-- =====================================================
+
+CREATE TABLE operationcategories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    icon VARCHAR(10) NOT NULL, -- emoji unicode
+    color VARCHAR(7) NOT NULL, -- hex color
+    isactive BOOLEAN DEFAULT TRUE,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Categorías más comunes de apps como Splitwise, Tricount, etc.
+INSERT INTO operationcategories (id, name, icon, color) VALUES
+    (1, 'Food & Dining', '🍽️', '#FF6B6B'),
+    (2, 'Groceries', '🛒', '#4ECDC4'),
+    (3, 'Transportation', '🚗', '#45B7D1'),
+    (4, 'Accommodation', '🏨', '#9B59B6'),
+    (5, 'Entertainment', '🎭', '#FFA07A'),
+    (6, 'Shopping', '🛍️', '#98D8C8'),
+    (7, 'Gas & Fuel', '⛽', '#E74C3C'),
+    (8, 'Drinks & Bar', '🍻', '#F39C12'),
+    (9, 'Coffee & Snacks', '☕', '#D35400'),
+    (10, 'Taxi & Uber', '🚕', '#2ECC71'),
+    (11, 'Flights', '✈️', '#3498DB'),
+    (12, 'Tours & Activities', '🎪', '#E67E22'),
+    (13, 'Souvenirs & Gifts', '🎁', '#8E44AD'),
+    (14, 'Health & Pharmacy', '💊', '#1ABC9C'),
+    (15, 'Parking', '🅿️', '#34495E'),
+    (16, 'Tips & Service', '💰', '#F1C40F'),
+    (17, 'Insurance', '🛡️', '#7F8C8D'),
+    (18, 'Other', '📝', '#BDC3C7')
+;
+
+ALTER TABLE traveloperations ADD COLUMN categoryid INT;
+ALTER TABLE traveloperations ADD FOREIGN KEY (categoryid) REFERENCES operationcategories(id);
+
+-- Valor por defecto: "Other" para operaciones existentes
+UPDATE traveloperations SET categoryid = 18 WHERE categoryid IS NULL;
+
+-- =====================================================
+-- PARTE 14: ATTACHMENTS PARA OPERACIONES
+-- =====================================================
+
+CREATE TABLE operationattachments (
+    id SERIAL PRIMARY KEY,
+    operationid INT NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    originalname VARCHAR(255) NOT NULL,
+    mimetype VARCHAR(100) NOT NULL,
+    filesize INT NOT NULL, -- en bytes
+    storageurl VARCHAR(500) NOT NULL, -- Azure Blob Storage URL
+    uploadedbyuserid INT NOT NULL,
+    uploadeddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploadedbyuserid) REFERENCES users(id)
+);
+
+-- Índices para operationcategories
+CREATE INDEX idx_operationcategories_active ON operationcategories(isactive);
+
+-- Índices para traveloperations con categorías
+CREATE INDEX idx_traveloperations_category ON traveloperations(categoryid);
+CREATE INDEX idx_traveloperations_travel_category ON traveloperations(travelid, categoryid);
+
+-- Índices para operationattachments
+CREATE INDEX idx_operationattachments_operation ON operationattachments(operationid);
+CREATE INDEX idx_operationattachments_uploadedby ON operationattachments(uploadedbyuserid);
+CREATE INDEX idx_operationattachments_upload_date ON operationattachments(uploadeddate);

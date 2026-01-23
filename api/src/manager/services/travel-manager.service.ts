@@ -39,6 +39,7 @@ import {
   CreditDetailModel,
   SettlementModel,
 } from '../models/travels';
+import { UserAccessService } from '../../access/data/services';
 
 @Injectable()
 export class TravelManagerService {
@@ -63,6 +64,7 @@ export class TravelManagerService {
 
     @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
     private collaboratorAccessService: ICollaboratorAccessService,
+    private userAccessService: UserAccessService,
   ) {}
 
   // ==================== PAYMENT METHODS ====================
@@ -85,11 +87,24 @@ export class TravelManagerService {
     );
 
     const accessModel = await this.travelAccessService.create(accessRequest);
+    const userEmail = await this.getUserEmailById(request.userId)
 
-    // Agregar al creador como primer miembro del viaje
-    // const creatorCollaborator = await this.collaboratorAccessService.getById(0, request.userId); // Necesitamos un colaborador del usuario creador
-    // TODO: Determinar cómo obtener el collaboratorId del usuario creador
+    const internalCollaborator = await this.collaboratorAccessService.getInternalCollaboratorByUserIdAndEmail(
+      request.userId,
+      userEmail
+    );
 
+    if (!internalCollaborator) {
+      throw new BadRequestException('User must have an internal collaborator to create travels');
+    }
+
+    const memberRequest = new AddTravelMemberAccessRequest(
+      accessModel.id,
+      request.userId,
+      internalCollaborator.id,
+    );
+
+    await this.travelMemberAccessService.add(memberRequest);
     return this.mapTravelAccessToModel(accessModel);
   };
 
@@ -257,14 +272,16 @@ export class TravelManagerService {
       throw new BadRequestException('Cannot add members to a finalized travel');
     }
 
-    // Verificar que el colaborador existe y tiene email (es externo)
+    // Verificar que el colaborador existe y tiene email (interno o es externo)
     const collaborator = await this.collaboratorAccessService.getById(request.collaboratorId, request.userId);
     if (!collaborator) {
       throw new NotFoundException('Collaborator not found');
     }
 
+    // ✅ CLARIFICAR: Solo colaboradores externos pueden ser agregados MANUALMENTE
+    // El colaborador interno ya fue agregado automáticamente al crear el viaje
     if (!collaborator.email) {
-      throw new BadRequestException('Only external collaborators (with email) can be added to travels');
+      throw new BadRequestException('Only external collaborators can be manually added to travels. Internal collaborator is added automatically when creating the travel.');
     }
 
     // Verificar que el colaborador no está ya en el viaje
@@ -474,6 +491,11 @@ export class TravelManagerService {
       throw new NotFoundException('Operation not found');
     }
 
+    const isFullyApproved = await this.travelOperationApprovalAccessService.isFullyApproved(request.operationId);
+    if (isFullyApproved) {
+      throw new BadRequestException('This operation has been approved by all participants and cannot be modified.');
+    }
+
     // Verificar que el viaje está activo
     const travel = await this.travelAccessService.getById(request.travelId, request.userId);
     if (!travel) {
@@ -559,6 +581,20 @@ export class TravelManagerService {
       throw new NotFoundException('Operation not found');
     }
 
+    if (operation.createdByUserId !== userId) {
+      throw new BadRequestException('Only the creator can delete the operation');
+    }
+
+
+    // Verificar tiempo límite de 1 semana
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const isWithinOneWeek = new Date(operation.dateCreated) > oneWeekAgo;
+
+    if (!isWithinOneWeek) {
+      throw new BadRequestException('Operations can only be deleted within one week of creation');
+    }
+
     // Verificar que el viaje está activo
     const travel = await this.travelAccessService.getById(operation.travelId, userId);
     if (!travel) {
@@ -567,17 +603,6 @@ export class TravelManagerService {
 
     if (travel.status !== TravelStatus.Active) {
       throw new BadRequestException('Cannot delete operations in a finalized travel');
-    }
-
-    // Verificar que el usuario es el creador de la operación
-    if (operation.createdByUserId !== userId) {
-      throw new BadRequestException('Only the creator can delete the operation');
-    }
-
-    // Verificar que no todas las aprobaciones están completas
-    const isFullyApproved = await this.travelOperationApprovalAccessService.isFullyApproved(operationId);
-    if (isFullyApproved) {
-      throw new BadRequestException('Cannot delete a fully approved operation. Someone must reject it first.');
     }
 
     await this.travelOperationAccessService.delete(operationId);
@@ -611,6 +636,117 @@ export class TravelManagerService {
     }
 
     return await this.enrichTravelOperationModel(operation);
+  };
+
+  public leaveOperation = async (operationId: number, userId: number): Promise<{ operationDeleted: boolean }> => {
+    const operation = await this.travelOperationAccessService.getById(operationId);
+    if (!operation) {
+      throw new NotFoundException('Operation not found');
+    }
+
+    // Verificar tiempo límite de 1 semana
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const isWithinOneWeek = new Date(operation.dateCreated) > oneWeekAgo;
+
+    if (!isWithinOneWeek) {
+      throw new BadRequestException('Can only leave operations within one week of creation');
+    }
+
+    // ✅ CORREGIR: Verificar que travel existe
+    const travel = await this.travelAccessService.getById(operation.travelId, userId);
+    if (!travel) {
+      throw new NotFoundException('Travel not found');
+    }
+    
+    if (travel.status !== TravelStatus.Active) {
+      throw new BadRequestException('Cannot leave operations in a finalized travel');
+    }
+
+    // Verificar que NO está completamente aprobada
+    const isFullyApproved = await this.travelOperationApprovalAccessService.isFullyApproved(operationId);
+    if (isFullyApproved) {
+      throw new BadRequestException('Cannot leave a fully approved operation');
+    }
+
+    const userMember = await this.getUserMemberInTravel(operation.travelId, userId);
+    if (!userMember) {
+      throw new BadRequestException('User is not a member of this travel');
+    }
+
+    // Verificar que es participante
+    const isParticipant = await this.travelOperationParticipantAccessService.isParticipant(
+      operationId, 
+      userMember.id
+    );
+
+    if (!isParticipant) {
+      throw new BadRequestException('You are not a participant in this operation');
+    }
+
+    // ✅ QUITAR validaciones duplicadas (se harán en removeParticipantFromOperation)
+    // Remover participante
+    await this.removeParticipantFromOperation(operationId, userMember.id);
+
+    // Verificar si quedan participantes
+    const remainingParticipants = await this.travelOperationParticipantAccessService.getByOperationId(operationId);
+    
+    if (remainingParticipants.length === 0) {
+      await this.travelOperationAccessService.delete(operationId);
+      return { operationDeleted: true };
+    } else {
+      await this.recalculateOperationSplits(operationId);
+      return { operationDeleted: false };
+    }
+  };
+
+  private recalculateOperationSplits = async (operationId: number): Promise<void> => {
+    const operation = await this.travelOperationAccessService.getById(operationId);
+    if (!operation) return;
+
+    const remainingParticipants = await this.travelOperationParticipantAccessService.getByOperationId(operationId);
+    const newShareAmount = operation.amount / remainingParticipants.length;
+
+    // ✅ Usar el método existente que retorna el modelo actualizado
+    for (const participant of remainingParticipants) {
+      await this.travelOperationParticipantAccessService.updateShareAmount(
+        participant.id, 
+        newShareAmount
+      );
+    }
+
+    // Verificar si sigue completamente aprobada
+    const remainingApprovals = await this.travelOperationApprovalAccessService.getByOperationId(operationId);
+    const allApproved = remainingApprovals.every(a => a.status === ApprovalStatus.Approved);
+    
+    if (allApproved && remainingApprovals.length > 0) {
+      await this.travelOperationAccessService.updateStatus(operationId, TravelOperationStatus.Approved);
+    } else {
+      await this.travelOperationAccessService.updateStatus(operationId, TravelOperationStatus.Pending);
+    }
+  };
+
+  private removeParticipantFromOperation = async (operationId: number, memberId: number): Promise<void> => {
+    // ✅ AGREGAR: Validar que no es el creador
+    const operation = await this.travelOperationAccessService.getById(operationId);
+    if (!operation) {
+      throw new NotFoundException('Operation not found');
+    }
+
+    // ✅ Buscar el userId del miembro para validar si es creador
+    const member = await this.travelMemberAccessService.getById(memberId);
+    if (member && operation.createdByUserId === member.userId) {
+      throw new BadRequestException('Creator should delete the operation instead of leaving it');
+    }
+
+    // ✅ Validar que no es quien pagó
+    if (operation.whoPaidMemberId === memberId) {
+      throw new BadRequestException('The person who paid cannot leave the operation');
+    }
+
+    // ✅ DESPUÉS: Si pasa las validaciones, entonces sí remover
+    await this.travelOperationParticipantAccessService.removeParticipant(operationId, memberId);
+    await this.travelOperationApprovalAccessService.removeApproval(operationId, memberId);
   };
 
   private enrichTravelOperationModel = async (accessModel: TravelOperationAccessModel): Promise<TravelOperationModel> => {
@@ -705,7 +841,11 @@ export class TravelManagerService {
     }
 
     const updatedOperation = await this.travelOperationAccessService.getById(request.operationId);
-    return await this.enrichTravelOperationModel(updatedOperation!);
+    if (!updatedOperation) {
+      throw new NotFoundException('Operation not found after update');
+    }
+
+    return await this.enrichTravelOperationModel(updatedOperation);
   };
 
   public rejectOperation = async (request: RejectOperationRequest): Promise<TravelOperationModel> => {
@@ -769,6 +909,9 @@ export class TravelManagerService {
     );
 
     const updatedOperation = await this.travelOperationAccessService.getById(request.operationId);
+    if (!updatedOperation) {
+      throw new NotFoundException('Operation not found after update');
+    }
     return await this.enrichTravelOperationModel(updatedOperation!);
   };
 
@@ -992,5 +1135,16 @@ export class TravelManagerService {
     }
 
     return simplifiedBalances;
+  };
+
+  private getUserEmailById = async (userId: number): Promise<string> => {
+    const users = await this.userAccessService.getUsers();
+    const user = users.find(u => u.id === userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user.email;
   };
 }

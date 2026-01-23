@@ -27,7 +27,7 @@ export class UserManagerService {
     private passwordResetTokenAccessService: PasswordResetTokenAccessService,
     private emailVerificationTokenAccessService: EmailVerificationTokenAccessService,
     private authService: AuthService,
-    @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE) // ✅ INYECTAR ACCESS SERVICE DIRECTAMENTE
+    @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
     private collaboratorAccessService: ICollaboratorAccessService
   ) {}
 
