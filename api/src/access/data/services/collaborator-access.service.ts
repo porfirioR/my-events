@@ -328,7 +328,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
     if (error) {
       throw new Error(error.message);
     }
-    
+
     return this.mapEntityToAccessModel(data);
   };
 

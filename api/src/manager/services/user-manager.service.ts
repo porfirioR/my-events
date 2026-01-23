@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserAccessService } from '../../access/data/services/user-access.service';
 import { PasswordResetTokenAccessService } from '../../access/data/services/password-reset-token-access.service';
 import { EmailVerificationTokenAccessService } from '../../access/data/services/email-verification-token-access.service';
 import { AuthService } from '../../access/auth/auth.service';
+import { ICollaboratorAccessService } from '../../access/contract/collaborators';
 import { CreateUserAccessRequest, ResetUserAccessRequest, UserAccessModel } from '../../access/contract/users';
 import { CreatePasswordResetTokenRequest } from '../../access/contract/tokens/create-password-reset-token-request';
 import { CreateEmailVerificationTokenRequest } from '../../access/contract/tokens/create-email-verification-token-request';
@@ -17,7 +18,7 @@ import {
   WebPushModel,
 } from '../models/users';
 import { TokenGenerator } from '../../utility/helpers/token-generator.helper';
-import { AUTH_CONFIG } from '../../utility/constants';
+import { AUTH_CONFIG, COLLABORATOR_TOKENS } from '../../utility/constants';
 
 @Injectable()
 export class UserManagerService {
@@ -25,7 +26,9 @@ export class UserManagerService {
     private userAccessService: UserAccessService,
     private passwordResetTokenAccessService: PasswordResetTokenAccessService,
     private emailVerificationTokenAccessService: EmailVerificationTokenAccessService,
-    private authService: AuthService
+    private authService: AuthService,
+    @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE) // ✅ INYECTAR ACCESS SERVICE DIRECTAMENTE
+    private collaboratorAccessService: ICollaboratorAccessService
   ) {}
 
   /**
@@ -52,6 +55,19 @@ export class UserManagerService {
         request.surname
       )
     );
+
+    try {
+      await this.collaboratorAccessService.createInternalCollaborator(
+        accessModel.id,
+        accessModel.email,
+        accessModel.name,
+        accessModel.surname
+      );
+    } catch (error) {
+      // Log del error pero no fallar el registro
+      console.error('Error creating internal collaborator:', error);
+      // Opcional: podrías decidir si esto debe fallar todo el proceso o continuar
+    }
 
     // Generar token de verificación de email
     const verificationToken = TokenGenerator.generateSecureToken(
