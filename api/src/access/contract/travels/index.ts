@@ -11,12 +11,17 @@ export { TravelOperationParticipantAccessModel } from './travel-operation-partic
 export { AddOperationParticipantAccessRequest } from './add-operation-participant-access-request';
 export { TravelOperationApprovalAccessModel } from './travel-operation-approval-access.model';
 export { CreateApprovalAccessRequest } from './create-approval-access-request';
+export { OperationCategoryAccessModel } from './operation-category-access.model';
+export { OperationAttachmentAccessModel } from './operation-attachment-access.model';
 export { ITravelOperationParticipantAccessService } from './travel-operation-participant-access.interface';
 export { ITravelOperationApprovalAccessService } from './travel-operation-approval-access.interface';
 export { ITravelAccessService } from './travel-access.interface';
 export { IPaymentMethodAccessService } from './payment-method-access.interface';
 export { ITravelMemberAccessService } from './travel-member-access.interface';
 export { ITravelOperationAccessService } from './travel-operation-access.interface';
+export { IOperationCategoryAccessService } from './operation-category-access.interface';
+export { IOperationAttachmentAccessService } from './operation-attachment-access.interface';
+export { CreateOperationAttachmentAccessRequest } from './create-operation-attachment-access-request';
 
 
 

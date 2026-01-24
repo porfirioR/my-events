@@ -27,3 +27,5 @@ export { TravelMemberEntity } from './travel-member.entity';
 export { TravelOperationEntity } from './travel-operation.entity';
 export { TravelOperationParticipantEntity } from './travel-operation-participant.entity';
 export { TravelOperationApprovalEntity } from './travel-operation-approval.entity';
+export { OperationAttachmentEntity } from './operation-attachment.entity';
+export { OperationCategoryEntity } from './operation-category.entity';

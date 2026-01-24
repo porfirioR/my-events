@@ -26,6 +26,8 @@ export const TRAVEL_TOKENS = {
   OPERATION_ACCESS_SERVICE: Symbol('ITravelOperationAccessService'),
   OPERATION_PARTICIPANT_ACCESS_SERVICE: Symbol('ITravelOperationParticipantAccessService'),
   OPERATION_APPROVAL_ACCESS_SERVICE: Symbol('ITravelOperationApprovalAccessService'),
+  OPERATION_CATEGORY_ACCESS_SERVICE: Symbol('IOperationCategoryAccessService'), // ✅ NUEVO
+  OPERATION_ATTACHMENT_ACCESS_SERVICE: Symbol('IOperationAttachmentAccessService'),
   PAYMENT_METHOD_ACCESS_SERVICE: Symbol('IPaymentMethodAccessService'),
   MANAGER_SERVICE: Symbol('ITravelManagerService')
 } as const;

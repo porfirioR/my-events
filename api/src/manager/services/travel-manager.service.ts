@@ -18,6 +18,11 @@ import {
   AddTravelMemberAccessRequest,
   TravelOperationParticipantAccessModel,
   UpdateTravelOperationAccessRequest,
+  IOperationCategoryAccessService,
+  IOperationAttachmentAccessService,
+  OperationAttachmentAccessModel,
+  OperationCategoryAccessModel,
+  CreateOperationAttachmentAccessRequest,
 } from '../../access/contract/travels';
 import { ICollaboratorAccessService } from '../../access/contract/collaborators';
 import {
@@ -37,9 +42,13 @@ import {
   TravelBalanceByCurrencyModel,
   DebtDetailModel,
   CreditDetailModel,
-  SettlementModel,
+  SettlementModel
 } from '../models/travels';
 import { UserAccessService } from '../../access/data/services';
+import { OperationCategorySummaryModel } from '../models/travels/operation-category-summary.model';
+import { OperationCategoryModel } from '../models/travels/operation-category.model';
+import { CreateOperationAttachmentRequest } from '../models/travels/create-operation-attachment-request';
+import { OperationAttachmentModel } from '../models/travels/operation-attachment.model';
 
 @Injectable()
 export class TravelManagerService {
@@ -64,6 +73,12 @@ export class TravelManagerService {
 
     @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
     private collaboratorAccessService: ICollaboratorAccessService,
+
+    @Inject(TRAVEL_TOKENS.OPERATION_CATEGORY_ACCESS_SERVICE) // ✅ NUEVO
+    private operationCategoryAccessService: IOperationCategoryAccessService,
+
+    @Inject(TRAVEL_TOKENS.OPERATION_ATTACHMENT_ACCESS_SERVICE) // ✅ NUEVO
+    private operationAttachmentAccessService: IOperationAttachmentAccessService,
     private userAccessService: UserAccessService,
   ) {}
 
@@ -952,6 +967,139 @@ export class TravelManagerService {
     }
 
     return balancesByCurrency;
+  };// ==================== OPERATION CATEGORIES ====================
+
+  public getAllOperationCategories = async (): Promise<OperationCategoryModel[]> => {
+    const accessModels = await this.operationCategoryAccessService.getActive();
+    return accessModels.map(this.mapCategoryAccessToModel);
+  };
+
+  public getTravelCategorySummary = async (travelId: number, userId: number): Promise<OperationCategorySummaryModel[]> => {
+    // Verificar permisos
+    const isMember = await this.travelAccessService.isMember(travelId, userId);
+    const isCreator = await this.travelAccessService.isCreator(travelId, userId);
+    
+    if (!isMember && !isCreator) {
+      throw new BadRequestException('Only travel members can view category summary');
+    }
+
+    // Obtener todas las categorías
+    const categories = await this.operationCategoryAccessService.getActive();
+    
+    // Obtener operaciones aprobadas del viaje
+    const operations = await this.travelOperationAccessService.getByTravelId(travelId);
+    const approvedOperations = operations.filter(op => op.status === TravelOperationStatus.Approved);
+    
+    // Calcular total del viaje
+    const totalTravelAmount = approvedOperations.reduce((sum, op) => sum + op.amount, 0);
+
+    // Crear resumen por categoría
+    const categorySummaries: OperationCategorySummaryModel[] = [];
+
+    for (const category of categories) {
+      const categoryOperations = approvedOperations.filter(op => op.categoryId === category.id);
+      const operationCount = categoryOperations.length;
+      const totalAmount = categoryOperations.reduce((sum, op) => sum + op.amount, 0);
+      const percentage = totalTravelAmount > 0 ? (totalAmount / totalTravelAmount) * 100 : 0;
+
+      categorySummaries.push(new OperationCategorySummaryModel(
+        this.mapCategoryAccessToModel(category),
+        operationCount,
+        totalAmount,
+        Math.round(percentage * 100) / 100, // Round to 2 decimals
+      ));
+    }
+
+    // Ordenar por total amount desc
+    return categorySummaries.sort((a, b) => b.totalAmount - a.totalAmount);
+  };
+
+  // ==================== OPERATION ATTACHMENTS ====================
+
+  public createOperationAttachment = async (request: CreateOperationAttachmentRequest): Promise<OperationAttachmentModel> => {
+    // Verificar que la operación existe
+    const operation = await this.travelOperationAccessService.getById(request.operationId);
+    if (!operation) {
+      throw new NotFoundException('Operation not found');
+    }
+
+    // Verificar permisos (debe ser participante o creador)
+    const isMember = await this.travelAccessService.isMember(operation.travelId, request.userId);
+    if (!isMember) {
+      throw new BadRequestException('Only travel members can add attachments');
+    }
+
+    // Verificar que el viaje está activo
+    const travel = await this.travelAccessService.getById(operation.travelId, request.userId);
+    if (travel.status !== TravelStatus.Active) {
+      throw new BadRequestException('Cannot add attachments to operations in finalized travel');
+    }
+
+    // TODO: Upload file to storage provider (Cloudinary/Azure/etc)
+    // Por ahora, simulamos que ya se subió
+    const externalId = `receipt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const storageUrl = `https://example.com/storage/${externalId}`;
+
+    const accessRequest = new CreateOperationAttachmentAccessRequest(
+      request.operationId,
+      externalId,
+      storageUrl,
+      request.file.originalname,
+      request.userId,
+      request.file.size,
+    );
+
+    const accessModel = await this.operationAttachmentAccessService.create(accessRequest);
+    return await this.enrichAttachmentModel(accessModel);
+  };
+
+  public getOperationAttachments = async (operationId: number, userId: number): Promise<OperationAttachmentModel[]> => {
+    // Verificar que la operación existe
+    const operation = await this.travelOperationAccessService.getById(operationId);
+    if (!operation) {
+      throw new NotFoundException('Operation not found');
+    }
+
+    // Verificar permisos
+    const isMember = await this.travelAccessService.isMember(operation.travelId, userId);
+    const isCreator = await this.travelAccessService.isCreator(operation.travelId, userId);
+    
+    if (!isMember && !isCreator) {
+      throw new BadRequestException('Only travel members can view attachments');
+    }
+
+    const accessModels = await this.operationAttachmentAccessService.getByOperationId(operationId);
+    return await Promise.all(accessModels.map(this.enrichAttachmentModel));
+  };
+
+  public deleteOperationAttachment = async (attachmentId: number, userId: number): Promise<void> => {
+    // Obtener attachment
+    const attachment = await this.operationAttachmentAccessService.getById(attachmentId);
+    if (!attachment) {
+      throw new NotFoundException('Attachment not found');
+    }
+
+    // Obtener operación
+    const operation = await this.travelOperationAccessService.getById(attachment.operationId);
+    if (!operation) {
+      throw new NotFoundException('Operation not found');
+    }
+
+    // Verificar permisos (solo quien subió o creador de operación puede borrar)
+    if (attachment.uploadedByUserId !== userId && operation.createdByUserId !== userId) {
+      throw new BadRequestException('Only uploader or operation creator can delete attachment');
+    }
+
+    // Verificar que el viaje está activo
+    const travel = await this.travelAccessService.getById(operation.travelId, userId);
+    if (travel.status !== TravelStatus.Active) {
+      throw new BadRequestException('Cannot delete attachments from finalized travel');
+    }
+
+    // TODO: Delete from storage provider
+    // await this.storageService.delete(attachment.externalId);
+
+    await this.operationAttachmentAccessService.delete(attachmentId);
   };
 
   private calculateDetailedBalances = async (
@@ -1146,5 +1294,34 @@ export class TravelManagerService {
     }
 
     return user.email;
+  };
+
+  private mapCategoryAccessToModel = (accessModel: OperationCategoryAccessModel): OperationCategoryModel => {
+    return new OperationCategoryModel(
+      accessModel.id,
+      accessModel.name,
+      accessModel.icon,
+      accessModel.color,
+      accessModel.isActive,
+      accessModel.dateCreated,
+    );
+  };
+
+  private enrichAttachmentModel = async (accessModel: OperationAttachmentAccessModel): Promise<OperationAttachmentModel> => {
+    // Obtener nombre del usuario que subió
+    const users = await this.userAccessService.getUsers();
+    const uploader = users.find(u => u.id === accessModel.uploadedByUserId);
+    const uploaderName = uploader ? `${uploader.name} ${uploader.surname}` : 'Unknown';
+
+    return new OperationAttachmentModel(
+      accessModel.id,
+      accessModel.operationId,
+      accessModel.originalFilename,
+      accessModel.storageUrl,
+      accessModel.fileSize,
+      accessModel.uploadedByUserId,
+      accessModel.uploadedDate,
+      uploaderName,
+    );
   };
 }

@@ -601,18 +601,18 @@ CREATE INDEX idx_traveloperationapprovals_memberstatus ON traveloperationapprova
 -- PARTE 11: ACTUALIZACIONES FUTURAS
 -- =====================================================
 
-CREATE TABLE traveloperationpayments (
-    id SERIAL PRIMARY KEY,
-    operationid INT NOT NULL,
-    travelmemberid INT NOT NULL,
-    amount DECIMAL(15,2) NOT NULL,
-    paymentdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+-- CREATE TABLE traveloperationpayments (
+--     id SERIAL PRIMARY KEY,
+--     operationid INT NOT NULL,
+--     travelmemberid INT NOT NULL,
+--     amount DECIMAL(15,2) NOT NULL,
+--     paymentdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
-    FOREIGN KEY (travelmemberid) REFERENCES travelmembers(id),
+--     FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+--     FOREIGN KEY (travelmemberid) REFERENCES travelmembers(id),
     
-    CONSTRAINT check_payment_positive CHECK (amount > 0)
-);
+--     CONSTRAINT check_payment_positive CHECK (amount > 0)
+-- );
 
 -- =====================================================
 -- PARTE 12: CATEGORÍAS DE OPERACIONES
@@ -662,11 +662,10 @@ UPDATE traveloperations SET categoryid = 18 WHERE categoryid IS NULL;
 CREATE TABLE operationattachments (
     id SERIAL PRIMARY KEY,
     operationid INT NOT NULL,
-    filename VARCHAR(255) NOT NULL,
-    originalname VARCHAR(255) NOT NULL,
-    mimetype VARCHAR(100) NOT NULL,
-    filesize INT NOT NULL, -- en bytes
-    storageurl VARCHAR(500) NOT NULL, -- Azure Blob Storage URL
+    externalid VARCHAR(255) NOT NULL,        -- ID genérico del archivo
+    storageurl VARCHAR(500) NOT NULL,        -- URL completa
+    originalfilename VARCHAR(255) NOT NULL,  -- nombre original del usuario
+    filesize INT,                            -- tamaño en bytes
     uploadedbyuserid INT NOT NULL,
     uploadeddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     

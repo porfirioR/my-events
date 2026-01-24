@@ -79,15 +79,16 @@ export class TravelOperationAccessService extends BaseAccessService implements I
     const { data, error } = await this.dbContext
       .from(TableEnum.TravelOperations)
       .update({
-        currencyid: request.currencyId,
-        paymentmethodid: request.paymentMethodId,
-        whopaidmemberid: request.whoPaidMemberId,
-        amount: request.amount,
-        description: request.description,
-        splittype: request.splitType,
-        transactiondate: request.transactionDate.toISOString(),
-        lastupdatedbyuserid: request.lastUpdatedByUserId,
-        updatedat: new Date().toISOString(),
+        [DatabaseColumns.CurrencyId]: request.currencyId,
+        [DatabaseColumns.PaymentMethodId]: request.paymentMethodId,
+        [DatabaseColumns.WhoPaidMemberId]: request.whoPaidMemberId,
+        [DatabaseColumns.Amount]: request.amount,
+        [DatabaseColumns.Description]: request.description,
+        [DatabaseColumns.SplitType]: request.splitType,
+        [DatabaseColumns.TransactionDate]: request.transactionDate,
+        [DatabaseColumns.LastUpdatedByUserId]: request.lastUpdatedByUserId,
+        [DatabaseColumns.UpdatedAt]: new Date(),
+        [DatabaseColumns.CategoryId]: request.categoryId,
       })
       .eq(DatabaseColumns.EntityId, request.id)
       .eq(DatabaseColumns.TravelId, request.travelId)
@@ -217,6 +218,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       TravelOperationStatus.Pending,
       undefined,
       request.transactionDate,
+      request.categoryId,
     );
   };
 }

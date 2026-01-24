@@ -5,7 +5,7 @@ import { UtilityModule } from '../../utility/utility.module';
 import { DbContextService } from './services/db-context.service';
 import { EventAccessService } from './services/event-access.service';
 import { EventFollowAccessService } from './services/event-follow-access.service';
-import { CollaboratorMatchAccessService, ConfigurationAccessService, EmailVerificationTokenAccessService, PasswordResetTokenAccessService, PaymentMethodAccessService, SavingsGoalAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService, TravelAccessService, TravelMemberAccessService, TravelOperationAccessService, TravelOperationApprovalAccessService, TravelOperationParticipantAccessService } from './services';
+import { CollaboratorMatchAccessService, ConfigurationAccessService, EmailVerificationTokenAccessService, OperationAttachmentAccessService, OperationCategoryAccessService, PasswordResetTokenAccessService, PaymentMethodAccessService, SavingsGoalAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService, TravelAccessService, TravelMemberAccessService, TravelOperationAccessService, TravelOperationApprovalAccessService, TravelOperationParticipantAccessService } from './services';
 import { CollaboratorAccessService } from './services/collaborator-access.service';
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
@@ -44,6 +44,8 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     TravelOperationAccessService,
     TravelOperationParticipantAccessService,
     TravelOperationApprovalAccessService,
+    OperationCategoryAccessService,
+    OperationAttachmentAccessService,
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,
@@ -107,7 +109,15 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     {
       provide: TRAVEL_TOKENS.PAYMENT_METHOD_ACCESS_SERVICE,
       useExisting: PaymentMethodAccessService,
-    }
+    },
+    {
+      provide: TRAVEL_TOKENS.OPERATION_CATEGORY_ACCESS_SERVICE,
+      useExisting: OperationCategoryAccessService,
+    },
+    {
+      provide: TRAVEL_TOKENS.OPERATION_ATTACHMENT_ACCESS_SERVICE,
+      useExisting: OperationAttachmentAccessService,
+    },
   ],
   exports: [
     EventAccessService,
@@ -132,6 +142,8 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     TRAVEL_TOKENS.OPERATION_PARTICIPANT_ACCESS_SERVICE,
     TRAVEL_TOKENS.OPERATION_APPROVAL_ACCESS_SERVICE,
     TRAVEL_TOKENS.PAYMENT_METHOD_ACCESS_SERVICE,
+    TRAVEL_TOKENS.OPERATION_CATEGORY_ACCESS_SERVICE,
+    TRAVEL_TOKENS.OPERATION_ATTACHMENT_ACCESS_SERVICE,
   ],
 })
 export class DataModule {}
