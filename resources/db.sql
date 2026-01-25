@@ -668,7 +668,7 @@ CREATE TABLE operationattachments (
     filesize INT,                            -- tamaño en bytes
     uploadedbyuserid INT NOT NULL,
     uploadeddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
     FOREIGN KEY (uploadedbyuserid) REFERENCES users(id)
 );

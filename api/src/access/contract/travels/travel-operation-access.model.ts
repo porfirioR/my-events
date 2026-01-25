@@ -14,6 +14,6 @@ export class TravelOperationAccessModel {
     public transactionDate: Date,
     public lastUpdatedByUserId: number | null,
     public updatedAt: Date | null,
-    public categoryId?: number
+    public categoryId: number
   ) {}
 }

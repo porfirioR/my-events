@@ -202,6 +202,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       new Date(entity.transactiondate!),
       entity.lastupdatedbyuserid || null,
       entity.updatedat ? new Date(entity.updatedat) : null,
+      entity.categoryId
     );
   };
 
@@ -215,10 +216,10 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       request.amount,
       request.description,
       request.splitType,
+      request.categoryId,
       TravelOperationStatus.Pending,
       undefined,
       request.transactionDate,
-      request.categoryId,
     );
   };
 }

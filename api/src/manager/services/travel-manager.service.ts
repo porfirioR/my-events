@@ -458,6 +458,7 @@ export class TravelManagerService {
       request.description,
       request.splitType,
       request.transactionDate,
+      request.categoryId
     );
 
     const operationAccessModel = await this.travelOperationAccessService.create(accessRequest);
@@ -557,6 +558,7 @@ export class TravelManagerService {
       request.splitType,
       request.transactionDate,
       request.userId,
+      request.categoryId
     );
 
     const operationAccessModel = await this.travelOperationAccessService.update(accessRequest);

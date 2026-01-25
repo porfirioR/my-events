@@ -10,6 +10,7 @@ export class TravelOperationEntity {
     public amount: number,
     public description: string,
     public splittype: string,
+    public categoryId: number,
     public status: string,
     public datecreated?: Date,
     public transactiondate?: Date,

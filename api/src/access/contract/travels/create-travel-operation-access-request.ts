@@ -9,6 +9,6 @@ export class CreateTravelOperationAccessRequest {
     public description: string,
     public splitType: string,
     public transactionDate: Date,
-    public categoryId?: number,
+    public categoryId: number,
   ) {}
 }

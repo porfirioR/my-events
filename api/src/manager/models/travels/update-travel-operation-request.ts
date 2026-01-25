@@ -11,6 +11,6 @@ export class UpdateTravelOperationRequest {
     public splitType: string,
     public transactionDate: Date,
     public participantMemberIds: number[], // IDs de los miembros que participan
-    public categoryId?: number,
+    public categoryId: number,
   ) {}
 }

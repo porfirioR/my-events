@@ -32,4 +32,8 @@ export class CreateTravelOperationApiRequest {
   @IsInt({ each: true })
   @Min(1, { each: true })
   participantMemberIds: number[];
+
+  @IsNumber()
+  @IsPositive()
+  categoryId: number
 }

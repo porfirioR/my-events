@@ -10,6 +10,6 @@ export class CreateTravelOperationRequest {
     public splitType: string, // 'All' or 'Selected'
     public transactionDate: Date,
     public participantMemberIds: number[], // IDs de los miembros que participan
-    public categoryId?: number,
+    public categoryId: number,
   ) {}
 }

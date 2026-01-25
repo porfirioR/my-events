@@ -9,6 +9,9 @@ import {
   UseGuards,
   ParseIntPipe,
   Inject,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { CurrentUserService } from '../services/current-user.service';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
@@ -26,6 +29,10 @@ import {
   ApproveOperationRequest,
   RejectOperationRequest,
   TravelBalanceByCurrencyModel,
+  OperationAttachmentModel,
+  CreateOperationAttachmentRequest,
+  OperationCategoryModel,
+  OperationCategorySummaryModel,
 } from '../../manager/models/travels';
 import {
   CreateTravelApiRequest,
@@ -37,6 +44,7 @@ import {
 } from '../models/travels';
 import { MessageModel } from '../models/message.model';
 import { TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('travels')
 @UseGuards(PrivateEndpointGuard)
@@ -259,15 +267,16 @@ export class TravelsController {
 
     const request = new CreateTravelOperationRequest(
       userId,
-      travelId,
-      apiRequest.currencyId,
-      apiRequest.paymentMethodId,
-      apiRequest.whoPaidMemberId,
-      apiRequest.amount,
+      +travelId,
+      +apiRequest.currencyId,
+      +apiRequest.paymentMethodId,
+      +apiRequest.whoPaidMemberId,
+      +apiRequest.amount,
       apiRequest.description,
       apiRequest.splitType,
       new Date(apiRequest.transactionDate),
-      apiRequest.participantMemberIds,
+      apiRequest.participantMemberIds.map(x => +x),
+      +apiRequest.categoryId
     );
 
     return await this.travelManagerService.createTravelOperation(request);
@@ -289,14 +298,15 @@ export class TravelsController {
       userId,
       operationId,
       travelId,
-      apiRequest.currencyId,
-      apiRequest.paymentMethodId,
-      apiRequest.whoPaidMemberId,
-      apiRequest.amount,
+      +apiRequest.currencyId,
+      +apiRequest.paymentMethodId,
+      +apiRequest.whoPaidMemberId,
+      +apiRequest.amount,
       apiRequest.description,
       apiRequest.splitType,
       new Date(apiRequest.transactionDate),
-      apiRequest.participantMemberIds,
+      apiRequest.participantMemberIds.map(x => +x),
+      +apiRequest.categoryId
     );
 
     return await this.travelManagerService.updateTravelOperation(request);
@@ -345,7 +355,7 @@ export class TravelsController {
   ): Promise<TravelOperationModel> {
     const userId = await this.currentUserService.getCurrentUserId();
 
-    const request = new ApproveOperationRequest(userId, operationId);
+    const request = new ApproveOperationRequest(userId, +operationId);
 
     return await this.travelManagerService.approveOperation(request);
   }
@@ -382,5 +392,80 @@ export class TravelsController {
   ): Promise<TravelBalanceByCurrencyModel[]> {
     const userId = await this.currentUserService.getCurrentUserId();
     return await this.travelManagerService.getTravelBalancesByCurrency(travelId, userId);
+  }
+
+  // ==================== OPERATION CATEGORIES ====================
+
+  /**
+   * Obtener todas las categorías de operaciones
+   * GET /api/travels/operation-categories
+   */
+  @Get('operation-categories')
+  async getAllOperationCategories(): Promise<OperationCategoryModel[]> {
+    return await this.travelManagerService.getAllOperationCategories();
+  }
+
+  /**
+   * Obtener resumen de categorías por viaje
+   * GET /api/travels/:travelId/category-summary
+   */
+  @Get(':travelId/category-summary')
+  async getTravelCategorySummary(
+    @Param('travelId', ParseIntPipe) travelId: number,
+  ): Promise<OperationCategorySummaryModel[]> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return await this.travelManagerService.getTravelCategorySummary(travelId, userId);
+  }
+
+  // ==================== OPERATION ATTACHMENTS ====================
+
+  /**
+   * Obtener attachments de una operación
+   * GET /api/travels/operations/:operationId/attachments
+   */
+  @Get('operations/:operationId/attachments')
+  async getOperationAttachments(
+    @Param('operationId', ParseIntPipe) operationId: number,
+  ): Promise<OperationAttachmentModel[]> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return await this.travelManagerService.getOperationAttachments(operationId, userId);
+  }
+
+  /**
+   * Subir attachment a una operación
+   * POST /api/travels/operations/:operationId/attachments
+   */
+  @Post('operations/:operationId/attachments')
+  @UseInterceptors(FileInterceptor('file'))
+  async createOperationAttachment(
+    @Param('operationId', ParseIntPipe) operationId: number,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<OperationAttachmentModel> {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    const userId = await this.currentUserService.getCurrentUserId();
+
+    const request = new CreateOperationAttachmentRequest(
+      +operationId,
+      file,
+      userId,
+    );
+
+    return await this.travelManagerService.createOperationAttachment(request);
+  }
+
+  /**
+   * Eliminar attachment
+   * DELETE /api/travels/attachments/:attachmentId
+   */
+  @Delete('attachments/:attachmentId')
+  async deleteOperationAttachment(
+    @Param('attachmentId', ParseIntPipe) attachmentId: number,
+  ): Promise<MessageModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    await this.travelManagerService.deleteOperationAttachment(attachmentId, userId);
+    return new MessageModel('Attachment deleted successfully');
   }
 }

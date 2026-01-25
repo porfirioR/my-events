@@ -12,3 +12,7 @@ export { RejectOperationRequest } from './reject-operation-request';
 export { TravelBalanceDetailModel, DebtDetailModel, CreditDetailModel } from './travel-balance-detail.model';
 export { TravelBalanceSimplifiedModel, SettlementModel } from './travel-balance-simplified.model';
 export { TravelBalanceByCurrencyModel } from './travel-balance-by-currency.model';
+export { OperationAttachmentModel } from './operation-attachment.model';
+export { CreateOperationAttachmentRequest } from './create-operation-attachment-request';
+export { OperationCategoryModel } from './operation-category.model';
+export { OperationCategorySummaryModel } from './operation-category-summary.model';
