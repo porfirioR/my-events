@@ -10,4 +10,5 @@ export interface OperationFormGroup {
   splitType: FormControl<string | null>;
   transactionDate: FormControl<string | null>;
   participantMemberIds: FormControl<number[] | null>;
+  categoryId: FormControl<number | null>;
 }

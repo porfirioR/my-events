@@ -2,12 +2,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import {
-  CreateUserApiRequest,
   ForgotPasswordApiRequest,
   LoginUserApiRequest,
   PushTokenApiModel,
   PushTokenApiRequest,
-  UserApiModel,
 } from '../../models/api';
 import { LocalService } from '../local.service';
 import { ResendVerificationEmailApiRequest, ResetPasswordApiRequest, SignApiModel, VerifyEmailApiRequest } from '../../models/api/auth';

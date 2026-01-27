@@ -19,4 +19,5 @@ export interface TravelOperationApiModel {
   participantCount?: number;
   approvalCount?: number;
   pendingApprovalCount?: number;
+  categoryId: number;
 }

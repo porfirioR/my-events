@@ -94,7 +94,8 @@ export class UpsertOperationComponent implements OnInit {
       description: new FormControl('', [Validators.required, Validators.maxLength(500)]),
       splitType: new FormControl(SplitType.Equal, [Validators.required]),
       transactionDate: new FormControl(this.getTodayDate(), [Validators.required]),
-      participantMemberIds: new FormControl<number[]>([], [Validators.required])
+      participantMemberIds: new FormControl<number[]>([], [Validators.required]),
+      categoryId: new FormControl(null, [Validators.required])
     });
 
     // Effect para cargar la operación en modo edición
@@ -184,7 +185,8 @@ export class UpsertOperationComponent implements OnInit {
         formValue.description!,
         formValue.splitType!,
         new Date(formValue.transactionDate!),
-        formValue.participantMemberIds!
+        formValue.participantMemberIds!,
+        formValue.categoryId!
       );
 
       this.formGroup.disable();
@@ -214,7 +216,8 @@ export class UpsertOperationComponent implements OnInit {
         formValue.description!,
         formValue.splitType!,
         new Date(formValue.transactionDate!),
-        formValue.participantMemberIds!
+        formValue.participantMemberIds!,
+        formValue.categoryId!
       );
 
       this.formGroup.disable();

@@ -1,0 +1,36 @@
+<div class="form-control w-full">
+  <label class="label">
+    <span class="label-text">Categoría</span>
+  </label>
+
+  <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+    @for (category of activeCategories(); track category.id) {
+      <button
+        type="button"
+        class="btn btn-sm border-2 transition-all duration-200"
+        [class]="getCategoryClasses(category)"
+        [style.border-color]="isSelected(category) ? category.color : 'transparent'"
+        [style.background-color]="isSelected(category) ? category.color + '20' : 'transparent'"
+        (click)="selectCategory(category)"
+      >
+        <span class="text-lg">{{ category.icon }}</span>
+        <span class="text-xs truncate">{{ category.name }}</span>
+      </button>
+    }
+  </div>
+
+  @if (selectedCategory()) {
+    <div class="mt-2 p-2 rounded-lg border" [style.border-color]="selectedCategory()!.color">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">{{ selectedCategory()!.icon }}</span>
+        <span class="font-medium">{{ selectedCategory()!.name }}</span>
+        <button 
+          type="button" 
+          class="btn btn-ghost btn-xs ml-auto"
+          (click)="clearSelection()">
+          ✕
+        </button>
+      </div>
+    </div>
+  }
+</div>

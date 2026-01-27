@@ -12,7 +12,10 @@ import {
   AddTravelMemberApiRequest,
   CreateTravelOperationApiRequest,
   UpdateTravelOperationApiRequest,
-  RejectOperationApiRequest
+  RejectOperationApiRequest,
+  OperationCategoryApiModel,
+  OperationCategorySummaryApiModel,
+  OperationAttachmentApiModel
 } from '../../models/api/travels';
 import { MessageModel } from '../../models/api';
 
@@ -95,4 +98,34 @@ export class TravelApiService {
 
   public getTravelBalances = (travelId: number): Observable<TravelBalanceByCurrencyApiModel[]> =>
     this.httpClient.get<TravelBalanceByCurrencyApiModel[]>(`${this.section}/${travelId}/balances`);
+
+  // ==================== OPERATION CATEGORIES ====================
+
+  getAllOperationCategories(): Observable<OperationCategoryApiModel[]> {
+    return this.httpClient.get<OperationCategoryApiModel[]>(`${this.section}/operation-categories`);
+  }
+
+  getTravelCategorySummary(travelId: number): Observable<OperationCategorySummaryApiModel[]> {
+    return this.httpClient.get<OperationCategorySummaryApiModel[]>(`${this.section}/${travelId}/category-summary`);
+  }
+
+  // ==================== OPERATION ATTACHMENTS ====================
+
+  getOperationAttachments(operationId: number): Observable<OperationAttachmentApiModel[]> {
+    return this.httpClient.get<OperationAttachmentApiModel[]>(`${this.section}/operations/${operationId}/attachments`);
+  }
+
+  uploadOperationAttachment(operationId: number, file: File): Observable<OperationAttachmentApiModel> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    return this.httpClient.post<OperationAttachmentApiModel>(
+      `${this.section}/operations/${operationId}/attachments`,
+      formData
+    );
+  }
+
+  deleteOperationAttachment(attachmentId: number): Observable<{message: string}> {
+    return this.httpClient.delete<{message: string}>(`${this.section}/attachments/${attachmentId}`);
+  }
 }
