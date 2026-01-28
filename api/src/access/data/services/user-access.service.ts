@@ -102,7 +102,9 @@ export class UserAccessService extends BaseAccessService {
       .eq(DatabaseColumns.Email, email)
       .single<UserEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message)
+    };
     return this.getUser(data);
   };
 

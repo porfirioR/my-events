@@ -131,9 +131,9 @@ export const TravelStore = signalStore(
 
     // Computed para obtener categoría por ID
     getCategoryById: computed(() => (id?: number) => 
-      store.categories().find(cat => cat.id === id)
+      store.categories().find(x => x.id === id)
     ),
-    
+
     // Computed para operaciones con categoría enriquecida
     operationsWithCategory: computed(() => 
       store.operations().map(op => ({

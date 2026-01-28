@@ -238,7 +238,11 @@
               }
             </div>
           </article>
-
+          <app-attachment-list
+            [operationId]="operationId!"
+            [canDelete]="operation()?.status !== 'Approved' && travel()?.status === 'Active'"
+            [showUploadButton]="operation()?.status !== 'Approved' && travel()?.status === 'Active'"
+          />
           <!-- Quick Actions Card -->
           @if (op.status === 'Pending' && travel()?.status === 'Active') {
             <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6">

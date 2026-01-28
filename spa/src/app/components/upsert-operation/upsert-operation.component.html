@@ -1,3 +1,4 @@
+<!-- templates/upsert-operation.component.html -->
 <section class="container mx-auto px-4 py-8">
   <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-8">
     <header class="mb-6">
@@ -25,6 +26,16 @@
     </header>
 
     <form [formGroup]="formGroup" (ngSubmit)="save()">
+      <!-- ✅ NUEVO: Category Selector -->
+      <div class="mb-4">
+        <app-category-selector
+          [selectedCategoryId]="formGroup.value.categoryId || undefined"
+          [disabled]="isLoading()"
+          [required]="true"
+          (categorySelected)="onCategorySelected($event)"
+        />
+      </div>
+
       <!-- Currency & Payment Method -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <app-select-input
@@ -79,6 +90,15 @@
         />
       </div>
 
+      <!-- ✅ NUEVO: File Upload -->
+      <div class="mb-4">
+        <app-file-upload
+          [disabled]="isLoading()"
+          [required]="false"
+          (fileSelected)="onFileSelected($event)"
+        />
+      </div>
+
       <!-- Who Paid -->
       <div class="mb-4">
         <app-select-input
@@ -94,8 +114,8 @@
       <!-- Split Type -->
       <div class="mb-4">
         <app-select-input
-          id="description"
-          name="description"
+          id="splitType"
+          name="splitType"
           formControlName="splitType"
           [label]="'operations.splitType' | translate"
           [list]="splitTypeList"
@@ -176,6 +196,17 @@
                 <span class="text-base-content/70">{{ 'operations.perPerson' | translate }}:</span>
                 <span class="font-bold text-primary">
                   {{ formatCurrency(formGroup.value.amount! / selectedParticipants().length, formGroup.value.currencyId || 1) }}
+                </span>
+              </div>
+            }
+
+            <!-- ✅ NUEVO: File Info -->
+            @if (selectedFile()) {
+              <div class="flex justify-between items-center pt-2 border-t border-base-300">
+                <span class="text-base-content/70">{{ 'operations.attachedFile' | translate }}:</span>
+                <span class="font-bold text-success flex items-center gap-1">
+                  <i class="fas fa-paperclip"></i>
+                  {{ selectedFile()!.name }}
                 </span>
               </div>
             }

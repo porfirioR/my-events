@@ -5,12 +5,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useTravelStore, useLoadingStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelOperationApiModel } from '../../models/api/travels';
+import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
 
 @Component({
   selector: 'app-operation-detail',
   templateUrl: './operation-detail.component.html',
   styleUrls: ['./operation-detail.component.css'],
-  imports: [CommonModule, RouterModule, TranslateModule]
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    AttachmentListComponent
+  ]
 })
 export class OperationDetailComponent implements OnInit {
   private router = inject(Router);

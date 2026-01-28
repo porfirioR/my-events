@@ -1,11 +1,14 @@
 import { Component, computed, input, OnInit, output } from '@angular/core';
 import { OperationCategoryApiModel } from '../../models/api/travels';
 import { useTravelStore } from '../../store';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-category-selector',
   templateUrl: './category-selector.component.html',
-  styleUrls: ['./category-selector.component.css']
+  styleUrls: ['./category-selector.component.css'],
+  imports: [CommonModule, TranslateModule]
 })
 export class CategorySelectorComponent implements OnInit {
   private travelStore = useTravelStore();
@@ -13,13 +16,15 @@ export class CategorySelectorComponent implements OnInit {
   // Inputs
   selectedCategoryId = input<number | undefined>();
   disabled = input(false);
+  required = input(true);
+  label = input('operations.category');
 
   // Outputs
   categorySelected = output<OperationCategoryApiModel | undefined>();
 
   // Computed
-  activeCategories = this.travelStore.activeCategories;
-  selectedCategory = computed(() => 
+  protected activeCategories = this.travelStore.activeCategories;
+  protected selectedCategory = computed(() => 
     this.travelStore.getCategoryById()(this.selectedCategoryId())
   );
 
@@ -30,9 +35,9 @@ export class CategorySelectorComponent implements OnInit {
     }
   }
 
-  selectCategory(category: OperationCategoryApiModel) {
+  protected selectCategory(category: OperationCategoryApiModel): void {
     if (this.disabled()) return;
-
+    
     if (this.isSelected(category)) {
       this.clearSelection();
     } else {
@@ -40,27 +45,26 @@ export class CategorySelectorComponent implements OnInit {
     }
   }
 
-  clearSelection() {
+  protected clearSelection(): void {
     if (this.disabled()) return;
     this.categorySelected.emit(undefined);
   }
 
-  isSelected(category: OperationCategoryApiModel): boolean {
+  protected isSelected(category: OperationCategoryApiModel): boolean {
     return this.selectedCategoryId() === category.id;
   }
 
-  getCategoryClasses(category: OperationCategoryApiModel): string {
+  protected getCategoryClasses(category: OperationCategoryApiModel): string {
     const baseClasses = 'flex flex-col items-center gap-1 h-16';
-
+    
     if (this.disabled()) {
       return `${baseClasses} btn-disabled opacity-50`;
     }
-
+    
     if (this.isSelected(category)) {
       return `${baseClasses} border-opacity-100 shadow-md`;
     }
-
+    
     return `${baseClasses} btn-outline hover:border-opacity-50`;
   }
-
 }

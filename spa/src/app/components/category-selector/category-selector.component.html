@@ -1,6 +1,11 @@
 <div class="form-control w-full">
   <label class="label">
-    <span class="label-text">Categoría</span>
+    <span class="label-text">
+      {{ label() | translate }}
+      @if (required()) {
+        <span class="text-error ml-1">*</span>
+      }
+    </span>
   </label>
 
   <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
@@ -11,10 +16,12 @@
         [class]="getCategoryClasses(category)"
         [style.border-color]="isSelected(category) ? category.color : 'transparent'"
         [style.background-color]="isSelected(category) ? category.color + '20' : 'transparent'"
+        [title]="'categories.' + category.name | translate"
         (click)="selectCategory(category)"
+        [disabled]="disabled()"
       >
         <span class="text-lg">{{ category.icon }}</span>
-        <span class="text-xs truncate">{{ category.name }}</span>
+        <span class="text-xs truncate">{{ 'categories.' + category.name | translate }}</span>
       </button>
     }
   </div>
@@ -23,11 +30,14 @@
     <div class="mt-2 p-2 rounded-lg border" [style.border-color]="selectedCategory()!.color">
       <div class="flex items-center gap-2">
         <span class="text-lg">{{ selectedCategory()!.icon }}</span>
-        <span class="font-medium">{{ selectedCategory()!.name }}</span>
+        <span class="font-medium">{{ 'categories.' + selectedCategory()!.name | translate }}</span>
         <button 
           type="button" 
           class="btn btn-ghost btn-xs ml-auto"
-          (click)="clearSelection()">
+          [title]="'operations.clearCategory' | translate"
+          (click)="clearSelection()"
+          [disabled]="disabled()"
+        >
           ✕
         </button>
       </div>

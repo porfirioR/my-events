@@ -6,11 +6,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { OperationFormGroup } from '../../models/forms/operation-form-group';
 import { useTravelStore, useLoadingStore, useCurrencyStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { CreateTravelOperationApiRequest, UpdateTravelOperationApiRequest } from '../../models/api/travels';
+import { CreateTravelOperationApiRequest, OperationCategoryApiModel, UpdateTravelOperationApiRequest } from '../../models/api/travels';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { TextComponent } from '../inputs/text/text.component';
 import { DateInputComponent } from '../inputs/date-input/date-input.component';
+import { CategorySelectorComponent } from '../category-selector/category-selector.component';
+import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { KeyValueViewModel } from '../../models/view';
 import { Configurations, SplitType } from '../../models/enums';
 
@@ -26,7 +28,9 @@ import { Configurations, SplitType } from '../../models/enums';
     SelectInputComponent,
     TextComponent,
     TextAreaInputComponent,
-    DateInputComponent
+    DateInputComponent,
+    CategorySelectorComponent,
+    FileUploadComponent 
   ]
 })
 export class UpsertOperationComponent implements OnInit {
@@ -45,9 +49,9 @@ export class UpsertOperationComponent implements OnInit {
   protected travel = this.travelStore.selectedTravel;
   protected members = this.travelStore.members;
   protected paymentMethods = this.travelStore.paymentMethods;
-
   protected travelId?: number;
   protected operationId?: number;
+  protected selectedFile = signal<File | undefined>(undefined);
   protected isEditMode = signal(false);
 
   // Lista de monedas
@@ -80,6 +84,8 @@ export class UpsertOperationComponent implements OnInit {
 
   // Participantes seleccionados
   protected selectedParticipants = signal<number[]>([]);
+  
+  protected activeCategories = this.travelStore.activeCategories;
 
   public ignorePreventUnsavedChanges = false;
   public formGroup: FormGroup<OperationFormGroup>;
@@ -95,7 +101,7 @@ export class UpsertOperationComponent implements OnInit {
       splitType: new FormControl(SplitType.Equal, [Validators.required]),
       transactionDate: new FormControl(this.getTodayDate(), [Validators.required]),
       participantMemberIds: new FormControl<number[]>([], [Validators.required]),
-      categoryId: new FormControl(null, [Validators.required])
+      categoryId: new FormControl(1, [Validators.required])
     });
 
     // Effect para cargar la operación en modo edición
@@ -120,6 +126,14 @@ export class UpsertOperationComponent implements OnInit {
           this.selectedParticipants.set([]);
         }
       }
+
+      // Auto-seleccionar categoría "Other" por defecto si no hay ninguna
+      if (this.activeCategories().length > 0 && !this.formGroup.value.categoryId) {
+        const otherCategory = this.activeCategories().find(cat => cat.name === 'Other');
+        if (otherCategory) {
+          this.formGroup.patchValue({ categoryId: otherCategory.id });
+        }
+      }
     });
   }
 
@@ -132,6 +146,7 @@ export class UpsertOperationComponent implements OnInit {
       this.travelStore.loadTravelById(this.travelId);
       this.travelStore.loadMembers(this.travelId);
       this.travelStore.loadPaymentMethods();
+      this.travelStore.loadCategories();
       this.currencyStore.loadCurrencies();
 
       // Si hay travel cargado, establecer su moneda por defecto
@@ -146,6 +161,17 @@ export class UpsertOperationComponent implements OnInit {
       this.operationId = +operationId;
       this.isEditMode.set(true);
     }
+  }
+
+  
+  protected onCategorySelected(category: OperationCategoryApiModel | undefined): void {
+    this.formGroup.patchValue({
+      categoryId: category?.id || null
+    });
+  }
+
+  protected onFileSelected(file: File | undefined): void {
+    this.selectedFile.set(file);
   }
 
   protected toggleParticipant(memberId: number): void {

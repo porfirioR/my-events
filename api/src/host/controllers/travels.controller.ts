@@ -66,6 +66,16 @@ export class TravelsController {
     return await this.travelManagerService.getAllPaymentMethods();
   }
 
+  
+  /**
+   * Obtener todas las categorías de operaciones
+   * GET /api/travels/operation-categories
+   */
+  @Get('operation-categories')
+  async getAllOperationCategories(): Promise<OperationCategoryModel[]> {
+    return await this.travelManagerService.getAllOperationCategories();
+  }
+
   // ==================== TRAVELS ====================
 
   /**
@@ -395,15 +405,6 @@ export class TravelsController {
   }
 
   // ==================== OPERATION CATEGORIES ====================
-
-  /**
-   * Obtener todas las categorías de operaciones
-   * GET /api/travels/operation-categories
-   */
-  @Get('operation-categories')
-  async getAllOperationCategories(): Promise<OperationCategoryModel[]> {
-    return await this.travelManagerService.getAllOperationCategories();
-  }
 
   /**
    * Obtener resumen de categorías por viaje
