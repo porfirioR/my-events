@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { TRAVEL_TOKENS, COLLABORATOR_TOKENS } from '../../utility/constants';
-import { TravelStatus, TravelOperationStatus, ApprovalStatus, TravelSplitType } from '../../utility/enums';
+import { TravelStatus, TravelOperationStatus, ApprovalStatus, TravelParticipantType, SplitType, } from '../../utility/enums';
 import {
   ITravelAccessService,
   ITravelMemberAccessService,
@@ -415,7 +415,8 @@ export class TravelManagerService {
 
     // Validar participantes según splitType
     let participantIds: number[];
-    if (request.splitType === TravelSplitType.All) {
+    
+    if (request.participantType === TravelParticipantType.All) {
       // Obtener todos los miembros del viaje
       const allMembers = await this.travelMemberAccessService.getByTravelId(request.travelId);
       participantIds = allMembers.map(x => x.id);
@@ -423,9 +424,8 @@ export class TravelManagerService {
       // Usar los IDs proporcionados
       participantIds = request.participantMemberIds;
 
-      // Validar que hay al menos un participante
       if (participantIds.length === 0) {
-        throw new BadRequestException('At least one participant is required');
+        throw new BadRequestException('At least one participant is required when using Selected participant type');
       }
 
       // Validar que todos los participantes son miembros del viaje
@@ -435,6 +435,45 @@ export class TravelManagerService {
           throw new BadRequestException(`Member ${participantId} is not part of the travel`);
         }
       }
+    }
+
+      // ✅ NUEVA LÓGICA: Validar y calcular montos según splitType
+    let shareAmounts: number[];
+
+    if (request.splitType === SplitType.EQUAL) {
+      // División igual
+      const shareAmount = request.amount / participantIds.length;
+      shareAmounts = participantIds.map(() => shareAmount);
+
+    } else if (request.splitType === SplitType.CUSTOM) {
+      // Montos personalizados
+      if (!request.customAmounts || request.customAmounts.length !== participantIds.length) {
+        throw new BadRequestException('Custom amounts must be provided for each participant');
+      }
+
+      const totalCustom = request.customAmounts.reduce((sum, amount) => sum + amount, 0);
+      if (Math.abs(totalCustom - request.amount) > 0.01) {
+        throw new BadRequestException(`Custom amounts sum (${totalCustom}) must equal operation amount (${request.amount})`);
+      }
+
+      shareAmounts = request.customAmounts;
+    } else if (request.splitType === SplitType.PERCENTAGE) {
+      // Porcentajes personalizados
+      if (!request.customPercentages || request.customPercentages.length !== participantIds.length) {
+        throw new BadRequestException('Custom percentages must be provided for each participant');
+      }
+      
+      const totalPercentage = request.customPercentages.reduce((sum, percentage) => sum + percentage, 0);
+      if (Math.abs(totalPercentage - 100) > 0.01) {
+        throw new BadRequestException(`Custom percentages must sum to 100%, got ${totalPercentage}%`);
+      }
+      
+      shareAmounts = request.customPercentages.map(percentage => 
+        (request.amount * percentage) / 100
+      );
+      
+    } else {
+      throw new BadRequestException('Invalid split type');
     }
 
     // Verificar que el usuario que crea está en los participantes
@@ -456,6 +495,7 @@ export class TravelManagerService {
       request.whoPaidMemberId,
       request.amount,
       request.description,
+      request.participantType,
       request.splitType,
       request.transactionDate,
       request.categoryId
@@ -464,11 +504,10 @@ export class TravelManagerService {
     const operationAccessModel = await this.travelOperationAccessService.create(accessRequest);
 
     // Calcular y agregar participantes con shareAmount
-    const shareAmount = request.amount / participantIds.length;
-    const participantRequests = participantIds.map(memberId => new TravelOperationParticipantAccessModel(
+    const participantRequests = participantIds.map((memberId, index) => new TravelOperationParticipantAccessModel(
       operationAccessModel.id,
       memberId,
-      shareAmount,
+      shareAmounts[index],
     ));
 
     await this.travelOperationParticipantAccessService.addMultiple(participantRequests);
@@ -555,6 +594,7 @@ export class TravelManagerService {
       request.whoPaidMemberId,
       request.amount,
       request.description,
+      request.participantType,
       request.splitType,
       request.transactionDate,
       request.userId,
@@ -564,13 +604,36 @@ export class TravelManagerService {
     const operationAccessModel = await this.travelOperationAccessService.update(accessRequest);
 
     // Recalcular participantes
-    await this.travelOperationParticipantAccessService.removeAllByOperationId(request.operationId);
-    const shareAmount = request.amount / request.participantMemberIds.length;
-    const participantRequests = request.participantMemberIds.map(memberId => ({
+  await this.travelOperationParticipantAccessService.removeAllByOperationId(request.operationId);
+    
+    let shareAmounts: number[];
+    const participantIds = request.participantMemberIds;
+    
+    if (request.splitType === SplitType.EQUAL) {
+      const shareAmount = request.amount / participantIds.length;
+      shareAmounts = participantIds.map(() => shareAmount);
+    } else if (request.splitType === SplitType.CUSTOM) {
+      if (!request.customAmounts || request.customAmounts.length !== participantIds.length) {
+        throw new BadRequestException('Custom amounts must be provided for each participant');
+      }
+      shareAmounts = request.customAmounts;
+    } else if (request.splitType === SplitType.PERCENTAGE) {
+      if (!request.customPercentages || request.customPercentages.length !== participantIds.length) {
+        throw new BadRequestException('Custom percentages must be provided for each participant');
+      }
+      shareAmounts = request.customPercentages.map(percentage => 
+        (request.amount * percentage) / 100
+      );
+    } else {
+      throw new BadRequestException('Invalid split type');
+    }
+
+    const participantRequests = participantIds.map((memberId, index) => ({
       operationId: request.operationId,
       travelMemberId: memberId,
-      shareAmount: shareAmount,
+      shareAmount: shareAmounts[index],
     }));
+
     await this.travelOperationParticipantAccessService.addMultiple(participantRequests);
 
     // Resetear aprobaciones
@@ -781,6 +844,7 @@ export class TravelManagerService {
       accessModel.whoPaidMemberId,
       accessModel.amount,
       accessModel.description,
+      accessModel.participantType,
       accessModel.splitType,
       accessModel.status,
       accessModel.dateCreated,

@@ -82,4 +82,5 @@ export enum DatabaseColumns {
   UploadedDate = 'uploadeddate',
   Icon = 'icon',
   Color = 'color',
+  ParticipantType = 'participanttype',
 }

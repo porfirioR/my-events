@@ -4,6 +4,7 @@
 CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');
 CREATE TYPE approvalstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE splittype AS ENUM ('Equal', 'Custom', 'Percentage');
+CREATE TYPE travelparticipanttype AS ENUM ('All', 'Selected');
 
 -- Tabla de usuarios
 CREATE TABLE users (
@@ -502,23 +503,25 @@ CREATE TABLE traveloperations (
     whopaidmemberid INT NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    splittype travelsplittype DEFAULT 'All',
+    participanttype travelparticipanttype DEFAULT 'All', -- ✅ NUEVO: Quiénes participan
+    splittype splittype DEFAULT 'Equal',                 -- ✅ NUEVO: Cómo se divide
     status traveloperationstatus DEFAULT 'Pending',
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     transactiondate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lastupdatedbyuserid INT,
     updatedat TIMESTAMP,
-    
+    categoryid INT,
+
     FOREIGN KEY (travelid) REFERENCES travels(id) ON DELETE CASCADE,
     FOREIGN KEY (createdbyuserid) REFERENCES users(id),
     FOREIGN KEY (currencyid) REFERENCES currencies(id),
     FOREIGN KEY (paymentmethodid) REFERENCES paymentmethods(id),
     FOREIGN KEY (whopaidmemberid) REFERENCES travelmembers(id),
     FOREIGN KEY (lastupdatedbyuserid) REFERENCES users(id),
-    
+    FOREIGN KEY (categoryid) REFERENCES operationcategories(id),
+
     CONSTRAINT check_amount_positive CHECK (amount > 0)
 );
-
 -- =====================================================
 -- PARTE 8: CREAR TABLA TRAVELOPERATIONPARTICIPANTS
 -- =====================================================
@@ -548,11 +551,28 @@ CREATE TABLE traveloperationapprovals (
     status approvalstatus DEFAULT 'Pending',
     approvaldate TIMESTAMP,
     rejectionreason TEXT,
-    
+
     FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
     FOREIGN KEY (memberid) REFERENCES travelmembers(id),
-    
+
     CONSTRAINT unique_approval UNIQUE (operationid, memberid)
+);
+-- =====================================================
+-- PARTE 14: ATTACHMENTS PARA OPERACIONES
+-- =====================================================
+
+CREATE TABLE operationattachments (
+    id SERIAL PRIMARY KEY,
+    operationid INT NOT NULL,
+    externalid VARCHAR(255) NOT NULL,        -- ID genérico del archivo
+    storageurl VARCHAR(500) NOT NULL,        -- URL completa
+    originalfilename VARCHAR(255) NOT NULL,  -- nombre original del usuario
+    filesize INT,                            -- tamaño en bytes
+    uploadedbyuserid INT NOT NULL,
+    uploadeddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploadedbyuserid) REFERENCES users(id)
 );
 
 -- =====================================================
@@ -585,6 +605,8 @@ CREATE INDEX idx_traveloperations_currency ON traveloperations(currencyid);
 CREATE INDEX idx_traveloperations_paymentmethod ON traveloperations(paymentmethodid);
 CREATE INDEX idx_traveloperations_whopaid ON traveloperations(whopaidmemberid);
 CREATE INDEX idx_traveloperations_transactiondate ON traveloperations(transactiondate);
+CREATE INDEX idx_traveloperations_category ON traveloperations(categoryid);
+CREATE INDEX idx_traveloperations_travel_category ON traveloperations(travelid, categoryid);
 
 -- Índices para traveloperationparticipants
 CREATE INDEX idx_traveloperationparticipants_operation ON traveloperationparticipants(operationid);
@@ -596,6 +618,11 @@ CREATE INDEX idx_traveloperationapprovals_operation ON traveloperationapprovals(
 CREATE INDEX idx_traveloperationapprovals_member ON traveloperationapprovals(memberid);
 CREATE INDEX idx_traveloperationapprovals_operationstatus ON traveloperationapprovals(operationid, status);
 CREATE INDEX idx_traveloperationapprovals_memberstatus ON traveloperationapprovals(memberid, status);
+
+-- Índices para operationattachments
+CREATE INDEX idx_operationattachments_operation ON operationattachments(operationid);
+CREATE INDEX idx_operationattachments_uploadedby ON operationattachments(uploadedbyuserid);
+CREATE INDEX idx_operationattachments_upload_date ON operationattachments(uploadeddate);
 
 -- =====================================================
 -- PARTE 11: ACTUALIZACIONES FUTURAS
@@ -649,29 +676,9 @@ INSERT INTO operationcategories (id, name, icon, color) VALUES
     (18, 'Other', '📝', '#BDC3C7')
 ;
 
-ALTER TABLE traveloperations ADD COLUMN categoryid INT;
-ALTER TABLE traveloperations ADD FOREIGN KEY (categoryid) REFERENCES operationcategories(id);
-
 -- Valor por defecto: "Other" para operaciones existentes
 UPDATE traveloperations SET categoryid = 18 WHERE categoryid IS NULL;
 
--- =====================================================
--- PARTE 14: ATTACHMENTS PARA OPERACIONES
--- =====================================================
-
-CREATE TABLE operationattachments (
-    id SERIAL PRIMARY KEY,
-    operationid INT NOT NULL,
-    externalid VARCHAR(255) NOT NULL,        -- ID genérico del archivo
-    storageurl VARCHAR(500) NOT NULL,        -- URL completa
-    originalfilename VARCHAR(255) NOT NULL,  -- nombre original del usuario
-    filesize INT,                            -- tamaño en bytes
-    uploadedbyuserid INT NOT NULL,
-    uploadeddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
-    FOREIGN KEY (uploadedbyuserid) REFERENCES users(id)
-);
 
 -- Índices para operationcategories
 CREATE INDEX idx_operationcategories_active ON operationcategories(isactive);
@@ -679,8 +686,3 @@ CREATE INDEX idx_operationcategories_active ON operationcategories(isactive);
 -- Índices para traveloperations con categorías
 CREATE INDEX idx_traveloperations_category ON traveloperations(categoryid);
 CREATE INDEX idx_traveloperations_travel_category ON traveloperations(travelid, categoryid);
-
--- Índices para operationattachments
-CREATE INDEX idx_operationattachments_operation ON operationattachments(operationid);
-CREATE INDEX idx_operationattachments_uploadedby ON operationattachments(uploadedbyuserid);
-CREATE INDEX idx_operationattachments_upload_date ON operationattachments(uploadeddate);

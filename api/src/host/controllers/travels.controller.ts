@@ -45,6 +45,7 @@ import {
 import { MessageModel } from '../models/message.model';
 import { TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SplitType, TravelParticipantType } from 'src/utility/enums';
 
 @Controller('travels')
 @UseGuards(PrivateEndpointGuard)
@@ -275,6 +276,33 @@ export class TravelsController {
   ): Promise<TravelOperationModel> {
     const userId = await this.currentUserService.getCurrentUserId();
 
+    // VALIDACIÓN: Si participantType es 'All', no necesita participantMemberIds
+    let participantMemberIds: number[] = [];
+  
+    if (apiRequest.participantType === TravelParticipantType.Selected) {
+      if (!apiRequest.participantMemberIds || apiRequest.participantMemberIds.length === 0) {
+        throw new BadRequestException('participantMemberIds is required when participantType is Selected');
+      }
+      participantMemberIds = apiRequest.participantMemberIds.map(x => +x);
+    }
+
+    // ✅ VALIDACIÓN: customAmounts/customPercentages según splitType
+    let customAmounts: number[] | undefined;
+    let customPercentages: number[] | undefined;
+
+    if (apiRequest.splitType === SplitType.CUSTOM) {
+      if (!apiRequest.customAmounts) {
+        throw new BadRequestException('customAmounts is required when splitType is Custom');
+      }
+      customAmounts = apiRequest.customAmounts;
+    }
+
+    if (apiRequest.splitType === SplitType.PERCENTAGE) {
+      if (!apiRequest.customPercentages) {
+        throw new BadRequestException('customPercentages is required when splitType is Percentage');
+      }
+      customPercentages = apiRequest.customPercentages;
+    }
     const request = new CreateTravelOperationRequest(
       userId,
       +travelId,
@@ -283,10 +311,13 @@ export class TravelsController {
       +apiRequest.whoPaidMemberId,
       +apiRequest.amount,
       apiRequest.description,
+      apiRequest.participantType,
       apiRequest.splitType,
       new Date(apiRequest.transactionDate),
-      apiRequest.participantMemberIds.map(x => +x),
-      +apiRequest.categoryId
+      +apiRequest.categoryId,
+      participantMemberIds,
+      customAmounts,
+      customPercentages,
     );
 
     return await this.travelManagerService.createTravelOperation(request);
@@ -304,6 +335,24 @@ export class TravelsController {
   ): Promise<TravelOperationModel> {
     const userId = await this.currentUserService.getCurrentUserId();
 
+    // ✅ VALIDACIONES similares al create
+    let customAmounts: number[] | undefined;
+    let customPercentages: number[] | undefined;
+
+    if (apiRequest.splitType === SplitType.CUSTOM) {
+      if (!apiRequest.customAmounts) {
+        throw new BadRequestException('customAmounts is required when splitType is Custom');
+      }
+      customAmounts = apiRequest.customAmounts;
+    }
+
+    if (apiRequest.splitType === SplitType.PERCENTAGE) {
+      if (!apiRequest.customPercentages) {
+        throw new BadRequestException('customPercentages is required when splitType is Percentage');
+      }
+      customPercentages = apiRequest.customPercentages;
+    }
+
     const request = new UpdateTravelOperationRequest(
       userId,
       operationId,
@@ -313,10 +362,13 @@ export class TravelsController {
       +apiRequest.whoPaidMemberId,
       +apiRequest.amount,
       apiRequest.description,
+      apiRequest.participantType,
       apiRequest.splitType,
       new Date(apiRequest.transactionDate),
+      +apiRequest.categoryId,
       apiRequest.participantMemberIds.map(x => +x),
-      +apiRequest.categoryId
+      customAmounts,
+      customPercentages,
     );
 
     return await this.travelManagerService.updateTravelOperation(request);

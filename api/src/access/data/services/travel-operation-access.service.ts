@@ -84,6 +84,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
         [DatabaseColumns.WhoPaidMemberId]: request.whoPaidMemberId,
         [DatabaseColumns.Amount]: request.amount,
         [DatabaseColumns.Description]: request.description,
+        [DatabaseColumns.ParticipantType]: request.participantType,
         [DatabaseColumns.SplitType]: request.splitType,
         [DatabaseColumns.TransactionDate]: request.transactionDate,
         [DatabaseColumns.LastUpdatedByUserId]: request.lastUpdatedByUserId,
@@ -196,13 +197,14 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       entity.whopaidmemberid,
       parseFloat(entity.amount.toString()),
       entity.description,
+      entity.participanttype,
       entity.splittype,
       entity.status,
       new Date(entity.datecreated!),
       new Date(entity.transactiondate!),
       entity.lastupdatedbyuserid || null,
       entity.updatedat ? new Date(entity.updatedat) : null,
-      entity.categoryId
+      entity.categoryid
     );
   };
 
@@ -215,6 +217,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       request.whoPaidMemberId,
       request.amount,
       request.description,
+      request.participantType,
       request.splitType,
       request.categoryId,
       TravelOperationStatus.Pending,

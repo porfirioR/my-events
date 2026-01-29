@@ -7,6 +7,7 @@ export class CreateTravelOperationAccessRequest {
     public whoPaidMemberId: number,
     public amount: number,
     public description: string,
+    public participantType: string,
     public splitType: string,
     public transactionDate: Date,
     public categoryId: number,
