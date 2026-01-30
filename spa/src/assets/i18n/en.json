@@ -423,7 +423,17 @@
     "deleteAttachmentMessage": "Are you sure you want to delete \"{{fileName}}\"?",
     "attachmentDeletedSuccess": "Attachment deleted successfully",
     "attachmentDeletedError": "Failed to delete attachment",
-    "deletingAttachment": "Deleting attachment..."
+    "deletingAttachment": "Deleting attachment...",
+    "participantType": "Who participates?",
+    "allMembers": "All members",
+    "selectedMembers": "Selected members",
+    "customAmounts": "Custom amounts",
+    "customPercentages": "Custom percentages",
+    "totalAssigned": "Total assigned",
+    "operationAmount": "Operation amount",
+    "totalPercentage": "Total percentage",
+    "customAmountsMustEqualTotal": "Custom amounts must equal the total operation amount",
+    "percentagesMustEqual100": "Percentages must equal exactly 100%"
   },
   "inputs": {
     "selectOption": "Select on {{label}}",

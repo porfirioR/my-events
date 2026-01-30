@@ -27,14 +27,14 @@
 
     <form [formGroup]="formGroup" (ngSubmit)="save()">
       <!-- Category Selector -->
-      <div class="mb-4">
+      <!-- <div class="mb-4">
         <app-category-selector
           [selectedCategoryId]="formGroup.value.categoryId || undefined"
           [disabled]="isLoading()"
           [required]="true"
           (categorySelected)="onCategorySelected($event)"
         />
-      </div>
+      </div> -->
 
       <!-- Currency & Payment Method -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -91,13 +91,13 @@
       </div>
 
       <!-- File Upload -->
-      <div class="mb-4">
+      <!-- <div class="mb-4">
         <app-file-upload
           [disabled]="isLoading()"
           [required]="false"
           (fileSelected)="onFileSelected($event)"
         />
-      </div>
+      </div> -->
 
       <!-- Who Paid -->
       <div class="mb-4">
@@ -118,7 +118,6 @@
           formControlName="participantType"
           [label]="'operations.participantType' | translate"
           [list]="participantTypeList"
-          (ngModelChange)="onParticipantTypeChange()"
         />
       </div>
 
@@ -233,7 +232,7 @@
             }
 
             <!-- Validation Summary -->
-            <div class="mt-4 p-3 rounded-lg border" 
+            <!-- <div class="mt-4 p-3 rounded-lg border" 
                 [class.border-success]="splitSummary().isValid" 
                 [class.border-error]="!splitSummary().isValid"
                 [class.bg-success/5]="splitSummary().isValid"
@@ -270,7 +269,7 @@
                   </div>
                 }
               }
-            </div>
+            </div> -->
           </div>
         </div>
       }

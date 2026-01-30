@@ -29,8 +29,8 @@ import { Configurations, SplitType, TravelParticipantType } from '../../models/e
     TextComponent,
     TextAreaInputComponent,
     DateInputComponent,
-    CategorySelectorComponent,
-    FileUploadComponent 
+    // CategorySelectorComponent,
+    // FileUploadComponent 
   ]
 })
 export class UpsertOperationComponent implements OnInit {
@@ -115,41 +115,41 @@ export class UpsertOperationComponent implements OnInit {
   });
 
   // ✅ COMPUTED: Información de split para mostrar
-  protected readonly splitSummary = computed(() => {
-    const splitType = this.formGroup.value.splitType;
-    const amount = this.formGroup.value.amount || 0;
-    const participantCount = this.customSplitParticipants().length;
+  // protected readonly splitSummary = computed(() => {
+  //   const splitType = this.formGroup.value.splitType;
+  //   const amount = this.formGroup.value.amount || 0;
+  //   const participantCount = this.customSplitParticipants().length;
 
-    if (splitType === SplitType.Equal) {
-      return {
-        type: 'equal',
-        perPerson: participantCount > 0 ? amount / participantCount : 0,
-        isValid: true
-      };
-    }
+  //   if (splitType === SplitType.Equal) {
+  //     return {
+  //       type: 'equal',
+  //       perPerson: participantCount > 0 ? amount / participantCount : 0,
+  //       isValid: true
+  //     };
+  //   }
 
-    if (splitType === SplitType.Custom) {
-      const total = this.customSplitData().reduce((sum, d) => sum + (d.amount || 0), 0);
-      return {
-        type: 'custom',
-        totalAssigned: total,
-        difference: total - amount,
-        isValid: Math.abs(total - amount) <= 0.01
-      };
-    }
+  //   if (splitType === SplitType.Custom) {
+  //     const total = this.customSplitData().reduce((sum, d) => sum + (d.amount || 0), 0);
+  //     return {
+  //       type: 'custom',
+  //       totalAssigned: total,
+  //       difference: total - amount,
+  //       isValid: Math.abs(total - amount) <= 0.01
+  //     };
+  //   }
 
-    if (splitType === SplitType.Percentage) {
-      const totalPercentage = this.customSplitData().reduce((sum, d) => sum + (d.percentage || 0), 0);
-      return {
-        type: 'percentage',
-        totalPercentage,
-        difference: totalPercentage - 100,
-        isValid: Math.abs(totalPercentage - 100) <= 0.01
-      };
-    }
+  //   if (splitType === SplitType.Percentage) {
+  //     const totalPercentage = this.customSplitData().reduce((sum, d) => sum + (d.percentage || 0), 0);
+  //     return {
+  //       type: 'percentage',
+  //       totalPercentage,
+  //       difference: totalPercentage - 100,
+  //       isValid: Math.abs(totalPercentage - 100) <= 0.01
+  //     };
+  //   }
 
-    return { type: 'unknown', isValid: false };
-  });
+  //   return { type: 'unknown', isValid: false };
+  // });
 
   protected participantTypeList: KeyValueViewModel[] = [
     new KeyValueViewModel(TravelParticipantType.All, this.translate.instant('operations.allMembers'), ''),
@@ -186,6 +186,17 @@ export class UpsertOperationComponent implements OnInit {
       customAmounts:new FormControl<number[]>([]),
       customPercentages: new FormControl<number[]>([]),
       categoryId: new FormControl(1, [Validators.required])
+    });
+
+    // ✅ Effect para establecer moneda por defecto cuando se carga el travel
+    effect(() => {
+      const travel = this.travel();
+      if (travel && travel.defaultCurrencyId && !this.formGroup.value.currencyId) {
+        console.log('🏦 Setting default currency:', travel.defaultCurrencyId);
+        this.formGroup.patchValue({
+          currencyId: travel.defaultCurrencyId
+        });
+      }
     });
 
     // ✅ NUEVO: Effect para manejar cambio de participantType
@@ -272,18 +283,7 @@ export class UpsertOperationComponent implements OnInit {
 
     if (travelId) {
       this.travelId = +travelId;
-      this.travelStore.loadTravelById(this.travelId);
-      this.travelStore.loadMembers(this.travelId);
-      this.travelStore.loadPaymentMethods();
-      this.travelStore.loadCategories();
-      this.currencyStore.loadCurrencies();
-
-      // Si hay travel cargado, establecer su moneda por defecto
-      if (this.travel()) {
-        this.formGroup.patchValue({
-          currencyId: this.travel()!.defaultCurrencyId
-        });
-      }
+      this.loadRequiredData();
     }
 
     if (operationId) {
@@ -292,7 +292,6 @@ export class UpsertOperationComponent implements OnInit {
     }
   }
 
-  
   protected onCategorySelected(category: OperationCategoryApiModel | undefined): void {
     this.formGroup.patchValue({
       categoryId: category?.id || null
@@ -452,21 +451,16 @@ export class UpsertOperationComponent implements OnInit {
     });
   }
 
+  private loadRequiredData(): void {
+    console.log('📡 Starting data load for travel:', this.travelId!);
 
-  protected onParticipantTypeChange(): void {
-    const participantType = this.formGroup.value.participantType;
+    //Check this parts
+    // this.travelStore.loadTravelById(this.travelId!);
+    // this.travelStore.loadMembers(this.travelId!);
+    // this.travelStore.loadPaymentMethods();
+    // this.travelStore.loadCategories();
+    // this.currencyStore.loadCurrencies();
 
-    if (participantType === TravelParticipantType.All) {
-      const allMemberIds = this.members().map(m => m.id);
-      this.selectedParticipants.set(allMemberIds);
-      this.formGroup.patchValue({
-        participantMemberIds: allMemberIds
-      });
-    } else {
-      this.selectedParticipants.set([]);
-      this.formGroup.patchValue({
-        participantMemberIds: []
-      });
-    }
+    console.log('✅ All load methods called');
   }
 }
