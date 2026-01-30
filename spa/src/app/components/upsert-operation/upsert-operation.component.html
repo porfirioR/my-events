@@ -27,14 +27,14 @@
 
     <form [formGroup]="formGroup" (ngSubmit)="save()">
       <!-- Category Selector -->
-      <!-- <div class="mb-4">
+      @if (activeCategories().length > 0) {
         <app-category-selector
           [selectedCategoryId]="formGroup.value.categoryId || undefined"
           [disabled]="isLoading()"
           [required]="true"
           (categorySelected)="onCategorySelected($event)"
         />
-      </div> -->
+      }
 
       <!-- Currency & Payment Method -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -90,15 +90,6 @@
         />
       </div>
 
-      <!-- File Upload -->
-      <!-- <div class="mb-4">
-        <app-file-upload
-          [disabled]="isLoading()"
-          [required]="false"
-          (fileSelected)="onFileSelected($event)"
-        />
-      </div> -->
-
       <!-- Who Paid -->
       <div class="mb-4">
         <app-select-input
@@ -121,7 +112,7 @@
         />
       </div>
 
-            <!-- ✅ ACTUALIZADO: Participants Selection (solo si es Selected) -->
+      <!-- Participants Selection (solo si es Selected) -->
       @if (formGroup.value.participantType === 'Selected') {
         <div class="mb-4">
           <label class="block text-sm font-medium text-base-content mb-3">
@@ -179,7 +170,8 @@
       </div>
 
       <!-- Participants Selection -->
-            @if ((formGroup.value.splitType === 'Custom' || formGroup.value.splitType === 'Percentage') && customSplitParticipants().length > 0) {
+      @if ((formGroup.value.splitType === 'Custom' || formGroup.value.splitType === 'Percentage') && 
+        customSplitParticipants().length > 0) {
         <div class="mb-4">
           <label class="block text-sm font-medium text-base-content mb-3">
             @if (formGroup.value.splitType === 'Custom') {
@@ -232,7 +224,7 @@
             }
 
             <!-- Validation Summary -->
-            <!-- <div class="mt-4 p-3 rounded-lg border" 
+            <div class="mt-4 p-3 rounded-lg border" 
                 [class.border-success]="splitSummary().isValid" 
                 [class.border-error]="!splitSummary().isValid"
                 [class.bg-success/5]="splitSummary().isValid"
@@ -269,7 +261,7 @@
                   </div>
                 }
               }
-            </div> -->
+            </div>
           </div>
         </div>
       }
@@ -325,6 +317,19 @@
           </div>
         </div>
       }
+
+      <div class="bg-info/10 p-2 rounded mb-4 text-xs">
+        <pre>{{ debugInfo() | json }}</pre>
+      </div>
+
+      <!-- File Upload -->
+      <div class="mb-4">
+        <app-file-upload
+          [disabled]="isLoading()"
+          [required]="false"
+          (fileSelected)="onFileSelected($event)"
+        />
+      </div>
 
       <!-- Action Buttons -->
       <footer class="flex justify-between items-center pt-6 gap-4">
