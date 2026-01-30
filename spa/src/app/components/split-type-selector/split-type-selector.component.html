@@ -1,0 +1,72 @@
+<div class="form-control w-full">
+  <!-- Participant Type Selection -->
+  <label class="label">
+    <span class="label-text">¿Quiénes participan?</span>
+  </label>
+
+  <div class="join mb-4">
+    <button type="button" class="btn join-item flex-1" [class]="getParticipantTypeClasses(travelParticipantType.All)"
+      (click)="selectParticipantType(travelParticipantType.All)" [disabled]="disabled()">
+      <i class="fa fa-users mr-2"></i>
+      Todos los miembros
+    </button>
+
+    <button type="button" class="btn join-item flex-1" [class]="getParticipantTypeClasses(travelParticipantType.Selected)"
+      (click)="selectParticipantType(travelParticipantType.Selected)" [disabled]="disabled()">
+      <i class="fa fa-user-friends mr-2"></i>
+      Miembros seleccionados
+    </button>
+  </div>
+
+  <!-- Split Type Selection -->
+  <label class="label">
+    <span class="label-text">¿Cómo dividir el costo?</span>
+  </label>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+    <button type="button" class="btn btn-outline flex flex-col items-center gap-2 h-auto py-4"
+      [class]="getSplitTypeClasses(splitType.Equal)" (click)="selectSplitType(splitType.Equal)" [disabled]="disabled()">
+
+      <i class="fa fa-equals text-2xl"></i>
+      <div class="text-center">
+        <p class="font-medium">Igual</p>
+        <p class="text-xs opacity-75">División equitativa</p>
+      </div>
+    </button>
+
+    <button type="button" class="btn btn-outline flex flex-col items-center gap-2 h-auto py-4"
+      [class]="getSplitTypeClasses(splitType.Custom)" (click)="selectSplitType(splitType.Custom)" [disabled]="disabled()">
+
+      <i class="fa fa-dollar-sign text-2xl"></i>
+      <div class="text-center">
+        <p class="font-medium">Personalizado</p>
+        <p class="text-xs opacity-75">Montos específicos</p>
+      </div>
+    </button>
+
+    <button type="button" class="btn btn-outline flex flex-col items-center gap-2 h-auto py-4"
+      [class]="getSplitTypeClasses(splitType.Percentage)" (click)="selectSplitType(splitType.Percentage)" [disabled]="disabled()">
+
+      <i class="fa fa-percentage text-2xl"></i>
+      <div class="text-center">
+        <p class="font-medium">Porcentaje</p>
+        <p class="text-xs opacity-75">% personalizado</p>
+      </div>
+    </button>
+  </div>
+
+  @if (selectedSplitType() && selectedSplitType() !== splitType.Equal) {
+  <div class="mt-4 p-4 rounded-lg bg-info/10 border border-info/20">
+    <div class="flex items-center gap-2 text-info">
+      <i class="fa fa-info-circle"></i>
+      <span class="text-sm">
+        @if (selectedSplitType() === splitType.Custom) {
+        Podrás especificar montos exactos para cada participante
+        } @else {
+        Podrás especificar porcentajes para cada participante
+        }
+      </span>
+    </div>
+  </div>
+  }
+</div>

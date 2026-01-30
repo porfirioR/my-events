@@ -7,6 +7,7 @@ export interface TravelOperationApiModel {
   whoPaidMemberId: number;
   amount: number;
   description: string;
+  participantType: string;
   splitType: string;
   status: string;
   dateCreated: Date;

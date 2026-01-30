@@ -7,8 +7,11 @@ export interface OperationFormGroup {
   whoPaidMemberId: FormControl<number | null>;
   amount: FormControl<number | null>;
   description: FormControl<string | null>;
+  participantType: FormControl<string | null>;
   splitType: FormControl<string | null>;
   transactionDate: FormControl<string | null>;
   participantMemberIds: FormControl<number[] | null>;
+  customAmounts: FormControl<number[] | null>;
+  customPercentages: FormControl<number[] | null>;
   categoryId: FormControl<number | null>;
 }

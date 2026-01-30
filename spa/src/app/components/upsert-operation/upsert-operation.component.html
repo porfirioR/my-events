@@ -26,7 +26,7 @@
     </header>
 
     <form [formGroup]="formGroup" (ngSubmit)="save()">
-      <!-- ✅ NUEVO: Category Selector -->
+      <!-- Category Selector -->
       <div class="mb-4">
         <app-category-selector
           [selectedCategoryId]="formGroup.value.categoryId || undefined"
@@ -90,7 +90,7 @@
         />
       </div>
 
-      <!-- ✅ NUEVO: File Upload -->
+      <!-- File Upload -->
       <div class="mb-4">
         <app-file-upload
           [disabled]="isLoading()"
@@ -111,6 +111,63 @@
         />
       </div>
 
+      <div class="mb-4">
+        <app-select-input
+          id="participantType"
+          name="participantType"
+          formControlName="participantType"
+          [label]="'operations.participantType' | translate"
+          [list]="participantTypeList"
+          (ngModelChange)="onParticipantTypeChange()"
+        />
+      </div>
+
+            <!-- ✅ ACTUALIZADO: Participants Selection (solo si es Selected) -->
+      @if (formGroup.value.participantType === 'Selected') {
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-base-content mb-3">
+            {{ 'operations.selectParticipants' | translate }}
+            <span class="text-error">*</span>
+          </label>
+          <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
+            @if (members().length > 0) {
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @for (member of members(); track member.id) {
+                  <label class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors"
+                    [class.bg-primary/10]="isParticipantSelected(member.id)"
+                    [class.border-primary]="isParticipantSelected(member.id)"
+                    [class.border-2]="isParticipantSelected(member.id)">
+                    <input
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      [checked]="isParticipantSelected(member.id)"
+                      (change)="toggleParticipant(member.id)"
+                    />
+                    <div class="flex items-center gap-2 flex-grow">
+                      <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold">
+                        {{ member.collaboratorName.charAt(0) }}{{ member.collaboratorSurname.charAt(0) }}
+                      </div>
+                      <span class="text-sm font-medium text-base-content">
+                        {{ member.collaboratorName }} {{ member.collaboratorSurname }}
+                      </span>
+                    </div>
+                  </label>
+                }
+              </div>
+            } @else {
+              <div class="text-center py-8">
+                <p class="text-base-content/70 mb-4">{{ 'operations.noMembersAvailable' | translate }}</p>
+              </div>
+            }
+          </div>
+          @if (formGroup.controls.participantMemberIds.invalid && formGroup.controls.participantMemberIds.touched) {
+            <span class="text-error text-sm mt-1 block">
+              {{ 'operations.participantsRequired' | translate }}
+            </span>
+          }
+        </div>
+      }
+
       <!-- Split Type -->
       <div class="mb-4">
         <app-select-input
@@ -119,64 +176,109 @@
           formControlName="splitType"
           [label]="'operations.splitType' | translate"
           [list]="splitTypeList"
-          [required]="true"
         />
       </div>
 
       <!-- Participants Selection -->
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-base-content mb-3">
-          {{ 'operations.selectParticipants' | translate }}
-          <span class="text-error">*</span>
-        </label>
-        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
-          @if (members().length > 0) {
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              @for (member of members(); track member.id) {
-                <label class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors"
-                  [class.bg-primary/10]="isParticipantSelected(member.id)"
-                  [class.border-primary]="isParticipantSelected(member.id)"
-                  [class.border-2]="isParticipantSelected(member.id)">
-                  <input
-                    type="checkbox"
-                    class="checkbox checkbox-primary"
-                    [checked]="isParticipantSelected(member.id)"
-                    (change)="toggleParticipant(member.id)"
-                  />
-                  <div class="flex items-center gap-2 flex-grow">
-                    <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold">
-                      {{ member.collaboratorName.charAt(0) }}{{ member.collaboratorSurname.charAt(0) }}
-                    </div>
-                    <span class="text-sm font-medium text-base-content">
-                      {{ member.collaboratorName }} {{ member.collaboratorSurname }}
-                    </span>
+            @if ((formGroup.value.splitType === 'Custom' || formGroup.value.splitType === 'Percentage') && customSplitParticipants().length > 0) {
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-base-content mb-3">
+            @if (formGroup.value.splitType === 'Custom') {
+              {{ 'operations.customAmounts' | translate }}
+            } @else {
+              {{ 'operations.customPercentages' | translate }}
+            }
+            <span class="text-error">*</span>
+          </label>
+
+          <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 space-y-3">
+            @for (participant of customSplitParticipants(); track participant.memberId) {
+              <div class="flex items-center gap-4 p-3 rounded-lg bg-base-50">
+                <!-- Member Info -->
+                <div class="flex items-center gap-2 flex-1">
+                  <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold">
+                    {{ participant.memberName.split(' ')[0]?.charAt(0) }}{{ participant.memberName.split(' ')[1]?.charAt(0) }}
                   </div>
-                </label>
+                  <span class="text-sm font-medium">{{ participant.memberName }}</span>
+                </div>
+
+                <!-- Custom Input -->
+                <div class="flex items-center gap-2">
+                  @if (formGroup.value.splitType === 'Custom') {
+                    <span class="text-sm text-base-content/70">$</span>
+                    <input
+                      type="number"
+                      class="input input-sm w-24 text-right"
+                      [value]="participant.amount || 0"
+                      (input)="onCustomAmountChange(participant.memberId, $event)"
+                      step="0.01"
+                      min="0"
+                      [disabled]="isLoading()"
+                    />
+                  } @else {
+                    <input
+                      type="number"
+                      class="input input-sm w-20 text-right"
+                      [value]="participant.percentage || 0"
+                      (input)="onCustomPercentageChange(participant.memberId, $event)"
+                      step="1"
+                      min="0"
+                      max="100"
+                      [disabled]="isLoading()"
+                    />
+                    <span class="text-sm text-base-content/70">%</span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Validation Summary -->
+            <div class="mt-4 p-3 rounded-lg border" 
+                [class.border-success]="splitSummary().isValid" 
+                [class.border-error]="!splitSummary().isValid"
+                [class.bg-success/5]="splitSummary().isValid"
+                [class.bg-error/5]="!splitSummary().isValid">
+              
+              @if (formGroup.value.splitType === 'Custom') {
+                <div class="flex justify-between items-center text-sm">
+                  <span>{{ 'operations.totalAssigned' | translate }}:</span>
+                  <span [class.text-success]="splitSummary().isValid" [class.text-error]="!splitSummary().isValid">
+                    {{ formatCurrency(splitSummary().totalAssigned || 0, formGroup.value.currencyId) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                  <span>{{ 'operations.operationAmount' | translate }}:</span>
+                  <span>{{ formatCurrency(formGroup.value.amount || 0, formGroup.value.currencyId) }}</span>
+                </div>
+                @if (!splitSummary().isValid) {
+                  <div class="text-error text-sm mt-2">
+                    {{ 'operations.customAmountsMustEqualTotal' | translate }}
+                  </div>
+                }
+              }
+
+              @if (formGroup.value.splitType === 'Percentage') {
+                <div class="flex justify-between items-center text-sm">
+                  <span>{{ 'operations.totalPercentage' | translate }}:</span>
+                  <span [class.text-success]="splitSummary().isValid" [class.text-error]="!splitSummary().isValid">
+                    {{ splitSummary().totalPercentage || 0 }}%
+                  </span>
+                </div>
+                @if (!splitSummary().isValid) {
+                  <div class="text-error text-sm mt-2">
+                    {{ 'operations.percentagesMustEqual100' | translate }}
+                  </div>
+                }
               }
             </div>
-          } @else {
-            <div class="text-center py-8">
-              <p class="text-base-content/70 mb-4">{{ 'operations.noMembersAvailable' | translate }}</p>
-              <button
-                type="button"
-                class="btn btn-sm btn-primary"
-                (click)="cancel()"
-              >
-                <i class="fas fa-arrow-left mr-2"></i>
-                {{ 'operations.backToTravel' | translate }}
-              </button>
-            </div>
-          }
+          </div>
         </div>
-        @if (formGroup.controls.participantMemberIds.invalid && formGroup.controls.participantMemberIds.touched) {
-          <span class="text-error text-sm mt-1 block">
-            {{ 'operations.participantsRequired' | translate }}
-          </span>
-        }
-      </div>
+      }
 
       <!-- Summary Card -->
-      @if (formGroup.value.amount && selectedParticipants().length > 0) {
+      @if (formGroup.value.amount && ((formGroup.value.participantType === 'All') || 
+        (formGroup.value.participantType === 'Selected' && selectedParticipants().length > 0)
+      )) {
         <div class="bg-primary/10 dark:bg-primary/20 rounded-lg p-4 mb-6">
           <h3 class="font-semibold text-base-content mb-3 flex items-center gap-2">
             <i class="fas fa-calculator text-primary"></i>
@@ -189,18 +291,29 @@
             </div>
             <div class="flex justify-between">
               <span class="text-base-content/70">{{ 'operations.participants' | translate }}:</span>
-              <span class="font-bold text-base-content">{{ selectedParticipants().length }}</span>
+              <span class="font-bold text-base-content">
+                @if (formGroup.value.participantType === 'All') {
+                  {{ members().length }}
+                } @else {
+                  {{ selectedParticipants().length }}
+                }
+              </span>
             </div>
+            
             @if (formGroup.value.splitType === 'Equal') {
               <div class="flex justify-between pt-2 border-t border-base-300">
                 <span class="text-base-content/70">{{ 'operations.perPerson' | translate }}:</span>
                 <span class="font-bold text-primary">
-                  {{ formatCurrency(formGroup.value.amount! / selectedParticipants().length, formGroup.value.currencyId || 1) }}
+                  @if (formGroup.value.participantType === 'All') {
+                    {{ formatCurrency(formGroup.value.amount! / members().length, formGroup.value.currencyId || 1) }}
+                  } @else {
+                    {{ formatCurrency(formGroup.value.amount! / selectedParticipants().length, formGroup.value.currencyId || 1) }}
+                  }
                 </span>
               </div>
             }
 
-            <!-- ✅ NUEVO: File Info -->
+            <!-- File Info -->
             @if (selectedFile()) {
               <div class="flex justify-between items-center pt-2 border-t border-base-300">
                 <span class="text-base-content/70">{{ 'operations.attachedFile' | translate }}:</span>

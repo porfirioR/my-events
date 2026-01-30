@@ -14,7 +14,7 @@ import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { CategorySelectorComponent } from '../category-selector/category-selector.component';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { KeyValueViewModel } from '../../models/view';
-import { Configurations, SplitType } from '../../models/enums';
+import { Configurations, SplitType, TravelParticipantType } from '../../models/enums';
 
 @Component({
   selector: 'app-upsert-operation',
@@ -59,7 +59,27 @@ export class UpsertOperationComponent implements OnInit {
     return this.formatterService.convertToList(this.currencyStore.currencies(), Configurations.Currencies);
   });
 
+
+  protected customSplitParticipants = computed(() => {
+    const participantIds = this.formGroup.value.participantType === TravelParticipantType.All 
+      ? this.members().map(m => m.id)
+      : this.selectedParticipants();
+
+    return participantIds.map(id => {
+      const member = this.members().find(m => m.id === id);
+      const existing = this.customSplitData().find(d => d.memberId === id);
+
+      return {
+        memberId: id,
+        memberName: member ? `${member.collaboratorName} ${member.collaboratorSurname}` : 'Unknown',
+        amount: existing?.amount || 0,
+        percentage: existing?.percentage || 0
+      };
+    });
+  });
+
   protected isSubmitting = signal<boolean>(false);
+  protected customSplitData = signal<{memberId: number, memberName: string, amount?: number, percentage?: number}[]>([]);
 
   // Lista de miembros para dropdown
   protected memberList = computed(() => {
@@ -74,6 +94,67 @@ export class UpsertOperationComponent implements OnInit {
   protected paymentMethodList: Signal<KeyValueViewModel[]> = computed(() => {
     return this.formatterService.convertToList(this.paymentMethods(), Configurations.PaymentMethod);
   });
+  
+
+  // ✅ COMPUTED: Validaciones para custom splits
+  protected isCustomSplitValid = computed(() => {
+    const splitType = this.formGroup.value.splitType;
+    const amount = this.formGroup.value.amount || 0;
+
+    if (splitType === SplitType.Custom) {
+      const totalCustom = this.customSplitData().reduce((sum, d) => sum + (d.amount || 0), 0);
+      return Math.abs(totalCustom - amount) <= 0.01;
+    }
+
+    if (splitType === SplitType.Percentage) {
+      const totalPercentage = this.customSplitData().reduce((sum, d) => sum + (d.percentage || 0), 0);
+      return Math.abs(totalPercentage - 100) <= 0.01;
+    }
+
+    return true;
+  });
+
+  // ✅ COMPUTED: Información de split para mostrar
+  protected readonly splitSummary = computed(() => {
+    const splitType = this.formGroup.value.splitType;
+    const amount = this.formGroup.value.amount || 0;
+    const participantCount = this.customSplitParticipants().length;
+
+    if (splitType === SplitType.Equal) {
+      return {
+        type: 'equal',
+        perPerson: participantCount > 0 ? amount / participantCount : 0,
+        isValid: true
+      };
+    }
+
+    if (splitType === SplitType.Custom) {
+      const total = this.customSplitData().reduce((sum, d) => sum + (d.amount || 0), 0);
+      return {
+        type: 'custom',
+        totalAssigned: total,
+        difference: total - amount,
+        isValid: Math.abs(total - amount) <= 0.01
+      };
+    }
+
+    if (splitType === SplitType.Percentage) {
+      const totalPercentage = this.customSplitData().reduce((sum, d) => sum + (d.percentage || 0), 0);
+      return {
+        type: 'percentage',
+        totalPercentage,
+        difference: totalPercentage - 100,
+        isValid: Math.abs(totalPercentage - 100) <= 0.01
+      };
+    }
+
+    return { type: 'unknown', isValid: false };
+  });
+
+  protected participantTypeList: KeyValueViewModel[] = [
+    new KeyValueViewModel(TravelParticipantType.All, this.translate.instant('operations.allMembers'), ''),
+    new KeyValueViewModel(TravelParticipantType.Selected, this.translate.instant('operations.selectedMembers'), '')
+  ];
 
   // Tipos de split
   protected splitTypeList: KeyValueViewModel[] = [
@@ -98,10 +179,58 @@ export class UpsertOperationComponent implements OnInit {
       whoPaidMemberId: new FormControl(null, [Validators.required]),
       amount: new FormControl(null, [Validators.required, Validators.min(0.01)]),
       description: new FormControl('', [Validators.required, Validators.maxLength(500)]),
+      participantType: new FormControl(TravelParticipantType.All, [Validators.required]),
       splitType: new FormControl(SplitType.Equal, [Validators.required]),
       transactionDate: new FormControl(this.getTodayDate(), [Validators.required]),
-      participantMemberIds: new FormControl<number[]>([], [Validators.required]),
+      participantMemberIds: new FormControl<number[]>([]),
+      customAmounts:new FormControl<number[]>([]),
+      customPercentages: new FormControl<number[]>([]),
       categoryId: new FormControl(1, [Validators.required])
+    });
+
+    // ✅ NUEVO: Effect para manejar cambio de participantType
+    effect(() => {
+      const participantType = this.formGroup.value.participantType;
+
+      if (participantType === TravelParticipantType.All) {
+        // Auto-seleccionar todos los miembros
+        const allMemberIds = this.members().map(m => m.id);
+        this.selectedParticipants.set(allMemberIds);
+        this.formGroup.patchValue({
+          participantMemberIds: allMemberIds
+        });
+      } else if (participantType === TravelParticipantType.Selected) {
+        // Limpiar selección para que usuario elija manualmente
+        this.selectedParticipants.set([]);
+        this.formGroup.patchValue({
+          participantMemberIds: []
+        });
+      }
+    });
+
+    // ✅ NUEVO: Effect para inicializar custom split data
+    effect(() => {
+      const participantIds = this.customSplitParticipants().map(p => p.memberId);
+      const amount = this.formGroup.value.amount || 0;
+      const splitType = this.formGroup.value.splitType;
+
+      if (participantIds.length > 0 && splitType === SplitType.Equal) {
+        // Auto-calcular montos iguales
+        const equalAmount = amount / participantIds.length;
+        const equalPercentage = 100 / participantIds.length;
+
+        this.customSplitData.set(
+          participantIds.map(id => {
+            const member = this.members().find(m => m.id === id);
+            return {
+              memberId: id,
+              memberName: member ? `${member.collaboratorName} ${member.collaboratorSurname}` : 'Unknown',
+              amount: equalAmount,
+              percentage: equalPercentage
+            };
+          })
+        );
+      }
     });
 
     // Effect para cargar la operación en modo edición
@@ -175,6 +304,8 @@ export class UpsertOperationComponent implements OnInit {
   }
 
   protected toggleParticipant(memberId: number): void {
+    if (this.formGroup.value.participantType === TravelParticipantType.All) return; // No permitir cambios si es "All"
+
     const current = this.selectedParticipants();
     if (current.includes(memberId)) {
       this.selectedParticipants.set(current.filter(id => id !== memberId));
@@ -191,7 +322,7 @@ export class UpsertOperationComponent implements OnInit {
   }
 
   protected async save(): Promise<void> {
-    if (this.formGroup.invalid) {
+    if (this.formGroup.invalid || !this.isCustomSplitValid()) {
       this.formGroup.markAllAsTouched();
       return;
     }
@@ -209,7 +340,8 @@ export class UpsertOperationComponent implements OnInit {
         formValue.whoPaidMemberId!,
         formValue.amount!,
         formValue.description!,
-        formValue.splitType!,
+        formValue.participantType! as TravelParticipantType,
+        formValue.splitType! as SplitType,
         new Date(formValue.transactionDate!),
         formValue.participantMemberIds!,
         formValue.categoryId!
@@ -240,7 +372,8 @@ export class UpsertOperationComponent implements OnInit {
         formValue.whoPaidMemberId!,
         formValue.amount!,
         formValue.description!,
-        formValue.splitType!,
+        formValue.participantType! as TravelParticipantType,
+        formValue.splitType! as SplitType,
         new Date(formValue.transactionDate!),
         formValue.participantMemberIds!,
         formValue.categoryId!
@@ -288,5 +421,52 @@ export class UpsertOperationComponent implements OnInit {
 
   protected goBack(): void {
     this.location.back();
+  }
+
+    // ✅ NUEVO: Métodos para manejar custom splits
+  protected onCustomAmountChange(memberId: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const newAmount = parseFloat(input.value) || 0;
+    
+    const updated = this.customSplitData().map(d => 
+      d.memberId === memberId ? { ...d, amount: newAmount } : d
+    );
+    this.customSplitData.set(updated);
+    
+    this.formGroup.patchValue({
+      customAmounts: updated.map(d => d.amount || 0)
+    });
+  }
+
+  protected onCustomPercentageChange(memberId: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const newPercentage = parseFloat(input.value) || 0;
+    
+    const updated = this.customSplitData().map(d => 
+      d.memberId === memberId ? { ...d, percentage: newPercentage } : d
+    );
+    this.customSplitData.set(updated);
+    
+    this.formGroup.patchValue({
+      customPercentages: updated.map(d => d.percentage || 0)
+    });
+  }
+
+
+  protected onParticipantTypeChange(): void {
+    const participantType = this.formGroup.value.participantType;
+
+    if (participantType === TravelParticipantType.All) {
+      const allMemberIds = this.members().map(m => m.id);
+      this.selectedParticipants.set(allMemberIds);
+      this.formGroup.patchValue({
+        participantMemberIds: allMemberIds
+      });
+    } else {
+      this.selectedParticipants.set([]);
+      this.formGroup.patchValue({
+        participantMemberIds: []
+      });
+    }
   }
 }

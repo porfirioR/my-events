@@ -19,3 +19,4 @@ export { RejectOperationApiRequest } from './reject-operation-api-request';
 export { OperationAttachmentApiModel } from './operation-attachment-api-model';
 export { OperationCategorySummaryApiModel } from './operation-category-api-model';
 export { OperationCategoryApiModel } from './operation-category-api-model';
+export { ParticipantSplit } from './participant-split-model';
