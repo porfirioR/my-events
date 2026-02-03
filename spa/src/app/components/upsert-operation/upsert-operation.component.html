@@ -195,27 +195,32 @@
                 <!-- Custom Input -->
                 <div class="flex items-center gap-2">
                   @if (formGroup.value.splitType === splitType.Custom) {
-                    <span class="text-sm text-base-content/70">$</span>
-                    <input
-                      type="number"
-                      class="input input-sm w-24 text-right"
-                      [value]="participant.amount || 0"
-                      (input)="onCustomAmountChange(participant.memberId, $event)"
-                      step="0.01"
-                      min="0"
-                      [disabled]="isLoading()"
-                    />
+                    <span class="text-sm text-base-content/70">
+                      {{ getCurrencySymbol(formGroup.value.currencyId || 1) }}
+                    </span>
+                    <div class="w-24">
+                      <app-text
+                        [id]="'amount-' + participant.memberId"
+                        [name]="'amount-' + participant.memberId"
+                        type="number"
+                        [label]="''"
+                        [formControl]="getParticipantControl('amount', participant.memberId)"
+                        [disabled]="isLoading()"
+                        placeholder="0.00"
+                      />
+                    </div>
                   } @else {
-                    <input
-                      type="number"
-                      class="input input-sm w-20 text-right"
-                      [value]="participant.percentage || 0"
-                      (input)="onCustomPercentageChange(participant.memberId, $event)"
-                      step="1"
-                      min="0"
-                      max="100"
-                      [disabled]="isLoading()"
-                    />
+                    <div class="w-20">
+                      <app-text
+                        [id]="'percentage-' + participant.memberId"
+                        [name]="'percentage-' + participant.memberId"
+                        type="number"
+                        [label]="''"
+                        [formControl]="getParticipantControl('percentage', participant.memberId)"
+                        [disabled]="isLoading()"
+                        placeholder="0"
+                      />
+                    </div>
                     <span class="text-sm text-base-content/70">%</span>
                   }
                 </div>
@@ -317,10 +322,6 @@
           </div>
         </div>
       }
-
-      <div class="bg-info/10 p-2 rounded mb-4 text-xs">
-        <pre>{{ debugInfo() | json }}</pre>
-      </div>
 
       <!-- File Upload -->
       <div class="mb-4">

@@ -62,7 +62,6 @@ export class UpsertOperationComponent implements OnInit {
     return this.formatterService.convertToList(this.currencyStore.currencies(), Configurations.Currencies);
   });
 
-
   protected customSplitParticipants = computed(() => {
     const participantType = this.formGroup.value.participantType;
 
@@ -91,17 +90,9 @@ export class UpsertOperationComponent implements OnInit {
     });
   });
 
-  protected debugInfo = computed(() => ({
-    participantType: this.formGroup.value.participantType,
-    splitType: this.formGroup.value.splitType,
-    selectedParticipants: this.selectedParticipants(),
-    allMembers: this.members().length,
-    customSplitParticipants: this.customSplitParticipants().length,
-    showCustomSplits: (this.formGroup.value.splitType === 'Custom' || this.formGroup.value.splitType === 'Percentage') && 
-                    this.customSplitParticipants().length > 0
-  }));
   protected isSubmitting = signal<boolean>(false);
   protected customSplitData = signal<{memberId: number, memberName: string, amount?: number, percentage?: number}[]>([]);
+  protected participantControls = signal<{ [key: string]: FormControl }>({});
 
   // Lista de miembros para dropdown
   protected memberList = computed(() => {
@@ -111,6 +102,7 @@ export class UpsertOperationComponent implements OnInit {
       ''
     ))
   });
+  
 
   // Lista de métodos de pago
   protected paymentMethodList: Signal<KeyValueViewModel[]> = computed(() => {
@@ -123,12 +115,12 @@ export class UpsertOperationComponent implements OnInit {
     const splitType = this.formGroup.value.splitType;
     const amount = this.formGroup.value.amount || 0;
 
-    if (splitType === SplitType.Custom) {
+    if (splitType === this.splitType.Custom) {
       const totalCustom = this.customSplitData().reduce((sum, d) => sum + (d.amount || 0), 0);
       return Math.abs(totalCustom - amount) <= 0.01;
     }
 
-    if (splitType === SplitType.Percentage) {
+    if (splitType === this.splitType.Percentage) {
       const totalPercentage = this.customSplitData().reduce((sum, d) => sum + (d.percentage || 0), 0);
       return Math.abs(totalPercentage - 100) <= 0.01;
     }
@@ -142,7 +134,7 @@ export class UpsertOperationComponent implements OnInit {
     const amount = this.formGroup.value.amount || 0;
     const participantCount = this.customSplitParticipants().length;
 
-    if (splitType === SplitType.Equal) {
+    if (splitType === this.splitType.Equal) {
       return {
         type: 'equal',
         perPerson: participantCount > 0 ? amount / participantCount : 0,
@@ -150,7 +142,7 @@ export class UpsertOperationComponent implements OnInit {
       };
     }
 
-    if (splitType === SplitType.Custom) {
+    if (splitType === this.splitType.Custom) {
       const total = this.customSplitData().reduce((sum, d) => sum + (d.amount || 0), 0);
       return {
         type: 'custom',
@@ -160,7 +152,7 @@ export class UpsertOperationComponent implements OnInit {
       };
     }
 
-    if (splitType === SplitType.Percentage) {
+    if (splitType === this.splitType.Percentage) {
       const totalPercentage = this.customSplitData().reduce((sum, d) => sum + (d.percentage || 0), 0);
       return {
         type: 'percentage',
@@ -180,9 +172,9 @@ export class UpsertOperationComponent implements OnInit {
 
   // Tipos de split
   protected splitTypeList: KeyValueViewModel[] = [
-    new KeyValueViewModel(SplitType.Equal, this.translate.instant('operations.equal'), ''),
-    new KeyValueViewModel(SplitType.Custom, this.translate.instant('operations.custom'), ''),
-    new KeyValueViewModel(SplitType.Percentage, this.translate.instant('operations.percentage'), '')
+    new KeyValueViewModel(this.splitType.Equal, this.translate.instant('operations.equal'), ''),
+    new KeyValueViewModel(this.splitType.Custom, this.translate.instant('operations.custom'), ''),
+    new KeyValueViewModel(this.splitType.Percentage, this.translate.instant('operations.percentage'), '')
   ];
 
   // Participantes seleccionados
@@ -250,7 +242,7 @@ export class UpsertOperationComponent implements OnInit {
       const splitType = this.formGroup.value.splitType;
 
       // ✅ PROTECCIÓN: Solo procesar si hay datos válidos
-      if (participantIds.length > 0 && amount > 0 && splitType === SplitType.Equal) {
+      if (participantIds.length > 0 && amount > 0 && splitType === this.splitType.Equal) {
         const equalAmount = amount / participantIds.length;
         const equalPercentage = 100 / participantIds.length;
 
@@ -271,6 +263,31 @@ export class UpsertOperationComponent implements OnInit {
           this.customSplitData.set(newData);
         }
       }
+    });
+
+    effect(() => {
+      const participants = this.customSplitParticipants();
+      const controls: { [key: string]: FormControl } = {};
+
+      participants.forEach(participant => {
+        // Crear controls para amounts y percentages
+        const amountControl = new FormControl(participant.amount || 0);
+        const percentageControl = new FormControl(participant.percentage || 0);
+        
+        controls[`amount-${participant.memberId}`] = amountControl;
+        controls[`percentage-${participant.memberId}`] = percentageControl;
+        
+        // ✅ Suscribirse a cambios del FormControl
+        amountControl.valueChanges.subscribe(value => {
+          this.onCustomAmountChange(participant.memberId, parseFloat(value as any ?? '0'));
+        });
+        
+        percentageControl.valueChanges.subscribe(value => {
+          this.onCustomPercentageChange(participant.memberId, parseFloat(value as any ?? '0'));
+        });
+      });
+      
+      this.participantControls.set(controls);
     });
 
     // // Effect para cargar la operación en modo edición
@@ -455,13 +472,10 @@ export class UpsertOperationComponent implements OnInit {
     this.location.back();
   }
 
-    // ✅ NUEVO: Métodos para manejar custom splits
-  protected onCustomAmountChange(memberId: number, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const newAmount = parseFloat(input.value) || 0;
-    
+    // Métodos para manejar custom splits
+  protected onCustomAmountChange(memberId: number, newValue: number): void {
     const updated = this.customSplitData().map(d => 
-      d.memberId === memberId ? { ...d, amount: newAmount } : d
+      d.memberId === memberId ? { ...d, amount: newValue } : d
     );
     this.customSplitData.set(updated);
     
@@ -470,12 +484,9 @@ export class UpsertOperationComponent implements OnInit {
     });
   }
 
-  protected onCustomPercentageChange(memberId: number, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const newPercentage = parseFloat(input.value) || 0;
-    
+  protected onCustomPercentageChange(memberId: number, newValue: number): void {
     const updated = this.customSplitData().map(d => 
-      d.memberId === memberId ? { ...d, percentage: newPercentage } : d
+      d.memberId === memberId ? { ...d, percentage: newValue } : d
     );
     this.customSplitData.set(updated);
     
@@ -483,6 +494,18 @@ export class UpsertOperationComponent implements OnInit {
       customPercentages: updated.map(d => d.percentage || 0)
     });
   }
+
+  protected getCurrencySymbol(currencyId: number): string {
+    const currency = this.currencyStore.getCurrencyById()(currencyId);
+    return currency?.symbol || '$';
+  }
+
+  protected getParticipantControl(type: 'amount' | 'percentage', memberId: number): FormControl {
+    const controls = this.participantControls();
+    const key = `${type}-${memberId}`;
+    return controls[key] || new FormControl(0);
+  }
+
 
   private loadRequiredData(): void {
     console.log('📡 Starting data load for travel:', this.travelId!);

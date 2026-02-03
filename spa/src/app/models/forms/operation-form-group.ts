@@ -1,4 +1,5 @@
 import { FormControl } from '@angular/forms';
+import { SplitType } from '../enums';
 
 export interface OperationFormGroup {
   id: FormControl<number | null>;
@@ -8,7 +9,7 @@ export interface OperationFormGroup {
   amount: FormControl<number | null>;
   description: FormControl<string | null>;
   participantType: FormControl<string | null>;
-  splitType: FormControl<string | null>;
+  splitType: FormControl<SplitType | null>;
   transactionDate: FormControl<string | null>;
   participantMemberIds: FormControl<number[] | null>;
   customAmounts: FormControl<number[] | null>;
