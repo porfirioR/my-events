@@ -11,6 +11,8 @@ export class CreateTravelOperationApiRequest {
     public splitType: SplitType,
     public transactionDate: Date,
     public participantMemberIds: number[],
-    public categoryId: number
+    public categoryId: number,
+    public customAmounts?: number[],
+    public customPercentages?: number[]
   ) {}
 }

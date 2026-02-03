@@ -30,7 +30,7 @@ import { Configurations, SplitType, TravelParticipantType } from '../../models/e
     TextAreaInputComponent,
     DateInputComponent,
     CategorySelectorComponent,
-    FileUploadComponent 
+    FileUploadComponent
   ]
 })
 export class UpsertOperationComponent implements OnInit {
@@ -64,9 +64,19 @@ export class UpsertOperationComponent implements OnInit {
 
 
   protected customSplitParticipants = computed(() => {
-    const participantIds = this.formGroup.value.participantType === TravelParticipantType.All 
-      ? this.members().map(m => m.id)
-      : this.selectedParticipants();
+    const participantType = this.formGroup.value.participantType;
+
+    let participantIds: number[] = [];
+
+    if (participantType === TravelParticipantType.All) {
+      participantIds = this.members().map(m => m.id);
+    } else if (participantType === TravelParticipantType.Selected) {
+      participantIds = this.selectedParticipants();
+      // ✅ No mostrar si no hay participantes seleccionados
+      if (participantIds.length === 0) {
+        return [];
+      }
+    }
 
     return participantIds.map(id => {
       const member = this.members().find(m => m.id === id);
@@ -81,6 +91,15 @@ export class UpsertOperationComponent implements OnInit {
     });
   });
 
+  protected debugInfo = computed(() => ({
+    participantType: this.formGroup.value.participantType,
+    splitType: this.formGroup.value.splitType,
+    selectedParticipants: this.selectedParticipants(),
+    allMembers: this.members().length,
+    customSplitParticipants: this.customSplitParticipants().length,
+    showCustomSplits: (this.formGroup.value.splitType === 'Custom' || this.formGroup.value.splitType === 'Percentage') && 
+                    this.customSplitParticipants().length > 0
+  }));
   protected isSubmitting = signal<boolean>(false);
   protected customSplitData = signal<{memberId: number, memberName: string, amount?: number, percentage?: number}[]>([]);
 
@@ -191,6 +210,17 @@ export class UpsertOperationComponent implements OnInit {
       categoryId: new FormControl(1, [Validators.required])
     });
 
+    // ✅ Effect para establecer moneda por defecto cuando se carga el travel
+    effect(() => {
+      const travel = this.travel();
+      if (travel && travel.defaultCurrencyId && !this.formGroup.value.currencyId) {
+        console.log('🏦 Setting default currency:', travel.defaultCurrencyId);
+        this.formGroup.patchValue({
+          currencyId: travel.defaultCurrencyId
+        });
+      }
+    });
+
     // ✅ NUEVO: Effect para manejar cambio de participantType
     effect(() => {
       const participantType = this.formGroup.value.participantType;
@@ -198,10 +228,12 @@ export class UpsertOperationComponent implements OnInit {
       if (participantType === TravelParticipantType.All) {
         // Auto-seleccionar todos los miembros
         const allMemberIds = this.members().map(m => m.id);
-        this.selectedParticipants.set(allMemberIds);
-        this.formGroup.patchValue({
-          participantMemberIds: allMemberIds
-        });
+        if (allMemberIds.length > 0) {  // ✅ Protección: solo si hay miembros
+          this.selectedParticipants.set(allMemberIds);
+          this.formGroup.patchValue({
+            participantMemberIds: allMemberIds
+          });
+        }
       } else if (participantType === TravelParticipantType.Selected) {
         // Limpiar selección para que usuario elija manualmente
         this.selectedParticipants.set([]);
@@ -217,56 +249,61 @@ export class UpsertOperationComponent implements OnInit {
       const amount = this.formGroup.value.amount || 0;
       const splitType = this.formGroup.value.splitType;
 
-      if (participantIds.length > 0 && splitType === SplitType.Equal) {
-        // Auto-calcular montos iguales
+      // ✅ PROTECCIÓN: Solo procesar si hay datos válidos
+      if (participantIds.length > 0 && amount > 0 && splitType === SplitType.Equal) {
         const equalAmount = amount / participantIds.length;
         const equalPercentage = 100 / participantIds.length;
 
-        this.customSplitData.set(
-          participantIds.map(id => {
-            const member = this.members().find(m => m.id === id);
-            return {
-              memberId: id,
-              memberName: member ? `${member.collaboratorName} ${member.collaboratorSurname}` : 'Unknown',
-              amount: equalAmount,
-              percentage: equalPercentage
-            };
-          })
-        );
-      }
-    });
+        const newData = participantIds.map(id => {
+          const member = this.members().find(m => m.id === id);
+          return {
+            memberId: id,
+            memberName: member ? `${member.collaboratorName} ${member.collaboratorSurname}` : 'Unknown',
+            amount: equalAmount,
+            percentage: equalPercentage
+          };
+        });
 
-    // Effect para cargar la operación en modo edición
-    effect(() => {
-      if (this.isEditMode() && this.operationId && this.travelId) {
-        this.travelStore.loadOperations(this.travelId);
-        const operation = this.travelStore.operations().find(op => op.id === this.operationId);
-
-        if (operation) {
-          this.formGroup.patchValue({
-            id: operation.id,
-            currencyId: operation.currencyId,
-            paymentMethodId: operation.paymentMethodId,
-            whoPaidMemberId: operation.whoPaidMemberId,
-            amount: operation.amount,
-            description: operation.description,
-            splitType: operation.splitType,
-            transactionDate: this.formatDateForInput(operation.transactionDate)
-          });
-
-          // TODO: Cargar participantMemberIds desde el backend si está disponible
-          this.selectedParticipants.set([]);
-        }
-      }
-
-      // Auto-seleccionar categoría "Other" por defecto si no hay ninguna
-      if (this.activeCategories().length > 0 && !this.formGroup.value.categoryId) {
-        const otherCategory = this.activeCategories().find(cat => cat.name === 'Other');
-        if (otherCategory) {
-          this.formGroup.patchValue({ categoryId: otherCategory.id });
+        // ✅ PROTECCIÓN: Solo actualizar si los datos cambiaron
+        const current = this.customSplitData();
+        if (JSON.stringify(current) !== JSON.stringify(newData)) {
+          console.log('💰 Updating custom split data');
+          this.customSplitData.set(newData);
         }
       }
     });
+
+    // // Effect para cargar la operación en modo edición
+    // effect(() => {
+    //   if (this.isEditMode() && this.operationId && this.travelId) {
+    //     this.travelStore.loadOperations(this.travelId);
+    //     const operation = this.travelStore.operations().find(op => op.id === this.operationId);
+
+    //     if (operation) {
+    //       this.formGroup.patchValue({
+    //         id: operation.id,
+    //         currencyId: operation.currencyId,
+    //         paymentMethodId: operation.paymentMethodId,
+    //         whoPaidMemberId: operation.whoPaidMemberId,
+    //         amount: operation.amount,
+    //         description: operation.description,
+    //         splitType: operation.splitType,
+    //         transactionDate: this.formatDateForInput(operation.transactionDate)
+    //       });
+
+    //       // TODO: Cargar participantMemberIds desde el backend si está disponible
+    //       this.selectedParticipants.set([]);
+    //     }
+    //   }
+
+    //   // Auto-seleccionar categoría "Other" por defecto si no hay ninguna
+    //   if (this.activeCategories().length > 0 && !this.formGroup.value.categoryId) {
+    //     const otherCategory = this.activeCategories().find(cat => cat.name === 'Other');
+    //     if (otherCategory) {
+    //       this.formGroup.patchValue({ categoryId: otherCategory.id });
+    //     }
+    //   }
+    // });
   }
 
   ngOnInit(): void {
@@ -275,18 +312,7 @@ export class UpsertOperationComponent implements OnInit {
 
     if (travelId) {
       this.travelId = +travelId;
-      this.travelStore.loadTravelById(this.travelId);
-      this.travelStore.loadMembers(this.travelId);
-      this.travelStore.loadPaymentMethods();
-      this.travelStore.loadCategories();
-      this.currencyStore.loadCurrencies();
-
-      // Si hay travel cargado, establecer su moneda por defecto
-      if (this.travel()) {
-        this.formGroup.patchValue({
-          currencyId: this.travel()!.defaultCurrencyId
-        });
-      }
+      this.loadRequiredData();
     }
 
     if (operationId) {
@@ -295,7 +321,6 @@ export class UpsertOperationComponent implements OnInit {
     }
   }
 
-  
   protected onCategorySelected(category: OperationCategoryApiModel | undefined): void {
     this.formGroup.patchValue({
       categoryId: category?.id || null
@@ -347,7 +372,9 @@ export class UpsertOperationComponent implements OnInit {
         formValue.splitType! as SplitType,
         new Date(formValue.transactionDate!),
         formValue.participantMemberIds!,
-        formValue.categoryId!
+        formValue.categoryId!,
+        formValue.customAmounts ?? undefined,
+        formValue.customPercentages ?? undefined
       );
 
       this.formGroup.disable();
@@ -379,7 +406,9 @@ export class UpsertOperationComponent implements OnInit {
         formValue.splitType! as SplitType,
         new Date(formValue.transactionDate!),
         formValue.participantMemberIds!,
-        formValue.categoryId!
+        formValue.categoryId!,
+        formValue.customAmounts ?? undefined,
+        formValue.customPercentages ?? undefined
       );
 
       this.formGroup.disable();
@@ -455,21 +484,16 @@ export class UpsertOperationComponent implements OnInit {
     });
   }
 
+  private loadRequiredData(): void {
+    console.log('📡 Starting data load for travel:', this.travelId!);
 
-  protected onParticipantTypeChange(): void {
-    const participantType = this.formGroup.value.participantType;
+    //Check this parts
+    this.travelStore.loadTravelById(this.travelId!);
+    this.travelStore.loadMembers(this.travelId!);
+    this.travelStore.loadPaymentMethods();
+    this.travelStore.loadCategories();
+    this.currencyStore.loadCurrencies();
 
-    if (participantType === TravelParticipantType.All) {
-      const allMemberIds = this.members().map(m => m.id);
-      this.selectedParticipants.set(allMemberIds);
-      this.formGroup.patchValue({
-        participantMemberIds: allMemberIds
-      });
-    } else {
-      this.selectedParticipants.set([]);
-      this.formGroup.patchValue({
-        participantMemberIds: []
-      });
-    }
+    console.log('✅ All load methods called');
   }
 }

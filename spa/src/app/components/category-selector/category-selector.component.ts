@@ -1,8 +1,8 @@
-import { Component, computed, input, OnInit, output } from '@angular/core';
-import { OperationCategoryApiModel } from '../../models/api/travels';
-import { useTravelStore } from '../../store';
+import { Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { OperationCategoryApiModel } from '../../models/api/travels';
+import { useTravelStore } from '../../store';
 
 @Component({
   selector: 'app-category-selector',
@@ -10,7 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrls: ['./category-selector.component.css'],
   imports: [CommonModule, TranslateModule]
 })
-export class CategorySelectorComponent implements OnInit {
+export class CategorySelectorComponent {
   private travelStore = useTravelStore();
 
   // Inputs
@@ -27,13 +27,6 @@ export class CategorySelectorComponent implements OnInit {
   protected selectedCategory = computed(() => 
     this.travelStore.getCategoryById()(this.selectedCategoryId())
   );
-
-  ngOnInit() {
-    // Load categories if needed
-    if (this.travelStore.needsLoadingCategories()) {
-      this.travelStore.loadCategories();
-    }
-  }
 
   protected selectCategory(category: OperationCategoryApiModel): void {
     if (this.disabled()) return;

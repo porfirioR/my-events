@@ -424,7 +424,17 @@
     "deleteAttachmentMessage": "¿Estás seguro de que querés eliminar \"{{fileName}}\"?",
     "attachmentDeletedSuccess": "Archivo eliminado exitosamente",
     "attachmentDeletedError": "Error al eliminar el archivo",
-    "deletingAttachment": "Eliminando archivo..."
+    "deletingAttachment": "Eliminando archivo...",
+    "participantType": "¿Quiénes participan?",
+    "allMembers": "Todos los miembros",
+    "selectedMembers": "Miembros seleccionados",
+    "customAmounts": "Montos personalizados",
+    "customPercentages": "Porcentajes personalizados",
+    "totalAssigned": "Total asignado",
+    "operationAmount": "Monto de operación",
+    "totalPercentage": "Porcentaje total",
+    "customAmountsMustEqualTotal": "Los montos personalizados deben sumar el total de la operación",
+    "percentagesMustEqual100": "Los porcentajes deben sumar exactamente 100%"
   },
   "inputs": {
     "selectOption": "Selecciona un {{label}}",
