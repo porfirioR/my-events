@@ -54,6 +54,9 @@ export class UpsertOperationComponent implements OnInit {
   protected selectedFile = signal<File | undefined>(undefined);
   protected isEditMode = signal(false);
 
+  protected splitType = SplitType;
+  protected travelParticipantType = TravelParticipantType;
+
   // Lista de monedas
   protected currencyList: Signal<KeyValueViewModel[]>  = computed(() => {
     return this.formatterService.convertToList(this.currencyStore.currencies(), Configurations.Currencies);

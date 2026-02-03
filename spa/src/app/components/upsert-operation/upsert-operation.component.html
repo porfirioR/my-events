@@ -180,10 +180,10 @@
       </div>
 
       <!-- Participants Selection -->
-            @if ((formGroup.value.splitType === 'Custom' || formGroup.value.splitType === 'Percentage') && customSplitParticipants().length > 0) {
+      @if ((formGroup.value.splitType === splitType.Custom || formGroup.value.splitType === splitType.Percentage) && customSplitParticipants().length > 0) {
         <div class="mb-4">
           <label class="block text-sm font-medium text-base-content mb-3">
-            @if (formGroup.value.splitType === 'Custom') {
+            @if (formGroup.value.splitType === splitType.Custom) {
               {{ 'operations.customAmounts' | translate }}
             } @else {
               {{ 'operations.customPercentages' | translate }}
@@ -204,7 +204,7 @@
 
                 <!-- Custom Input -->
                 <div class="flex items-center gap-2">
-                  @if (formGroup.value.splitType === 'Custom') {
+                  @if (formGroup.value.splitType === splitType.Custom) {
                     <span class="text-sm text-base-content/70">$</span>
                     <input
                       type="number"
@@ -234,12 +234,13 @@
 
             <!-- Validation Summary -->
             <div class="mt-4 p-3 rounded-lg border" 
-                [class.border-success]="splitSummary().isValid" 
-                [class.border-error]="!splitSummary().isValid"
-                [class.bg-success/5]="splitSummary().isValid"
-                [class.bg-error/5]="!splitSummary().isValid">
-              
-              @if (formGroup.value.splitType === 'Custom') {
+              [class.border-success]="splitSummary().isValid" 
+              [class.border-error]="!splitSummary().isValid"
+              [class.bg-success/5]="splitSummary().isValid"
+              [class.bg-error/5]="!splitSummary().isValid"
+            >
+
+              @if (formGroup.value.splitType === splitType.Custom) {
                 <div class="flex justify-between items-center text-sm">
                   <span>{{ 'operations.totalAssigned' | translate }}:</span>
                   <span [class.text-success]="splitSummary().isValid" [class.text-error]="!splitSummary().isValid">
@@ -257,7 +258,7 @@
                 }
               }
 
-              @if (formGroup.value.splitType === 'Percentage') {
+              @if (formGroup.value.splitType === splitType.Percentage) {
                 <div class="flex justify-between items-center text-sm">
                   <span>{{ 'operations.totalPercentage' | translate }}:</span>
                   <span [class.text-success]="splitSummary().isValid" [class.text-error]="!splitSummary().isValid">
@@ -276,7 +277,7 @@
       }
 
       <!-- Summary Card -->
-      @if (formGroup.value.amount && ((formGroup.value.participantType === 'All') || 
+      @if (formGroup.value.amount && ((formGroup.value.participantType === travelParticipantType.All) || 
         (formGroup.value.participantType === 'Selected' && selectedParticipants().length > 0)
       )) {
         <div class="bg-primary/10 dark:bg-primary/20 rounded-lg p-4 mb-6">
@@ -292,7 +293,7 @@
             <div class="flex justify-between">
               <span class="text-base-content/70">{{ 'operations.participants' | translate }}:</span>
               <span class="font-bold text-base-content">
-                @if (formGroup.value.participantType === 'All') {
+                @if (formGroup.value.participantType === travelParticipantType.All) {
                   {{ members().length }}
                 } @else {
                   {{ selectedParticipants().length }}
@@ -300,11 +301,11 @@
               </span>
             </div>
             
-            @if (formGroup.value.splitType === 'Equal') {
+            @if (formGroup.value.splitType === splitType.Equal) {
               <div class="flex justify-between pt-2 border-t border-base-300">
                 <span class="text-base-content/70">{{ 'operations.perPerson' | translate }}:</span>
                 <span class="font-bold text-primary">
-                  @if (formGroup.value.participantType === 'All') {
+                  @if (formGroup.value.participantType === travelParticipantType.All) {
                     {{ formatCurrency(formGroup.value.amount! / members().length, formGroup.value.currencyId || 1) }}
                   } @else {
                     {{ formatCurrency(formGroup.value.amount! / selectedParticipants().length, formGroup.value.currencyId || 1) }}
