@@ -433,7 +433,15 @@
     "operationAmount": "Operation amount",
     "totalPercentage": "Total percentage",
     "customAmountsMustEqualTotal": "Custom amounts must equal the total operation amount",
-    "percentagesMustEqual100": "Percentages must equal exactly 100%"
+    "percentagesMustEqual100": "Percentages must equal exactly 100%",
+    "splitTypes": {
+      "Equal": "Equal split",
+      "Custom": "Custom amounts",
+      "Percentage": "By percentages"
+    },
+    "approved": "Approved", 
+    "pending": "Pending",
+    "individualAmounts": "Individual amounts"
   },
   "inputs": {
     "selectOption": "Select on {{label}}",
@@ -708,7 +716,7 @@
     "operations": "Operations",
     "members": "Members",
     "balances": "Balances",
-    "participants": "participants",
+    "participants": "Participants",
     "newOperation": "New Operation",
     "noOperationsYet": "No operations yet",
     "startTrackingExpenses": "Start tracking your expenses",
@@ -749,7 +757,10 @@
     "noDebts": "All settled up!",
     "categorySum": "Category Summary",
     "spendingByCategory": "Spending by Category",
-    "noCategoryData": "No category data available"
+    "noCategoryData": "No category data available",
+    "paidInitially": "Paid initially",
+    "advancedTheMoney": "Advanced the money",
+    "people": "People"
   },
   "categories": {
     "Food & Dining": "Food & Dining",

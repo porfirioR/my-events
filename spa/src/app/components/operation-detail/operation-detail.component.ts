@@ -6,6 +6,7 @@ import { useTravelStore, useLoadingStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelOperationApiModel } from '../../models/api/travels';
 import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
+import { ApprovalStatus } from '../../models/enums';
 
 @Component({
   selector: 'app-operation-detail',
@@ -34,9 +35,11 @@ export class OperationDetailComponent implements OnInit {
 
   protected travelId?: number;
   protected operationId?: number;
+  protected approvalStatus = ApprovalStatus;
 
   protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
+  protected getInitials = FormatterHelperService.getInitials;
 
   ngOnInit(): void {
     const travelId = this.activatedRoute.snapshot.params['travelId'];
@@ -185,5 +188,24 @@ export class OperationDetailComponent implements OnInit {
       default:
         return 'fa-question-circle';
     }
+  }
+
+  protected getOperationParticipants(operation: TravelOperationApiModel): Array<{id: number, name: string, approved: boolean, amount?: number, percentage?: number}> {
+    // Temporal: generar participantes basado en el count
+    const participantCount = operation.participantCount || 0;
+    const approvalCount = operation.approvalCount || 0;
+    const participants = [];
+    
+    for (let i = 0; i < participantCount; i++) {
+      participants.push({
+        id: i + 1,
+        name: i === 0 ? (operation.whoPaidMemberName || 'Usuario') : `Participante ${i + 1}`,
+        approved: i < approvalCount, // Los primeros están aprobados
+        amount: operation.splitType === 'Equal' ? operation.amount / participantCount : 0,
+        percentage: operation.splitType === 'Equal' ? 100 / participantCount : 0
+      });
+    }
+    
+    return participants;
   }
 }

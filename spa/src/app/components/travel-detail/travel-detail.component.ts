@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useTravelStore, useCollaboratorStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { TravelApiModel, TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
+import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 
 @Component({
   selector: 'app-travel-detail',
@@ -284,4 +284,21 @@ export class TravelDetailComponent implements OnInit {
         return 'fa-question-circle';
     }
   }
+
+  protected getOperationParticipants(operation: TravelOperationApiModel): Array<{id: number, name: string}> {
+    // Temporal: generar participantes basado en el count
+    const participantCount = operation.participantCount || 0;
+    const participants = [];
+    
+    for (let i = 0; i < participantCount; i++) {
+      // Por ahora usar nombres genéricos hasta que tengas los datos reales
+      participants.push({
+        id: i + 1,
+        name: i === 0 ? (operation.whoPaidMemberName || 'Usuario') : `Participante ${i + 1}`
+      });
+    }
+    
+    return participants;
+  }
+
 }

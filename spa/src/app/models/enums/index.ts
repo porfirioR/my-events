@@ -1,6 +1,7 @@
 export { Configurations } from './configurations.enum'
 export { SplitType } from './split-type.enum'
 export { WhoPaid } from './who-paid.enum'
+export { ApprovalStatus } from './approval-status.enum'
 export { MatchRequestStatus } from './match-request-status.enum';
 export { ParticipantType } from './participant-type.enum';
 export { TravelParticipantType } from './travel-participant-type.enum';

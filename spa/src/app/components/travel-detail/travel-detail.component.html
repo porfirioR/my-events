@@ -134,41 +134,45 @@
                 <span class="loading loading-spinner loading-lg"></span>
               </div>
             } @else {
-              <ul class="space-y-3">
+              <ul class="space-y-4">
                 @for (operation of operations(); track operation.id) {
-                  <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors">
-                    <article class="flex items-start gap-4">
-                      <!-- Icon -->
-                      <figure class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
-                          [ngClass]="{
-                            'bg-warning': operation.status === 'Pending',
-                            'bg-success': operation.status === 'Approved',
-                            'bg-error': operation.status === 'Rejected'
-                          }">
-                          <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
-                        </div>
-                      </figure>
+                  <li class="bg-base-100 dark:bg-base-200 rounded-lg p-6 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-all duration-200 shadow-sm">
+                    <article class="space-y-4">
 
-                      <!-- Content -->
-                      <div class="flex-grow min-w-0">
-                        <div class="flex items-start justify-between gap-4">
-                          <div class="flex-grow">
-                            <h3 class="font-semibold text-base-content">
-                              {{ operation.description }}
-                            </h3>
-                            <p class="text-sm text-base-content/70 mt-1">
-                              {{ operation.whoPaidMemberName || 'travels.unknownMember' | translate }} {{ 'travels.paid' | translate }}
-                              <span class="font-bold">{{ formatCurrency(operation.amount, 0) }}</span>
-                            </p>
-                          </div>
+                      <!-- Header: Título, monto y status -->
+                      <div class="flex items-start justify-between gap-4">
+                        <!-- LEFT: Description -->
+                        <h3 class="text-lg font-bold text-base-content truncate">
+                          {{ operation.description }}
+                        </h3>
+
+                        <!-- RIGHT: Amount + Status + Actions -->
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                          <!-- Amount -->
+                          <span class="text-lg sm:text-xl font-bold text-base-content whitespace-nowrap">
+                            {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
+                          </span>
+
+                          <!-- Status -->
+                          <span
+                            class="badge badge-sm whitespace-nowrap"
+                            [ngClass]="getOperationStatusBadgeClass(operation.status)"
+                          >
+                            <i
+                              [class]="'fas ' + getOperationStatusIcon(operation.status) + ' mr-1'"
+                            ></i>
+                            {{ 'travels.' + operation.status.toLowerCase() | translate }}
+                          </span>
 
                           <!-- Actions Menu -->
                           <div class="dropdown dropdown-end">
                             <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
                               <i class="fas fa-ellipsis-v"></i>
                             </label>
-                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
+                            <ul
+                              tabindex="0"
+                              class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300"
+                            >
                               <li>
                                 <button (click)="viewOperationDetail(operation)">
                                   <i class="fas fa-eye text-info"></i>
@@ -198,7 +202,7 @@
                               }
 
                               @if (operation.status !== 'Approved') {
-                                <li><hr class="my-1 border-base-300"></li>
+                                <li><hr class="my-1 border-base-300" /></li>
                                 <li>
                                   <button (click)="deleteOperation(operation)">
                                     <i class="fas fa-trash text-error"></i>
@@ -209,41 +213,66 @@
                             </ul>
                           </div>
                         </div>
+                      </div>
 
-                        <!-- Metadata -->
-                        <div class="flex items-center gap-3 mt-2 flex-wrap">
-                          <!-- Status -->
-                          <span class="badge badge-sm badge-outline"
-                            [ngClass]="getOperationStatusBadgeClass(operation.status)">
-                            <i [class]="'fas ' + getOperationStatusIcon(operation.status) + ' mr-1'"></i>
-                            {{ 'travels.' + operation.status.toLowerCase() | translate }}
-                          </span>
-
-                          <!-- Date -->
-                          <time class="text-xs text-base-content/60">
-                            {{ getFormattedDate(operation.transactionDate) }}
-                          </time>
-
-                          <!-- Participants -->
-                          @if (operation.participantCount) {
-                            <span class="text-xs text-base-content/60">
-                              <i class="fas fa-users mr-1"></i>
-                              {{ operation.participantCount }} {{ 'travels.participants' | translate }}
-                            </span>
-                          }
-
-                          <!-- Approvals -->
-                          @if (operation.approvalCount !== undefined && operation.participantCount) {
-                            <span class="text-xs text-base-content/60">
-                              <i class="fas fa-check-circle mr-1"></i>
-                              {{ operation.approvalCount }}/{{ operation.participantCount }}
-                            </span>
-                          }
+                      <!-- Quien pagó (destacado) -->
+                      <div class="mb-6">
+                        <div class="flex items-center gap-3 rounded-lg">
+                          <div class="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center font-bold shadow-md"
+                            [title]="getInitials(operation.whoPaidMemberName || 'UK')"
+                          >
+                            {{ getInitials(operation.whoPaidMemberName || 'UK') }}
+                          </div>
+                          <div class="flex-grow">
+                            <p class="text-sm font-semibold">{{ 'operations.whoPaid' | translate }}</p>
+                            <p class="text-xs text-base-content/70">
+                              {{ operation.whoPaidMemberName || ('operations.unknownMember' | translate) }}
+                            </p>
+                          </div>
                         </div>
+                      </div>
+
+                      <!-- Participantes (avatares) -->
+                      <div class="space-y-2">
+                        <p class="text-sm font-medium text-base-content/70">
+                          {{ 'travels.participants' | translate }}:
+                        </p>
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <!-- Aquí necesitarías los datos de participantes desde el backend -->
+                          @for (participant of getOperationParticipants(operation); track participant.id) {
+                            <div class="tooltip" [attr.data-tip]="participant.name">
+                              <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold shadow-sm ring-2 ring-base-100">
+                                {{ getInitials(participant.name) }}
+                              </div>
+                            </div>
+                          }
+                          <span class="text-sm text-base-content/70 ml-2">
+                            {{ operation.participantCount || 0 }} {{ 'travels.people' | translate }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Metadata (fecha, split type, etc.) -->
+                      <div class="flex items-center gap-4 text-xs text-base-content/60 pt-2 border-t border-base-300">
+                        <span class="flex items-center gap-1">
+                          <i class="fas fa-calendar-alt"></i>
+                          {{ getFormattedDate(operation.transactionDate) }}
+                        </span>
+                        <span class="flex items-center gap-1">
+                          <i class="fas fa-calculator"></i>
+                          {{ 'operations.splitTypes.' + operation.splitType | translate }}
+                        </span>
+                        @if (operation.approvalCount !== undefined && operation.participantCount) {
+                          <span class="flex items-center gap-1">
+                            <i class="fas fa-check-circle"></i>
+                            {{ operation.approvalCount }}/{{ operation.participantCount }}
+                          </span>
+                        }
                       </div>
                     </article>
                   </li>
                 } @empty {
+                  <!-- Estado vacío existente -->
                   <li class="text-center py-12">
                     <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                       <i class="fas fa-receipt text-2xl text-base-content/50"></i>
