@@ -94,10 +94,9 @@
 
       <!-- Main Content -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        <!-- ✅ Left Column - Detalles + Cálculo (2/3 del ancho) -->
+        <!-- Left Column - Detalles + Cálculo (2/3 del ancho) -->
         <div class="space-y-6">
-          <!-- ✅ Detalles de la Operación (restaurado) -->
+          <!-- Detalles de la Operación (restaurado) -->
           <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6">
             <h2 class="text-xl font-semibold text-base-content mb-4 flex items-center gap-2">
               <i class="fas fa-info-circle text-primary"></i>
@@ -249,7 +248,7 @@
                     <div class="flex items-center justify-between p-2 rounded-lg bg-base-100">
                       <div class="flex items-center gap-2">
                         <div
-                          class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold"
+                          class="w-8 h-8 rounded-full text-primary-content flex items-center justify-center text-xs font-semibold"
                           [ngClass]="{
                             'bg-success': participant.approvalStatus === approvalStatus.Approved,
                             'bg-warning': participant.approvalStatus === approvalStatus.Pending,

@@ -441,6 +441,7 @@
       "Percentage": "Por porcentajes"
     },
     "approved": "Aprobado",
+    "rejected": "Rechazada",
     "pending": "Pendiente",
     "individualAmounts": "Montos individuales"
   },
@@ -727,8 +728,8 @@
     "approve": "Aprobar",
     "reject": "Rechazar",
     "pending": "Pendiente",
-    "approved": "aprobada",
-    "rejected": "rechazada",
+    "approved": "Aprobada",
+    "rejected": "Rechazada",
     "approveOperationTitle": "Aprobar Operación",
     "approveOperationMessage": "¿Aprobar operación \"{{description}}\"?",
     "operationApprovedSuccess": "Operación aprobada exitosamente",

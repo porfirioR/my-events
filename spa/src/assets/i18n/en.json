@@ -439,7 +439,8 @@
       "Custom": "Custom amounts",
       "Percentage": "By percentages"
     },
-    "approved": "Approved", 
+    "approved": "Approved",
+    "rejected": "Rejected",
     "pending": "Pending",
     "individualAmounts": "Individual amounts"
   },
@@ -727,7 +728,7 @@
     "reject": "Reject",
     "pending": "Pending",
     "approved": "approved",
-    "rejected": "rejected",
+    "rejected": "Rejected",
     "approveOperationTitle": "Approve Operation",
     "approveOperationMessage": "Approve operation \"{{description}}\"?",
     "operationApprovedSuccess": "Operation approved successfully",

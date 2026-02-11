@@ -246,7 +246,7 @@ export class TravelDetailComponent implements OnInit {
       case this.approvalStatus.Approved:
         return 'bg-success/20 text-success border-success/30 dark:border-0';
       case this.approvalStatus.Rejected:
-        return 'bg-warning/20 text-error border-error/30 dark:border-0';
+        return 'bg-error/20 text-error border-error/30 dark:border-0';
       default:
         return 'badge-neutral';
     }
