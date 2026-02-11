@@ -725,7 +725,7 @@
     "paid": "paid",
     "approve": "Approve",
     "reject": "Reject",
-    "pending": "pending",
+    "pending": "Pending",
     "approved": "approved",
     "rejected": "rejected",
     "approveOperationTitle": "Approve Operation",
@@ -807,5 +807,6 @@
   "Card": "Card",
   "Good bye.": "Good bye.",
   "Unsuccessful operation": "Unsuccessful operation",
-  "Successful operation": "Successful operation"
+  "Successful operation": "Successful operation",
+  "Operation already approved by this user.": "Operation already approved by this user."
 }

@@ -1,3 +1,5 @@
+import { OperationParticipantApiModel } from './operation-participant-api-model';
+
 export interface TravelOperationApiModel {
   id: number;
   travelId: number;
@@ -21,4 +23,5 @@ export interface TravelOperationApiModel {
   approvalCount?: number;
   pendingApprovalCount?: number;
   categoryId: number;
+  participants?: OperationParticipantApiModel[];
 }

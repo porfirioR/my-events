@@ -155,7 +155,7 @@
 
                           <!-- Status -->
                           <span
-                            class="badge badge-sm whitespace-nowrap"
+                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
                             [ngClass]="getOperationStatusBadgeClass(operation.status)"
                           >
                             <i
@@ -180,7 +180,7 @@
                                 </button>
                               </li>
 
-                              @if (travelData.status === 'Active' && operation.status === 'Pending') {
+                              @if (travelData.status === 'Active' && operation.status === approvalStatus.Pending) {
                                 <li>
                                   <button (click)="approveOperation(operation)">
                                     <i class="fas fa-check text-success"></i>
@@ -201,7 +201,7 @@
                                 </li>
                               }
 
-                              @if (operation.status !== 'Approved') {
+                              @if (operation.status !== approvalStatus.Approved) {
                                 <li><hr class="my-1 border-base-300" /></li>
                                 <li>
                                   <button (click)="deleteOperation(operation)">
@@ -219,7 +219,7 @@
                       <div class="mb-6">
                         <div class="flex items-center gap-3 rounded-lg">
                           <div class="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center font-bold shadow-md"
-                            [title]="getInitials(operation.whoPaidMemberName || 'UK')"
+                            [title]="operation.whoPaidMemberName || 'UK'"
                           >
                             {{ getInitials(operation.whoPaidMemberName || 'UK') }}
                           </div>
@@ -238,11 +238,10 @@
                           {{ 'travels.participants' | translate }}:
                         </p>
                         <div class="flex items-center gap-2 flex-wrap">
-                          <!-- Aquí necesitarías los datos de participantes desde el backend -->
-                          @for (participant of getOperationParticipants(operation); track participant.id) {
-                            <div class="tooltip" [attr.data-tip]="participant.name">
+                          @for (participant of operation.participants; track participant.memberId) {
+                            <div class="tooltip" [attr.data-tip]="participant.memberName">
                               <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold shadow-sm ring-2 ring-base-100">
-                                {{ getInitials(participant.name) }}
+                                {{ getInitials(participant.memberName + ' ' + participant.memberSurname) }}
                               </div>
                             </div>
                           }

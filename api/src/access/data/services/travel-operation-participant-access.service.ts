@@ -150,9 +150,9 @@ export class TravelOperationParticipantAccessService
   ): TravelOperationParticipantAccessModel => {
     return new TravelOperationParticipantAccessModel(
       entity.id!,
-      entity.operationid,
       entity.travelmemberid,
       parseFloat(entity.shareamount.toString()),
+      entity.operationid,
       new Date(entity.datecreated!),
     );
   };

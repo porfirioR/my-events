@@ -20,3 +20,4 @@ export { OperationAttachmentApiModel } from './operation-attachment-api-model';
 export { OperationCategorySummaryApiModel } from './operation-category-api-model';
 export { OperationCategoryApiModel } from './operation-category-api-model';
 export { ParticipantSplit } from './participant-split-model';
+export { OperationParticipantApiModel } from './operation-participant-api-model';

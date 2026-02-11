@@ -1,3 +1,5 @@
+import { OperationParticipantModel } from "./operation-participant-model";
+
 export class TravelOperationModel {
   constructor(
     public id: number,
@@ -15,12 +17,12 @@ export class TravelOperationModel {
     public transactionDate: Date,
     public lastUpdatedByUserId: number | null,
     public updatedAt: Date | null,
-    // Información enriquecida
     public currencySymbol?: string,
     public paymentMethodName?: string,
     public whoPaidMemberName?: string,
     public participantCount?: number,
     public approvalCount?: number,
     public pendingApprovalCount?: number,
+    public participants?: OperationParticipantModel[],
   ) {}
 }

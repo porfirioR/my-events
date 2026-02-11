@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useTravelStore, useCollaboratorStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
+import { ApprovalStatus } from '../../models/enums';
 
 @Component({
   selector: 'app-travel-detail',
@@ -28,6 +29,7 @@ export class TravelDetailComponent implements OnInit {
   protected members = this.travelStore.members;
   protected operations = this.travelStore.sortedOperations;
   protected balances = this.travelStore.balances;
+  protected approvalStatus = ApprovalStatus;
 
   protected activeTab = signal<'members' | 'operations' | 'balances'>('operations');
   protected travelId?: number;
@@ -239,12 +241,12 @@ export class TravelDetailComponent implements OnInit {
 
   protected getOperationStatusBadgeClass(status: string): string {
     switch(status) {
-      case 'Pending':
-        return 'badge-warning';
-      case 'Approved':
-        return 'badge-success';
-      case 'Rejected':
-        return 'badge-error';
+      case this.approvalStatus.Pending:
+        return 'bg-warning/20 text-warning border-warning/30 dark:border-0';
+      case this.approvalStatus.Approved:
+        return 'bg-success/20 text-success border-success/30 dark:border-0';
+      case this.approvalStatus.Rejected:
+        return 'bg-warning/20 text-error border-error/30 dark:border-0';
       default:
         return 'badge-neutral';
     }
@@ -283,22 +285,6 @@ export class TravelDetailComponent implements OnInit {
       default:
         return 'fa-question-circle';
     }
-  }
-
-  protected getOperationParticipants(operation: TravelOperationApiModel): Array<{id: number, name: string}> {
-    // Temporal: generar participantes basado en el count
-    const participantCount = operation.participantCount || 0;
-    const participants = [];
-    
-    for (let i = 0; i < participantCount; i++) {
-      // Por ahora usar nombres genéricos hasta que tengas los datos reales
-      participants.push({
-        id: i + 1,
-        name: i === 0 ? (operation.whoPaidMemberName || 'Usuario') : `Participante ${i + 1}`
-      });
-    }
-    
-    return participants;
   }
 
 }

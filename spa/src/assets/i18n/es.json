@@ -726,7 +726,7 @@
     "paid": "pagó",
     "approve": "Aprobar",
     "reject": "Rechazar",
-    "pending": "pendiente",
+    "pending": "Pendiente",
     "approved": "aprobada",
     "rejected": "rechazada",
     "approveOperationTitle": "Aprobar Operación",
@@ -808,5 +808,6 @@
   "Card": "Tarjeta",
   "Good bye.": "Hasta luego",
   "Unsuccessful operation": "Operación fallida",
-  "Successful operation": "Operación exitosa"
+  "Successful operation": "Operación exitosa",
+  "Operation already approved by this user.": "Operación ya aprobada por este usuario"
 }

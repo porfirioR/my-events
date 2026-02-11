@@ -179,33 +179,15 @@ export class OperationDetailComponent implements OnInit {
 
   protected getOperationStatusIcon(status: string): string {
     switch(status) {
-      case 'Pending':
+      case this.approvalStatus.Pending:
         return 'fa-clock';
-      case 'Approved':
+      case this.approvalStatus.Approved:
         return 'fa-check-circle';
-      case 'Rejected':
+      case this.approvalStatus.Rejected:
         return 'fa-times-circle';
       default:
         return 'fa-question-circle';
     }
   }
 
-  protected getOperationParticipants(operation: TravelOperationApiModel): Array<{id: number, name: string, approved: boolean, amount?: number, percentage?: number}> {
-    // Temporal: generar participantes basado en el count
-    const participantCount = operation.participantCount || 0;
-    const approvalCount = operation.approvalCount || 0;
-    const participants = [];
-    
-    for (let i = 0; i < participantCount; i++) {
-      participants.push({
-        id: i + 1,
-        name: i === 0 ? (operation.whoPaidMemberName || 'Usuario') : `Participante ${i + 1}`,
-        approved: i < approvalCount, // Los primeros están aprobados
-        amount: operation.splitType === 'Equal' ? operation.amount / participantCount : 0,
-        percentage: operation.splitType === 'Equal' ? 100 / participantCount : 0
-      });
-    }
-    
-    return participants;
-  }
 }
