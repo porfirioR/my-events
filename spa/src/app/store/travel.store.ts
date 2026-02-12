@@ -13,7 +13,10 @@ import {
   AddTravelMemberApiRequest,
   CreateTravelOperationApiRequest,
   UpdateTravelOperationApiRequest,
-  RejectOperationApiRequest
+  RejectOperationApiRequest,
+  OperationCategoryApiModel,
+  OperationCategorySummaryApiModel,
+  OperationAttachmentApiModel
 } from '../models/api/travels';
 import { TravelApiService } from '../services/api/travel-api.service';
 import { useLoadingStore } from './loading.store';
@@ -25,6 +28,9 @@ export interface TravelState {
   operations: TravelOperationApiModel[];
   balances: TravelBalanceByCurrencyApiModel[];
   paymentMethods: PaymentMethodApiModel[];
+  categories: OperationCategoryApiModel[];
+  categorySummary: OperationCategorySummaryApiModel[];
+  attachments: Record<number, OperationAttachmentApiModel[]>;
   error: string | null;
   filterStatus: string | null;
   isTravelsLoaded: boolean;
@@ -32,6 +38,8 @@ export interface TravelState {
   isOperationsLoaded: boolean;
   isBalancesLoaded: boolean;
   isPaymentMethodsLoaded: boolean;
+  isCategoriesLoaded: boolean;
+  isCategorySummaryLoaded: boolean;
 }
 
 const initialState: TravelState = {
@@ -41,13 +49,18 @@ const initialState: TravelState = {
   operations: [],
   balances: [],
   paymentMethods: [],
+  categories: [],
+  categorySummary: [],
+  attachments: {},
   error: null,
   filterStatus: null,
   isTravelsLoaded: false,
   isMembersLoaded: false,
   isOperationsLoaded: false,
   isBalancesLoaded: false,
-  isPaymentMethodsLoaded: false
+  isPaymentMethodsLoaded: false,
+  isCategoriesLoaded: false,
+  isCategorySummaryLoaded: false
 };
 
 export const TravelStore = signalStore(
@@ -111,7 +124,43 @@ export const TravelStore = signalStore(
     needsLoadingMembers: computed(() => !store.isMembersLoaded() && !store.error()),
     needsLoadingOperations: computed(() => !store.isOperationsLoaded() && !store.error()),
     needsLoadingBalances: computed(() => !store.isBalancesLoaded() && !store.error()),
-    needsLoadingPaymentMethods: computed(() => !store.isPaymentMethodsLoaded() && !store.error())
+    needsLoadingPaymentMethods: computed(() => !store.isPaymentMethodsLoaded() && !store.error()),
+
+    needsLoadingCategories: computed(() => !store.isCategoriesLoaded() && !store.error()),
+    needsLoadingCategorySummary: computed(() => !store.isCategorySummaryLoaded() && !store.error()),
+
+    // Computed para obtener categoría por ID
+    getCategoryById: computed(() => (id?: number) => 
+      store.categories().find(x => x.id === id)
+    ),
+
+    // Computed para operaciones con categoría enriquecida
+    operationsWithCategory: computed(() => 
+      store.operations().map(op => ({
+        ...op,
+        category: store.categories().find(cat => cat.id === op.categoryId)
+      }))
+    ),
+
+    // Computed para attachments por operación
+    getAttachmentsForOperation: computed(() => (operationId: number) => 
+      store.attachments()[operationId] || []
+    ),
+
+    // Computed para contar attachments por operación
+    getAttachmentCountForOperation: computed(() => (operationId: number) => 
+      (store.attachments()[operationId] || []).length
+    ),
+
+    // Computed para categorías activas
+    activeCategories: computed(() =>
+      store.categories().filter(cat => cat.isActive)
+    ),
+
+    // Computed para resumen ordenado por total
+    sortedCategorySummary: computed(() =>
+      [...store.categorySummary()].sort((a, b) => b.totalAmount - a.totalAmount)
+    )
   })),
   
   withMethods((store, 
@@ -515,7 +564,7 @@ export const TravelStore = signalStore(
     rejectOperation: (operationId: number, request: RejectOperationApiRequest) => {
       loadingStore.setLoading();
       patchState(store, { error: null });
-      
+
       return travelApiService.rejectOperation(operationId, request).pipe(
         tap(updatedOperation => {
           const updatedOperations = store.operations().map(o =>
@@ -557,6 +606,143 @@ export const TravelStore = signalStore(
       )
     ),
 
+    loadCategories: rxMethod<void>(
+      pipe(
+        tap(() => {
+          if (store.isCategoriesLoaded()) return;
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap(() => {
+          if (store.isCategoriesLoaded()) {
+            loadingStore.setLoadingSuccess();
+            return of(null);
+          }
+
+          return travelApiService.getAllOperationCategories().pipe(
+            tap(categories => {
+              patchState(store, { 
+                categories,
+                isCategoriesLoaded: true 
+              });
+              loadingStore.setLoadingSuccess();
+            }),
+            catchError(error => {
+              patchState(store, { error: 'Failed to load categories' });
+              console.error('Categories loading error:', error);
+              throw new Error(error);
+            })
+          );
+        })
+      )
+    ),
+
+    loadCategorySummary: rxMethod<number>(
+      pipe(
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap((travelId) => travelApiService.getTravelCategorySummary(travelId).pipe(
+          tap(categorySummary => {
+            patchState(store, { 
+              categorySummary,
+              isCategorySummaryLoaded: true 
+            });
+            loadingStore.setLoadingSuccess();
+          }),
+          catchError(error => {
+            patchState(store, { error: 'Failed to load category summary' });
+            console.error('Category summary loading error:', error);
+            throw new Error(error);
+          })
+        ))
+      )
+    ),
+
+    // ==================== NUEVOS MÉTODOS - ATTACHMENTS ====================
+
+    loadOperationAttachments: rxMethod<number>(
+      pipe(
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap((operationId) => travelApiService.getOperationAttachments(operationId).pipe(
+          tap((attachments) => {
+            const currentAttachments = store.attachments();
+            patchState(store, {
+              attachments: {
+                ...currentAttachments,
+                [operationId]: attachments
+              }
+            });
+            loadingStore.setLoadingSuccess();
+          }),
+          catchError(error => {
+            patchState(store, { error: 'Failed to load attachments' });
+            console.error('Attachments loading error:', error);
+            throw new Error(error);
+          })
+        ))
+      )
+    ),
+
+    uploadAttachment: (operationId: number, file: File) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+      
+      return travelApiService.uploadOperationAttachment(operationId, file).pipe(
+        tap((newAttachment) => {
+          const currentAttachments = store.attachments();
+          const operationAttachments = currentAttachments[operationId] || [];
+          
+          patchState(store, {
+            attachments: {
+              ...currentAttachments,
+              [operationId]: [...operationAttachments, newAttachment]
+            }
+          });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to upload attachment' });
+          console.error('Upload attachment error:', error);
+          throw new Error(error);
+        })
+      );
+    },
+
+    deleteAttachment: rxMethod<{attachmentId: number, operationId: number}>(
+      pipe(
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap(({attachmentId, operationId}) => 
+          travelApiService.deleteOperationAttachment(attachmentId).pipe(
+            tap(() => {
+              const currentAttachments = store.attachments();
+              const operationAttachments = currentAttachments[operationId] || [];
+              
+              patchState(store, {
+                attachments: {
+                  ...currentAttachments,
+                  [operationId]: operationAttachments.filter(att => att.id !== attachmentId)
+                }
+              });
+              loadingStore.setLoadingSuccess();
+            }),
+            catchError(error => {
+              patchState(store, { error: 'Failed to delete attachment' });
+              console.error('Delete attachment error:', error);
+              throw new Error(error);
+            })
+          )
+        )
+      )
+    ),
+
     // ==================== FILTERS ====================
 
     setStatusFilter: (status: string | null) =>
@@ -576,9 +762,12 @@ export const TravelStore = signalStore(
         members: [],
         operations: [],
         balances: [],
+        categorySummary: [],
+        attachments: {},
         isMembersLoaded: false,
         isOperationsLoaded: false,
-        isBalancesLoaded: false
+        isBalancesLoaded: false,
+        isCategorySummaryLoaded: false
       }),
 
     clearError: () =>

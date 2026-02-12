@@ -73,7 +73,12 @@ export class UsersController {
   ): Promise<SignModel> {
     this.logger.log('UsersController: registerUser');
 
-    const request = new UserRequest(apiRequest.email, apiRequest.password);
+    const request = new UserRequest(
+      apiRequest.email,
+      apiRequest.password,
+      apiRequest.name,
+      apiRequest.surname
+    );
     const { user, verificationToken } = await this.userManagerService.registerUser(
       request
     );

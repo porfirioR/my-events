@@ -1,0 +1,60 @@
+<!-- components/file-upload/file-upload.component.html -->
+<div class="form-control w-full">
+  <label class="label">
+    <span class="label-text">
+      {{ label() | translate }}
+      @if (required()) {
+        <span class="text-error ml-1">*</span>
+      }
+    </span>
+  </label>
+  
+  <!-- Drop Zone -->
+  <div 
+    class="border-2 border-dashed rounded-lg p-4 text-center transition-colors"
+    [class]="getDropZoneClasses()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)">
+    
+    @if (!selectedFile()) {
+      <!-- Upload Area -->
+      <div class="flex flex-col items-center gap-2">
+        <i class="fas fa-cloud-upload-alt text-3xl opacity-50"></i>
+        <p class="text-sm opacity-75">
+          {{ 'operations.dragDropFile' | translate }} 
+          <label class="link link-primary cursor-pointer">
+            {{ 'operations.selectFile' | translate }}
+            <input
+              type="file"
+              class="hidden"
+              accept="image/*"
+              [disabled]="disabled()"
+              (change)="onFileSelect($event)">
+          </label>
+        </p>
+        <p class="text-xs opacity-50">{{ 'operations.supportedFormats' | translate }}</p>
+      </div>
+    } @else {
+      <!-- File Preview -->
+      <div class="flex items-center gap-3">
+        <i class="fas fa-file-image text-2xl text-success"></i>
+        <div class="flex-1 text-left">
+          <p class="font-medium text-sm">{{ selectedFile()!.name }}</p>
+          <p class="text-xs opacity-75">{{ formatFileSize(selectedFile()!.size) }}</p>
+        </div>
+        <button 
+          type="button"
+          class="btn btn-ghost btn-sm"
+          [disabled]="disabled()"
+          (click)="removeFile()">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="text-error text-sm mt-1">{{ error()! | translate }}</div>
+  }
+</div>

@@ -8,5 +8,5 @@ export { ParticipantType } from './participant-type.enum';
 export { ProgressionType } from './progression-type.enum';
 export { TravelStatus } from './travel-status.enum';
 export { TravelOperationStatus } from './travel-operation-status.enum';
-export { TravelSplitType } from './travel-split-type.enum';
+export { TravelParticipantType } from './travel-participant-type.enum';
 export { ApprovalStatus } from './approval-status.enum';

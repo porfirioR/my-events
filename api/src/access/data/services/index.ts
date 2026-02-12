@@ -33,3 +33,7 @@ export { TravelMemberAccessService } from './travel-member-access.service';
 export { TravelOperationAccessService } from './travel-operation-access.service';
 export { TravelOperationParticipantAccessService } from './travel-operation-participant-access.service';
 export { TravelOperationApprovalAccessService } from './travel-operation-approval-access.service';
+
+
+export { OperationCategoryAccessService } from './operation-category-access.service';
+export { OperationAttachmentAccessService } from './operation-attachment-access.service';

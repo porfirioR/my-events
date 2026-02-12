@@ -4,14 +4,21 @@
 CREATE TYPE matchstatus AS ENUM ('Pending', 'Accepted', 'EmailNotFound');
 CREATE TYPE approvalstatus AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE splittype AS ENUM ('Equal', 'Custom', 'Percentage');
+CREATE TYPE travelparticipanttype AS ENUM ('All', 'Selected');
 
 -- Tabla de usuarios
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) NOT NULL UNIQUE,
+    name VARCHAR(25) NOT NULL,
+    surname VARCHAR(25) NOT NULL, 
     password VARCHAR(255) NOT NULL,
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_users_name ON users(name);
+CREATE INDEX idx_users_surname ON users(surname);
+CREATE INDEX idx_users_fullname ON users(name, surname);
 
 CREATE TABLE passwordresettokens (
     id SERIAL PRIMARY KEY,
@@ -52,14 +59,14 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS emailverifiedat TIMESTAMP NULL;
 -- Eliminar columna 'code' antigua (ejecutar después de migrar datos si es necesario)
 ALTER TABLE users DROP COLUMN IF EXISTS code;
 
--- Colaboradores - email NULL = interno, email valor = externo
+-- Colaboradores
 CREATE TABLE collaborators (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
-    email VARCHAR(150), -- NULL = colaborador INTERNO, valor = colaborador EXTERNO
+    email VARCHAR(150),
     userid INT NOT NULL,
-    isactive BOOLEAN DEFAULT TRUE, --AGREGAR para soft delete
+    isactive BOOLEAN DEFAULT TRUE,
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userid) REFERENCES users(id)
 );
@@ -75,7 +82,7 @@ CREATE TABLE collaboratormatchrequests (
     id SERIAL PRIMARY KEY,
     requesteruserid INT NOT NULL,
     requestercollaboratorid INT NOT NULL,
-    targetuserid INT NULL, -- ✅ NULL permitido cuando email no existe
+    targetuserid INT NULL,
     targetcollaboratoremail VARCHAR(150) NOT NULL,
     status matchstatus DEFAULT 'Pending',
     requesteddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -496,23 +503,25 @@ CREATE TABLE traveloperations (
     whopaidmemberid INT NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    splittype travelsplittype DEFAULT 'All',
+    participanttype travelparticipanttype DEFAULT 'All', -- ✅ NUEVO: Quiénes participan
+    splittype splittype DEFAULT 'Equal',                 -- ✅ NUEVO: Cómo se divide
     status traveloperationstatus DEFAULT 'Pending',
     datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     transactiondate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lastupdatedbyuserid INT,
     updatedat TIMESTAMP,
-    
+    categoryid INT,
+
     FOREIGN KEY (travelid) REFERENCES travels(id) ON DELETE CASCADE,
     FOREIGN KEY (createdbyuserid) REFERENCES users(id),
     FOREIGN KEY (currencyid) REFERENCES currencies(id),
     FOREIGN KEY (paymentmethodid) REFERENCES paymentmethods(id),
     FOREIGN KEY (whopaidmemberid) REFERENCES travelmembers(id),
     FOREIGN KEY (lastupdatedbyuserid) REFERENCES users(id),
-    
+    FOREIGN KEY (categoryid) REFERENCES operationcategories(id),
+
     CONSTRAINT check_amount_positive CHECK (amount > 0)
 );
-
 -- =====================================================
 -- PARTE 8: CREAR TABLA TRAVELOPERATIONPARTICIPANTS
 -- =====================================================
@@ -542,11 +551,28 @@ CREATE TABLE traveloperationapprovals (
     status approvalstatus DEFAULT 'Pending',
     approvaldate TIMESTAMP,
     rejectionreason TEXT,
-    
+
     FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
     FOREIGN KEY (memberid) REFERENCES travelmembers(id),
-    
+
     CONSTRAINT unique_approval UNIQUE (operationid, memberid)
+);
+-- =====================================================
+-- PARTE 14: ATTACHMENTS PARA OPERACIONES
+-- =====================================================
+
+CREATE TABLE operationattachments (
+    id SERIAL PRIMARY KEY,
+    operationid INT NOT NULL,
+    externalid VARCHAR(255) NOT NULL,        -- ID genérico del archivo
+    storageurl VARCHAR(500) NOT NULL,        -- URL completa
+    originalfilename VARCHAR(255) NOT NULL,  -- nombre original del usuario
+    filesize INT,                            -- tamaño en bytes
+    uploadedbyuserid INT NOT NULL,
+    uploadeddate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploadedbyuserid) REFERENCES users(id)
 );
 
 -- =====================================================
@@ -579,6 +605,8 @@ CREATE INDEX idx_traveloperations_currency ON traveloperations(currencyid);
 CREATE INDEX idx_traveloperations_paymentmethod ON traveloperations(paymentmethodid);
 CREATE INDEX idx_traveloperations_whopaid ON traveloperations(whopaidmemberid);
 CREATE INDEX idx_traveloperations_transactiondate ON traveloperations(transactiondate);
+CREATE INDEX idx_traveloperations_category ON traveloperations(categoryid);
+CREATE INDEX idx_traveloperations_travel_category ON traveloperations(travelid, categoryid);
 
 -- Índices para traveloperationparticipants
 CREATE INDEX idx_traveloperationparticipants_operation ON traveloperationparticipants(operationid);
@@ -590,3 +618,71 @@ CREATE INDEX idx_traveloperationapprovals_operation ON traveloperationapprovals(
 CREATE INDEX idx_traveloperationapprovals_member ON traveloperationapprovals(memberid);
 CREATE INDEX idx_traveloperationapprovals_operationstatus ON traveloperationapprovals(operationid, status);
 CREATE INDEX idx_traveloperationapprovals_memberstatus ON traveloperationapprovals(memberid, status);
+
+-- Índices para operationattachments
+CREATE INDEX idx_operationattachments_operation ON operationattachments(operationid);
+CREATE INDEX idx_operationattachments_uploadedby ON operationattachments(uploadedbyuserid);
+CREATE INDEX idx_operationattachments_upload_date ON operationattachments(uploadeddate);
+
+-- =====================================================
+-- PARTE 11: ACTUALIZACIONES FUTURAS
+-- =====================================================
+
+-- CREATE TABLE traveloperationpayments (
+--     id SERIAL PRIMARY KEY,
+--     operationid INT NOT NULL,
+--     travelmemberid INT NOT NULL,
+--     amount DECIMAL(15,2) NOT NULL,
+--     paymentdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+--     FOREIGN KEY (operationid) REFERENCES traveloperations(id) ON DELETE CASCADE,
+--     FOREIGN KEY (travelmemberid) REFERENCES travelmembers(id),
+    
+--     CONSTRAINT check_payment_positive CHECK (amount > 0)
+-- );
+
+-- =====================================================
+-- PARTE 12: CATEGORÍAS DE OPERACIONES
+-- =====================================================
+
+CREATE TABLE operationcategories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    icon VARCHAR(10) NOT NULL, -- emoji unicode
+    color VARCHAR(7) NOT NULL, -- hex color
+    isactive BOOLEAN DEFAULT TRUE,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Categorías más comunes de apps como Splitwise, Tricount, etc.
+INSERT INTO operationcategories (id, name, icon, color) VALUES
+    (1, 'Food & Dining', '🍽️', '#FF6B6B'),
+    (2, 'Groceries', '🛒', '#4ECDC4'),
+    (3, 'Transportation', '🚗', '#45B7D1'),
+    (4, 'Accommodation', '🏨', '#9B59B6'),
+    (5, 'Entertainment', '🎭', '#FFA07A'),
+    (6, 'Shopping', '🛍️', '#98D8C8'),
+    (7, 'Gas & Fuel', '⛽', '#E74C3C'),
+    (8, 'Drinks & Bar', '🍻', '#F39C12'),
+    (9, 'Coffee & Snacks', '☕', '#D35400'),
+    (10, 'Taxi & Uber', '🚕', '#2ECC71'),
+    (11, 'Flights', '✈️', '#3498DB'),
+    (12, 'Tours & Activities', '🎪', '#E67E22'),
+    (13, 'Souvenirs & Gifts', '🎁', '#8E44AD'),
+    (14, 'Health & Pharmacy', '💊', '#1ABC9C'),
+    (15, 'Parking', '🅿️', '#34495E'),
+    (16, 'Tips & Service', '💰', '#F1C40F'),
+    (17, 'Insurance', '🛡️', '#7F8C8D'),
+    (18, 'Other', '📝', '#BDC3C7')
+;
+
+-- Valor por defecto: "Other" para operaciones existentes
+UPDATE traveloperations SET categoryid = 18 WHERE categoryid IS NULL;
+
+
+-- Índices para operationcategories
+CREATE INDEX idx_operationcategories_active ON operationcategories(isactive);
+
+-- Índices para traveloperations con categorías
+CREATE INDEX idx_traveloperations_category ON traveloperations(categoryid);
+CREATE INDEX idx_traveloperations_travel_category ON traveloperations(travelid, categoryid);

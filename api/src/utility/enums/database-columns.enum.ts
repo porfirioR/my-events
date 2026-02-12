@@ -72,4 +72,15 @@ export enum DatabaseColumns {
   DecimalPlaces = 'decimalplaces',
   FinalizedDate = 'finalizeddate',
   TravelMemberId = 'travelmemberid',
+
+  CategoryId = 'categoryid',
+  ExternalId = 'externalid', 
+  StorageUrl = 'storageurl',
+  OriginalFilename = 'originalfilename',
+  FileSize = 'filesize',
+  UploadedByUserId = 'uploadedbyuserid',
+  UploadedDate = 'uploadeddate',
+  Icon = 'icon',
+  Color = 'color',
+  ParticipantType = 'participanttype',
 }

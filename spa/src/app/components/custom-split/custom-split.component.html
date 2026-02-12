@@ -1,0 +1,76 @@
+<div class="form-control w-full">
+  <label class="label">
+    <span class="label-text">
+      @if (splitType() === 'Custom') {
+      Montos por participante
+      } @else {
+      Porcentajes por participante
+      }
+    </span>
+  </label>
+
+  <div class="space-y-3">
+    @for (participant of participants(); track participant.memberId) {
+    <div class="flex items-center gap-3 p-3 rounded-lg bg-base-50">
+      <!-- Member Name -->
+      <div class="flex-1">
+        <span class="font-medium">{{ participant.memberName }}</span>
+      </div>
+
+      <!-- Custom Amount Input -->
+      @if (splitType() === 'Custom') {
+      <div class="flex items-center gap-2">
+        <span class="text-sm opacity-75">$</span>
+        <input type="number" class="input input-sm w-24 text-right" [class]="getInputClasses(participant)"
+          [value]="participant.amount || 0" [disabled]="disabled()"
+          (input)="onAmountChange(participant.memberId, $event)" step="0.01" min="0">
+      </div>
+      }
+
+      <!-- Custom Percentage Input -->
+      @if (splitType() === 'Percentage') {
+      <div class="flex items-center gap-2">
+        <input type="number" class="input input-sm w-20 text-right" [class]="getInputClasses(participant)"
+          [value]="participant.percentage || 0" [disabled]="disabled()"
+          (input)="onPercentageChange(participant.memberId, $event)" step="1" min="0" max="100">
+        <span class="text-sm opacity-75">%</span>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Summary -->
+  <div class="mt-4 p-3 rounded-lg bg-base-100 border">
+    @if (splitType() === 'Custom') {
+    <div class="flex justify-between items-center">
+      <span class="text-sm opacity-75">Total asignado:</span>
+      <span class="font-medium" [class]="getTotalClasses()">
+        {{ totalAmount() | currency:'USD':'symbol':'1.2-2' }}
+      </span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-sm opacity-75">Total operación:</span>
+      <span class="font-medium">{{ operationAmount() | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+    @if (Math.abs(totalAmount() - operationAmount()) > 0.01) {
+    <div class="flex justify-between items-center text-error text-sm mt-1">
+      <span>Diferencia:</span>
+      <span>{{ (totalAmount() - operationAmount()) | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+    }
+    }
+
+    @if (splitType() === 'Percentage') {
+    <div class="flex justify-between items-center">
+      <span class="text-sm opacity-75">Total porcentaje:</span>
+      <span class="font-medium" [class]="getTotalClasses()">{{ totalPercentage() }}%</span>
+    </div>
+    @if (Math.abs(totalPercentage() - 100) > 0.01) {
+    <div class="text-error text-sm mt-1">
+      Debe sumar exactamente 100%
+    </div>
+    }
+    }
+  </div>
+</div>

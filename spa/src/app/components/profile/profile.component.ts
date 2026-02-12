@@ -17,6 +17,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   protected hasEmail = false
   protected email?: string | null
   protected userId?: number | null
+  protected name?: string | null
+  protected surname?: string | null
 
   constructor(
     private readonly localService: LocalService
@@ -42,6 +44,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private checkHasEmail = (): void => {
     this.email = this.localService.getEmail()
     this.userId = this.localService.getUserId()
+    this.name = this.localService.getName()
+    this.surname = this.localService.getSurname()
     this.hasEmail = !!this.email
   }
 }

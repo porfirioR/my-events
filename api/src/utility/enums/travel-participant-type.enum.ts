@@ -1,4 +1,4 @@
-export enum TravelSplitType {
+export enum TravelParticipantType {
   All = 'All',
   Selected = 'Selected'
 }

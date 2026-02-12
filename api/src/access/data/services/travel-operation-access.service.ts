@@ -79,15 +79,17 @@ export class TravelOperationAccessService extends BaseAccessService implements I
     const { data, error } = await this.dbContext
       .from(TableEnum.TravelOperations)
       .update({
-        currencyid: request.currencyId,
-        paymentmethodid: request.paymentMethodId,
-        whopaidmemberid: request.whoPaidMemberId,
-        amount: request.amount,
-        description: request.description,
-        splittype: request.splitType,
-        transactiondate: request.transactionDate.toISOString(),
-        lastupdatedbyuserid: request.lastUpdatedByUserId,
-        updatedat: new Date().toISOString(),
+        [DatabaseColumns.CurrencyId]: request.currencyId,
+        [DatabaseColumns.PaymentMethodId]: request.paymentMethodId,
+        [DatabaseColumns.WhoPaidMemberId]: request.whoPaidMemberId,
+        [DatabaseColumns.Amount]: request.amount,
+        [DatabaseColumns.Description]: request.description,
+        [DatabaseColumns.ParticipantType]: request.participantType,
+        [DatabaseColumns.SplitType]: request.splitType,
+        [DatabaseColumns.TransactionDate]: request.transactionDate,
+        [DatabaseColumns.LastUpdatedByUserId]: request.lastUpdatedByUserId,
+        [DatabaseColumns.UpdatedAt]: new Date(),
+        [DatabaseColumns.CategoryId]: request.categoryId,
       })
       .eq(DatabaseColumns.EntityId, request.id)
       .eq(DatabaseColumns.TravelId, request.travelId)
@@ -195,12 +197,14 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       entity.whopaidmemberid,
       parseFloat(entity.amount.toString()),
       entity.description,
+      entity.participanttype,
       entity.splittype,
       entity.status,
       new Date(entity.datecreated!),
       new Date(entity.transactiondate!),
       entity.lastupdatedbyuserid || null,
       entity.updatedat ? new Date(entity.updatedat) : null,
+      entity.categoryid
     );
   };
 
@@ -213,7 +217,9 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       request.whoPaidMemberId,
       request.amount,
       request.description,
+      request.participantType,
       request.splitType,
+      request.categoryId,
       TravelOperationStatus.Pending,
       undefined,
       request.transactionDate,

@@ -37,6 +37,8 @@ export class SignupComponent {
     this.formGroup = new FormGroup<SignupFormGroup>({
       email: new FormControl(null, [Validators.required, Validators.email]),
       password: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)]),
+      name: new FormControl(null, [Validators.required, Validators.minLength(2), Validators.maxLength(25)]),
+      surname: new FormControl(null, [Validators.required, Validators.minLength(2), Validators.maxLength(25)]),
       repeatPassword: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10), this.checkRepeatPassword()])
     })
     this.formGroup.controls.password.valueChanges.pipe(
@@ -53,11 +55,13 @@ export class SignupComponent {
     this.authStore.loginStart();
     const request: CreateUserApiRequest = new CreateUserApiRequest(
       this.formGroup.value.email!,
-      this.formGroup.value.password!
+      this.formGroup.value.password!,
+      this.formGroup.value.name!,
+      this.formGroup.value.surname!
     );
     this.userApiService.signUpUser(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token, user.email, user.isEmailVerified);
+        this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.isEmailVerified);
         this.alertService.showSuccess(
           this.translate.instant('messages.accountCreated')
         );

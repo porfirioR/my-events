@@ -32,6 +32,8 @@ export class UserAccessService extends BaseAccessService {
       [DatabaseColumns.DateCreated]: new Date(),
       [DatabaseColumns.Password]: accessRequest.password,
       [DatabaseColumns.IsEmailVerified]: false,
+      [DatabaseColumns.Name]: accessRequest.name,
+      [DatabaseColumns.Surname]: accessRequest.surname,
     };
 
     const { data, error } = await this.dbContext
@@ -100,20 +102,12 @@ export class UserAccessService extends BaseAccessService {
       .eq(DatabaseColumns.Email, email)
       .single<UserEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message)
+    };
     return this.getUser(data);
   };
 
-  public getUserById = async (id: number): Promise<UserAccessModel> => {
-    const { data, error } = await this.dbContext
-      .from(TableEnum.Users)
-      .select()
-      .eq(DatabaseColumns.EntityId, id)
-      .single<UserEntity>();
-
-    if (error) throw new Error(error.message);
-    return this.getUser(data);
-  };
   public getWebPushToken = async (): Promise<WebPushTokenAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.WebPushToken)
@@ -123,13 +117,14 @@ export class UserAccessService extends BaseAccessService {
     return new WebPushTokenAccessModel(data.id, data.endpoint, data.expirationtime, JSON.parse(data.keys), data.email);
   }
 
-  private getUser = (entity: UserEntity): UserAccessModel =>
-    new UserAccessModel(
-      entity.id,
-      entity.email,
-      entity.datecreated,
-      entity.password,
-      entity.isemailverified,
-      entity.emailverifiedat
-    );
+  private getUser = (entity: UserEntity): UserAccessModel => new UserAccessModel(
+    entity.id,
+    entity.email,
+    entity.name,
+    entity.surname,
+    entity.datecreated,
+    entity.password,
+    entity.isemailverified,
+    entity.emailverifiedat
+  );
 }

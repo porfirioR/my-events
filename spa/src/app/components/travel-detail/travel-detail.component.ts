@@ -4,7 +4,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useTravelStore, useCollaboratorStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { TravelApiModel, TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
+import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
+import { ApprovalStatus } from '../../models/enums';
 
 @Component({
   selector: 'app-travel-detail',
@@ -28,6 +29,7 @@ export class TravelDetailComponent implements OnInit {
   protected members = this.travelStore.members;
   protected operations = this.travelStore.sortedOperations;
   protected balances = this.travelStore.balances;
+  protected approvalStatus = ApprovalStatus;
 
   protected activeTab = signal<'members' | 'operations' | 'balances'>('operations');
   protected travelId?: number;
@@ -239,12 +241,12 @@ export class TravelDetailComponent implements OnInit {
 
   protected getOperationStatusBadgeClass(status: string): string {
     switch(status) {
-      case 'Pending':
-        return 'badge-warning';
-      case 'Approved':
-        return 'badge-success';
-      case 'Rejected':
-        return 'badge-error';
+      case this.approvalStatus.Pending:
+        return 'bg-warning/20 text-warning border-warning/30 dark:border-0';
+      case this.approvalStatus.Approved:
+        return 'bg-success/20 text-success border-success/30 dark:border-0';
+      case this.approvalStatus.Rejected:
+        return 'bg-error/20 text-error border-error/30 dark:border-0';
       default:
         return 'badge-neutral';
     }
@@ -284,4 +286,5 @@ export class TravelDetailComponent implements OnInit {
         return 'fa-question-circle';
     }
   }
+
 }

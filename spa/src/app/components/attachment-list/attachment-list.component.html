@@ -1,0 +1,118 @@
+<!-- components/attachment-list/attachment-list.component.html -->
+<div class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6">
+  <header class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
+      <i class="fas fa-paperclip text-primary"></i>
+      {{ 'operations.attachments' | translate }}
+      @if (attachmentCount() > 0) {
+        <span class="badge badge-primary badge-sm">{{ attachmentCount() }}</span>
+      }
+    </h3>
+
+    @if (showUploadButton()) {
+      <button
+        type="button"
+        class="btn btn-sm btn-primary"
+        [disabled]="isDeleting()"
+        (click)="$event.stopPropagation()"
+      >
+        <i class="fas fa-plus mr-1"></i>
+        {{ 'operations.addAttachment' | translate }}
+      </button>
+    }
+  </header>
+
+  @if (attachments().length === 0) {
+    <!-- Empty State -->
+    <div class="text-center py-8">
+      <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+        <i class="fas fa-image text-2xl text-base-content/50"></i>
+      </figure>
+      <h4 class="text-lg font-medium text-base-content mb-2">
+        {{ 'operations.noAttachments' | translate }}
+      </h4>
+      <p class="text-base-content/70">
+        {{ 'operations.noAttachmentsMessage' | translate }}
+      </p>
+    </div>
+  } @else {
+    <!-- Attachments List -->
+    <div class="space-y-3">
+      @for (attachment of attachments(); track attachment.id) {
+        <article class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 transition-colors">
+          <div class="flex items-center gap-4">
+            <!-- File Icon & Thumbnail -->
+            <figure class="flex-shrink-0">
+              <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                <i class="fas fa-file-image text-primary text-xl"></i>
+              </div>
+            </figure>
+
+            <!-- File Info -->
+            <div class="flex-grow min-w-0">
+              <h4 class="font-medium text-base-content truncate">
+                {{ attachment.fileName }}
+              </h4>
+              <div class="flex items-center gap-4 mt-1 text-sm text-base-content/70">
+                @if (attachment.fileSize) {
+                  <span>
+                    <i class="fas fa-weight mr-1"></i>
+                    {{ formatFileSize(attachment.fileSize) }}
+                  </span>
+                }
+                <span>
+                  <i class="fas fa-calendar mr-1"></i>
+                  {{ attachment.uploadedDate }}
+                </span>
+                @if (attachment.uploaderName) {
+                  <span>
+                    <i class="fas fa-user mr-1"></i>
+                    {{ attachment.uploaderName }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+              <!-- View Button -->
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm btn-circle"
+                [title]="'operations.viewAttachment' | translate"
+                (click)="openAttachment(attachment)"
+              >
+                <i class="fas fa-eye"></i>
+              </button>
+
+              <!-- Delete Button -->
+              @if (canDelete()) {
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error hover:text-error-content"
+                  [title]="'operations.deleteAttachment' | translate"
+                  [disabled]="isDeleting()"
+                  (click)="deleteAttachment(attachment)"
+                >
+                  @if (isDeleting()) {
+                    <span class="loading loading-spinner loading-xs"></span>
+                  } @else {
+                    <i class="fas fa-trash"></i>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isDeleting()) {
+    <div class="mt-4 text-center text-sm text-base-content/70">
+      <span class="loading loading-spinner loading-sm mr-2"></span>
+      {{ 'operations.deletingAttachment' | translate }}
+    </div>
+  }
+</div>

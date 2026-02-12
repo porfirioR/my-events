@@ -8,11 +8,13 @@ export class TravelOperationAccessModel {
     public whoPaidMemberId: number,
     public amount: number,
     public description: string,
+    public participantType: string,
     public splitType: string,
     public status: string,
     public dateCreated: Date,
     public transactionDate: Date,
     public lastUpdatedByUserId: number | null,
     public updatedAt: Date | null,
+    public categoryId: number
   ) {}
 }

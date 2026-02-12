@@ -1,3 +1,5 @@
+import { OperationParticipantApiModel } from './operation-participant-api-model';
+
 export interface TravelOperationApiModel {
   id: number;
   travelId: number;
@@ -7,6 +9,7 @@ export interface TravelOperationApiModel {
   whoPaidMemberId: number;
   amount: number;
   description: string;
+  participantType: string;
   splitType: string;
   status: string;
   dateCreated: Date;
@@ -19,4 +22,6 @@ export interface TravelOperationApiModel {
   participantCount?: number;
   approvalCount?: number;
   pendingApprovalCount?: number;
+  categoryId: number;
+  participants?: OperationParticipantApiModel[];
 }

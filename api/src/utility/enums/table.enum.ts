@@ -30,4 +30,6 @@ export enum TableEnum {
   TravelOperationParticipants = 'traveloperationparticipants',
   TravelOperationApprovals = 'traveloperationapprovals',
   PaymentMethods = 'paymentmethods',
+  OperationCategories = 'operationcategories',
+  OperationAttachments = 'operationattachments',
 }

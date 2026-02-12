@@ -7,8 +7,12 @@ export class CreateTravelOperationRequest {
     public whoPaidMemberId: number,
     public amount: number,
     public description: string,
-    public splitType: string, // 'All' or 'Selected'
+    public participantType: string, // 'All' or 'Selected'
+    public splitType: string, // 'Equal' | 'Custom' | 'Percentage'
     public transactionDate: Date,
-    public participantMemberIds: number[], // IDs de los miembros que participan
+    public categoryId: number,
+    public participantMemberIds: number[], // IDs de los miembros que participan // Solo usado si participantType === 'Selected'
+    public customAmounts?: number[],        //Para splitType === 'Custom'
+    public customPercentages?: number[],    //Para splitType === 'Percentage'
   ) {}
 }

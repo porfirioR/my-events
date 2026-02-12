@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserAccessService } from '../../access/data/services/user-access.service';
 import { PasswordResetTokenAccessService } from '../../access/data/services/password-reset-token-access.service';
 import { EmailVerificationTokenAccessService } from '../../access/data/services/email-verification-token-access.service';
 import { AuthService } from '../../access/auth/auth.service';
-import { CreateUserAccessRequest, ResetUserAccessRequest } from '../../access/contract/users';
+import { ICollaboratorAccessService } from '../../access/contract/collaborators';
+import { CreateUserAccessRequest, ResetUserAccessRequest, UserAccessModel } from '../../access/contract/users';
 import { CreatePasswordResetTokenRequest } from '../../access/contract/tokens/create-password-reset-token-request';
 import { CreateEmailVerificationTokenRequest } from '../../access/contract/tokens/create-email-verification-token-request';
 import { AuthUserModel } from '../../access/auth/contracts/auth-user-model';
@@ -17,7 +18,7 @@ import {
   WebPushModel,
 } from '../models/users';
 import { TokenGenerator } from '../../utility/helpers/token-generator.helper';
-import { AUTH_CONFIG } from '../../utility/constants';
+import { AUTH_CONFIG, COLLABORATOR_TOKENS } from '../../utility/constants';
 
 @Injectable()
 export class UserManagerService {
@@ -25,7 +26,9 @@ export class UserManagerService {
     private userAccessService: UserAccessService,
     private passwordResetTokenAccessService: PasswordResetTokenAccessService,
     private emailVerificationTokenAccessService: EmailVerificationTokenAccessService,
-    private authService: AuthService
+    private authService: AuthService,
+    @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
+    private collaboratorAccessService: ICollaboratorAccessService
   ) {}
 
   /**
@@ -33,7 +36,7 @@ export class UserManagerService {
    */
   public getUsers = async (): Promise<UserModel[]> => {
     const accessModelList = await this.userAccessService.getUsers();
-    return accessModelList.map((x) => this.getUserModel(x));
+    return accessModelList.map(this.getUserModel);
   };
 
   /**
@@ -45,8 +48,26 @@ export class UserManagerService {
 
     // Crear usuario con email no verificado
     const accessModel = await this.userAccessService.createUser(
-      new CreateUserAccessRequest(request.email, password)
+      new CreateUserAccessRequest(
+        request.email,
+        password,
+        request.name,
+        request.surname
+      )
     );
+
+    try {
+      await this.collaboratorAccessService.createInternalCollaborator(
+        accessModel.id,
+        accessModel.email,
+        accessModel.name,
+        accessModel.surname
+      );
+    } catch (error) {
+      // Log del error pero no fallar el registro
+      console.error('Error creating internal collaborator:', error);
+      // Opcional: podrías decidir si esto debe fallar todo el proceso o continuar
+    }
 
     // Generar token de verificación de email
     const verificationToken = TokenGenerator.generateSecureToken(
@@ -66,20 +87,11 @@ export class UserManagerService {
     );
 
     // Generar JWT (usuario puede usar la app pero debe verificar email)
-    const authModel = new AuthUserModel(
-      accessModel.id,
-      accessModel.email,
-      accessModel.password
-    );
+    const authModel = this.getAuthUserModel(accessModel);
     const jwtToken = await this.authService.getToken(authModel);
 
     return {
-      user: new SignModel(
-        accessModel.id,
-        accessModel.email,
-        jwtToken,
-        false // isEmailVerified = false
-      ),
+      user: this.getSignModel(accessModel, jwtToken, false),
       verificationToken, // Para que MailManager envíe el email
     };
   };
@@ -92,11 +104,7 @@ export class UserManagerService {
     const [email, password] = atob(key).split(':');
 
     const accessModel = await this.userAccessService.getUserByEmail(email);
-    const authModel = new AuthUserModel(
-      accessModel.id,
-      accessModel.email,
-      accessModel.password
-    );
+    const authModel = this.getAuthUserModel(accessModel);
 
     await this.authService.checkUser(
       { email, passwordHash: password },
@@ -105,12 +113,7 @@ export class UserManagerService {
 
     const jwtToken = await this.authService.getToken(authModel);
 
-    return new SignModel(
-      accessModel.id,
-      email,
-      jwtToken,
-      accessModel.isEmailVerified
-    );
+    return this.getSignModel(accessModel, jwtToken, accessModel.isEmailVerified);
   };
 
   /**
@@ -152,19 +155,10 @@ export class UserManagerService {
     );
 
     // Generar nuevo JWT con email verificado
-    const authModel = new AuthUserModel(
-      userModel.id,
-      userModel.email,
-      userModel.password
-    );
+    const authModel = this.getAuthUserModel(userModel);
     const jwtToken = await this.authService.getToken(authModel);
 
-    return new SignModel(
-      userModel.id,
-      userModel.email,
-      jwtToken,
-      true // isEmailVerified = true
-    );
+    return this.getSignModel(userModel, jwtToken, true);
   };
 
   /**
@@ -261,7 +255,6 @@ export class UserManagerService {
         ipAddress
       )
     );
-
     return { resetToken };
   };
 
@@ -303,20 +296,12 @@ export class UserManagerService {
     await this.passwordResetTokenAccessService.invalidateUserTokens(userModel.id);
 
     // Generar nuevo JWT para auto-login
-    const authModel = new AuthUserModel(
-      updatedUser.id,
-      updatedUser.email,
-      updatedUser.password
-    );
+    const authModel = this.getAuthUserModel(updatedUser);
     const jwtToken = await this.authService.getToken(authModel);
 
-    return new SignModel(
-      updatedUser.id,
-      updatedUser.email,
-      jwtToken,
-      updatedUser.isEmailVerified
-    );
+    return this.getSignModel(updatedUser, jwtToken, updatedUser.isEmailVerified);
   };
+
   public getWebPushToken = async (): Promise<WebPushModel> => {
     const accessModel = await this.userAccessService.getWebPushToken();
     const model = new WebPushModel(accessModel.id, accessModel.endpoint, accessModel.expirationTime, accessModel.keys)
@@ -326,11 +311,30 @@ export class UserManagerService {
   /**
    * Mapea AccessModel a UserModel
    */
-  private getUserModel = (accessModel: any): UserModel => new UserModel(
+  private getUserModel = (accessModel: UserAccessModel): UserModel => new UserModel(
     accessModel.id,
     accessModel.email,
+    accessModel.name,
+    accessModel.surname,
     accessModel.dateCreated,
     '', // token vacío (se llena en endpoints específicos)
     accessModel.isEmailVerified
+  );
+
+  private getAuthUserModel = (accessModel: UserAccessModel): AuthUserModel => new AuthUserModel(
+    accessModel.id,
+    accessModel.email,
+    accessModel.password,
+    accessModel.name,
+    accessModel.surname
+  );
+
+  private getSignModel = (accessModel: UserAccessModel, jwtToken: string, isEmailVerified: boolean): SignModel => new SignModel(
+    accessModel.id,
+    accessModel.email,
+    accessModel.name,
+    accessModel.surname,
+    jwtToken,
+    isEmailVerified
   );
 }

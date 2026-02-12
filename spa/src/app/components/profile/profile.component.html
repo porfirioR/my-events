@@ -4,6 +4,7 @@
     @if (hasEmail) {
       <p class="py-4">{{ 'common.userId' | translate: { userId: userId } }}</p>
       <p class="py-4">{{ 'common.emailIs' | translate: { email: email } }}</p>
+      <p class="py-4">{{ 'common.user' | translate: { name: name, surname: surname } }}</p>
     } @else {
       <p class="py-4">
         {{ 'common.youAreDisconnected' | translate }}

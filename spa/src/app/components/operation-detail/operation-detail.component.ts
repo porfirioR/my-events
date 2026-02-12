@@ -5,12 +5,19 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useTravelStore, useLoadingStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelOperationApiModel } from '../../models/api/travels';
+import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
+import { ApprovalStatus } from '../../models/enums';
 
 @Component({
   selector: 'app-operation-detail',
   templateUrl: './operation-detail.component.html',
   styleUrls: ['./operation-detail.component.css'],
-  imports: [CommonModule, RouterModule, TranslateModule]
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    AttachmentListComponent
+  ]
 })
 export class OperationDetailComponent implements OnInit {
   private router = inject(Router);
@@ -28,9 +35,11 @@ export class OperationDetailComponent implements OnInit {
 
   protected travelId?: number;
   protected operationId?: number;
+  protected approvalStatus = ApprovalStatus;
 
   protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
+  protected getInitials = FormatterHelperService.getInitials;
 
   ngOnInit(): void {
     const travelId = this.activatedRoute.snapshot.params['travelId'];
@@ -170,14 +179,15 @@ export class OperationDetailComponent implements OnInit {
 
   protected getOperationStatusIcon(status: string): string {
     switch(status) {
-      case 'Pending':
+      case this.approvalStatus.Pending:
         return 'fa-clock';
-      case 'Approved':
+      case this.approvalStatus.Approved:
         return 'fa-check-circle';
-      case 'Rejected':
+      case this.approvalStatus.Rejected:
         return 'fa-times-circle';
       default:
         return 'fa-question-circle';
     }
   }
+
 }

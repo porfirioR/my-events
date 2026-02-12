@@ -93,6 +93,18 @@ export class TravelOperationParticipantAccessService
     }
   };
 
+  public removeParticipant = async (operationId: number, memberId: number): Promise<void> => {
+    const { error } = await this.dbContext
+      .from(TableEnum.TravelOperationParticipants)
+      .delete()
+      .eq(DatabaseColumns.OperationId, operationId)
+      .eq(DatabaseColumns.TravelMemberId, memberId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  };
+
   public removeAllByOperationId = async (operationId: number): Promise<void> => {
     const { error } = await this.dbContext
       .from(TableEnum.TravelOperationParticipants)
@@ -138,9 +150,9 @@ export class TravelOperationParticipantAccessService
   ): TravelOperationParticipantAccessModel => {
     return new TravelOperationParticipantAccessModel(
       entity.id!,
-      entity.operationid,
       entity.travelmemberid,
       parseFloat(entity.shareamount.toString()),
+      entity.operationid,
       new Date(entity.datecreated!),
     );
   };

@@ -60,4 +60,9 @@ export interface ITravelOperationApprovalAccessService {
    * Obtener cantidad total de aprobaciones necesarias
    */
   getTotalCount(operationId: number): Promise<number>;
+
+  /**
+   * Eliminar aprobación específica por operación y miembro
+   */
+  removeApproval(operationId: number, memberId: number): Promise<void>;
 }
