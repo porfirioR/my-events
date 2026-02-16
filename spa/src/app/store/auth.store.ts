@@ -12,6 +12,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   isEmailVerified: boolean;
   loginLoading: boolean;
+  collaboratorId: number | null;
   error: string | null;
 }
 
@@ -26,6 +27,7 @@ export const AuthStore = signalStore(
     isAuthenticated: false,
     isEmailVerified: false,
     loginLoading: false,
+    collaboratorId: null,
     error: null
   }),
   withComputed((store) => ({
@@ -33,6 +35,7 @@ export const AuthStore = signalStore(
     currentUser: computed(() => store.userId()),
     currentUserName: computed(() => `${store.name()} ${store.surname()}`),
     currentUserEmail: computed(() => store.email()),
+    currentUserCollaborator: computed(() => store.collaboratorId()),
     needsEmailVerification: computed(() => 
       store.isAuthenticated() && !store.isEmailVerified()
     ),
@@ -46,7 +49,15 @@ export const AuthStore = signalStore(
   ) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
 
-    loginSuccess: (userId: number, token: string, email: string, name: string, surname: string, isEmailVerified: boolean = false) => {
+    loginSuccess: (
+      userId: number,
+      token: string,
+      email: string,
+      name: string,
+      surname: string,
+      collaboratorId: number,
+      isEmailVerified: boolean = false
+    ) => {
       patchState(store, {
         userId,
         email,
@@ -56,6 +67,7 @@ export const AuthStore = signalStore(
         isAuthenticated: true,
         isEmailVerified: isEmailVerified,
         loginLoading: false,
+        collaboratorId,
         error: null
       });
 
@@ -74,6 +86,7 @@ export const AuthStore = signalStore(
       token: null,
       isAuthenticated: false,
       loginLoading: false,
+      collaboratorId: null,
       error
     }),
 
@@ -88,6 +101,7 @@ export const AuthStore = signalStore(
         isAuthenticated: false,
         isEmailVerified: false,
         loginLoading: false,
+        collaboratorId: null,
         error: null
       });
 
@@ -102,7 +116,7 @@ export const AuthStore = signalStore(
     },
 
     // Restaurar sesión desde localStorage
-    restoreSession: (userId: number, token: string, email: string, name: string, surname: string, isEmailVerified: boolean) => {
+    restoreSession: (userId: number, token: string, email: string, name: string, surname: string, isEmailVerified: boolean, collaboratorId: number) => {
       patchState(store, {
         userId,
         email,
@@ -112,7 +126,8 @@ export const AuthStore = signalStore(
         isAuthenticated: true,
         loginLoading: false,
         error: null,
-        isEmailVerified
+        isEmailVerified,
+        collaboratorId
       });
 
       currencyStore.loadCurrencies();

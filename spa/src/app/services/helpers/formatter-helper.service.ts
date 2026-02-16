@@ -100,6 +100,25 @@ export class FormatterHelperService {
     return `${years} ${this.translate.instant('common.yearsAgo')}`;
   }
 
+  public getFormattedDateCustom  = (date: Date): string => {
+    const currentLang = this.translate.getCurrentLang() || this.translate.getFallbackLang() || 'en';
+
+    // Mapeo de idioma a locale
+    const localeMap: { [key: string]: string } = {
+      'en': 'en-US',
+      'es': 'es-ES'
+    };
+
+    const locale = localeMap[currentLang] || 'en-US';
+
+    return new Date(date).toLocaleDateString(locale, {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      timeZone: 'UTC'
+    });
+  }
+
   public formatCurrency = (amount: number, currencyId?: number | null): string => {
     return this.currencyStore.formatCurrency()(amount, currencyId ?? 1);
   }

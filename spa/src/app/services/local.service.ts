@@ -8,6 +8,7 @@ export class LocalService {
   private readonly nameKey = 'name'
   private readonly surnameKey = 'surname'
   private readonly userKey = 'user'
+  private readonly collaboratorKey = 'collaborator'
   private readonly jwtToken = 'jwt'
   private readonly isEmailVerified = 'isEmailVerified'
 
@@ -21,6 +22,9 @@ export class LocalService {
 
   public getUserId = (): number => +(localStorage.getItem(this.userKey) ?? -1)
   public setUserId = (id: number): void => localStorage.setItem(this.userKey, id.toString())
+
+  public getCollaboratorId = (): number => +(localStorage.getItem(this.collaboratorKey) ?? -1)
+  public setCollaboratorId = (collaboratorId: number): void => localStorage.setItem(this.collaboratorKey, collaboratorId.toString())
 
   public getJwtToken = (): string | null => localStorage.getItem(this.jwtToken)
   public setJwtToken = (token: string): void => localStorage.setItem(this.jwtToken, token)

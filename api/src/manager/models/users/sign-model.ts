@@ -5,6 +5,7 @@ export class SignModel {
     public name: string,
     public surname: string,
     public token: string,
-    public isEmailVerified: boolean
+    public isEmailVerified: boolean,
+    public userCollaboratorId: number
   ) {}
 }

@@ -17,7 +17,9 @@
               {{ travelData.name }}
             </h1>
             @if (travelData.description) {
-              <p class="text-base-content/70 mb-3">{{ travelData.description }}</p>
+              <p class="text-base-content/70 mb-3">
+                {{ travelData.description }}
+              </p>
             }
 
             <!-- Metadata -->
@@ -33,9 +35,9 @@
               @if (travelData.startDate) {
                 <span class="text-sm text-base-content/70">
                   <i class="fas fa-calendar-alt mr-1"></i>
-                  {{ getFormattedDate(travelData.startDate) }}
+                  {{ getFormattedDateCustom(travelData.startDate) }}
                   @if (travelData.endDate) {
-                    - {{ getFormattedDate(travelData.endDate) }}
+                    - {{ getFormattedDateCustom(travelData.endDate) }}
                   }
                 </span>
               }
@@ -181,18 +183,30 @@
                               </li>
 
                               @if (travelData.status === 'Active' && operation.status === approvalStatus.Pending) {
-                                <li>
-                                  <button (click)="approveOperation(operation)">
-                                    <i class="fas fa-check text-success"></i>
-                                    {{ 'travels.approve' | translate }}
-                                  </button>
-                                </li>
-                                <li>
-                                  <button (click)="rejectOperation(operation)">
-                                    <i class="fas fa-times text-error"></i>
-                                    {{ 'travels.reject' | translate }}
-                                  </button>
-                                </li>
+                                @if (hasCurrentUserApproved(operation)) {
+                                  <li>
+                                    <div class="flex items-center gap-2 py-3 text-sm text-success">
+                                      <i class="fas fa-check-circle"></i>
+                                      <span>{{ 'operations.youAlreadyApproved' | translate }}</span>
+                                    </div>
+                                  </li>
+                                }
+                                @if (canCurrentUserApprove(operation)) {
+                                  <li>
+                                    <button (click)="approveOperation(operation)">
+                                      <i class="fas fa-check text-success"></i>
+                                      {{ 'travels.approve' | translate }}
+                                    </button>
+                                  </li>
+                                }
+                                @if (canCurrentUserReject(operation)) {
+                                  <li>
+                                    <button (click)="rejectOperation(operation)">
+                                      <i class="fas fa-times text-error"></i>
+                                      {{ 'travels.reject' | translate }}
+                                    </button>
+                                  </li>
+                                }
                                 <li>
                                   <button (click)="editOperation(operation)">
                                     <i class="fas fa-edit text-primary"></i>
@@ -216,7 +230,7 @@
                       </div>
 
                       <!-- Quien pagó (destacado) -->
-                      <div class="mb-6">
+                      <div >
                         <div class="flex items-center gap-3 rounded-lg">
                           <div class="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center font-bold shadow-md"
                             [title]="operation.whoPaidMemberName || 'UK'"
@@ -251,11 +265,20 @@
                         </div>
                       </div>
 
+                      <div class="space-y-2">
+                        <span class="text-sm font-medium text-base-content/70">
+                          {{'operations.category' | translate}}: 
+                        </span>
+                        <p class="text-base-content/70">
+                          {{selectedCategory(operation.id)?.icon}} {{'categories.' + selectedCategory(operation.id)?.name | translate}}
+                        </p>
+                      </div>
+
                       <!-- Metadata (fecha, split type, etc.) -->
                       <div class="flex items-center gap-4 text-xs text-base-content/60 pt-2 border-t border-base-300">
                         <span class="flex items-center gap-1">
                           <i class="fas fa-calendar-alt"></i>
-                          {{ getFormattedDate(operation.transactionDate) }}
+                          {{ getFormattedDateCustom(operation.transactionDate) }}
                         </span>
                         <span class="flex items-center gap-1">
                           <i class="fas fa-calculator"></i>

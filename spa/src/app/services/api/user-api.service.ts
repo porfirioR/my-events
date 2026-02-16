@@ -95,5 +95,6 @@ export class UserApiService {
     this.localService.setJwtToken(user.token);
     this.localService.setUserId(user.id);
     this.localService.setEmailVerified(user.isEmailVerified);
+    this.localService.setCollaboratorId(user.userCollaboratorId);
   };
 }

@@ -5,4 +5,5 @@ export interface SignApiModel {
   surname: string;
   token: string;
   isEmailVerified: boolean;
+  userCollaboratorId: number;
 }

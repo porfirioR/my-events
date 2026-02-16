@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useLoadingStore, useTravelStore, useCollaboratorStore } from '../../store';
+import { useLoadingStore, useTravelStore, useCollaboratorStore, useAuthStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { ApprovalStatus } from '../../models/enums';
@@ -23,6 +23,7 @@ export class TravelDetailComponent implements OnInit {
   private travelStore = useTravelStore();
   private collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
+  private authStore = useAuthStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected travel = this.travelStore.selectedTravel;
@@ -35,6 +36,7 @@ export class TravelDetailComponent implements OnInit {
   protected travelId?: number;
 
   protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
+  protected getFormattedDateCustom = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
   protected getInitials = FormatterHelperService.getInitials;
 
@@ -43,11 +45,12 @@ export class TravelDetailComponent implements OnInit {
     const allCollaborators = this.collaboratorStore.linkedCollaborators();
     const currentMembers = this.members();
     const memberCollaboratorIds = currentMembers.map(m => m.collaboratorId);
-    
+
     return allCollaborators.filter(c => !memberCollaboratorIds.includes(c.id));
   });
 
   ngOnInit(): void {
+    this.travelStore.loadCategories()
     const id = this.activatedRoute.snapshot.params['id'];
     if (id) {
       this.travelId = +id;
@@ -285,6 +288,59 @@ export class TravelDetailComponent implements OnInit {
       default:
         return 'fa-question-circle';
     }
+  }
+
+  protected hasCurrentUserApproved(operation: TravelOperationApiModel): boolean {
+    if (!operation.participants) return false;
+
+    const currentUserMember = this.getCurrentUserMember();
+    if (!currentUserMember) return false;
+
+    const userParticipant = operation.participants.find(
+      x => x.memberId === currentUserMember.id
+    );
+
+    return userParticipant?.approvalStatus === this.approvalStatus.Approved;
+  }
+
+  protected canCurrentUserApprove(operation: TravelOperationApiModel): boolean {
+    if (!operation.participants) return false;
+
+    const currentUserMember = this.getCurrentUserMember();
+    if (!currentUserMember) return false;
+
+    const userParticipant = operation.participants.find(
+      x => x.memberId === currentUserMember.id
+    );
+
+    if (!userParticipant) return false;
+
+    return userParticipant.approvalStatus === this.approvalStatus.Pending;
+  }
+
+  protected canCurrentUserReject(operation: TravelOperationApiModel): boolean {
+    if (!operation.participants) return false;
+
+    const currentUserMember = this.getCurrentUserMember();
+    if (!currentUserMember) return false;
+
+    const userParticipant = operation.participants.find(
+      x => x.memberId === currentUserMember.id
+    );
+
+    if (!userParticipant) return false;
+
+    return userParticipant.approvalStatus === this.approvalStatus.Pending || 
+          userParticipant.approvalStatus === this.approvalStatus.Approved;
+  }
+
+  protected selectedCategory = (id: number) => 
+    this.travelStore.getCategoryById()(id)
+  ;
+
+  private getCurrentUserMember(): TravelMemberApiModel | undefined {
+    const members = this.members();
+    return members.find(x => x.collaboratorId === this.authStore.collaboratorId());
   }
 
 }

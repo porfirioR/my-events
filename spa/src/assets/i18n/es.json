@@ -443,7 +443,8 @@
     "approved": "Aprobado",
     "rejected": "Rechazada",
     "pending": "Pendiente",
-    "individualAmounts": "Montos individuales"
+    "individualAmounts": "Montos individuales",
+    "youAlreadyApproved":"Aaprobado"
   },
   "inputs": {
     "selectOption": "Selecciona un {{label}}",
