@@ -42,7 +42,9 @@ export class OperationDetailComponent implements OnInit {
   protected formatCurrency = this.formatterService.formatCurrency;
   protected getInitials = FormatterHelperService.getInitials;
 
+
   ngOnInit(): void {
+    this.travelStore.loadCategories()
     const travelId = this.activatedRoute.snapshot.params['travelId'];
     const operationId = this.activatedRoute.snapshot.params['operationId'];
 
@@ -61,6 +63,7 @@ export class OperationDetailComponent implements OnInit {
     this.travelStore.loadOperationById(this.operationId).subscribe({
       next: (operation) => {
         this.operation.set(operation);
+        this.travelStore.getCategoryById()(operation.id)
       },
       error: () => {
         this.alertService.showError(
@@ -206,6 +209,12 @@ export class OperationDetailComponent implements OnInit {
 
     return userParticipant?.approvalStatus === this.approvalStatus.Approved;
   }
+
+  
+  protected selectedCategory = () => 
+    this.travelStore.getCategoryById()(this.operationId)
+  ;
+
 
   // Método para verificar si el usuario puede aprobar
   protected canCurrentUserApprove(operation: TravelOperationApiModel): boolean {

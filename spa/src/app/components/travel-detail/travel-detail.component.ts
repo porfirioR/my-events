@@ -45,7 +45,7 @@ export class TravelDetailComponent implements OnInit {
     const allCollaborators = this.collaboratorStore.linkedCollaborators();
     const currentMembers = this.members();
     const memberCollaboratorIds = currentMembers.map(m => m.collaboratorId);
-    
+
     return allCollaborators.filter(c => !memberCollaboratorIds.includes(c.id));
   });
 
