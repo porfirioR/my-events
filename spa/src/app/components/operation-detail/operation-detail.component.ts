@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useTravelStore, useLoadingStore } from '../../store';
+import { useTravelStore, useLoadingStore, useAuthStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { TravelOperationApiModel } from '../../models/api/travels';
+import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
 import { ApprovalStatus } from '../../models/enums';
 
@@ -28,6 +28,7 @@ export class OperationDetailComponent implements OnInit {
 
   private travelStore = useTravelStore();
   private loadingStore = useLoadingStore();
+  private authStore = useAuthStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected travel = this.travelStore.selectedTravel;
@@ -37,7 +38,7 @@ export class OperationDetailComponent implements OnInit {
   protected operationId?: number;
   protected approvalStatus = ApprovalStatus;
 
-  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
+  protected getFormattedDateCustom = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
   protected getInitials = FormatterHelperService.getInitials;
 
@@ -48,7 +49,7 @@ export class OperationDetailComponent implements OnInit {
     if (travelId && operationId) {
       this.travelId = +travelId;
       this.operationId = +operationId;
-      
+
       this.loadOperationDetail();
     }
   }
@@ -166,11 +167,11 @@ export class OperationDetailComponent implements OnInit {
 
   protected getOperationStatusBadgeClass(status: string): string {
     switch(status) {
-      case 'Pending':
+      case this.approvalStatus.Pending:
         return 'badge-warning';
-      case 'Approved':
+      case this.approvalStatus.Approved:
         return 'badge-success';
-      case 'Rejected':
+      case this.approvalStatus.Rejected:
         return 'badge-error';
       default:
         return 'badge-neutral';
@@ -190,4 +191,60 @@ export class OperationDetailComponent implements OnInit {
     }
   }
 
+  // Método para verificar si el usuario actual ya aprobó
+  protected hasCurrentUserApproved(operation: TravelOperationApiModel): boolean {
+    if (!operation.participants) return false;
+
+    // Necesitamos obtener el miembro actual del usuario en este viaje
+    const currentUserMember = this.getCurrentUserMember();
+    if (!currentUserMember) return false;
+
+    // Buscar si el usuario actual está en los participantes y ya aprobó
+    const userParticipant = operation.participants.find(
+      x => x.memberId === currentUserMember.id
+    );
+
+    return userParticipant?.approvalStatus === this.approvalStatus.Approved;
+  }
+
+  // Método para verificar si el usuario puede aprobar
+  protected canCurrentUserApprove(operation: TravelOperationApiModel): boolean {
+    if (!operation.participants) return false;
+
+    const currentUserMember = this.getCurrentUserMember();
+    if (!currentUserMember) return false;
+
+    // Verificar que es participante
+    const userParticipant = operation.participants.find(
+      x => x.memberId === currentUserMember.id
+    );
+
+    if (!userParticipant) return false;
+
+    // Solo puede aprobar si está pendiente
+    return userParticipant.approvalStatus === this.approvalStatus.Pending;
+  }
+
+  // Método para verificar si el usuario puede rechazar
+  protected canCurrentUserReject(operation: TravelOperationApiModel): boolean {
+    if (!operation.participants) return false;
+
+    const currentUserMember = this.getCurrentUserMember();
+    if (!currentUserMember) return false;
+
+    // Verificar que es participante
+    const userParticipant = operation.participants.find(x => x.memberId === currentUserMember.id);
+
+    if (!userParticipant) return false;
+
+    // Solo puede rechazar si está pendiente o ya aprobó
+    return userParticipant.approvalStatus === this.approvalStatus.Pending || 
+          userParticipant.approvalStatus === this.approvalStatus.Approved;
+  }
+
+  // Método para obtener el miembro actual del usuario en el viaje
+  private getCurrentUserMember(): TravelMemberApiModel | undefined {
+    const members = this.travelStore.members();
+    return members.find(x => x.collaboratorId === this.authStore.collaboratorId());
+  }
 }

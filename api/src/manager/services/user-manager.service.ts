@@ -3,7 +3,7 @@ import { UserAccessService } from '../../access/data/services/user-access.servic
 import { PasswordResetTokenAccessService } from '../../access/data/services/password-reset-token-access.service';
 import { EmailVerificationTokenAccessService } from '../../access/data/services/email-verification-token-access.service';
 import { AuthService } from '../../access/auth/auth.service';
-import { ICollaboratorAccessService } from '../../access/contract/collaborators';
+import { CollaboratorAccessModel, ICollaboratorAccessService } from '../../access/contract/collaborators';
 import { CreateUserAccessRequest, ResetUserAccessRequest, UserAccessModel } from '../../access/contract/users';
 import { CreatePasswordResetTokenRequest } from '../../access/contract/tokens/create-password-reset-token-request';
 import { CreateEmailVerificationTokenRequest } from '../../access/contract/tokens/create-email-verification-token-request';
@@ -55,9 +55,9 @@ export class UserManagerService {
         request.surname
       )
     );
-
+    let internalCollaborator: CollaboratorAccessModel | null = null;
     try {
-      await this.collaboratorAccessService.createInternalCollaborator(
+      internalCollaborator = await this.collaboratorAccessService.createInternalCollaborator(
         accessModel.id,
         accessModel.email,
         accessModel.name,
@@ -91,7 +91,7 @@ export class UserManagerService {
     const jwtToken = await this.authService.getToken(authModel);
 
     return {
-      user: this.getSignModel(accessModel, jwtToken, false),
+      user: this.getSignModel(accessModel, jwtToken, false, internalCollaborator.id),
       verificationToken, // Para que MailManager envíe el email
     };
   };
@@ -104,7 +104,13 @@ export class UserManagerService {
     const [email, password] = atob(key).split(':');
 
     const accessModel = await this.userAccessService.getUserByEmail(email);
+
     const authModel = this.getAuthUserModel(accessModel);
+
+    const internalCollaborator = await this.collaboratorAccessService.getInternalCollaboratorByUserIdAndEmail(
+      accessModel.id,
+      accessModel.email
+    );
 
     await this.authService.checkUser(
       { email, passwordHash: password },
@@ -112,8 +118,13 @@ export class UserManagerService {
     );
 
     const jwtToken = await this.authService.getToken(authModel);
-
-    return this.getSignModel(accessModel, jwtToken, accessModel.isEmailVerified);
+    const signModel = this.getSignModel(
+      accessModel,
+      jwtToken,
+      accessModel.isEmailVerified,
+      internalCollaborator.id
+    );
+    return signModel
   };
 
   /**
@@ -156,9 +167,15 @@ export class UserManagerService {
 
     // Generar nuevo JWT con email verificado
     const authModel = this.getAuthUserModel(userModel);
+    
+    const internalCollaborator = await this.collaboratorAccessService.getInternalCollaboratorByUserIdAndEmail(
+      authModel.id,
+      authModel.email
+    );
     const jwtToken = await this.authService.getToken(authModel);
+    const signModel = this.getSignModel(userModel, jwtToken, true, internalCollaborator.id);
 
-    return this.getSignModel(userModel, jwtToken, true);
+    return signModel
   };
 
   /**
@@ -299,7 +316,17 @@ export class UserManagerService {
     const authModel = this.getAuthUserModel(updatedUser);
     const jwtToken = await this.authService.getToken(authModel);
 
-    return this.getSignModel(updatedUser, jwtToken, updatedUser.isEmailVerified);
+    const internalCollaborator = await this.collaboratorAccessService.getInternalCollaboratorByUserIdAndEmail(
+      userModel.id,
+      userModel.email
+    );
+    const signModel = this.getSignModel(
+      updatedUser,
+      jwtToken,
+      updatedUser.isEmailVerified,
+      internalCollaborator.id
+    );
+    return signModel;
   };
 
   public getWebPushToken = async (): Promise<WebPushModel> => {
@@ -326,15 +353,16 @@ export class UserManagerService {
     accessModel.email,
     accessModel.password,
     accessModel.name,
-    accessModel.surname
+    accessModel.surname,
   );
 
-  private getSignModel = (accessModel: UserAccessModel, jwtToken: string, isEmailVerified: boolean): SignModel => new SignModel(
+  private getSignModel = (accessModel: UserAccessModel, jwtToken: string, isEmailVerified: boolean, collaboratorId: number): SignModel => new SignModel(
     accessModel.id,
     accessModel.email,
     accessModel.name,
     accessModel.surname,
     jwtToken,
-    isEmailVerified
+    isEmailVerified,
+    collaboratorId
   );
 }

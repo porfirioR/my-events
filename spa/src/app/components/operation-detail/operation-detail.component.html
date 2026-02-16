@@ -37,7 +37,7 @@
               <!-- Date -->
               <time class="text-sm text-base-content/70" [attr.datetime]="op.transactionDate">
                 <i class="fas fa-calendar-alt mr-1"></i>
-                {{ getFormattedDate(op.transactionDate) }}
+                {{ getFormattedDateCustom(op.transactionDate) }}
               </time>
 
               <!-- Participants -->
@@ -51,24 +51,36 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex gap-2">
+          <div class="flex gap-2 flex-col lg:flex-row">
             @if (op.status === approvalStatus.Pending && travel()?.status === 'Active') {
-              <button
-                type="button"
-                class="btn btn-sm btn-outline btn-success"
-                (click)="approveOperation()"
-              >
-                <i class="fas fa-check"></i>
-                <span class="hidden md:inline ml-1">{{ 'travels.approve' | translate }}</span>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline btn-error"
-                (click)="rejectOperation()"
-              >
-                <i class="fas fa-times"></i>
-                <span class="hidden md:inline ml-1">{{ 'travels.reject' | translate }}</span>
-              </button>
+              @if (hasCurrentUserApproved(op)) {
+                <div class="flex items-center gap-2 px-3 py-2 bg-success/10 rounded-lg">
+                  <i class="fas fa-check-circle text-success"></i>
+                  <span class="text-sm text-success font-medium">
+                    {{ 'operations.youAlreadyApproved' | translate }}
+                  </span>
+                </div>
+              }
+              @if (canCurrentUserApprove(op)) {
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline btn-success"
+                  (click)="approveOperation()"
+                >
+                  <i class="fas fa-check"></i>
+                  <span class="hidden md:inline ml-1">{{ 'travels.approve' | translate }}</span>
+                </button>
+              }
+              @if (canCurrentUserReject(op)) {
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline btn-error"
+                  (click)="rejectOperation()"
+                >
+                  <i class="fas fa-times"></i>
+                  <span class="hidden md:inline ml-1">{{ 'travels.reject' | translate }}</span>
+                </button>
+              }
               <button
                 type="button"
                 class="btn btn-sm btn-outline btn-primary"
@@ -85,7 +97,9 @@
                 (click)="deleteOperation()"
               >
                 <i class="fas fa-trash"></i>
-                {{ 'common.delete' | translate }}
+                <span class="hidden md:inline ml-1">
+                  {{ 'common.delete' | translate }}
+                </span>
               </button>
             }
           </div>

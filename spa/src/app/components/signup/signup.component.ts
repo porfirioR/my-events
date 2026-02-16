@@ -61,7 +61,7 @@ export class SignupComponent {
     );
     this.userApiService.signUpUser(request).subscribe({
       next: (user) => {
-        this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.isEmailVerified);
+        this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.userCollaboratorId, user.isEmailVerified);
         this.alertService.showSuccess(
           this.translate.instant('messages.accountCreated')
         );

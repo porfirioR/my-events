@@ -57,10 +57,11 @@ export class AppComponent {
     const name = this.localService.getName();
     const surname = this.localService.getSurname();
     const isEmailVerified = this.localService.getEmailVerified();
+    const collaboratorId = this.localService.getCollaboratorId();
 
     if (token && userString) {
       try {
-        this.authStore.restoreSession(userString, token, email!, name!, surname!, isEmailVerified);
+        this.authStore.restoreSession(userString, token, email!, name!, surname!, isEmailVerified, collaboratorId);
       } catch (error) {
         this.localService.cleanCredentials();
         this.authStore.logout();

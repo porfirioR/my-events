@@ -442,7 +442,8 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "pending": "Pending",
-    "individualAmounts": "Individual amounts"
+    "individualAmounts": "Individual amounts",
+    "youAlreadyApproved":"Approved"
   },
   "inputs": {
     "selectOption": "Select on {{label}}",
