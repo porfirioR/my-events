@@ -50,6 +50,7 @@ export class TravelDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.travelStore.loadCategories()
     const id = this.activatedRoute.snapshot.params['id'];
     if (id) {
       this.travelId = +id;
@@ -332,6 +333,10 @@ export class TravelDetailComponent implements OnInit {
     return userParticipant.approvalStatus === this.approvalStatus.Pending || 
           userParticipant.approvalStatus === this.approvalStatus.Approved;
   }
+
+  protected selectedCategory = (id: number) => 
+    this.travelStore.getCategoryById()(id)
+  ;
 
   private getCurrentUserMember(): TravelMemberApiModel | undefined {
     const members = this.members();

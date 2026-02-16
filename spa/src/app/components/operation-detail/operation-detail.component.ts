@@ -210,7 +210,6 @@ export class OperationDetailComponent implements OnInit {
     return userParticipant?.approvalStatus === this.approvalStatus.Approved;
   }
 
-  
   protected selectedCategory = () => 
     this.travelStore.getCategoryById()(this.operationId)
   ;

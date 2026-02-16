@@ -230,7 +230,7 @@
                       </div>
 
                       <!-- Quien pagó (destacado) -->
-                      <div class="mb-6">
+                      <div >
                         <div class="flex items-center gap-3 rounded-lg">
                           <div class="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center font-bold shadow-md"
                             [title]="operation.whoPaidMemberName || 'UK'"
@@ -263,6 +263,15 @@
                             {{ operation.participantCount || 0 }} {{ 'travels.people' | translate }}
                           </span>
                         </div>
+                      </div>
+
+                      <div class="space-y-2">
+                        <span class="text-sm font-medium text-base-content/70">
+                          {{'operations.category' | translate}}: 
+                        </span>
+                        <p class="text-base-content/70">
+                          {{selectedCategory(operation.id)?.icon}} {{'categories.' + selectedCategory(operation.id)?.name | translate}}
+                        </p>
                       </div>
 
                       <!-- Metadata (fecha, split type, etc.) -->
