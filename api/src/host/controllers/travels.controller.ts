@@ -489,13 +489,42 @@ export class TravelsController {
    * POST /api/travels/operations/:operationId/attachments
    */
   @Post('operations/:operationId/attachments')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB límite
+    },
+    fileFilter: (req, file, callback) => {
+      if (!file) {
+        // ✅ Permitir que no haya archivo (será manejado en el controller)
+        callback(null, true);
+        return;
+      }
+      // Tipos de archivo permitidos
+      const allowedTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+        // 'application/pdf',
+        // 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        // 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        // 'text/plain', 'text/csv'
+      ];
+      
+      if (allowedTypes.includes(file.mimetype)) {
+        callback(null, true);
+      } else {
+        callback(new BadRequestException('Unsupported file type'), false);
+      }
+    }
+  }))
   async createOperationAttachment(
     @Param('operationId', ParseIntPipe) operationId: number,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<OperationAttachmentModel> {
     if (!file) {
       throw new BadRequestException('File is required');
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      throw new BadRequestException('File size cannot exceed 10MB');
     }
 
     const userId = await this.currentUserService.getCurrentUserId();

@@ -21,7 +21,7 @@ export class MailAccessService {
           <p>Thank you for signing up. Please verify your email address by clicking the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verificationLink}" 
-               style="background-color: #432dd7; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                style="background-color: #432dd7; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block;">
               Verify Email
             </a>
           </div>

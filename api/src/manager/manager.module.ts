@@ -7,12 +7,14 @@ import { TransactionManagerService } from './services/transaction.manager.servic
 import { TRANSACTION_TOKENS } from '../utility/constants';
 import { SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants/injection-tokens.const';
 import { TravelManagerService } from './services/travel-manager.service';
+import { BlobModule } from '../access/blob/blob.module';
 
 @Module({
   imports: [
     MailModule,
     AuthModule,
-    DataModule
+    DataModule,
+    BlobModule
   ],
   controllers: [],
   providers: [
