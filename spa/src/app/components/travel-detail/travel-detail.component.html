@@ -138,35 +138,59 @@
             } @else {
               <ul class="space-y-4">
                 @for (operation of operations(); track operation.id) {
-                  <li class="bg-base-100 dark:bg-base-200 rounded-lg p-6 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-all duration-200 shadow-sm">
+                  <li class="bg-base-100 dark:bg-base-200 rounded-lg p-6 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-all duration-200 shadow-sm relative">
                     <article class="space-y-4">
 
                       <!-- Header: Título, monto y status -->
-                      <div class="flex items-start justify-between gap-4">
-                        <!-- LEFT: Description -->
-                        <h3 class="text-lg font-bold text-base-content truncate">
-                          {{ operation.description }}
-                        </h3>
+                      <div class="space-y-3 sm:space-y-0 sm:flex sm:items-start sm:justify-between sm:gap-4">
+                        <!-- MOBILE: Stacked Layout -->
+                        <div class="block sm:hidden space-y-2 w-full pr-10"><!-- ✅ Agregar padding-right -->
+                          <!-- Primera línea: Descripción completa -->
+                          <h3 class="text-lg font-bold text-base-content leading-tight line-clamp-2">
+                            {{ operation.description }}
+                          </h3>
+                          <!-- Segunda línea: Monto y Status -->
+                          <div class="flex items-center justify-between">
+                            <span class="text-lg font-bold text-primary">
+                              {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
+                            </span>
+                            <span
+                              class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border"
+                              [ngClass]="getOperationStatusBadgeClass(operation.status)"
+                            >
+                              <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
+                              {{ 'travels.' + operation.status.toLowerCase() | translate }}
+                            </span>
+                          </div>
+                        </div>
 
-                        <!-- RIGHT: Amount + Status + Actions -->
-                        <div class="flex items-center gap-3 flex-shrink-0">
-                          <!-- Amount -->
-                          <span class="text-lg sm:text-xl font-bold text-base-content whitespace-nowrap">
-                            {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
-                          </span>
+                        <!-- DESKTOP: Side-by-side Layout -->
+                        <div class="hidden sm:flex sm:items-start sm:justify-between sm:gap-4 w-full">
+                          <!-- LEFT: Description -->
+                          <h3 class="text-lg font-bold text-base-content truncate flex-grow">
+                            {{ operation.description }}
+                          </h3>
 
-                          <!-- Status -->
-                          <span
-                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
-                            [ngClass]="getOperationStatusBadgeClass(operation.status)"
-                          >
-                            <i
-                              [class]="'fas ' + getOperationStatusIcon(operation.status) + ' mr-1'"
-                            ></i>
-                            {{ 'travels.' + operation.status.toLowerCase() | translate }}
-                          </span>
+                          <!-- RIGHT: Amount + Status -->
+                          <div class="flex items-center gap-3 flex-shrink-0">
+                            <!-- Amount -->
+                            <span class="text-lg sm:text-xl font-bold text-base-content whitespace-nowrap">
+                              {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
+                            </span>
 
-                          <!-- Actions Menu -->
+                            <!-- Status -->
+                            <span
+                              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+                              [ngClass]="getOperationStatusBadgeClass(operation.status)"
+                            >
+                              <i [class]="'fas ' + getOperationStatusIcon(operation.status) + ' mr-1'"></i>
+                              {{ 'travels.' + operation.status.toLowerCase() | translate }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <!-- ✅ CORREGIR: Actions Menu siempre visible -->
+                        <div class="absolute top-3 right-3 sm:relative sm:top-0 sm:right-0 sm:flex-shrink-0">
                           <div class="dropdown dropdown-end">
                             <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
                               <i class="fas fa-ellipsis-v"></i>
@@ -230,11 +254,19 @@
                       </div>
 
                       <!-- Quien pagó (destacado) -->
-                      <div >
-                        <div class="flex items-center gap-3 rounded-lg">
-                          <div class="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center font-bold shadow-md"
-                            [title]="operation.whoPaidMemberName || 'UK'"
-                          >
+                      <div class="block sm:hidden">
+                        <div class="flex items-center gap-2">
+                          <div class="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center font-bold text-sm">
+                            {{ getInitials(operation.whoPaidMemberName || 'UK') }}
+                          </div>
+                          <span class="text-sm text-base-content/70">
+                            {{ operation.whoPaidMemberName || ('operations.unknownMember' | translate) }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="hidden sm:block">
+                        <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center font-bold shadow-md">
                             {{ getInitials(operation.whoPaidMemberName || 'UK') }}
                           </div>
                           <div class="flex-grow">
@@ -248,20 +280,44 @@
 
                       <!-- Participantes (avatares) -->
                       <div class="space-y-2">
-                        <p class="text-sm font-medium text-base-content/70">
-                          {{ 'travels.participants' | translate }}:
-                        </p>
-                        <div class="flex items-center gap-2 flex-wrap">
-                          @for (participant of operation.participants; track participant.memberId) {
-                            <div class="tooltip" [attr.data-tip]="participant.memberName">
-                              <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold shadow-sm ring-2 ring-base-100">
-                                {{ getInitials(participant.memberName + ' ' + participant.memberSurname) }}
-                              </div>
-                            </div>
-                          }
-                          <span class="text-sm text-base-content/70 ml-2">
+                        <!-- Mobile: Solo avatares -->
+                        <div class="flex items-center justify-between sm:hidden">
+                          <div class="flex items-center gap-1">
+                            @for (participant of operation.participants; track participant.memberId; let i = $index) {
+                              @if (i < 3) {
+                                <div class="tooltip" [attr.data-tip]="participant.memberName">
+                                  <div class="w-6 h-6 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold">
+                                    {{ getInitials(participant.memberName + ' ' + participant.memberSurname) }}
+                                  </div>
+                                </div>
+                              }
+                            }
+                            @if (operation.participantCount && operation.participantCount > 3) {
+                              <span class="text-xs text-base-content/70">+{{ operation.participantCount - 3 }}</span>
+                            }
+                          </div>
+                          <span class="text-xs text-base-content/70">
                             {{ operation.participantCount || 0 }} {{ 'travels.people' | translate }}
                           </span>
+                        </div>
+
+                        <!-- Desktop: Completo con nombres -->
+                        <div class="hidden sm:block space-y-2">
+                          <p class="text-sm font-medium text-base-content/70">
+                            {{ 'travels.participants' | translate }}:
+                          </p>
+                          <div class="flex items-center gap-2 flex-wrap">
+                            @for (participant of operation.participants; track participant.memberId) {
+                              <div class="tooltip" [attr.data-tip]="participant.memberName">
+                                <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold shadow-sm ring-2 ring-base-100">
+                                  {{ getInitials(participant.memberName + ' ' + participant.memberSurname) }}
+                                </div>
+                              </div>
+                            }
+                            <span class="text-sm text-base-content/70 ml-2">
+                              {{ operation.participantCount || 0 }} {{ 'travels.people' | translate }}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -270,20 +326,26 @@
                           {{'operations.category' | translate}}: 
                         </span>
                         <p class="text-base-content/70">
-                          {{selectedCategory(operation.id)?.icon}} {{'categories.' + selectedCategory(operation.id)?.name | translate}}
+                          {{selectedCategory(operation.categoryId)?.icon}} {{'categories.' + selectedCategory(operation.categoryId)?.name | translate}}
                         </p>
                       </div>
 
                       <!-- Metadata (fecha, split type, etc.) -->
-                      <div class="flex items-center gap-4 text-xs text-base-content/60 pt-2 border-t border-base-300">
-                        <span class="flex items-center gap-1">
-                          <i class="fas fa-calendar-alt"></i>
-                          {{ getFormattedDateCustom(operation.transactionDate) }}
-                        </span>
-                        <span class="flex items-center gap-1">
-                          <i class="fas fa-calculator"></i>
-                          {{ 'operations.splitTypes.' + operation.splitType | translate }}
-                        </span>
+                      <div class="flex items-center justify-between text-xs text-base-content/60 pt-2 border-t border-base-300">
+                        <!-- Left: Date and split -->
+                        <div class="flex items-center gap-2 sm:gap-4">
+                          <span class="flex items-center gap-1">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span class="hidden sm:inline">{{ getFormattedDateCustom(operation.transactionDate) }}</span>
+                            <span class="sm:hidden">{{ getFormattedDateCustom(operation.transactionDate) }}</span>
+                          </span>
+                          <span class="hidden sm:flex sm:items-center sm:gap-1">
+                            <i class="fas fa-calculator"></i>
+                            {{ 'operations.splitTypes.' + operation.splitType | translate }}
+                          </span>
+                        </div>
+
+                        <!-- Right: Approvals -->
                         @if (operation.approvalCount !== undefined && operation.participantCount) {
                           <span class="flex items-center gap-1">
                             <i class="fas fa-check-circle"></i>

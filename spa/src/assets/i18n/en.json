@@ -443,7 +443,14 @@
     "rejected": "Rejected",
     "pending": "Pending",
     "individualAmounts": "Individual amounts",
-    "youAlreadyApproved":"Approved"
+    "youAlreadyApproved":"Approved",
+    "addFirstAttachment": "Add First File",
+    "attachmentUploadedSuccess": "File uploaded successfully",
+    "attachmentUploadError": "Failed to upload file",
+    "uploading": "Uploading...",
+    "uploadingAttachment": "Uploading file...",
+    "fileSizeError": "File size cannot exceed 10MB",
+    "unsupportedFileType": "Unsupported file type"
   },
   "inputs": {
     "selectOption": "Select on {{label}}",

@@ -45,4 +45,10 @@ export interface ITravelAccessService {
    * Verificar si el usuario es miembro del viaje
    */
   isMember(travelId: number, userId: number): Promise<boolean>;
+
+  /**
+   * Retornar todas las operaciones que participa el usuario tanto suyas como incluida.
+   */
+  getAllByUserIdIncludingMemberships(userId: number): Promise<TravelAccessModel[]>;
+
 }

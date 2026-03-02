@@ -52,6 +52,7 @@ import { CreateOperationAttachmentRequest } from '../models/travels/create-opera
 import { OperationAttachmentModel } from '../models/travels/operation-attachment.model';
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { IConfigurationAccessService } from '../../access/contract/configurations';
+import { CloudinaryService } from '../../access/blob';
 
 @Injectable()
 export class TravelManagerService {
@@ -85,6 +86,7 @@ export class TravelManagerService {
     private userAccessService: UserAccessService,
     @Inject(SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE)
     private readonly configurationAccessService: IConfigurationAccessService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   // ==================== PAYMENT METHODS ====================
@@ -137,18 +139,18 @@ export class TravelManagerService {
   };
 
   public getAllTravelsByUser = async (userId: number): Promise<TravelModel[]> => {
-    const accessModels = await this.travelAccessService.getAllByUserId(userId);
+    const accessModels = await this.travelAccessService.getAllByUserIdIncludingMemberships(userId);
     return accessModels.map(this.mapTravelAccessToModel);
   };
 
   public getActiveTravels = async (userId: number): Promise<TravelModel[]> => {
-    const accessModels = await this.travelAccessService.getByStatus(userId, TravelStatus.Active);
-    return accessModels.map(this.mapTravelAccessToModel);
+    const accessModels = await this.getAllTravelsByUser(userId);
+    return accessModels.filter(travel => travel.status === TravelStatus.Active);
   };
 
   public getFinalizedTravels = async (userId: number): Promise<TravelModel[]> => {
-    const accessModels = await this.travelAccessService.getByStatus(userId, TravelStatus.Finalized);
-    return accessModels.map(this.mapTravelAccessToModel);
+    const accessModels = await this.getAllTravelsByUser(userId);
+    return accessModels.filter(travel => travel.status === TravelStatus.Finalized);
   };
 
   public updateTravel = async (request: UpdateTravelRequest): Promise<TravelModel> => {
@@ -888,6 +890,7 @@ export class TravelManagerService {
       accessModel.transactionDate,
       accessModel.lastUpdatedByUserId,
       accessModel.updatedAt,
+      accessModel.categoryId,
       currency.symbol,
       undefined, // paymentMethodName - puede enriquecerse si es necesario
       `${whoPaidMember.memberName} ${whoPaidMember.memberSurname}`, // whoPaidMemberName - puede enriquecerse si es necesario
@@ -1139,22 +1142,26 @@ export class TravelManagerService {
       throw new BadRequestException('Cannot add attachments to operations in finalized travel');
     }
 
-    // TODO: Upload file to storage provider (Cloudinary/Azure/etc)
-    // Por ahora, simulamos que ya se subió
-    const externalId = `receipt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const storageUrl = `https://example.com/storage/${externalId}`;
+    try {
+      const uploadResult = await this.cloudinaryService.uploadFile(
+        request.file,
+        `travel-receipts/${operation.travelId}/operation-${request.operationId}`
+      );
 
-    const accessRequest = new CreateOperationAttachmentAccessRequest(
-      request.operationId,
-      externalId,
-      storageUrl,
-      request.file.originalname,
-      request.userId,
-      request.file.size,
-    );
+      const accessRequest = new CreateOperationAttachmentAccessRequest(
+        request.operationId,
+        uploadResult.public_id, // Usar public_id de Cloudinary
+        uploadResult.secure_url, // URL segura de Cloudinary
+        uploadResult.original_filename,
+        request.userId,
+        uploadResult.bytes,
+      );
 
-    const accessModel = await this.operationAttachmentAccessService.create(accessRequest);
-    return await this.enrichAttachmentModel(accessModel);
+      const accessModel = await this.operationAttachmentAccessService.create(accessRequest);
+      return await this.enrichAttachmentModel(accessModel);
+    } catch (error) {
+      throw new BadRequestException(`Failed to upload attachment: ${error.message}`);
+    }
   };
 
   public getOperationAttachments = async (operationId: number, userId: number): Promise<OperationAttachmentModel[]> => {
@@ -1200,8 +1207,12 @@ export class TravelManagerService {
       throw new BadRequestException('Cannot delete attachments from finalized travel');
     }
 
-    // TODO: Delete from storage provider
-    // await this.storageService.delete(attachment.externalId);
+    try {
+      await this.cloudinaryService.deleteFile(attachment.externalId);
+    } catch (error) {
+      console.error('Failed to delete from Cloudinary:', error);
+      // No fallar si no se puede eliminar de Cloudinary, pero log el error
+    }
 
     await this.operationAttachmentAccessService.delete(attachmentId);
   };

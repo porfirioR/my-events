@@ -444,7 +444,14 @@
     "rejected": "Rechazada",
     "pending": "Pendiente",
     "individualAmounts": "Montos individuales",
-    "youAlreadyApproved":"Aaprobado"
+    "youAlreadyApproved":"Aaprobado",
+    "addFirstAttachment": "Agregar Primer Archivo",
+    "attachmentUploadedSuccess": "Archivo subido exitosamente",
+    "attachmentUploadError": "Error al subir el archivo",
+    "uploading": "Subiendo...",
+    "uploadingAttachment": "Subiendo archivo...",
+    "fileSizeError": "El archivo no puede exceder 10MB",
+    "unsupportedFileType": "Tipo de archivo no soportado"
   },
   "inputs": {
     "selectOption": "Selecciona un {{label}}",

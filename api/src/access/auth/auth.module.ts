@@ -18,7 +18,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       useFactory: async (configService: ConfigService) => ({
         global: true,
         secret: configService.get<string>(JWT_TOKEN),
-        signOptions: { expiresIn: '1h' },
+        signOptions: { expiresIn: '23h' },
       }),
       inject: [ConfigService]
     }),

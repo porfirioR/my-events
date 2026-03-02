@@ -1,4 +1,4 @@
-<!-- components/attachment-list/attachment-list.component.html -->
+<!-- ✅ ACTUALIZAR: Template completo con upload -->
 <div class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6">
   <header class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
@@ -13,27 +13,57 @@
       <button
         type="button"
         class="btn btn-sm btn-primary"
-        [disabled]="isDeleting()"
-        (click)="$event.stopPropagation()"
+        [disabled]="isDeleting() || isUploading()"
+        (click)="triggerFileUpload()"
       >
-        <i class="fas fa-plus mr-1"></i>
-        {{ 'operations.addAttachment' | translate }}
+        @if (isUploading()) {
+          <span class="loading loading-spinner loading-sm mr-1"></span>
+          {{ 'operations.uploading' | translate }}
+        } @else {
+          <i class="fas fa-plus mr-1"></i>
+          {{ 'operations.addAttachment' | translate }}
+        }
       </button>
     }
   </header>
+
+  <!-- ✅ NUEVO: Hidden file input -->
+  <input
+    [id]="'file-upload-' + operationId()"
+    type="file"
+    class="hidden"
+    (change)="onFileSelected($event)"
+    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+  >
 
   @if (attachments().length === 0) {
     <!-- Empty State -->
     <div class="text-center py-8">
       <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
-        <i class="fas fa-image text-2xl text-base-content/50"></i>
+        <i class="fas fa-paperclip text-2xl text-base-content/50"></i>
       </figure>
       <h4 class="text-lg font-medium text-base-content mb-2">
         {{ 'operations.noAttachments' | translate }}
       </h4>
-      <p class="text-base-content/70">
+      <p class="text-base-content/70 mb-4">
         {{ 'operations.noAttachmentsMessage' | translate }}
       </p>
+      @if (showUploadButton()) {
+        <button
+          type="button"
+          class="btn btn-sm btn-outline btn-primary"
+          [disabled]="isUploading()"
+          (click)="triggerFileUpload()"
+        >
+          @if (isUploading()) {
+            <span class="loading loading-spinner loading-sm mr-1"></span>
+            {{ 'operations.uploading' | translate }}
+          } @else {
+            <i class="fas fa-plus mr-1"></i>
+            {{ 'operations.addFirstAttachment' | translate }}
+          }
+        </button>
+      }
     </div>
   } @else {
     <!-- Attachments List -->
@@ -41,10 +71,10 @@
       @for (attachment of attachments(); track attachment.id) {
         <article class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 transition-colors">
           <div class="flex items-center gap-4">
-            <!-- File Icon & Thumbnail -->
+            <!-- ✅ ACTUALIZAR: File Icon & Thumbnail -->
             <figure class="flex-shrink-0">
               <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                <i class="fas fa-file-image text-primary text-xl"></i>
+                <i [class]="'fas ' + getFileIcon(attachment.fileName) + ' text-primary text-xl'"></i>
               </div>
             </figure>
 
@@ -62,7 +92,7 @@
                 }
                 <span>
                   <i class="fas fa-calendar mr-1"></i>
-                  {{ attachment.uploadedDate }}
+                  {{ formatDate(attachment.uploadedDate) }}
                 </span>
                 @if (attachment.uploaderName) {
                   <span>
@@ -105,6 +135,14 @@
           </div>
         </article>
       }
+    </div>
+  }
+
+  <!-- ✅ NUEVO: Upload Progress -->
+  @if (isUploading()) {
+    <div class="mt-4 text-center text-sm text-base-content/70">
+      <span class="loading loading-spinner loading-sm mr-2"></span>
+      {{ 'operations.uploadingAttachment' | translate }}
     </div>
   }
 
