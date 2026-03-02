@@ -167,7 +167,84 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
     return (data?.length || 0) > 0;
   };
 
+  
+  async getAllByUserIdIncludingMemberships(userId: number): Promise<TravelAccessModel[]> {
+    // Intentar usar RPC primero
+    const { data: rpcData, error: rpcError } = await this.dbContext
+      .rpc('get_user_travels_with_memberships', { 
+        user_id: userId 
+      });
+
+    if (!rpcError && rpcData) {
+      // RPC funcionó, mapear los resultados
+      return rpcData.map((item: any) => this.mapEntityToAccessModel(item));
+    }
+
+    // Fallback si RPC no está disponible
+    console.warn('RPC not available, using fallback method:', rpcError);
+    return await this.getAllByUserIdFallback(userId);
+  }
+
   // Private methods
+  private getAllByUserIdFallback = async (userId: number): Promise<TravelAccessModel[]> => {
+    // Query 1: Viajes creados por el usuario
+    const { data: createdTravels, error: createdError } = await this.dbContext
+      .from(TableEnum.Travels)
+      .select(DatabaseColumns.All)
+      .eq(DatabaseColumns.CreatedByUserId, userId);
+
+    if (createdError) {
+      throw new Error(createdError.message);
+    }
+
+    // Query 2: IDs de viajes donde el usuario es miembro
+    const { data: memberTravelIds, error: memberError } = await this.dbContext
+      .from(TableEnum.TravelMembers)
+      .select(DatabaseColumns.TravelId)
+      .eq(DatabaseColumns.UserId, userId);
+
+    if (memberError) {
+      throw new Error(memberError.message);
+    }
+
+    // Query 3: Viajes donde es miembro (si hay alguno)
+    let memberTravels: TravelEntity[] = [];
+    if (memberTravelIds && memberTravelIds.length > 0) {
+      const travelIds = memberTravelIds.map(m => m.travelid); // ✅ Usar nombre correcto de columna
+
+      const { data: travels, error: travelsError } = await this.dbContext
+        .from(TableEnum.Travels)
+        .select(DatabaseColumns.All)
+        .in(DatabaseColumns.EntityId, travelIds);
+
+      if (travelsError) {
+        throw new Error(travelsError.message);
+      }
+
+      memberTravels = travels || [];
+    }
+
+    // Combinar y eliminar duplicados
+    const allTravels = [
+      ...(createdTravels || []),
+      ...memberTravels
+    ];
+
+    // Eliminar duplicados por ID
+    const uniqueTravels = allTravels.filter((travel, index, self) => 
+      index === self.findIndex(t => t.id === travel.id)
+    );
+
+    // Ordenar por fecha
+    uniqueTravels.sort((a, b) => {
+      const dateA = new Date(a.updatedat || a.datecreated || 0);
+      const dateB = new Date(b.updatedat || b.datecreated || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return uniqueTravels.map(this.mapEntityToAccessModel);
+  };
+
   private mapEntityToAccessModel = (entity: TravelEntity): TravelAccessModel => {
     return new TravelAccessModel(
       entity.id!,

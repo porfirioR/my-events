@@ -242,26 +242,51 @@ export class UpsertOperationComponent implements OnInit {
       const splitType = this.formGroup.value.splitType;
 
       // ✅ PROTECCIÓN: Solo procesar si hay datos válidos
-      if (participantIds.length > 0 && amount > 0 && splitType === this.splitType.Equal) {
-        const equalAmount = amount / participantIds.length;
-        const equalPercentage = 100 / participantIds.length;
+      if (participantIds.length > 0 && amount > 0) {
 
-        const newData = participantIds.map(id => {
-          const member = this.members().find(m => m.id === id);
-          return {
-            memberId: id,
-            memberName: member ? `${member.collaboratorName} ${member.collaboratorSurname}` : 'Unknown',
-            amount: equalAmount,
-            percentage: equalPercentage
-          };
-        });
+        // ✅ NUEVO: Solo inicializar si no hay datos previos o si cambiaron los participantes
+        const currentData = this.customSplitData();
+        const currentIds = currentData.map(d => d.memberId).sort();
+        const newIds = participantIds.sort();
 
-        // ✅ PROTECCIÓN: Solo actualizar si los datos cambiaron
-        const current = this.customSplitData();
-        if (JSON.stringify(current) !== JSON.stringify(newData)) {
-          console.log('💰 Updating custom split data');
-          this.customSplitData.set(newData);
+        // Si los participantes no cambiaron, no reinicializar los valores
+        if (JSON.stringify(currentIds) === JSON.stringify(newIds)) {
+          return;
         }
+
+        // ✅ INICIALIZAR: Solo cuando es necesario
+        let newData: any[] = [];
+
+        if (splitType === this.splitType.Equal) {
+          const equalAmount = amount / participantIds.length;
+          const equalPercentage = 100 / participantIds.length;
+
+          newData = participantIds.map(id => {
+            const member = this.members().find(m => m.id === id);
+            return {
+              memberId: id,
+              memberName: member ? `${member.collaboratorName} ${member.collaboratorSurname}` : 'Unknown',
+              amount: equalAmount,
+              percentage: equalPercentage
+            };
+          });
+        } else {
+          // ✅ CUSTOM/PERCENTAGE: Inicializar con valores vacíos para que sean editables
+          newData = participantIds.map(id => {
+            const member = this.members().find(m => m.id === id);
+            const existing = currentData.find(d => d.memberId === id);
+
+            return {
+              memberId: id,
+              memberName: member ? `${member.collaboratorName} ${member.collaboratorSurname}` : 'Unknown',
+              amount: existing?.amount || 0, // Mantener valor previo o 0
+              percentage: existing?.percentage || 0 // Mantener valor previo o 0
+            };
+          });
+        }
+
+        console.log('💰 Initializing custom split data for splitType:', splitType);
+        this.customSplitData.set(newData);
       }
     });
 
@@ -289,6 +314,50 @@ export class UpsertOperationComponent implements OnInit {
       
       this.participantControls.set(controls);
     });
+
+    // ✅ NUEVO: Effect separado para recalcular Equal automáticamente cuando cambia el monto
+    effect(() => {
+      const amount = this.formGroup.value.amount || 0;
+      const splitType = this.formGroup.value.splitType;
+      const participants = this.customSplitParticipants();
+
+      // Solo recalcular automáticamente si es Equal y hay participantes
+      if (splitType === this.splitType.Equal && participants.length > 0 && amount > 0) {
+        const equalAmount = amount / participants.length;
+        const equalPercentage = 100 / participants.length;
+
+        const updatedData = this.customSplitData().map(d => ({
+          ...d,
+          amount: equalAmount,
+          percentage: equalPercentage
+        }));
+
+        // Solo actualizar si los valores cambiaron
+        const current = this.customSplitData();
+        const hasChanged = current.some((curr, index) => 
+          Math.abs((curr.amount || 0) - equalAmount) > 0.01
+        );
+
+        if (hasChanged) {
+          console.log('💰 Auto-updating Equal split amounts');
+          this.customSplitData.set(updatedData);
+          
+          // También actualizar los controles
+          const controls = this.participantControls();
+          updatedData.forEach(data => {
+            const amountControl = controls[`amount-${data.memberId}`];
+            const percentageControl = controls[`percentage-${data.memberId}`];
+            
+            if (amountControl) {
+              amountControl.setValue(data.amount, { emitEvent: false });
+            }
+            if (percentageControl) {
+              percentageControl.setValue(data.percentage, { emitEvent: false });
+            }
+          });
+        }
+      }
+    }, { allowSignalWrites: true });
 
     // // Effect para cargar la operación en modo edición
     // effect(() => {
@@ -472,8 +541,24 @@ export class UpsertOperationComponent implements OnInit {
     this.location.back();
   }
 
-    // Métodos para manejar custom splits
+  // Métodos para manejar custom splits
   protected onCustomAmountChange(memberId: number, newValue: number): void {
+    if (this.formGroup.value.splitType === this.splitType.Equal) {
+      return;
+    }
+
+    // ✅ VALIDACIONES
+    const amount = this.formGroup.value.amount || 0;
+    if (amount <= 0) {
+      // No permitir cambios si no hay monto total
+      return;
+    }
+
+    if (newValue < 0) {
+      // No permitir valores negativos
+      newValue = 0;
+    }
+
     const updated = this.customSplitData().map(d => 
       d.memberId === memberId ? { ...d, amount: newValue } : d
     );
@@ -485,6 +570,24 @@ export class UpsertOperationComponent implements OnInit {
   }
 
   protected onCustomPercentageChange(memberId: number, newValue: number): void {
+    if (this.formGroup.value.splitType === this.splitType.Equal) {
+      return;
+    }
+
+    // ✅ VALIDACIONES
+    const amount = this.formGroup.value.amount || 0;
+    if (amount <= 0) {
+      return;
+    }
+
+    if (newValue < 0) {
+      newValue = 0;
+    }
+
+    if (newValue > 100) {
+      newValue = 100; // Limitar a 100%
+    }
+
     const updated = this.customSplitData().map(d => 
       d.memberId === memberId ? { ...d, percentage: newValue } : d
     );

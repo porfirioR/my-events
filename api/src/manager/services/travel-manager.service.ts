@@ -139,18 +139,18 @@ export class TravelManagerService {
   };
 
   public getAllTravelsByUser = async (userId: number): Promise<TravelModel[]> => {
-    const accessModels = await this.travelAccessService.getAllByUserId(userId);
+    const accessModels = await this.travelAccessService.getAllByUserIdIncludingMemberships(userId);
     return accessModels.map(this.mapTravelAccessToModel);
   };
 
   public getActiveTravels = async (userId: number): Promise<TravelModel[]> => {
-    const accessModels = await this.travelAccessService.getByStatus(userId, TravelStatus.Active);
-    return accessModels.map(this.mapTravelAccessToModel);
+    const accessModels = await this.getAllTravelsByUser(userId);
+    return accessModels.filter(travel => travel.status === TravelStatus.Active);
   };
 
   public getFinalizedTravels = async (userId: number): Promise<TravelModel[]> => {
-    const accessModels = await this.travelAccessService.getByStatus(userId, TravelStatus.Finalized);
-    return accessModels.map(this.mapTravelAccessToModel);
+    const accessModels = await this.getAllTravelsByUser(userId);
+    return accessModels.filter(travel => travel.status === TravelStatus.Finalized);
   };
 
   public updateTravel = async (request: UpdateTravelRequest): Promise<TravelModel> => {
@@ -890,6 +890,7 @@ export class TravelManagerService {
       accessModel.transactionDate,
       accessModel.lastUpdatedByUserId,
       accessModel.updatedAt,
+      accessModel.categoryId,
       currency.symbol,
       undefined, // paymentMethodName - puede enriquecerse si es necesario
       `${whoPaidMember.memberName} ${whoPaidMember.memberSurname}`, // whoPaidMemberName - puede enriquecerse si es necesario

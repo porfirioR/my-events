@@ -686,3 +686,46 @@ CREATE INDEX idx_operationcategories_active ON operationcategories(isactive);
 -- Índices para traveloperations con categorías
 CREATE INDEX idx_traveloperations_category ON traveloperations(categoryid);
 CREATE INDEX idx_traveloperations_travel_category ON traveloperations(travelid, categoryid);
+
+-- ✅ FUNCIÓN RPC: Obtener viajes donde el usuario es creador O miembro
+CREATE OR REPLACE FUNCTION get_user_travels_with_memberships(user_id INTEGER)
+RETURNS TABLE(
+    id INTEGER,
+    name VARCHAR(200),
+    createdbyuserid INTEGER,
+    status travelstatus,
+    datecreated TIMESTAMP,
+    description TEXT,
+    startdate DATE,
+    enddate DATE,
+    defaultcurrencyid INTEGER,
+    lastupdatedbyuserid INTEGER,
+    updatedat TIMESTAMP,
+    finalizeddate TIMESTAMP
+)
+LANGUAGE sql
+SECURITY DEFINER
+AS $$
+    SELECT 
+        t.id,
+        t.name,
+        t.createdbyuserid,
+        t.status,
+        t.datecreated,
+        t.description,
+        t.startdate,
+        t.enddate,
+        t.defaultcurrencyid,
+        t.lastupdatedbyuserid,
+        t.updatedat,
+        t.finalizeddate
+    FROM travels t
+    WHERE t.createdbyuserid = user_id 
+        OR EXISTS (
+            SELECT 1 FROM travelmembers tm 
+            WHERE tm.travelid = t.id AND tm.userid = user_id
+        )
+    ORDER BY 
+        COALESCE(t.updatedat, t.datecreated) DESC,
+        t.datecreated DESC;
+$$;

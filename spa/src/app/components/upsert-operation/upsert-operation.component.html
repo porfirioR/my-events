@@ -195,9 +195,6 @@
                 <!-- Custom Input -->
                 <div class="flex items-center gap-2">
                   @if (formGroup.value.splitType === splitType.Custom) {
-                    <span class="text-sm text-base-content/70">
-                      {{ getCurrencySymbol(formGroup.value.currencyId || 1) }}
-                    </span>
                     <div class="w-24">
                       <app-text
                         [id]="'amount-' + participant.memberId"
@@ -205,11 +202,12 @@
                         type="number"
                         [label]="''"
                         [formControl]="getParticipantControl('amount', participant.memberId)"
-                        [disabled]="isLoading()"
+                        [disabled]="isLoading() || !formGroup.value.amount || formGroup.value.amount <= 0"
                         placeholder="0.00"
+                        min="0"
                       />
                     </div>
-                  } @else {
+                  } @else if (formGroup.value.splitType === splitType.Percentage) {
                     <div class="w-20">
                       <app-text
                         [id]="'percentage-' + participant.memberId"
@@ -217,11 +215,19 @@
                         type="number"
                         [label]="''"
                         [formControl]="getParticipantControl('percentage', participant.memberId)"
-                        [disabled]="isLoading()"
+                        [disabled]="isLoading() || !formGroup.value.amount || formGroup.value.amount <= 0"
                         placeholder="0"
+                        min="0"
+                        max="100"
                       />
                     </div>
                     <span class="text-sm text-base-content/70">%</span>
+                  } @else {
+                    <!-- Equal: Solo mostrar valores, no inputs -->
+                    <div class="flex items-center text-sm text-base-content/70">
+                      {{ formatCurrency(participant.amount || 0, formGroup.value.currencyId || 1) }}
+                      <span class="ml-2">({{ (participant.percentage || 0).toFixed(1) }}%)</span>
+                    </div>
                   }
                 </div>
               </div>
