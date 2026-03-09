@@ -65,11 +65,21 @@ export class TravelDetailComponent implements OnInit {
     this.travelStore.loadTravelById(travelId);
     this.travelStore.loadMembers(travelId);
     this.travelStore.loadOperations(travelId);
-    this.travelStore.loadBalances(travelId);
   }
 
   protected setActiveTab(tab: 'members' | 'operations' | 'balances'): void {
     this.activeTab.set(tab);
+
+    if (tab === 'balances' && this.travelId) {
+      console.log('🔄 Refreshing balances for travel:', this.travelId);
+      this.travelStore.loadBalances(this.travelId);
+    } else if (tab === 'operations' && this.travelId) {
+      console.log('🔄 Refreshing operations for travel:', this.travelId);
+      this.travelStore.loadOperations(this.travelId);
+    } else if (tab === 'members' && this.travelId) {
+      console.log('🔄 Refreshing members for travel:', this.travelId);
+      this.travelStore.loadMembers(this.travelId);
+    }
   }
 
   protected backToList(): void {
@@ -79,23 +89,6 @@ export class TravelDetailComponent implements OnInit {
   protected editTravel(): void {
     if (this.travel()) {
       this.router.navigate(['/travels', this.travel()!.id, 'edit']);
-    }
-  }
-
-  protected async finalizeTravel(): Promise<void> {
-    const travel = this.travel();
-    if (!travel) return;
-
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('travels.finalizeTravelTitle'),
-      this.translate.instant('travels.finalizeTravelMessage', { name: travel.name })
-    );
-
-    if (result.isConfirmed) {
-      this.travelStore.finalizeTravel(travel.id);
-      this.alertService.showSuccess(
-        this.translate.instant('travels.travelFinalizedSuccess')
-      );
     }
   }
 

@@ -818,5 +818,6 @@
   "Good bye.": "Hasta luego",
   "Unsuccessful operation": "Operación fallida",
   "Successful operation": "Operación exitosa",
-  "Operation already approved by this user.": "Operación ya aprobada por este usuario"
+  "Operation already approved by this user.": "Operación ya aprobada por este usuario",
+  "Operations can only be deleted within one week of creation": "Las operaciones solo se pueden eliminar dentro de la semana siguiente a su creación."
 }

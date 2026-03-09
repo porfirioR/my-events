@@ -67,7 +67,7 @@ export class AlertService {
     const translateTitle = this.translate.instant('Unsuccessful operation');
     this.getSwal().then(x => x.fire({
       title: translateTitle,
-      text,
+      text: this.translate.instant(text),
       icon: 'error',
       confirmButtonText: 'Ok',
       customClass: {

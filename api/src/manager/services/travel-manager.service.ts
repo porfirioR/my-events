@@ -78,10 +78,10 @@ export class TravelManagerService {
     @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
     private collaboratorAccessService: ICollaboratorAccessService,
 
-    @Inject(TRAVEL_TOKENS.OPERATION_CATEGORY_ACCESS_SERVICE) // NUEVO
+    @Inject(TRAVEL_TOKENS.OPERATION_CATEGORY_ACCESS_SERVICE)
     private operationCategoryAccessService: IOperationCategoryAccessService,
 
-    @Inject(TRAVEL_TOKENS.OPERATION_ATTACHMENT_ACCESS_SERVICE) // NUEVO
+    @Inject(TRAVEL_TOKENS.OPERATION_ATTACHMENT_ACCESS_SERVICE)
     private operationAttachmentAccessService: IOperationAttachmentAccessService,
     private userAccessService: UserAccessService,
     @Inject(SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE)
@@ -198,13 +198,11 @@ export class TravelManagerService {
   };
 
   public deleteTravel = async (id: number, userId: number): Promise<void> => {
-    // Verificar que el usuario es el creador
     const isCreator = await this.travelAccessService.isCreator(id, userId);
     if (!isCreator) {
       throw new BadRequestException('Only the travel creator can delete it');
     }
 
-    // Verificar que el viaje está finalizado
     const travel = await this.travelAccessService.getById(id, userId);
     if (!travel) {
       throw new NotFoundException('Travel not found');
@@ -214,6 +212,20 @@ export class TravelManagerService {
       throw new BadRequestException('Only finalized travels can be deleted');
     }
 
+    // ✅ NUEVO: Verificar que no hay operaciones aprobadas
+    const operations = await this.travelOperationAccessService.getByTravelId(id);
+    const approvedOperations = operations.filter(op => 
+      op.status === TravelOperationStatus.Approved
+    );
+
+    if (approvedOperations.length > 0) {
+      throw new BadRequestException(
+        'Cannot delete travel with approved operations. ' +
+        'Travels with financial transactions cannot be deleted for audit purposes.'
+      );
+    }
+
+    console.log(`🗑️ Deleting travel ${id}: No approved operations found`);
     await this.travelAccessService.delete(id, userId);
   };
 
@@ -237,40 +249,64 @@ export class TravelManagerService {
   };
 
   private validateTravelCanBeClosed = async (travelId: number): Promise<void> => {
-    // Validación 1: Debe haber al menos una operación
-    const operationCount = await this.travelOperationAccessService.countByTravelId(travelId);
-    if (operationCount === 0) {
-      throw new BadRequestException('Cannot close travel without operations');
-    }
-
-    // Validación 2: Todas las operaciones deben estar aprobadas
-    const allApproved = await this.travelOperationAccessService.areAllApproved(travelId);
-    if (!allApproved) {
-      throw new BadRequestException('Cannot close travel with pending or rejected operations');
-    }
-
-    // Validación 3: Los balances deben cuadrar por moneda
+    // ✅ NUEVO: Obtener todas las operaciones
     const operations = await this.travelOperationAccessService.getByTravelId(travelId);
+
+    // ✅ NUEVO: Permitir finalizar sin operaciones
+    if (operations.length === 0) {
+      console.log('✅ Travel can be finalized: No operations found');
+      return; // Sin operaciones = se puede cerrar
+    }
+
+    // ✅ NUEVO: Verificar que no hay operaciones pendientes
+    const pendingOperations = operations.filter(op => 
+      op.status === TravelOperationStatus.Pending
+    );
+
+    if (pendingOperations.length > 0) {
+      throw new BadRequestException(
+        `Cannot close travel with ${pendingOperations.length} pending operations. ` +
+        `All operations must be either approved or rejected.`
+      );
+    }
+
+    // ✅ NUEVO: Solo validar balances si hay operaciones aprobadas
+    const approvedOperations = operations.filter(x => x.status === TravelOperationStatus.Approved);
+
+    if (approvedOperations.length === 0) {
+      console.log('✅ Travel can be finalized: No approved operations to validate');
+      return; // Solo operaciones rechazadas = se puede cerrar
+    }
+
+    // ✅ MANTENER: Validar balances solo para operaciones aprobadas
+    console.log(`💰 Validating balances for ${approvedOperations.length} approved operations`);
+    
     const groupedByCurrency = await this.travelOperationAccessService.getGroupedByCurrency(travelId);
 
     for (const group of groupedByCurrency) {
-      const totalPaid = group.operations.reduce((sum, op) => sum + op.amount, 0);
-      
-      // Obtener todos los participantes de todas las operaciones en esta moneda
+      // Filtrar solo operaciones aprobadas del grupo
+      const approvedInGroup = group.operations.filter(x => x.status === TravelOperationStatus.Approved);
+
+      if (approvedInGroup.length === 0) continue; // Skip si no hay aprobadas
+
+      const totalPaid = approvedInGroup.reduce((sum, op) => sum + op.amount, 0);
+
       let totalOwed = 0;
-      for (const operation of group.operations) {
+      for (const operation of approvedInGroup) {
         const participants = await this.travelOperationParticipantAccessService.getByOperationId(operation.id);
         totalOwed += participants.reduce((sum, p) => sum + p.shareAmount, 0);
       }
 
-      // Validar que cuadra (con margen de error por decimales)
       const difference = Math.abs(totalPaid - totalOwed);
       if (difference > 0.01) {
         throw new BadRequestException(
-          `Balances do not match for currency ${group.currencyId}. Total paid: ${totalPaid}, Total owed: ${totalOwed}`
+          `Balances do not match for currency ${group.currencyId}. ` +
+          `Total paid: ${totalPaid}, Total owed: ${totalOwed}`
         );
       }
     }
+
+    console.log('✅ Travel can be finalized: All validations passed');
   };
 
   // ==================== TRAVEL MEMBERS ====================
@@ -1055,17 +1091,17 @@ export class TravelManagerService {
     const groupedByCurrency = await this.travelOperationAccessService.getGroupedByCurrency(travelId);
     
     const balancesByCurrency: TravelBalanceByCurrencyModel[] = [];
+    const currencies = await this.configurationAccessService.getCurrencies();
 
     for (const group of groupedByCurrency) {
       const detailedBalances = await this.calculateDetailedBalances(travelId, group.currencyId);
       const simplifiedBalances = this.calculateSimplifiedBalances(detailedBalances);
 
-      // Obtener información de la moneda (esto debería venir de ConfigurationAccessService)
-      // Por ahora usamos valores dummy
+      const currency = currencies.find(x => x.id === group.currencyId)
       const balanceByCurrency = new TravelBalanceByCurrencyModel(
         group.currencyId,
-        '$', // TODO: Obtener de currencies
-        'Currency', // TODO: Obtener de currencies
+        currency.symbol,
+        currency.name,
         detailedBalances,
         simplifiedBalances,
       );
@@ -1074,8 +1110,9 @@ export class TravelManagerService {
     }
 
     return balancesByCurrency;
-  };// ==================== OPERATION CATEGORIES ====================
+  };
 
+  // ==================== OPERATION CATEGORIES ====================
   public getAllOperationCategories = async (): Promise<OperationCategoryModel[]> => {
     const accessModels = await this.operationCategoryAccessService.getActive();
     return accessModels.map(this.mapCategoryAccessToModel);
@@ -1223,7 +1260,7 @@ export class TravelManagerService {
   ): Promise<TravelBalanceDetailModel[]> => {
     // Obtener todas las operaciones de esta moneda
     const allOperations = await this.travelOperationAccessService.getByTravelId(travelId);
-    const operations = allOperations.filter(op => op.currencyId === currencyId && op.status === TravelOperationStatus.Approved);
+    const operations = allOperations.filter(x => x.currencyId === currencyId && (x.status === TravelOperationStatus.Approved || x.status === TravelOperationStatus.Pending));
 
     // Obtener todos los miembros del viaje
     const membersAccessModels = await this.travelMemberAccessService.getByTravelId(travelId);
