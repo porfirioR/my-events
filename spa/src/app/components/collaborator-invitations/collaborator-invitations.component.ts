@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { 
   CollaboratorInvitationModel, 
   ReceivedMatchRequestModel,
@@ -18,7 +19,7 @@ import { MessageTranslationService } from '../../services/helpers';
   standalone: true,
   templateUrl: './collaborator-invitations.component.html',
   styleUrls: ['./collaborator-invitations.component.css'],
-  imports: [CommonModule, RouterModule]
+  imports: [CommonModule, RouterModule, TranslateModule]
 })
 export class CollaboratorInvitationsComponent implements OnInit {
   private invitationApiService = inject(CollaboratorInvitationApiService);

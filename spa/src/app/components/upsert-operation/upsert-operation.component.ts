@@ -6,7 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { OperationFormGroup } from '../../models/forms/operation-form-group';
 import { useTravelStore, useLoadingStore, useCurrencyStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { CreateTravelOperationApiRequest, OperationCategoryApiModel, UpdateTravelOperationApiRequest } from '../../models/api/travels';
+import { CreateTravelOperationApiRequest, OperationCategoryApiModel, TravelOperationApiModel, UpdateTravelOperationApiRequest } from '../../models/api/travels';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { TextComponent } from '../inputs/text/text.component';
@@ -192,7 +192,7 @@ export class UpsertOperationComponent implements OnInit {
       paymentMethodId: new FormControl(null, [Validators.required]),
       whoPaidMemberId: new FormControl(null, [Validators.required]),
       amount: new FormControl(null, [Validators.required, Validators.min(0.01)]),
-      description: new FormControl('', [Validators.required, Validators.maxLength(500)]),
+      description: new FormControl('', [Validators.required, Validators.maxLength(255)]),
       participantType: new FormControl(TravelParticipantType.All, [Validators.required]),
       splitType: new FormControl(SplitType.Equal, [Validators.required]),
       transactionDate: new FormControl(this.getTodayDate(), [Validators.required]),
@@ -226,8 +226,8 @@ export class UpsertOperationComponent implements OnInit {
             participantMemberIds: allMemberIds
           });
         }
-      } else if (participantType === TravelParticipantType.Selected) {
-        // Limpiar selección para que usuario elija manualmente
+      } else if (participantType === TravelParticipantType.Selected && !this.isEditMode()) {
+        // Limpiar selección para que usuario elija manualmente (solo en create mode)
         this.selectedParticipants.set([]);
         this.formGroup.patchValue({
           participantMemberIds: []
@@ -404,6 +404,44 @@ export class UpsertOperationComponent implements OnInit {
     if (operationId) {
       this.operationId = +operationId;
       this.isEditMode.set(true);
+      this.travelStore.loadOperationById(this.operationId).subscribe({
+        next: (operation) => this.populateEditForm(operation)
+      });
+    }
+  }
+
+  private populateEditForm(operation: TravelOperationApiModel): void {
+    this.formGroup.patchValue({
+      id: operation.id,
+      currencyId: operation.currencyId,
+      paymentMethodId: operation.paymentMethodId,
+      whoPaidMemberId: operation.whoPaidMemberId,
+      amount: operation.amount,
+      description: operation.description,
+      participantType: operation.participantType as TravelParticipantType,
+      splitType: operation.splitType as SplitType,
+      transactionDate: this.formatDateForInput(operation.transactionDate),
+      categoryId: operation.categoryId
+    });
+
+    if (operation.participants && operation.participants.length > 0) {
+      const participantIds = operation.participants.map(p => p.memberId);
+      this.selectedParticipants.set(participantIds);
+      this.formGroup.patchValue({ participantMemberIds: participantIds });
+
+      const splitData = operation.participants.map(p => ({
+        memberId: p.memberId,
+        memberName: `${p.memberName} ${p.memberSurname}`,
+        amount: p.shareAmount,
+        percentage: p.sharePercentage
+      }));
+      this.customSplitData.set(splitData);
+
+      if (operation.splitType === SplitType.Custom) {
+        this.formGroup.patchValue({ customAmounts: operation.participants.map(p => p.shareAmount) });
+      } else if (operation.splitType === SplitType.Percentage) {
+        this.formGroup.patchValue({ customPercentages: operation.participants.map(p => p.sharePercentage) });
+      }
     }
   }
 
@@ -538,7 +576,13 @@ export class UpsertOperationComponent implements OnInit {
   protected formatCurrency = this.formatterService.formatCurrency;
 
   protected goBack(): void {
-    this.location.back();
+    if (this.isEditMode() && this.travelId && this.operationId) {
+      this.router.navigate(['/travels', this.travelId, 'operations', this.operationId]);
+    } else if (this.travelId) {
+      this.router.navigate(['/travels', this.travelId]);
+    } else {
+      this.location.back();
+    }
   }
 
   // Métodos para manejar custom splits

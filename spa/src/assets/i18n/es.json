@@ -37,7 +37,9 @@
     "youAreDisconnected": "Estás desconectado, haz clic en uno de los siguientes botones",
     "login": "Iniciar sesión",
     "signup": "Registrarse",
-    "travels": "Viajes"
+    "travels": "Viajes",
+    "noData": "Sin datos",
+    "navigation": "Navegación"
   },
   "auth": {
     "appName": "Mis Eventos",
@@ -407,6 +409,7 @@
     "quickActions": "Acciones Rápidas",
     "operationNotFound": "Operación no encontrada",
     "category": "Categoría",
+    "clearCategory": "Quitar categoría",
     "attachReceipt": "Adjuntar Recibo",
     "attachedFile": "Archivo Adjunto",
     "dragDropFile": "Arrastra una imagen aquí o",
@@ -451,7 +454,15 @@
     "uploading": "Subiendo...",
     "uploadingAttachment": "Subiendo archivo...",
     "fileSizeError": "El archivo no puede exceder 10MB",
-    "unsupportedFileType": "Tipo de archivo no soportado"
+    "unsupportedFileType": "Tipo de archivo no soportado",
+    "howToSplit": "¿Cómo dividir el costo?",
+    "specificAmounts": "Montos específicos",
+    "customPercentage": "% personalizado",
+    "customHint": "Podrás especificar montos exactos para cada participante",
+    "percentageHint": "Podrás especificar porcentajes para cada participante",
+    "amountsByParticipant": "Montos por participante",
+    "percentagesByParticipant": "Porcentajes por participante",
+    "difference": "Diferencia"
   },
   "inputs": {
     "selectOption": "Selecciona un {{label}}",
@@ -761,8 +772,8 @@
     "joined": "Se unió",
     "addMember": "Agregar Miembro",
     "noBalancesYet": "No hay balances aún. Crea operaciones para ver los balances.",
-    "owes": "debe",
-    "receives": "recibe",
+    "owes": "Debe a",
+    "receives": "Recibe",
     "from": "de",
     "noDebts": "¡Todo saldado!",
     "categorySum": "Resumen por Categorías",
@@ -818,5 +829,26 @@
   "Good bye.": "Hasta luego",
   "Unsuccessful operation": "Operación fallida",
   "Successful operation": "Operación exitosa",
-  "Operation already approved by this user.": "Operación ya aprobada por este usuario"
+  "Operation already approved by this user.": "Operación ya aprobada por este usuario",
+  "Operations can only be deleted within one week of creation": "Las operaciones solo se pueden eliminar dentro de la semana siguiente a su creación.",
+  "collaboratorInvitations": {
+    "invitationsFor": "Invitaciones de {{name}} {{surname}}",
+    "pendingInvitations": "Invitaciones Pendientes",
+    "noInvitationsYet": "Sin invitaciones aún",
+    "noInvitationsMessage": "Tus colaboradores no han recibido ninguna invitación",
+    "noInvitations": "Sin invitaciones",
+    "noInvitationsDetail": "Este colaborador no ha recibido ninguna invitación aún"
+  },
+  "headerNotification": {
+    "noPendingInvitations": "No hay invitaciones pendientes"
+  },
+  "resetPassword": {
+    "subtitle": "Por favor completá los campos para restablecer tu contraseña",
+    "token": "Token",
+    "tokenPlaceholder": "Token de Verificación",
+    "newPassword": "Nueva Contraseña",
+    "confirmPassword": "Confirmar Nueva Contraseña",
+    "resetting": "Restableciendo...",
+    "rememberPassword": "¿Recordás tu contraseña?"
+  }
 }

@@ -37,7 +37,9 @@
     "youAreDisconnected": "You are disconnected, click on one of the following buttons",
     "login": "Login",
     "signup": "Signup",
-    "travels": "Travels"
+    "travels": "Travels",
+    "noData": "No data",
+    "navigation": "Navigation"
   },
   "auth": {
     "appName": "My Events",
@@ -131,6 +133,7 @@
     "owe": "Owe",
     "owed": "Owed",
     "mine": "Mine",
+    "view": "View",
     "viewDetails": "View Details",
     "markAsSettled": "Mark as Settled",
     "noTransactionsYet": "No transactions yet",
@@ -406,6 +409,7 @@
     "quickActions": "Quick Actions",
     "operationNotFound": "Operation not found",
     "category": "Category",
+    "clearCategory": "Clear category",
     "attachReceipt": "Attach Receipt",
     "attachedFile": "Attached File",
     "dragDropFile": "Drag an image here or",
@@ -450,7 +454,15 @@
     "uploading": "Uploading...",
     "uploadingAttachment": "Uploading file...",
     "fileSizeError": "File size cannot exceed 10MB",
-    "unsupportedFileType": "Unsupported file type"
+    "unsupportedFileType": "Unsupported file type",
+    "howToSplit": "How to split the cost?",
+    "specificAmounts": "Specific amounts",
+    "customPercentage": "Custom %",
+    "customHint": "You can specify exact amounts for each participant",
+    "percentageHint": "You can specify percentages for each participant",
+    "amountsByParticipant": "Amounts by participant",
+    "percentagesByParticipant": "Percentages by participant",
+    "difference": "Difference"
   },
   "inputs": {
     "selectOption": "Select on {{label}}",
@@ -760,8 +772,8 @@
     "joined": "Joined",
     "addMember": "Add Member",
     "noBalancesYet": "No balances yet. Create operations to see balances.",
-    "owes": "owes",
-    "receives": "receives",
+    "owes": "Owes",
+    "receives": "Receives",
     "from": "from",
     "noDebts": "All settled up!",
     "categorySum": "Category Summary",
@@ -817,5 +829,26 @@
   "Good bye.": "Good bye.",
   "Unsuccessful operation": "Unsuccessful operation",
   "Successful operation": "Successful operation",
-  "Operation already approved by this user.": "Operation already approved by this user."
+  "Operation already approved by this user.": "Operation already approved by this user.",
+  "Operations can only be deleted within one week of creation": "Operations can only be deleted within one week of creation",
+  "collaboratorInvitations": {
+    "invitationsFor": "Invitations for {{name}} {{surname}}",
+    "pendingInvitations": "Pending Invitations",
+    "noInvitationsYet": "No invitations yet",
+    "noInvitationsMessage": "Your collaborators haven't received any invitations",
+    "noInvitations": "No invitations",
+    "noInvitationsDetail": "This collaborator hasn't received any invitations yet"
+  },
+  "headerNotification": {
+    "noPendingInvitations": "No pending invitations"
+  },
+  "resetPassword": {
+    "subtitle": "Please fill in the fields to reset your password",
+    "token": "Token",
+    "tokenPlaceholder": "Verification Token",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "resetting": "Resetting...",
+    "rememberPassword": "Remember your password?"
+  }
 }

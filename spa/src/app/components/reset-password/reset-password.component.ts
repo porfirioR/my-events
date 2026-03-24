@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AlertService, UserApiService } from '../../services';
 import { ResetPasswordFormGroup } from '../../models/forms';
 import { TextComponent } from '../inputs/text/text.component';
@@ -19,7 +20,7 @@ import { ResetPasswordApiRequest } from '../../models/api/auth';
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TextComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TextComponent, TranslateModule],
 })
 export class ResetPasswordComponent {
   private router = inject(Router);

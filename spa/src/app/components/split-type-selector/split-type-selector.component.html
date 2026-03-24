@@ -1,26 +1,26 @@
 <div class="form-control w-full">
   <!-- Participant Type Selection -->
   <label class="label">
-    <span class="label-text">¿Quiénes participan?</span>
+    <span class="label-text">{{ 'operations.participantType' | translate }}</span>
   </label>
 
   <div class="join mb-4">
     <button type="button" class="btn join-item flex-1" [class]="getParticipantTypeClasses(travelParticipantType.All)"
       (click)="selectParticipantType(travelParticipantType.All)" [disabled]="disabled()">
       <i class="fa fa-users mr-2"></i>
-      Todos los miembros
+      {{ 'operations.allMembers' | translate }}
     </button>
 
     <button type="button" class="btn join-item flex-1" [class]="getParticipantTypeClasses(travelParticipantType.Selected)"
       (click)="selectParticipantType(travelParticipantType.Selected)" [disabled]="disabled()">
       <i class="fa fa-user-friends mr-2"></i>
-      Miembros seleccionados
+      {{ 'operations.selectedMembers' | translate }}
     </button>
   </div>
 
   <!-- Split Type Selection -->
   <label class="label">
-    <span class="label-text">¿Cómo dividir el costo?</span>
+    <span class="label-text">{{ 'operations.howToSplit' | translate }}</span>
   </label>
 
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -29,8 +29,8 @@
 
       <i class="fa fa-equals text-2xl"></i>
       <div class="text-center">
-        <p class="font-medium">Igual</p>
-        <p class="text-xs opacity-75">División equitativa</p>
+        <p class="font-medium">{{ 'operations.equal' | translate }}</p>
+        <p class="text-xs opacity-75">{{ 'operations.splitTypes.Equal' | translate }}</p>
       </div>
     </button>
 
@@ -39,8 +39,8 @@
 
       <i class="fa fa-dollar-sign text-2xl"></i>
       <div class="text-center">
-        <p class="font-medium">Personalizado</p>
-        <p class="text-xs opacity-75">Montos específicos</p>
+        <p class="font-medium">{{ 'operations.custom' | translate }}</p>
+        <p class="text-xs opacity-75">{{ 'operations.specificAmounts' | translate }}</p>
       </div>
     </button>
 
@@ -49,8 +49,8 @@
 
       <i class="fa fa-percentage text-2xl"></i>
       <div class="text-center">
-        <p class="font-medium">Porcentaje</p>
-        <p class="text-xs opacity-75">% personalizado</p>
+        <p class="font-medium">{{ 'operations.percentage' | translate }}</p>
+        <p class="text-xs opacity-75">{{ 'operations.customPercentage' | translate }}</p>
       </div>
     </button>
   </div>
@@ -61,9 +61,9 @@
       <i class="fa fa-info-circle"></i>
       <span class="text-sm">
         @if (selectedSplitType() === splitType.Custom) {
-        Podrás especificar montos exactos para cada participante
+        {{ 'operations.customHint' | translate }}
         } @else {
-        Podrás especificar porcentajes para cada participante
+        {{ 'operations.percentageHint' | translate }}
         }
       </span>
     </div>
