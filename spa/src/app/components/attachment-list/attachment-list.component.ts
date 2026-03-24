@@ -64,11 +64,7 @@ export class AttachmentListComponent implements OnInit {
 
     // Validate file type
     const allowedTypes = [
-      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-      'application/pdf',
-      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain', 'text/csv'
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'
     ];
 
     if (!allowedTypes.includes(file.type)) {
@@ -93,7 +89,6 @@ export class AttachmentListComponent implements OnInit {
         this.alertService.showSuccess(
           this.translate.instant('operations.attachmentUploadedSuccess')
         );
-        // Reload attachments
         this.travelStore.loadOperationAttachments(this.operationId());
       },
       error: (error) => {
@@ -101,6 +96,7 @@ export class AttachmentListComponent implements OnInit {
         this.alertService.showError(
           this.translate.instant('operations.attachmentUploadError')
         );
+        this.isUploading.set(false);
       },
       complete: () => {
         this.isUploading.set(false);
@@ -119,22 +115,24 @@ export class AttachmentListComponent implements OnInit {
     if (result.isConfirmed) {
       this.isDeleting.set(true);
 
-      try {
-        this.travelStore.deleteAttachment({
-          attachmentId: attachment.id,
-          operationId: this.operationId()
-        });
-        
-        this.alertService.showSuccess(
-          this.translate.instant('operations.attachmentDeletedSuccess')
-        );
-      } catch (error) {
-        this.alertService.showError(
-          this.translate.instant('operations.attachmentDeletedError')
-        );
-      } finally {
-        this.isDeleting.set(false);
-      }
+      this.travelStore.deleteAttachment({
+        attachmentId: attachment.id,
+        operationId: this.operationId()
+      }).subscribe({
+        next: () => {
+          this.alertService.showSuccess(
+            this.translate.instant('operations.attachmentDeletedSuccess')
+          );
+        },
+        error: () => {
+          this.alertService.showError(
+            this.translate.instant('operations.attachmentDeletedError')
+          );
+        },
+        complete: () => {
+          this.isDeleting.set(false);
+        }
+      });
     }
   }
 

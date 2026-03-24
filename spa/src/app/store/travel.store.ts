@@ -713,35 +713,30 @@ export const TravelStore = signalStore(
       );
     },
 
-    deleteAttachment: rxMethod<{attachmentId: number, operationId: number}>(
-      pipe(
+    deleteAttachment: ({attachmentId, operationId}: {attachmentId: number, operationId: number}) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+
+      return travelApiService.deleteOperationAttachment(attachmentId).pipe(
         tap(() => {
-          loadingStore.setLoading();
-          patchState(store, { error: null });
+          const currentAttachments = store.attachments();
+          const operationAttachments = currentAttachments[operationId] || [];
+
+          patchState(store, {
+            attachments: {
+              ...currentAttachments,
+              [operationId]: operationAttachments.filter(att => att.id !== attachmentId)
+            }
+          });
+          loadingStore.setLoadingSuccess();
         }),
-        switchMap(({attachmentId, operationId}) => 
-          travelApiService.deleteOperationAttachment(attachmentId).pipe(
-            tap(() => {
-              const currentAttachments = store.attachments();
-              const operationAttachments = currentAttachments[operationId] || [];
-              
-              patchState(store, {
-                attachments: {
-                  ...currentAttachments,
-                  [operationId]: operationAttachments.filter(att => att.id !== attachmentId)
-                }
-              });
-              loadingStore.setLoadingSuccess();
-            }),
-            catchError(error => {
-              patchState(store, { error: 'Failed to delete attachment' });
-              console.error('Delete attachment error:', error);
-              throw new Error(error);
-            })
-          )
-        )
-      )
-    ),
+        catchError(error => {
+          patchState(store, { error: 'Failed to delete attachment' });
+          console.error('Delete attachment error:', error);
+          throw new Error(error);
+        })
+      );
+    },
 
     // ==================== FILTERS ====================
 
