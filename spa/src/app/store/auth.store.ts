@@ -107,8 +107,9 @@ export const AuthStore = signalStore(
 
       currencyStore.clearCurrencies();
       collaboratorStore.clearCollaborators();
-      transactionStore.clearTransactions()
-      savingsStore.clearAll()
+      transactionStore.clearTransactions();
+      savingsStore.clearAll();
+      travelStore.clearAll();
     },
 
     updateEmailVerificationStatus: (isVerified: boolean) => {
