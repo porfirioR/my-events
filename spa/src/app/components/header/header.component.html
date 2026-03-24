@@ -7,7 +7,7 @@
           <i class="fas fa-bars text-xl"></i>
         </div>
         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
-          <li class="menu-title">Navigation</li>
+          <li class="menu-title">{{ 'common.navigation' | translate }}</li>
           <li>
             <a [routerLink]="['']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-tachometer-alt mr-2"></i>{{ 'common.dashboard' | translate }}

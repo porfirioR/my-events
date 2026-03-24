@@ -9,22 +9,22 @@
   <!-- Dropdown de notificaciones -->
   @if (showDropdown) {
     <div class="notification-dropdown">
-      <h4>Match Requests</h4>
+      <h4>{{ 'matchRequests.title' | translate }}</h4>
       @if (notifications$ | async; as notifications) {
         <div>
           @if (notifications.pendingMatchRequests === 0) {
             <div class="empty-state">
-              No pending invitations
+              {{ 'headerNotification.noPendingInvitations' | translate }}
             </div>
           }
           @for (request of notifications.matchRequests; track request.id) {
-            <div 
+            <div
               class="notification-item"
               [routerLink]="['/collaborators/invitations']"
               (click)="closeDropdown()">
               <p>
-                <strong>{{ request.requesterCollaboratorName }}</strong> 
-                wants to match with 
+                <strong>{{ request.requesterCollaboratorName }}</strong>
+                {{ 'matchRequests.wantsToMatch' | translate }}
                 <strong>{{ request.targetCollaboratorEmail }}</strong>
               </p>
               <small>{{ request.requestedDate | date:'short' }}</small>

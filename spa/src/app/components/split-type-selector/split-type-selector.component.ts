@@ -1,10 +1,13 @@
-import { Component, input, OnInit, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { SplitType, TravelParticipantType } from '../../models/enums';
 
 @Component({
   selector: 'app-split-type-selector',
   templateUrl: './split-type-selector.component.html',
-  styleUrls: ['./split-type-selector.component.css']
+  styleUrls: ['./split-type-selector.component.css'],
+  imports: [CommonModule, TranslateModule]
 })
 export class SplitTypeSelectorComponent {
   protected selectedParticipantType = input<TravelParticipantType>(TravelParticipantType.All);

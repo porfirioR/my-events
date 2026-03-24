@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
@@ -11,6 +12,7 @@ import { NotificationService } from '../../services/notification.service';
     AsyncPipe,
     DatePipe,
     RouterLink,
+    TranslateModule,
   ]
 })
 export class HeaderNotificationComponent implements OnInit {
