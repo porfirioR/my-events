@@ -576,7 +576,13 @@ export class UpsertOperationComponent implements OnInit {
   protected formatCurrency = this.formatterService.formatCurrency;
 
   protected goBack(): void {
-    this.location.back();
+    if (this.isEditMode() && this.travelId && this.operationId) {
+      this.router.navigate(['/travels', this.travelId, 'operations', this.operationId]);
+    } else if (this.travelId) {
+      this.router.navigate(['/travels', this.travelId]);
+    } else {
+      this.location.back();
+    }
   }
 
   // Métodos para manejar custom splits
