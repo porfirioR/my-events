@@ -438,6 +438,7 @@
     "totalPercentage": "Porcentaje total",
     "customAmountsMustEqualTotal": "Los montos personalizados deben sumar el total de la operación",
     "percentagesMustEqual100": "Los porcentajes deben sumar exactamente 100%",
+    "payerNotParticipantWarning": "El pagador no está incluido como participante. Los demás le deberán el total, pero él no tiene parte en el gasto.",
     "splitTypes": {
       "Equal": "División equitativa",
       "Custom": "Montos personalizados", 

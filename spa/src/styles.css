@@ -7,6 +7,13 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Sync primary color across both themes */
+[data-theme="light"],
+[data-theme="dark"] {
+  --color-primary: #4338CA;
+  --color-primary-content: #ffffff;
+}
+
 .swal2-icon-question-custom.swal2-icon.swal2-question {
   @apply border-primary text-primary;
 }
