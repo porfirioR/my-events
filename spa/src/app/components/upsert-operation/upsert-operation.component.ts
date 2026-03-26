@@ -369,37 +369,6 @@ export class UpsertOperationComponent implements OnInit {
       }
     }, { allowSignalWrites: true });
 
-    // // Effect para cargar la operación en modo edición
-    // effect(() => {
-    //   if (this.isEditMode() && this.operationId && this.travelId) {
-    //     this.travelStore.loadOperations(this.travelId);
-    //     const operation = this.travelStore.operations().find(op => op.id === this.operationId);
-
-    //     if (operation) {
-    //       this.formGroup.patchValue({
-    //         id: operation.id,
-    //         currencyId: operation.currencyId,
-    //         paymentMethodId: operation.paymentMethodId,
-    //         whoPaidMemberId: operation.whoPaidMemberId,
-    //         amount: operation.amount,
-    //         description: operation.description,
-    //         splitType: operation.splitType,
-    //         transactionDate: this.formatDateForInput(operation.transactionDate)
-    //       });
-
-    //       // TODO: Cargar participantMemberIds desde el backend si está disponible
-    //       this.selectedParticipants.set([]);
-    //     }
-    //   }
-
-    //   // Auto-seleccionar categoría "Other" por defecto si no hay ninguna
-    //   if (this.activeCategories().length > 0 && !this.formGroup.value.categoryId) {
-    //     const otherCategory = this.activeCategories().find(cat => cat.name === 'Other');
-    //     if (otherCategory) {
-    //       this.formGroup.patchValue({ categoryId: otherCategory.id });
-    //     }
-    //   }
-    // });
   }
 
   ngOnInit(): void {

@@ -1,12 +1,13 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Body, 
-  Param, 
-  UseGuards, 
-  ParseIntPipe 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  ParseIntPipe
 } from '@nestjs/common';
 import { CollaboratorManagerService } from '../../manager/services';
 import { CurrentUserService } from '../services/current-user.service';
@@ -110,6 +111,12 @@ export class CollaboratorsController {
   async changeVisibility(@Param('id', ParseIntPipe) id: number): Promise<CollaboratorModel> {
     const userId = await this.currentUserService.getCurrentUserId();
     return await this.collaboratorManagerService.changeVisibility(id, userId);
+  }
+
+  @Delete(':id')
+  async deleteCollaborator(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    await this.collaboratorManagerService.deleteCollaborator(id, userId);
   }
 
   @Post(':id/resend-invitation')

@@ -245,7 +245,14 @@
     "eventSavedSuccessfully": "Evento guardado exitosamente",
     "failedToUpdate": "Error al actualizar el colaborador",
     "failedToCreate": "Error al crear el colaborador",
-    "collaboratorAssociatedToTransactions": "El colaborador está asociado a transacciones existentes y no puede ser eliminado. Puede desactivarlo en su lugar."
+    "collaboratorAssociatedToTransactions": "El colaborador está asociado a transacciones existentes y no puede ser eliminado. Puede desactivarlo en su lugar.",
+    "collaboratorAssociatedToTravels": "El colaborador está asociado a uno o más viajes y no puede ser eliminado. Puede desactivarlo en su lugar.",
+    "collaboratorAssociatedToMatches": "El colaborador está vinculado a otro usuario y no puede ser eliminado. Puede desactivarlo en su lugar.",
+    "delete": "Eliminar",
+    "deleteConfirmTitle": "Eliminar colaborador",
+    "deleteConfirmMessage": "¿Estás seguro de que querés eliminar a {{name}}? Esta acción no se puede deshacer.",
+    "deletedSuccess": "Colaborador eliminado exitosamente",
+    "deleteError": "Error al eliminar el colaborador"
   },
   "validation": {
     "required": "es requerido",

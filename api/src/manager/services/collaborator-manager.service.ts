@@ -80,11 +80,16 @@ export class CollaboratorManagerService {
 
   // Verificar si se puede eliminar
   public canDeleteCollaborator = async (collaboratorId: number): Promise<{ canDelete: boolean; reason?: string }> => {
-    const canDelete = await this.collaboratorAccessService.canDeleteCollaborator(collaboratorId);
-    return {
-      canDelete,
-      reason: canDelete ? undefined : 'collaborators.collaboratorAssociatedToTransactions'
-    };
+    return await this.collaboratorAccessService.canDeleteCollaborator(collaboratorId);
+  };
+
+  // Eliminar colaborador
+  public deleteCollaborator = async (collaboratorId: number, userId: number): Promise<void> => {
+    const { canDelete, reason } = await this.collaboratorAccessService.canDeleteCollaborator(collaboratorId);
+    if (!canDelete) {
+      throw new BadRequestException(reason);
+    }
+    await this.collaboratorAccessService.deleteCollaborator(collaboratorId, userId);
   };
 
   // Obtener estadísticas

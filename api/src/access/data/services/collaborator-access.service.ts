@@ -139,7 +139,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
     return this.mapEntityToAccessModel(data);
   };
 
-  public canDeleteCollaborator = async (collaboratorId: number): Promise<boolean> => {
+  public canDeleteCollaborator = async (collaboratorId: number): Promise<{ canDelete: boolean; reason?: string }> => {
     // Verificar en transactions
     const { data: transactionData, error: transactionError } = await this.dbContext
       .from(TableEnum.Transactions)
@@ -148,8 +148,10 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .limit(1);
 
     if (transactionError) throw new Error(transactionError.message);
-    if (transactionData && transactionData.length > 0) return false;
+    if (transactionData && transactionData.length > 0)
+      return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToTransactions' };
 
+    // Verificar en transaction splits
     const { data: splitData, error: splitError } = await this.dbContext
       .from(TableEnum.TransactionSplits)
       .select('id')
@@ -157,9 +159,55 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .limit(1);
 
     if (splitError) throw new Error(splitError.message);
-    if (splitData && splitData.length > 0) return false;
+    if (splitData && splitData.length > 0)
+      return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToTransactions' };
 
-    return true;
+    // Verificar en travel members
+    const { data: travelMemberData, error: travelMemberError } = await this.dbContext
+      .from(TableEnum.TravelMembers)
+      .select('id')
+      .eq(DatabaseColumns.CollaboratorId, collaboratorId)
+      .limit(1);
+
+    if (travelMemberError) throw new Error(travelMemberError.message);
+    if (travelMemberData && travelMemberData.length > 0)
+      return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToTravels' };
+
+    // Verificar en collaborator matches
+    const { data: matchData, error: matchError } = await this.dbContext
+      .from(TableEnum.CollaboratorMatches)
+      .select('id')
+      .or(`collaborator1id.eq.${collaboratorId},collaborator2id.eq.${collaboratorId}`)
+      .limit(1);
+
+    if (matchError) throw new Error(matchError.message);
+    if (matchData && matchData.length > 0)
+      return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToMatches' };
+
+    // Verificar en match requests
+    const { data: requestData, error: requestError } = await this.dbContext
+      .from(TableEnum.CollaboratorMatchRequests)
+      .select('id')
+      .eq(DatabaseColumns.RequesterCollaboratorId, collaboratorId)
+      .limit(1);
+
+    if (requestError) throw new Error(requestError.message);
+    if (requestData && requestData.length > 0)
+      return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToMatches' };
+
+    return { canDelete: true };
+  };
+
+  public deleteCollaborator = async (collaboratorId: number, userId: number): Promise<void> => {
+    const { error } = await this.dbContext
+      .from(TableEnum.Collaborators)
+      .delete()
+      .eq(DatabaseColumns.EntityId, collaboratorId)
+      .eq(DatabaseColumns.UserId, userId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
   };
 
   public getCollaboratorStats = async (userId: number): Promise<{

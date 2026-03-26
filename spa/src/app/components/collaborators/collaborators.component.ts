@@ -139,29 +139,31 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
-  // todo hard delete
-  // protected deleteCollaborator(collaborator: CollaboratorApiModel): void {
-  //   this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
-  //     next: (response) => {
-  //       if (!response.canDelete) {
-  //         this.alertService.showInfo(
-  //           response.reason || 'This collaborator cannot be deleted'
-  //         );
-  //         return;
-  //       }
-  //       this.loadingStore.setLoading()
-  //       const confirmMsg = `Are you sure you want to Delete ${collaborator.name} ${collaborator.surname}?`;
-  //       this.alertService.showQuestionModal('Delete', confirmMsg).then(x => {
-  //         if (x && x.isConfirmed) {
-  //           this.collaboratorStore.changeVisibility(+collaborator.id)
-  //           this.loadCollaborators();
-  //           this.alertService.showSuccess(`Collaborator ${status}d successfully`);
-  //         }
-  //       })
-  //     },
-  //     error: (error) => {
-  //       this.alertService.showError('Failed to check delete permission');
-  //     }
-  //   });
-  // }
+  protected deleteCollaborator(collaborator: CollaboratorApiModel): void {
+    this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
+      next: async (response) => {
+        if (!response.canDelete) {
+          this.alertService.showError(
+            this.translate.instant(response.reason || 'collaborators.deleteError')
+          );
+          return;
+        }
+
+        const result = await this.alertService.showQuestionModal(
+          this.translate.instant('collaborators.deleteConfirmTitle'),
+          this.translate.instant('collaborators.deleteConfirmMessage', {
+            name: `${collaborator.name} ${collaborator.surname}`
+          })
+        );
+
+        if (result.isConfirmed) {
+          this.collaboratorStore.deleteCollaborator(collaborator.id);
+          this.alertService.showSuccess(this.translate.instant('collaborators.deletedSuccess'));
+        }
+      },
+      error: () => {
+        this.alertService.showError(this.translate.instant('collaborators.deleteError'));
+      }
+    });
+  }
 }

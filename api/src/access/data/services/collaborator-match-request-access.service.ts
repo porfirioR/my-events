@@ -142,7 +142,6 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
     return this.getRequestAccessModel(data);
   };
 
-  //TODO update this method from update to upsert
   public updateTargetUser = async (requestId: number, targetUserId: number): Promise<CollaboratorMatchRequestAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.CollaboratorMatchRequests)
@@ -156,6 +155,10 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error(`Match request with id ${requestId} not found`);
     }
 
     return this.getRequestAccessModel(data);
