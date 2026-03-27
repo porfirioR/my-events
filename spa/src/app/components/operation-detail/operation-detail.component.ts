@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useTravelStore, useLoadingStore, useAuthStore } from '../../store';
@@ -7,6 +7,7 @@ import { AlertService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
 import { ApprovalStatus } from '../../models/enums';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-operation-detail',
@@ -16,10 +17,14 @@ import { ApprovalStatus } from '../../models/enums';
     CommonModule,
     RouterModule,
     TranslateModule,
-    AttachmentListComponent
+    AttachmentListComponent,
+    ConfirmDialogComponent
   ]
 })
 export class OperationDetailComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
@@ -88,84 +93,70 @@ export class OperationDetailComponent implements OnInit {
     }
   }
 
-  protected async approveOperation(): Promise<void> {
-    const op = this.operation();
-    if (!op) return;
-
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('travels.approveOperationTitle'),
-      this.translate.instant('travels.approveOperationMessage', { description: op.description })
-    );
-
-    if (result.isConfirmed) {
-      this.travelStore.approveOperation(op.id);
-      this.alertService.showSuccess(
-        this.translate.instant('travels.operationApprovedSuccess')
-      );
-      this.loadOperationDetail();
-    }
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
   }
 
-  protected async rejectOperation(): Promise<void> {
+  protected approveOperation(): void {
     const op = this.operation();
     if (!op) return;
 
-    const { default: Swal } = await import('sweetalert2');
-    const result = await Swal.fire({
-      title: this.translate.instant('travels.rejectOperationTitle'),
-      text: this.translate.instant('travels.rejectOperationMessage'),
-      input: 'textarea',
-      inputPlaceholder: this.translate.instant('travels.rejectReasonPlaceholder'),
-      showCancelButton: true,
-      confirmButtonText: this.translate.instant('travels.reject'),
-      cancelButtonText: this.translate.instant('inputs.no'),
-      reverseButtons: true,
-      customClass: {
-        cancelButton: 'btn btn-outline btn-primary mx-1',
-        confirmButton: 'btn btn-error',
-      },
-      buttonsStyling: false,
-      inputValidator: (value) => {
-        if (!value) {
-          return this.translate.instant('travels.rejectReasonRequired');
-        }
-        return null;
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.travelStore.approveOperation(op.id);
+        this.alertService.showSuccess(this.translate.instant('travels.operationApprovedSuccess'));
+        this.loadOperationDetail();
       }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.approveOperationTitle'),
+      message: this.translate.instant('travels.approveOperationMessage', { description: op.description })
     });
-
-    if (result.isConfirmed && result.value) {
-      this.travelStore.rejectOperation(op.id, { rejectionReason: result.value }).subscribe({
-        next: () => {
-          this.alertService.showSuccess(
-            this.translate.instant('travels.operationRejectedSuccess')
-          );
-          this.loadOperationDetail();
-        },
-        error: () => {
-          this.alertService.showError(
-            this.translate.instant('travels.operationRejectedError')
-          );
-        }
-      });
-    }
   }
 
-  protected async deleteOperation(): Promise<void> {
+  protected rejectOperation(): void {
     const op = this.operation();
     if (!op) return;
 
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('travels.deleteOperationTitle'),
-      this.translate.instant('travels.deleteOperationMessage', { description: op.description })
-    );
+    this.pendingCallback = (result) => {
+      if (result.confirmed && result.value) {
+        this.travelStore.rejectOperation(op.id, { rejectionReason: result.value }).subscribe({
+          next: () => {
+            this.alertService.showSuccess(this.translate.instant('travels.operationRejectedSuccess'));
+            this.loadOperationDetail();
+          },
+          error: () => this.alertService.showError(this.translate.instant('travels.operationRejectedError'))
+        });
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.rejectOperationTitle'),
+      message: this.translate.instant('travels.rejectOperationMessage'),
+      type: 'error',
+      confirmLabel: this.translate.instant('travels.reject'),
+      inputLabel: this.translate.instant('travels.rejectReasonPlaceholder'),
+      inputPlaceholder: this.translate.instant('travels.rejectReasonPlaceholder'),
+      inputRequired: true
+    });
+  }
 
-    if (result.isConfirmed) {
-      this.travelStore.deleteOperation(op.id);
-      this.alertService.showSuccess(
-        this.translate.instant('travels.operationDeletedSuccess')
-      );
-      this.router.navigate(['/travels', this.travelId]);
-    }
+  protected deleteOperation(): void {
+    const op = this.operation();
+    if (!op) return;
+
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.travelStore.deleteOperation(op.id);
+        this.alertService.showSuccess(this.translate.instant('travels.operationDeletedSuccess'));
+        this.router.navigate(['/travels', this.travelId]);
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.deleteOperationTitle'),
+      message: this.translate.instant('travels.deleteOperationMessage', { description: op.description }),
+      type: 'error'
+    });
   }
 
   protected getOperationStatusBadgeClass(status: string): string {

@@ -1,22 +1,29 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';  // ← Importar
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useTransactionStore, useLoadingStore } from '../../store';
 import { FormatterHelperService, AlertService } from '../../services';
+import { AddReimbursementModalComponent } from "../add-reimbursement-modal/add-reimbursement-modal.component";
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-transaction-details',
-  standalone: true,
   imports: [
     CommonModule,
-    TranslateModule
+    TranslateModule,
+    AddReimbursementModalComponent,
+    ConfirmDialogComponent
   ],
   templateUrl: './transaction-details.component.html',
   styleUrls: ['./transaction-details.component.css']
 })
 export class TransactionDetailsComponent implements OnInit {
+  @ViewChild(AddReimbursementModalComponent) reimbursementModal: AddReimbursementModalComponent | undefined;
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -64,9 +71,20 @@ export class TransactionDetailsComponent implements OnInit {
   protected addReimbursement(): void {
     const details = this.transactionDetails();
     if (details) {
-      // TODO: Open reimbursement modal
-      console.log('Add reimbursement to transaction:', details.id);
+      this.reimbursementModal?.open({
+        maxAmount: details.netAmount,
+        transactionId: details.id
+      });
     }
+  }
+
+  protected onReimbursementClosed(): void {
+    this.transactionStore.loadTransactionDetails(this.transactionId);
+  }
+
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
   }
 
   protected settleTransaction(): void {
@@ -76,23 +94,17 @@ export class TransactionDetailsComponent implements OnInit {
     const description = details.description || this.translate.instant('transactionDetails.noDescription');
     const amount = this.formatCurrency(details.netAmount, 4);
 
-    const confirmMsg = this.translate.instant('transactionDetails.confirmSettleMessage', {
-      description,
-      amount
-    });
-
-    this.alertService.showQuestionModal(
-      this.translate.instant('transactionDetails.confirmSettle'),
-      confirmMsg
-    ).then(result => {
-      if (result && result.isConfirmed) {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
         this.transactionStore.settleTransaction(details.id);
-        this.alertService.showSuccess(
-          this.translate.instant('transactions.transactionSettled')
-        );
-        // Reload details
+        this.alertService.showSuccess(this.translate.instant('transactions.transactionSettled'));
         this.transactionStore.loadTransactionDetails(this.transactionId);
       }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('transactionDetails.confirmSettle'),
+      message: this.translate.instant('transactionDetails.confirmSettleMessage', { description, amount }),
+      type: 'warning'
     });
   }
 
@@ -103,22 +115,17 @@ export class TransactionDetailsComponent implements OnInit {
     const description = details.description || this.translate.instant('transactionDetails.noDescription');
     const amount = this.formatCurrency(details.netAmount, 4);
 
-    const confirmMsg = this.translate.instant('transactionDetails.deleteTransactionMessage', {
-      description,
-      amount
-    });
-
-    this.alertService.showQuestionModal(
-      this.translate.instant('transactionDetails.deleteTransaction'),
-      confirmMsg
-    ).then(result => {
-      if (result && result.isConfirmed) {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
         this.transactionStore.deleteTransaction(details.id);
-        this.alertService.showSuccess(
-          this.translate.instant('transactions.transactionDeleted')
-        );
+        this.alertService.showSuccess(this.translate.instant('transactions.transactionDeleted'));
         this.navigateToTransactions();
       }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('transactionDetails.deleteTransaction'),
+      message: this.translate.instant('transactionDetails.deleteTransactionMessage', { description, amount }),
+      type: 'error'
     });
   }
 }

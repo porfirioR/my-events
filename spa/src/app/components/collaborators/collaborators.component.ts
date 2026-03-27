@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
 import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { useCollaboratorStore, useLoadingStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-collaborators',
@@ -15,10 +16,14 @@ import { CollaboratorMatchRequestApiService } from '../../services/api/collabora
   imports: [
     CommonModule,
     RouterModule,
-    TranslateModule
+    TranslateModule,
+    ConfirmDialogComponent
   ]
 })
 export class CollaboratorsComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private readonly router = inject(Router);
   private readonly alertService = inject(AlertService);
   private readonly translate = inject(TranslateService);  // ← Inyectar
@@ -57,28 +62,29 @@ export class CollaboratorsComponent implements OnInit {
     this.router.navigate(['/collaborators/edit', collaborator.id]);
   }
 
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
+
   protected toggleCollaboratorStatus(collaborator: CollaboratorApiModel): void {
-    const action = collaborator.isActive ? 
-      this.translate.instant('collaborators.deactivate') : 
-      this.translate.instant('collaborators.activate');
-    
     const name = `${collaborator.name} ${collaborator.surname}`;
     const confirmMsg = collaborator.isActive ?
       this.translate.instant('collaborators.confirmDeactivate', { name }) :
       this.translate.instant('collaborators.confirmActivate', { name });
 
-    this.alertService.showQuestionModal(
-      this.translate.instant('collaborators.changeVisibility'), 
-      confirmMsg
-    ).then(x => {
-      if (x && x.isConfirmed) {
-        this.collaboratorStore.changeVisibility(+collaborator.id)
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.collaboratorStore.changeVisibility(+collaborator.id);
         this.loadCollaborators();
-        this.alertService.showSuccess(
-          this.translate.instant('collaborators.collaboratorUpdated')
-        );
+        this.alertService.showSuccess(this.translate.instant('collaborators.collaboratorUpdated'));
       }
-    })
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('collaborators.changeVisibility'),
+      message: confirmMsg,
+      type: 'warning'
+    });
   }
 
   protected resendInvitation(collaborator: CollaboratorApiModel): void {
@@ -141,25 +147,23 @@ export class CollaboratorsComponent implements OnInit {
 
   protected deleteCollaborator(collaborator: CollaboratorApiModel): void {
     this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
-      next: async (response) => {
+      next: (response) => {
         if (!response.canDelete) {
-          this.alertService.showError(
-            this.translate.instant(response.reason || 'collaborators.deleteError')
-          );
+          this.alertService.showError(this.translate.instant(response.reason || 'collaborators.deleteError'));
           return;
         }
 
-        const result = await this.alertService.showQuestionModal(
-          this.translate.instant('collaborators.deleteConfirmTitle'),
-          this.translate.instant('collaborators.deleteConfirmMessage', {
-            name: `${collaborator.name} ${collaborator.surname}`
-          })
-        );
-
-        if (result.isConfirmed) {
-          this.collaboratorStore.deleteCollaborator(collaborator.id);
-          this.alertService.showSuccess(this.translate.instant('collaborators.deletedSuccess'));
-        }
+        this.pendingCallback = (result) => {
+          if (result.confirmed) {
+            this.collaboratorStore.deleteCollaborator(collaborator.id);
+            this.alertService.showSuccess(this.translate.instant('collaborators.deletedSuccess'));
+          }
+        };
+        this.confirmDialog.open({
+          title: this.translate.instant('collaborators.deleteConfirmTitle'),
+          message: this.translate.instant('collaborators.deleteConfirmMessage', { name: `${collaborator.name} ${collaborator.surname}` }),
+          type: 'error'
+        });
       },
       error: () => {
         this.alertService.showError(this.translate.instant('collaborators.deleteError'));

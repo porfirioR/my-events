@@ -1,17 +1,21 @@
-import { Component, input, inject, computed, OnInit, signal } from '@angular/core';
+import { Component, ViewChild, input, inject, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { OperationAttachmentApiModel } from '../../models/api/travels';
 import { useTravelStore } from '../../store';
 import { AlertService } from '../../services';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-attachment-list',
   templateUrl: './attachment-list.component.html',
   styleUrls: ['./attachment-list.component.css'],
-  imports: [CommonModule, TranslateModule]
+  imports: [CommonModule, TranslateModule, ConfirmDialogComponent]
 })
 export class AttachmentListComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private travelStore = useTravelStore();
   private alertService = inject(AlertService);
   private translate = inject(TranslateService);
@@ -104,15 +108,16 @@ export class AttachmentListComponent implements OnInit {
     });
   }
 
-  protected async deleteAttachment(attachment: OperationAttachmentApiModel): Promise<void> {
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
+
+  protected deleteAttachment(attachment: OperationAttachmentApiModel): void {
     if (this.isDeleting()) return;
 
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('operations.deleteAttachmentTitle'),
-      this.translate.instant('operations.deleteAttachmentMessage', { fileName: attachment.fileName }) // ✅ CORREGIDO
-    );
-
-    if (result.isConfirmed) {
+    this.pendingCallback = (result) => {
+      if (!result.confirmed) return;
       this.isDeleting.set(true);
 
       this.travelStore.deleteAttachment({
@@ -133,7 +138,12 @@ export class AttachmentListComponent implements OnInit {
           this.isDeleting.set(false);
         }
       });
-    }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('operations.deleteAttachmentTitle'),
+      message: this.translate.instant('operations.deleteAttachmentMessage', { fileName: attachment.fileName }),
+      type: 'error'
+    });
   }
 
   protected openAttachment(attachment: OperationAttachmentApiModel): void {
