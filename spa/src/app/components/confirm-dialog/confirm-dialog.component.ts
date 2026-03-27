@@ -70,8 +70,8 @@ export class ConfirmDialogComponent {
   protected get confirmBtnClass(): string {
     const type = this.dialogData()?.type ?? 'default';
     const classes: Record<ConfirmDialogType, string> = {
-      warning: 'btn btn-warning',
-      error: 'btn btn-error',
+      warning: 'btn btn-primary',
+      error: 'btn btn-primary',
       info: 'btn btn-info',
       success: 'btn btn-success',
       default: 'btn btn-primary',
