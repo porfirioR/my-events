@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component } from '@angular/core'
+import { ChangeDetectionStrategy, Component } from '@angular/core'
 
 @Component({
   selector: 'app-dynamic-table',
@@ -7,7 +7,8 @@ import { Component } from '@angular/core'
   styleUrls: ['./dynamic-table.component.css'],
   imports: [
     CommonModule
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DynamicTableComponent {
   protected columnName: any[] = [

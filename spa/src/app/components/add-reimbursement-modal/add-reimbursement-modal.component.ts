@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ReimbursementFormGroup } from '../../models/forms';
@@ -22,7 +22,8 @@ export interface ReimbursementModalData {
     TranslateModule,
     TextComponent,
     TextAreaInputComponent,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddReimbursementModalComponent {
   @ViewChild('reimbursementModal', { static: true }) reimbursementModal!: ElementRef<HTMLDialogElement>

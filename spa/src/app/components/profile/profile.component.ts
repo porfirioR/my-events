@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { LocalService } from '../../services'
@@ -10,7 +10,8 @@ import { LocalService } from '../../services'
   imports: [
     RouterModule,
     TranslateModule,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   @ViewChild('profileModal', { static: true }) profileModal!: ElementRef<HTMLDialogElement>

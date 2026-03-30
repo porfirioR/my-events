@@ -1,4 +1,5 @@
-import { Component, ViewChild, input, inject, computed, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, input, inject, computed, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { OperationAttachmentApiModel } from '../../models/api/travels';
@@ -10,12 +11,14 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
   selector: 'app-attachment-list',
   templateUrl: './attachment-list.component.html',
   styleUrls: ['./attachment-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TranslateModule, ConfirmDialogComponent]
 })
 export class AttachmentListComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
+  private destroyRef = inject(DestroyRef);
   private travelStore = useTravelStore();
   private alertService = inject(AlertService);
   private translate = inject(TranslateService);
@@ -88,7 +91,7 @@ export class AttachmentListComponent implements OnInit {
   private uploadFile(file: File): void {
     this.isUploading.set(true);
 
-    this.travelStore.uploadAttachment(this.operationId(), file).subscribe({
+    this.travelStore.uploadAttachment(this.operationId(), file).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.alertService.showSuccess(
           this.translate.instant('operations.attachmentUploadedSuccess')
@@ -123,7 +126,7 @@ export class AttachmentListComponent implements OnInit {
       this.travelStore.deleteAttachment({
         attachmentId: attachment.id,
         operationId: this.operationId()
-      }).subscribe({
+      }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.alertService.showSuccess(
             this.translate.instant('operations.attachmentDeletedSuccess')

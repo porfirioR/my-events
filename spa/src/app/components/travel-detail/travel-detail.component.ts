@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useTravelStore, useCollaboratorStore, useAuthStore } from '../../store';
@@ -12,12 +13,14 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
   selector: 'app-travel-detail',
   templateUrl: './travel-detail.component.html',
   styleUrls: ['./travel-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent]
 })
 export class TravelDetailComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
@@ -111,7 +114,7 @@ export class TravelDetailComponent implements OnInit {
 
     this.pendingCallback = (result) => {
       if (result.confirmed) {
-        this.travelStore.addMember(this.travelId!, { collaboratorId }).subscribe({
+        this.travelStore.addMember(this.travelId!, { collaboratorId }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => this.alertService.showSuccess(this.translate.instant('travels.memberAddedSuccess')),
           error: () => this.alertService.showError(this.translate.instant('travels.memberAddedError'))
         });
@@ -173,7 +176,7 @@ export class TravelDetailComponent implements OnInit {
   protected rejectOperation(operation: TravelOperationApiModel): void {
     this.pendingCallback = (result) => {
       if (result.confirmed && result.value) {
-        this.travelStore.rejectOperation(operation.id, { rejectionReason: result.value }).subscribe({
+        this.travelStore.rejectOperation(operation.id, { rejectionReason: result.value }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => this.alertService.showSuccess(this.translate.instant('travels.operationRejectedSuccess')),
           error: () => this.alertService.showError(this.translate.instant('travels.operationRejectedError'))
         });

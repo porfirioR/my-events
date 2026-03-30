@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, Self } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Input, Self } from '@angular/core'
 import { ControlValueAccessor, NgControl, ReactiveFormsModule } from '@angular/forms'
 import { TranslateModule } from '@ngx-translate/core'
 import { FormErrorsComponent } from '../../form-errors/form-errors.component'
@@ -15,7 +15,8 @@ import { AutocompleteType } from '../../../constants/autocomplete-type'
     ReactiveFormsModule,
     TranslateModule,
     FormErrorsComponent,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TextComponent implements ControlValueAccessor {
   @Input({required: true}) label: string = ''

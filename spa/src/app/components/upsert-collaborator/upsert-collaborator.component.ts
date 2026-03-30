@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -14,6 +15,7 @@ import { AlertService } from '../../services';
   selector: 'app-upsert-collaborator',
   templateUrl: './upsert-collaborator.component.html',
   styleUrls: ['./upsert-collaborator.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -24,6 +26,7 @@ import { AlertService } from '../../services';
   ]
 })
 export class UpsertCollaboratorComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private translate = inject(TranslateService);
@@ -84,7 +87,7 @@ export class UpsertCollaboratorComponent implements OnInit {
       this.selectedCollaborator()?.id.toString() ?? null
     );
 
-    this.collaboratorStore.upsertCollaborator(request).subscribe({
+    this.collaboratorStore.upsertCollaborator(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.ignorePreventUnsavedChanges = true
         this.alertService.showSuccess(

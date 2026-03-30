@@ -1,5 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, OnInit, Signal, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, Signal, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -22,6 +23,7 @@ import { Configurations, SplitType, TravelParticipantType } from '../../models/e
   selector: 'app-upsert-operation',
   templateUrl: './upsert-operation.component.html',
   styleUrls: ['./upsert-operation.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -37,6 +39,7 @@ import { Configurations, SplitType, TravelParticipantType } from '../../models/e
   ]
 })
 export class UpsertOperationComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
@@ -313,11 +316,11 @@ export class UpsertOperationComponent implements OnInit {
         controls[`percentage-${participant.memberId}`] = percentageControl;
         
         // ✅ Suscribirse a cambios del FormControl
-        amountControl.valueChanges.subscribe(value => {
+        amountControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(value => {
           this.onCustomAmountChange(participant.memberId, parseFloat(value as any ?? '0'));
         });
-        
-        percentageControl.valueChanges.subscribe(value => {
+
+        percentageControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(value => {
           this.onCustomPercentageChange(participant.memberId, parseFloat(value as any ?? '0'));
         });
       });
@@ -383,7 +386,7 @@ export class UpsertOperationComponent implements OnInit {
     if (operationId) {
       this.operationId = +operationId;
       this.isEditMode.set(true);
-      this.travelStore.loadOperationById(this.operationId).subscribe({
+      this.travelStore.loadOperationById(this.operationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (operation) => this.populateEditForm(operation)
       });
     }
@@ -481,7 +484,7 @@ export class UpsertOperationComponent implements OnInit {
       );
 
       this.formGroup.disable();
-      this.travelStore.updateOperation(this.travelId, this.operationId, request).subscribe({
+      this.travelStore.updateOperation(this.travelId, this.operationId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
           this.alertService.showSuccess(
@@ -527,7 +530,8 @@ export class UpsertOperationComponent implements OnInit {
             );
           }
           return of(null);
-        })
+        }),
+        takeUntilDestroyed(this.destroyRef)
       ).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;

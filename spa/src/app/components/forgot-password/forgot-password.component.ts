@@ -1,4 +1,5 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -17,6 +18,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterModule,
     ReactiveFormsModule,
@@ -32,7 +34,8 @@ export class ForgotPasswordComponent {
 
   constructor(
     private readonly userApiService: UserApiService,
-    private readonly alertService: AlertService
+    private readonly alertService: AlertService,
+    private readonly destroyRef: DestroyRef
   ) {
     this.formGroup = new FormGroup<ForgotPasswordFormGroup>({
       email: new FormControl(null, [Validators.required, Validators.email]),
@@ -49,6 +52,7 @@ export class ForgotPasswordComponent {
     this.showMessage = false;
     this.userApiService
       .forgotPassword(new ForgotPasswordApiRequest(email))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           this.alertService.showSuccess(response.message);

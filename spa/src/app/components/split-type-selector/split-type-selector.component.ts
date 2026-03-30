@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { SplitType, TravelParticipantType } from '../../models/enums';
@@ -7,7 +7,8 @@ import { SplitType, TravelParticipantType } from '../../models/enums';
   selector: 'app-split-type-selector',
   templateUrl: './split-type-selector.component.html',
   styleUrls: ['./split-type-selector.component.css'],
-  imports: [CommonModule, TranslateModule]
+  imports: [CommonModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SplitTypeSelectorComponent {
   protected selectedParticipantType = input<TravelParticipantType>(TravelParticipantType.All);

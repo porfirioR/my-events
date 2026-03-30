@@ -1,4 +1,4 @@
-import { Component, Input, Self } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Input, Self } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { ControlValueAccessor, NgControl } from '@angular/forms'
 import { TranslateModule } from '@ngx-translate/core'
@@ -7,7 +7,8 @@ import { TranslateModule } from '@ngx-translate/core'
   selector: 'app-form-errors',
   imports: [CommonModule, TranslateModule],
   templateUrl: './form-errors.component.html',
-  styleUrl: './form-errors.component.css'
+  styleUrl: './form-errors.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormErrorsComponent implements ControlValueAccessor {
   @Input() label: string = ''

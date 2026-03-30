@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
@@ -15,7 +15,8 @@ import { FormatterHelperService } from '../../services';
     RouterModule,
   ],
   templateUrl: './balances.component.html',
-  styleUrls: ['./balances.component.css']
+  styleUrls: ['./balances.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BalancesComponent implements OnInit {
   private readonly transactionStore = useTransactionStore();

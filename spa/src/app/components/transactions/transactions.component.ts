@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -19,7 +19,8 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
     ConfirmDialogComponent
   ],
   templateUrl: './transactions.component.html',
-  styleUrls: ['./transactions.component.css']
+  styleUrls: ['./transactions.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionsComponent implements OnInit {
   @ViewChild(AddReimbursementModalComponent) addReimbursementModal: AddReimbursementModalComponent | undefined;

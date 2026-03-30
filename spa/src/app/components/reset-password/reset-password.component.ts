@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -20,9 +21,11 @@ import { ResetPasswordApiRequest } from '../../models/api/auth';
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, TextComponent, TranslateModule],
 })
 export class ResetPasswordComponent {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private activeRoute = inject(ActivatedRoute);
   private userApiService = inject(UserApiService);
@@ -42,7 +45,7 @@ export class ResetPasswordComponent {
       token: new FormControl(token ? token : null, [Validators.required]),
     });
     
-    this.formGroup.controls.newPassword.valueChanges.subscribe({
+    this.formGroup.controls.newPassword.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.formGroup.controls.repeatPassword.updateValueAndValidity();
       },
@@ -62,7 +65,7 @@ export class ResetPasswordComponent {
       this.formGroup.value.newPassword!
     );
 
-    this.userApiService.resetPassword(request).subscribe({
+    this.userApiService.resetPassword(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
         this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.userCollaboratorId, user.isEmailVerified);
         this.alertService.showSuccess('Password reset successfully! You are now logged in.');

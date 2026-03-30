@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, Self } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Input, Self } from '@angular/core'
 import { ControlValueAccessor, NgControl, ReactiveFormsModule } from '@angular/forms'
 
 @Component({
@@ -9,7 +9,8 @@ import { ControlValueAccessor, NgControl, ReactiveFormsModule } from '@angular/f
   imports: [
     CommonModule,
     ReactiveFormsModule,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckBoxInputComponent implements ControlValueAccessor {
   @Input({required: true}) label: string = ''

@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, ViewChild } from '@angular/core'
 import { Router, RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { AlertService, LocalService } from '../../services'
@@ -17,7 +17,8 @@ import { ProfileComponent } from "../profile/profile.component"
     TranslateModule,
     ProfileComponent,
     LanguageSelectorComponent,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeaderComponent {
   @ViewChild(ProfileComponent) profile: ProfileComponent | undefined

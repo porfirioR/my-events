@@ -1,4 +1,4 @@
-import { Component, ElementRef, output, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
@@ -26,7 +26,8 @@ export interface ConfirmDialogResult {
   selector: 'app-confirm-dialog',
   templateUrl: './confirm-dialog.component.html',
   styleUrls: ['./confirm-dialog.component.css'],
-  imports: [TranslateModule, ReactiveFormsModule, TextAreaInputComponent]
+  imports: [TranslateModule, ReactiveFormsModule, TextAreaInputComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfirmDialogComponent {
   @ViewChild('confirmDialog', { static: true }) confirmDialog!: ElementRef<HTMLDialogElement>;

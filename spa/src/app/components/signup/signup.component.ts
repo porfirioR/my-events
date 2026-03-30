@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
 import { debounceTime, tap } from 'rxjs'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'  // ← Agregar TranslateService
 import { CreateUserApiRequest } from '../../models/api'
 import { SignupFormGroup } from '../../models/forms/sign-up-form-group'
@@ -14,6 +15,7 @@ import { LanguageSelectorComponent } from "../language-selector/language-selecto
   selector: 'app-signup',
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterModule,
     ReactiveFormsModule,
@@ -23,6 +25,7 @@ import { LanguageSelectorComponent } from "../language-selector/language-selecto
   ]
 })
 export class SignupComponent {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private userApiService = inject(UserApiService);
   private alertService = inject(AlertService);
@@ -43,7 +46,8 @@ export class SignupComponent {
     })
     this.formGroup.controls.password.valueChanges.pipe(
       debounceTime(100),
-      tap(() => this.formGroup.controls.repeatPassword.updateValueAndValidity())
+      tap(() => this.formGroup.controls.repeatPassword.updateValueAndValidity()),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe()
   }
 
@@ -59,7 +63,7 @@ export class SignupComponent {
       this.formGroup.value.name!,
       this.formGroup.value.surname!
     );
-    this.userApiService.signUpUser(request).subscribe({
+    this.userApiService.signUpUser(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
         this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.userCollaboratorId, user.isEmailVerified);
         this.alertService.showSuccess(

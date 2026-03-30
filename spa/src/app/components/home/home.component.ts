@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { DashboardComponent } from '../dashboard/dashboard.component';
@@ -15,6 +15,7 @@ import { NotificationService } from '../../services';
     TranslateModule,
     DashboardComponent
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {
   private authStore = useAuthStore();

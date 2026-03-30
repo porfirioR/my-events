@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-file-upload',
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.css'],
-  imports: [CommonModule, TranslateModule]
+  imports: [CommonModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FileUploadComponent {
   disabled = input(false);

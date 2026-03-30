@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,9 +20,11 @@ import { MessageTranslationService } from '../../services/helpers';
   standalone: true,
   templateUrl: './collaborator-invitations.component.html',
   styleUrls: ['./collaborator-invitations.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, TranslateModule]
 })
 export class CollaboratorInvitationsComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private invitationApiService = inject(CollaboratorInvitationApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
@@ -55,7 +58,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
 
   private loadInvitationsSummary(): void {
     this.loadingStore.setLoading();
-    this.invitationApiService.getInvitationsSummary().subscribe({
+    this.invitationApiService.getInvitationsSummary().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (summary) => {
         this.invitationsSummary = summary;
         this.loadingStore.setLoadingSuccess();
@@ -69,7 +72,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
   }
 
   private loadCollaboratorDetails(collaboratorId: number): void {
-    this.collaboratorApiService.getById(collaboratorId).subscribe({
+    this.collaboratorApiService.getById(collaboratorId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (collaborator) => {
         this.selectedCollaborator = collaborator;
       },
@@ -83,7 +86,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
 
   private loadCollaboratorInvitations(collaboratorId: number): void {
     this.loadingStore.setLoading();
-    this.invitationApiService.getCollaboratorInvitations(collaboratorId).subscribe({
+    this.invitationApiService.getCollaboratorInvitations(collaboratorId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (invitations) => {
         this.selectedCollaboratorInvitations = invitations;
         this.loadingStore.setLoadingSuccess();
@@ -106,7 +109,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
     
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
-      this.matchRequestApiService.acceptMatchRequest(invitation.id).subscribe({
+      this.matchRequestApiService.acceptMatchRequest(invitation.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           // Use message translation service for success message
           const message = this.messageTranslationService.translateSuccessMessage(

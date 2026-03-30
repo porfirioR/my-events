@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import {
@@ -18,6 +18,7 @@ import { FormatterHelperService } from '../../services';
     RouterModule,
     TranslateModule
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent {
   private collaboratorStore = useCollaboratorStore();

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -17,7 +17,8 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
     ConfirmDialogComponent
   ],
   templateUrl: './transaction-details.component.html',
-  styleUrls: ['./transaction-details.component.css']
+  styleUrls: ['./transaction-details.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionDetailsComponent implements OnInit {
   @ViewChild(AddReimbursementModalComponent) reimbursementModal: AddReimbursementModalComponent | undefined;

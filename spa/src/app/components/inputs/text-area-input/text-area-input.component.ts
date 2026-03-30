@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, OnInit, Self } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Input, OnInit, Self } from '@angular/core'
 import { ControlValueAccessor, NgControl, ReactiveFormsModule } from '@angular/forms'
 import { FormErrorsComponent } from '../../form-errors/form-errors.component'
 
@@ -11,7 +11,8 @@ import { FormErrorsComponent } from '../../form-errors/form-errors.component'
     CommonModule,
     ReactiveFormsModule,
     FormErrorsComponent,
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TextAreaInputComponent implements ControlValueAccessor {
   @Input({required: true}) label: string = ''

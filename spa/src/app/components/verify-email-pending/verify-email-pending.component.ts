@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -14,6 +15,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   selector: 'app-verify-email-pending',
   templateUrl: './verify-email-pending.component.html',
   styleUrls: ['./verify-email-pending.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -24,6 +26,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   ],
 })
 export class VerifyEmailPendingComponent {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private userApiService = inject(UserApiService);
   private alertService = inject(AlertService);
@@ -59,7 +62,7 @@ export class VerifyEmailPendingComponent {
     this.isLoading.set(true);
     const request = new ResendVerificationEmailApiRequest(this.formGroup.value.email!);
 
-    this.userApiService.resendVerificationEmail(request).subscribe({
+    this.userApiService.resendVerificationEmail(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.isLoading.set(false);
         this.alertService.showSuccess(response.message);

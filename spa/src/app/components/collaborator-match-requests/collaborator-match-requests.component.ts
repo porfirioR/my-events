@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, OnInit, Signal, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -25,6 +26,7 @@ import { MessageTranslationService } from '../../services/helpers';
   selector: 'app-collaborator-match-requests',
   templateUrl: './collaborator-match-requests.component.html',
   styleUrls: ['./collaborator-match-requests.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -36,6 +38,7 @@ import { MessageTranslationService } from '../../services/helpers';
   ]
 })
 export class CollaboratorMatchRequestsComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
   private alertService = inject(AlertService);
@@ -98,7 +101,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     this.matchRequestApiService.acceptMatchRequestWithCollaborator(
       this.pendingRequestToAccept.id,
       this.formGroup.value.collaboratorId
-    ).subscribe({
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         // Use message translation service for backend response
         const message = this.messageTranslationService.translateSuccessMessage(
@@ -132,7 +135,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
-      this.matchRequestApiService.cancelMatchRequest(request.id).subscribe({
+      this.matchRequestApiService.cancelMatchRequest(request.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           // Use message translation service for success message
           const message = this.messageTranslationService.translateSuccessMessage(
@@ -166,7 +169,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       this.formGroup.value.targetEmail!
     );
 
-    this.matchRequestApiService.createMatchRequest(request).subscribe({
+    this.matchRequestApiService.createMatchRequest(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         // Use message translation service for backend response with email parameter
         const message = this.messageTranslationService.translateBackendMessage(
@@ -213,7 +216,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       sent: this.matchRequestApiService.getSentRequests(),
       internal: this.collaboratorApiService.getUnlinkedCollaborators(),
       external: this.collaboratorApiService.getLinkedCollaborators()
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (results) => {
         this.receivedRequests = results.received;
         this.sentRequests = results.sent;
@@ -246,7 +249,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
     if (confirm(confirmMsg)) {
       this.loadingStore.setLoading();
-      this.matchRequestApiService.acceptMatchRequest(request.id).subscribe({
+      this.matchRequestApiService.acceptMatchRequest(request.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           // Use message translation service for success message
           const message = this.messageTranslationService.translateSuccessMessage(
