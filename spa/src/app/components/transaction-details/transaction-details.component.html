@@ -210,12 +210,12 @@
               </label>
               <div class="mt-1">
                 @if (transactionDetails()!.createdByMe) {
-                  <span class="badge badge-primary gap-1">
+                  <span class="badge badge-soft badge-primary gap-1">
                     <i class="fas fa-user-check"></i>
                     {{ 'transactionDetails.me' | translate }}
                   </span>
                 } @else {
-                  <span class="badge badge-info gap-1">
+                  <span class="badge badge-soft badge-info gap-1">
                     <i class="fas fa-users"></i>
                     {{ 'transactionDetails.collaborator' | translate }}
                   </span>
@@ -264,7 +264,7 @@
                       <div class="flex items-center gap-2 mt-1">
                         <span class="text-xs text-base-content/60">{{ split.participantType | translate}}</span>
                         @if (split.isPayer) {
-                          <span class="badge badge-xs badge-success gap-1">
+                          <span class="badge badge-xs badge-soft badge-success gap-1">
                             <i class="fas fa-check"></i>
                             {{ 'transactionDetails.paid' | translate }}
                           </span>
@@ -492,3 +492,6 @@
     }
   </article>
 </section>
+
+<app-add-reimbursement-modal (closed)="onReimbursementClosed()" />
+<app-confirm-dialog (confirmed)="onConfirmResult($event)" />

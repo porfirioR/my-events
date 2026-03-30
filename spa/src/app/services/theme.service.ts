@@ -13,17 +13,23 @@ export class ThemeService {
     effect(() => {
       const isDark = this.isDarkMode();
       const html = document.documentElement;
-      
+
       // Aplicar clase dark para Tailwind
       if (isDark) {
         html.classList.add('dark');
       } else {
         html.classList.remove('dark');
       }
-      
+
       // Aplicar data-theme para DaisyUI
       html.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      
+
+      // Sincronizar meta theme-color (barra del navegador en móvil)
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#4338CA');
+      }
+
       console.log('Theme applied:', isDark ? 'dark' : 'light');
     });
   }

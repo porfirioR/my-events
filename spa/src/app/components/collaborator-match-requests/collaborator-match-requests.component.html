@@ -1,5 +1,5 @@
 <section aria-labelledby="match-requests-heading" class="mb-8">
-  <article class="dark:bg-base-300 rounded-xl transition-all duration-300">
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center gap-3">
@@ -62,7 +62,7 @@
           <div>
             <ul class="space-y-4" role="list">
               @for (request of receivedRequests; track request.id) {
-                <li class="bg-base-200 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+                <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
                   <article class="flex items-center justify-between">
                     <div class="flex items-center gap-4 flex-grow">
                       <figure class="hidden flex-shrink-0 w-12 h-12 rounded-full bg-primary/20 md:flex items-center justify-center text-primary font-semibold">
@@ -132,7 +132,7 @@
                           {{ 'matchRequests.requestTo' | translate }} {{ request.targetCollaboratorEmail }}
                         </p>
                         <div class="flex items-center gap-2 mt-1">
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" 
+                          <span class="badge badge-sm badge-soft gap-1"
                             [ngClass]="getStatusBadgeClass(request.status)">
                             {{ request.status | translate }}
                           </span>

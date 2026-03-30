@@ -1,19 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useTravelStore, useCollaboratorStore, useAuthStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { ApprovalStatus } from '../../models/enums';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-travel-detail',
   templateUrl: './travel-detail.component.html',
   styleUrls: ['./travel-detail.component.css'],
-  imports: [CommonModule, RouterModule, TranslateModule]
+  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent]
 })
 export class TravelDetailComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
@@ -94,49 +98,43 @@ export class TravelDetailComponent implements OnInit {
 
   // ==================== MEMBERS ====================
 
-  protected async addMember(collaboratorId: number): Promise<void> {
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
+
+  protected addMember(collaboratorId: number): void {
     if (!this.travelId) return;
 
     const collaborator = this.availableCollaborators().find(c => c.id === collaboratorId);
     if (!collaborator) return;
 
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('travels.addMemberTitle'),
-      this.translate.instant('travels.addMemberMessage', { 
-        name: `${collaborator.name} ${collaborator.surname}` 
-      })
-    );
-
-    if (result.isConfirmed) {
-      this.travelStore.addMember(this.travelId, { collaboratorId }).subscribe({
-        next: () => {
-          this.alertService.showSuccess(
-            this.translate.instant('travels.memberAddedSuccess')
-          );
-        },
-        error: () => {
-          this.alertService.showError(
-            this.translate.instant('travels.memberAddedError')
-          );
-        }
-      });
-    }
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.travelStore.addMember(this.travelId!, { collaboratorId }).subscribe({
+          next: () => this.alertService.showSuccess(this.translate.instant('travels.memberAddedSuccess')),
+          error: () => this.alertService.showError(this.translate.instant('travels.memberAddedError'))
+        });
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.addMemberTitle'),
+      message: this.translate.instant('travels.addMemberMessage', { name: `${collaborator.name} ${collaborator.surname}` })
+    });
   }
 
-  protected async removeMember(member: TravelMemberApiModel): Promise<void> {
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('travels.removeMemberTitle'),
-      this.translate.instant('travels.removeMemberMessage', { 
-        name: `${member.collaboratorName} ${member.collaboratorSurname}` 
-      })
-    );
-
-    if (result.isConfirmed) {
-      this.travelStore.removeMember(member.id);
-      this.alertService.showSuccess(
-        this.translate.instant('travels.memberRemovedSuccess')
-      );
-    }
+  protected removeMember(member: TravelMemberApiModel): void {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.travelStore.removeMember(member.id);
+        this.alertService.showSuccess(this.translate.instant('travels.memberRemovedSuccess'));
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.removeMemberTitle'),
+      message: this.translate.instant('travels.removeMemberMessage', { name: `${member.collaboratorName} ${member.collaboratorSurname}` }),
+      type: 'warning'
+    });
   }
 
   // ==================== OPERATIONS ====================
@@ -159,92 +157,59 @@ export class TravelDetailComponent implements OnInit {
     }
   }
 
-  protected async approveOperation(operation: TravelOperationApiModel): Promise<void> {
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('travels.approveOperationTitle'),
-      this.translate.instant('travels.approveOperationMessage', { 
-        description: operation.description 
-      })
-    );
-
-    if (result.isConfirmed) {
-      this.travelStore.approveOperation(operation.id);
-      this.alertService.showSuccess(
-        this.translate.instant('travels.operationApprovedSuccess')
-      );
-    }
-  }
-
-  protected async rejectOperation(operation: TravelOperationApiModel): Promise<void> {
-    // Usar SweetAlert2 directamente para input
-    const { default: Swal } = await import('sweetalert2');
-    const result = await Swal.fire({
-      title: this.translate.instant('travels.rejectOperationTitle'),
-      text: this.translate.instant('travels.rejectOperationMessage'),
-      input: 'textarea',
-      inputPlaceholder: this.translate.instant('travels.rejectReasonPlaceholder'),
-      inputAttributes: {
-        'aria-label': this.translate.instant('travels.rejectReasonPlaceholder')
-      },
-      showCancelButton: true,
-      confirmButtonText: this.translate.instant('travels.reject'),
-      cancelButtonText: this.translate.instant('inputs.no'),
-      reverseButtons: true,
-      customClass: {
-        cancelButton: 'btn btn-outline btn-primary mx-1',
-        confirmButton: 'btn btn-error',
-      },
-      buttonsStyling: false,
-      inputValidator: (value) => {
-        if (!value) {
-          return this.translate.instant('travels.rejectReasonRequired');
-        }
-        return null;
+  protected approveOperation(operation: TravelOperationApiModel): void {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.travelStore.approveOperation(operation.id);
+        this.alertService.showSuccess(this.translate.instant('travels.operationApprovedSuccess'));
       }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.approveOperationTitle'),
+      message: this.translate.instant('travels.approveOperationMessage', { description: operation.description })
     });
-
-    if (result.isConfirmed && result.value) {
-      this.travelStore.rejectOperation(operation.id, { rejectionReason: result.value }).subscribe({
-        next: () => {
-          this.alertService.showSuccess(
-            this.translate.instant('travels.operationRejectedSuccess')
-          );
-        },
-        error: () => {
-          this.alertService.showError(
-            this.translate.instant('travels.operationRejectedError')
-          );
-        }
-      });
-    }
   }
 
-  protected async deleteOperation(operation: TravelOperationApiModel): Promise<void> {
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('travels.deleteOperationTitle'),
-      this.translate.instant('travels.deleteOperationMessage', { 
-        description: operation.description 
-      })
-    );
+  protected rejectOperation(operation: TravelOperationApiModel): void {
+    this.pendingCallback = (result) => {
+      if (result.confirmed && result.value) {
+        this.travelStore.rejectOperation(operation.id, { rejectionReason: result.value }).subscribe({
+          next: () => this.alertService.showSuccess(this.translate.instant('travels.operationRejectedSuccess')),
+          error: () => this.alertService.showError(this.translate.instant('travels.operationRejectedError'))
+        });
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.rejectOperationTitle'),
+      message: this.translate.instant('travels.rejectOperationMessage'),
+      type: 'error',
+      confirmLabel: this.translate.instant('travels.reject'),
+      inputLabel: this.translate.instant('travels.rejectReasonPlaceholder'),
+      inputPlaceholder: this.translate.instant('travels.rejectReasonPlaceholder'),
+      inputRequired: true
+    });
+  }
 
-    if (result.isConfirmed) {
-      this.travelStore.deleteOperation(operation.id);
-      this.alertService.showSuccess(
-        this.translate.instant('travels.operationDeletedSuccess')
-      );
-    }
+  protected deleteOperation(operation: TravelOperationApiModel): void {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.travelStore.deleteOperation(operation.id);
+        this.alertService.showSuccess(this.translate.instant('travels.operationDeletedSuccess'));
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('travels.deleteOperationTitle'),
+      message: this.translate.instant('travels.deleteOperationMessage', { description: operation.description }),
+      type: 'error'
+    });
   }
 
   protected getOperationStatusBadgeClass(status: string): string {
     switch(status) {
-      case this.approvalStatus.Pending:
-        return 'bg-warning/20 text-warning border-warning/30 dark:border-0';
-      case this.approvalStatus.Approved:
-        return 'bg-success/20 text-success border-success/30 dark:border-0';
-      case this.approvalStatus.Rejected:
-        return 'bg-error/20 text-error border-error/30 dark:border-0';
-      default:
-        return 'badge-neutral';
+      case this.approvalStatus.Pending:   return 'badge-soft badge-warning';
+      case this.approvalStatus.Approved:  return 'badge-soft badge-success';
+      case this.approvalStatus.Rejected:  return 'badge-soft badge-error';
+      default:                            return 'badge-soft badge-neutral';
     }
   }
 
@@ -263,12 +228,9 @@ export class TravelDetailComponent implements OnInit {
 
   protected getTravelStatusBadgeClass(status: string): string {
     switch(status) {
-      case 'Active':
-        return 'badge-success';
-      case 'Finalized':
-        return 'badge-info';
-      default:
-        return 'badge-neutral';
+      case 'Active':    return 'badge-soft badge-success';
+      case 'Finalized': return 'badge-soft badge-info';
+      default:          return 'badge-soft badge-neutral';
     }
   }
 

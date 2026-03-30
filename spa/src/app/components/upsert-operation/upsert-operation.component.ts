@@ -3,6 +3,7 @@ import { Component, OnInit, Signal, computed, effect, inject, signal } from '@an
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { switchMap, of, catchError } from 'rxjs';
 import { OperationFormGroup } from '../../models/forms/operation-form-group';
 import { useTravelStore, useLoadingStore, useCurrencyStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
@@ -13,6 +14,7 @@ import { TextComponent } from '../inputs/text/text.component';
 import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { CategorySelectorComponent } from '../category-selector/category-selector.component';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
+import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
 import { KeyValueViewModel } from '../../models/view';
 import { Configurations, SplitType, TravelParticipantType } from '../../models/enums';
 
@@ -30,7 +32,8 @@ import { Configurations, SplitType, TravelParticipantType } from '../../models/e
     TextAreaInputComponent,
     DateInputComponent,
     CategorySelectorComponent,
-    FileUploadComponent
+    FileUploadComponent,
+    AttachmentListComponent
   ]
 })
 export class UpsertOperationComponent implements OnInit {
@@ -181,6 +184,13 @@ export class UpsertOperationComponent implements OnInit {
   protected selectedParticipants = signal<number[]>([]);
   
   protected activeCategories = this.travelStore.activeCategories;
+
+  protected payerNotParticipant = computed(() => {
+    const participantType = this.formGroup.value.participantType;
+    const payerId = this.formGroup.value.whoPaidMemberId;
+    if (participantType !== TravelParticipantType.Selected || !payerId) return false;
+    return !this.selectedParticipants().includes(payerId);
+  });
 
   public ignorePreventUnsavedChanges = false;
   public formGroup: FormGroup<OperationFormGroup>;
@@ -359,37 +369,6 @@ export class UpsertOperationComponent implements OnInit {
       }
     }, { allowSignalWrites: true });
 
-    // // Effect para cargar la operación en modo edición
-    // effect(() => {
-    //   if (this.isEditMode() && this.operationId && this.travelId) {
-    //     this.travelStore.loadOperations(this.travelId);
-    //     const operation = this.travelStore.operations().find(op => op.id === this.operationId);
-
-    //     if (operation) {
-    //       this.formGroup.patchValue({
-    //         id: operation.id,
-    //         currencyId: operation.currencyId,
-    //         paymentMethodId: operation.paymentMethodId,
-    //         whoPaidMemberId: operation.whoPaidMemberId,
-    //         amount: operation.amount,
-    //         description: operation.description,
-    //         splitType: operation.splitType,
-    //         transactionDate: this.formatDateForInput(operation.transactionDate)
-    //       });
-
-    //       // TODO: Cargar participantMemberIds desde el backend si está disponible
-    //       this.selectedParticipants.set([]);
-    //     }
-    //   }
-
-    //   // Auto-seleccionar categoría "Other" por defecto si no hay ninguna
-    //   if (this.activeCategories().length > 0 && !this.formGroup.value.categoryId) {
-    //     const otherCategory = this.activeCategories().find(cat => cat.name === 'Other');
-    //     if (otherCategory) {
-    //       this.formGroup.patchValue({ categoryId: otherCategory.id });
-    //     }
-    //   }
-    // });
   }
 
   ngOnInit(): void {
@@ -536,7 +515,20 @@ export class UpsertOperationComponent implements OnInit {
       );
 
       this.formGroup.disable();
-      this.travelStore.createOperation(this.travelId, request).subscribe({
+      this.travelStore.createOperation(this.travelId, request).pipe(
+        switchMap(operation => {
+          const file = this.selectedFile();
+          if (file) {
+            return this.travelStore.uploadAttachment(operation.id, file).pipe(
+              catchError(() => {
+                this.alertService.showError(this.translate.instant('operations.attachmentUploadError'));
+                return of(null);
+              })
+            );
+          }
+          return of(null);
+        })
+      ).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
           this.alertService.showSuccess(

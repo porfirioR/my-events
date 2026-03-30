@@ -72,7 +72,16 @@ export interface ICollaboratorAccessService {
    * @param collaboratorId - ID del colaborador a verificar
    * @returns Promise con true si se puede eliminar, false si está en uso
    */
-  canDeleteCollaborator(collaboratorId: number): Promise<boolean>;
+  canDeleteCollaborator(collaboratorId: number): Promise<{ canDelete: boolean; reason?: string }>;
+
+  /**
+   * Elimina un colaborador permanentemente
+   * @param collaboratorId - ID del colaborador a eliminar
+   * @param userId - ID del usuario propietario
+   * @returns Promise vacío si fue exitoso
+   * @throws Error si el colaborador no existe o no pertenece al usuario
+   */
+  deleteCollaborator(collaboratorId: number, userId: number): Promise<void>;
 
   /**
    * Obtiene estadísticas de colaboradores de un usuario

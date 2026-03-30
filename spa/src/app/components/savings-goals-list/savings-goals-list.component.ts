@@ -1,18 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useSavingsStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-savings-goals-list',
   templateUrl: './savings-goals-list.component.html',
   styleUrls: ['./savings-goals-list.component.css'],
-  imports: [CommonModule, RouterModule, TranslateModule]
+  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent]
 })
 export class SavingsGoalsListComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private router = inject(Router);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
@@ -73,19 +77,23 @@ export class SavingsGoalsListComponent implements OnInit {
     this.router.navigate(['/savings', goal.id, 'edit']);
   }
 
-  protected async deleteGoal(goal: any): Promise<void> {
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('savingsGoals.deleteGoalTitle'),
-      this.translate.instant('savingsGoals.deleteGoalMessage', { name: goal.name }),
-      'warning'
-    );
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
 
-    if (result.value) {
-      this.savingsStore.deleteGoal(goal.id);
-      this.alertService.showSuccess(
-        this.translate.instant('savingsGoals.goalDeletedSuccess')
-      );
-    }
+  protected deleteGoal(goal: any): void {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.savingsStore.deleteGoal(goal.id);
+        this.alertService.showSuccess(this.translate.instant('savingsGoals.goalDeletedSuccess'));
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('savingsGoals.deleteGoalTitle'),
+      message: this.translate.instant('savingsGoals.deleteGoalMessage', { name: goal.name }),
+      type: 'warning'
+    });
   }
 
   protected getGoalStatusLabel = FormatterHelperService.getGoalStatusLabel.bind(this.formatterService);

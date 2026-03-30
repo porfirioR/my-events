@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, computed, signal, effect } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, computed, signal, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   FormControl,
@@ -20,6 +20,7 @@ import {
 import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { ProgressionTypeFormGroup } from '../../models/forms';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-savings-goal-detail',
@@ -32,9 +33,13 @@ import { ProgressionTypeFormGroup } from '../../models/forms';
     TranslateModule,
     TextComponent,
     TextAreaInputComponent,
+    ConfirmDialogComponent,
   ],
 })
 export class SavingsGoalDetailComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
@@ -268,25 +273,24 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   // ==================== SKIP INSTALLMENT ====================
 
-  protected async skipInstallment(installment: any): Promise<void> {
-    const result = await this.alertService.showQuestionModal(
-      this.translate.instant('savingsGoalDetail.skipInstallmentTitle'),
-      this.translate.instant('savingsGoalDetail.skipInstallmentMessage', {
-        number: installment.installmentNumber
-      }),
-      'warning'
-    );
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
 
-    if (result.value) {
-      const goalId = this.goal()!.id;
-      this.savingsStore.skipInstallment({
-        goalId,
-        installmentId: installment.id,
-      });
-      this.alertService.showSuccess(
-        this.translate.instant('savingsGoalDetail.installmentSkipped')
-      );
-    }
+  protected skipInstallment(installment: any): void {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        const goalId = this.goal()!.id;
+        this.savingsStore.skipInstallment({ goalId, installmentId: installment.id });
+        this.alertService.showSuccess(this.translate.instant('savingsGoalDetail.installmentSkipped'));
+      }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('savingsGoalDetail.skipInstallmentTitle'),
+      message: this.translate.instant('savingsGoalDetail.skipInstallmentMessage', { number: installment.installmentNumber }),
+      type: 'warning'
+    });
   }
 
   // ==================== NAVIGATION ====================

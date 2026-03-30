@@ -6,6 +6,7 @@ import { TransactionViewApiModel } from '../../models/api/transactions';
 import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-reimbursement-modal.component';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-transactions',
@@ -14,13 +15,17 @@ import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-r
     CommonModule,
     TranslateModule,
     AddReimbursementModalComponent,
-    RouterLink
+    RouterLink,
+    ConfirmDialogComponent
   ],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css']
 })
 export class TransactionsComponent implements OnInit {
-  @ViewChild(AddReimbursementModalComponent) addReimbursementModal: AddReimbursementModalComponent | undefined
+  @ViewChild(AddReimbursementModalComponent) addReimbursementModal: AddReimbursementModalComponent | undefined;
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
   private readonly loadingStore = useLoadingStore();
@@ -78,47 +83,42 @@ export class TransactionsComponent implements OnInit {
     });
   }
 
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
+
   protected deleteTransaction(transaction: TransactionViewApiModel): void {
     const description = transaction.description || this.translate.instant('transactions.noDescription');
     const amount = this.formatCurrency(transaction.netAmount, 4);
-    
-    const confirmMsg = this.translate.instant('transactions.confirmDeleteDescription', {
-      description,
-      amount
-    });
 
-    this.alertService.showQuestionModal(
-      this.translate.instant('transactions.confirmDelete'), 
-      confirmMsg
-    ).then(x => {
-      if (x && x.isConfirmed) {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
         this.transactionStore.deleteTransaction(transaction.id);
-        this.alertService.showSuccess(
-          this.translate.instant('transactions.transactionDeleted')
-        );
+        this.alertService.showSuccess(this.translate.instant('transactions.transactionDeleted'));
       }
-    })
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('transactions.confirmDelete'),
+      message: this.translate.instant('transactions.confirmDeleteDescription', { description, amount }),
+      type: 'error'
+    });
   }
 
   protected settleTransaction(transaction: TransactionViewApiModel): void {
     const description = transaction.description || this.translate.instant('transactions.noDescription');
     const amount = this.formatCurrency(transaction.netAmount, 4);
-    
-    const confirmMsg = this.translate.instant('transactions.confirmSettleDescription', {
-      description,
-      amount
-    });
 
-    this.alertService.showQuestionModal(
-      this.translate.instant('transactions.confirmSettle'), 
-      confirmMsg
-    ).then(x => {
-      if (x && x.isConfirmed) {
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
         this.transactionStore.settleTransaction(transaction.id);
-        this.alertService.showSuccess(
-          this.translate.instant('transactions.transactionSettled')
-        );
+        this.alertService.showSuccess(this.translate.instant('transactions.transactionSettled'));
       }
-    })
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('transactions.confirmSettle'),
+      message: this.translate.instant('transactions.confirmSettleDescription', { description, amount }),
+      type: 'warning'
+    });
   }
 }

@@ -48,4 +48,7 @@ export class CollaboratorApiService {
     !request.id ?
     this.httpClient.post<CollaboratorApiModel>(this.section, request) :
     this.httpClient.put<CollaboratorApiModel>(this.section, request);
+
+  public deleteCollaborator = (id: number): Observable<void> =>
+    this.httpClient.delete<void>(`${this.section}/${id}`);
 }

@@ -43,7 +43,7 @@
             <i class="fas fa-envelope mr-1" aria-hidden="true"></i>
             {{ 'collaborators.requests' | translate }}
             @if (pendingRequestsCount() > 0) {
-              <span class="absolute -top-2 -right-2 badge badge-sm badge-error">
+              <span class="absolute -top-2 -right-2 badge badge-sm badge-soft badge-error">
                 {{ pendingRequestsCount() }}
               </span>
             }
@@ -104,13 +104,13 @@
                   <!-- Badges -->
                   <div class="flex items-center mt-2 gap-2 flex-wrap">
                     <!-- Active/Inactive -->
-                    <span class="badge badge-outline flex items-baseline"
+                    <span class="badge badge-soft gap-1"
                       [ngClass]="{
                         'badge-info': collaborator.isActive,
                         'badge-error': !collaborator.isActive
                       }"
                     >
-                      <i class="fas mr-1"
+                      <i class="fas"
                         [ngClass]="{
                           'fa-check-circle': collaborator.isActive,
                           'fa-times-circle': !collaborator.isActive
@@ -121,19 +121,19 @@
                     </span>
 
                     <!-- Type -->
-                    <span class="badge badge-outline flex items-baseline"
+                    <span class="badge badge-soft gap-1"
                       [ngClass]="{
                         'badge-warning': collaborator.type === 'UNLINKED',
                         'badge-success': collaborator.type === 'LINKED'
                       }"
                     >
-                      <i class="fas mr-1"
+                      <i class="fas"
                         [ngClass]="{
                           'fa-unlink': collaborator.type === 'UNLINKED',
                           'fa-link': collaborator.type === 'LINKED'
                         }" aria-hidden="true"
                       ></i>
-                        {{ collaborator.type === 'UNLINKED' ? ('collaborators.unlinked' | translate) : ('collaborators.linked' | translate) }}
+                      {{ collaborator.type === 'UNLINKED' ? ('collaborators.unlinked' | translate) : ('collaborators.linked' | translate) }}
                     </span>
                   </div>
                 </div>
@@ -196,15 +196,14 @@
                           </button>
                         </li>
                       }
-                      <!-- TODO Delete -->
-                      <!-- <li><hr class="my-1 border-base-300"></li>
+                      <li><hr class="my-1 border-base-300"></li>
                       <li>
                         <button type="button" (click)="deleteCollaborator(collaborator)"
                           class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-error/10 hover:text-error">
                           <i class="fas fa-trash mr-3 text-error" aria-hidden="true"></i>
-                          <span>Delete</span>
+                          <span>{{ 'collaborators.delete' | translate }}</span>
                         </button>
-                      </li> -->
+                      </li>
                     </ul>
                   </div>
                 </aside>
@@ -238,3 +237,4 @@
     </div>
   </article>
 </section>
+<app-confirm-dialog (confirmed)="onConfirmResult($event)" />

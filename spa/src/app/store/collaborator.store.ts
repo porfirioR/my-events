@@ -210,6 +210,30 @@ export const CollaboratorStore = signalStore(
       )
     ),
 
+    // Eliminar colaborador
+    deleteCollaborator: rxMethod<number>(
+      pipe(
+        tap(() => {
+          loadingStore.setLoading();
+          patchState(store, { error: null });
+        }),
+        switchMap((id) => collaboratorApiService.deleteCollaborator(id).pipe(
+          tap(() => {
+            patchState(store, {
+              collaborators: store.collaborators().filter(c => c.id !== id)
+            });
+            loadingStore.setLoadingSuccess();
+          }),
+          catchError(error => {
+            patchState(store, { error: 'Failed to delete collaborator' });
+            loadingStore.setLoadingFailed();
+            console.error('Delete collaborator error:', error);
+            return of(null);
+          })
+        ))
+      )
+    ),
+
     // Métodos auxiliares (no hacen peticiones HTTP)
     setFilter: (filter: string) => patchState(store, { filter }),
     clearFilter: () => patchState(store, { filter: '' }),

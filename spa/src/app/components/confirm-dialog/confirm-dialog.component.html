@@ -1,0 +1,42 @@
+<dialog class="modal" role="none" #confirmDialog>
+  <main class="modal-box max-w-sm">
+    @if (dialogData(); as data) {
+      <h3 class="font-bold text-lg mb-2">{{ data.title }}</h3>
+      <p class="text-base-content/70 mb-4">{{ data.message }}</p>
+
+      @if (data.inputLabel !== undefined) {
+        <form [formGroup]="formGroup">
+          <app-text-area-input
+            formControlName="value"
+            [label]="data.inputLabel"
+            [placeholder]="data.inputPlaceholder ?? ''"
+            id="confirm-dialog-input"
+            name="confirm-dialog-input"
+          />
+        </form>
+      }
+
+      <footer class="flex justify-between items-center pt-4 gap-4">
+        <button
+          type="button"
+          class="btn btn-outline btn-primary flex items-center gap-2"
+          (click)="onCancel()"
+        >
+          <i class="fas fa-arrow-left text-sm"></i>
+          {{ data.cancelLabel ?? ('inputs.no' | translate) }}
+        </button>
+        <button
+          type="button"
+          [class]="confirmBtnClass + ' flex items-center gap-2'"
+          (click)="onConfirm()"
+        >
+          <i class="fas fa-check text-sm"></i>
+          {{ data.confirmLabel ?? ('inputs.yes' | translate) }}
+        </button>
+      </footer>
+    }
+  </main>
+  <form method="dialog" class="modal-backdrop">
+    <button (click)="onCancel()">close</button>
+  </form>
+</dialog>

@@ -5,7 +5,7 @@
       <i class="fas fa-paperclip text-primary"></i>
       {{ 'operations.attachments' | translate }}
       @if (attachmentCount() > 0) {
-        <span class="badge badge-primary badge-sm">{{ attachmentCount() }}</span>
+        <span class="badge badge-soft badge-primary badge-sm">{{ attachmentCount() }}</span>
       }
     </h3>
 
@@ -154,3 +154,4 @@
     </div>
   }
 </div>
+<app-confirm-dialog (confirmed)="onConfirmResult($event)" />

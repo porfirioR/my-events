@@ -245,7 +245,14 @@
     "eventSavedSuccessfully": "Event saved successfully",
     "failedToUpdate": "Failed to update collaborator",
     "failedToCreate": "Failed to create collaborator",
-    "collaboratorAssociatedToTransactions": "The collaborator is associated with existing transactions and cannot be deleted. You can deactivate them instead."
+    "collaboratorAssociatedToTransactions": "The collaborator is associated with existing transactions and cannot be deleted. You can deactivate them instead.",
+    "collaboratorAssociatedToTravels": "The collaborator is associated with one or more travels and cannot be deleted. You can deactivate them instead.",
+    "collaboratorAssociatedToMatches": "The collaborator is linked to another user and cannot be deleted. You can deactivate them instead.",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete collaborator",
+    "deleteConfirmMessage": "Are you sure you want to delete {{name}}? This action cannot be undone.",
+    "deletedSuccess": "Collaborator deleted successfully",
+    "deleteError": "Failed to delete collaborator"
   },
   "validation": {
     "required": "is required",
@@ -438,6 +445,7 @@
     "totalPercentage": "Total percentage",
     "customAmountsMustEqualTotal": "Custom amounts must equal the total operation amount",
     "percentagesMustEqual100": "Percentages must equal exactly 100%",
+    "payerNotParticipantWarning": "The payer is not included as a participant. The others will owe them the full amount, but they have no share in the expense.",
     "splitTypes": {
       "Equal": "Equal split",
       "Custom": "Custom amounts",

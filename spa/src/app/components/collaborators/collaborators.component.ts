@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
 import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { useCollaboratorStore, useLoadingStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-collaborators',
@@ -15,10 +16,14 @@ import { CollaboratorMatchRequestApiService } from '../../services/api/collabora
   imports: [
     CommonModule,
     RouterModule,
-    TranslateModule
+    TranslateModule,
+    ConfirmDialogComponent
   ]
 })
 export class CollaboratorsComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
   private readonly router = inject(Router);
   private readonly alertService = inject(AlertService);
   private readonly translate = inject(TranslateService);  // ← Inyectar
@@ -57,28 +62,29 @@ export class CollaboratorsComponent implements OnInit {
     this.router.navigate(['/collaborators/edit', collaborator.id]);
   }
 
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
+
   protected toggleCollaboratorStatus(collaborator: CollaboratorApiModel): void {
-    const action = collaborator.isActive ? 
-      this.translate.instant('collaborators.deactivate') : 
-      this.translate.instant('collaborators.activate');
-    
     const name = `${collaborator.name} ${collaborator.surname}`;
     const confirmMsg = collaborator.isActive ?
       this.translate.instant('collaborators.confirmDeactivate', { name }) :
       this.translate.instant('collaborators.confirmActivate', { name });
 
-    this.alertService.showQuestionModal(
-      this.translate.instant('collaborators.changeVisibility'), 
-      confirmMsg
-    ).then(x => {
-      if (x && x.isConfirmed) {
-        this.collaboratorStore.changeVisibility(+collaborator.id)
+    this.pendingCallback = (result) => {
+      if (result.confirmed) {
+        this.collaboratorStore.changeVisibility(+collaborator.id);
         this.loadCollaborators();
-        this.alertService.showSuccess(
-          this.translate.instant('collaborators.collaboratorUpdated')
-        );
+        this.alertService.showSuccess(this.translate.instant('collaborators.collaboratorUpdated'));
       }
-    })
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('collaborators.changeVisibility'),
+      message: confirmMsg,
+      type: 'warning'
+    });
   }
 
   protected resendInvitation(collaborator: CollaboratorApiModel): void {
@@ -139,29 +145,29 @@ export class CollaboratorsComponent implements OnInit {
     });
   }
 
-  // todo hard delete
-  // protected deleteCollaborator(collaborator: CollaboratorApiModel): void {
-  //   this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
-  //     next: (response) => {
-  //       if (!response.canDelete) {
-  //         this.alertService.showInfo(
-  //           response.reason || 'This collaborator cannot be deleted'
-  //         );
-  //         return;
-  //       }
-  //       this.loadingStore.setLoading()
-  //       const confirmMsg = `Are you sure you want to Delete ${collaborator.name} ${collaborator.surname}?`;
-  //       this.alertService.showQuestionModal('Delete', confirmMsg).then(x => {
-  //         if (x && x.isConfirmed) {
-  //           this.collaboratorStore.changeVisibility(+collaborator.id)
-  //           this.loadCollaborators();
-  //           this.alertService.showSuccess(`Collaborator ${status}d successfully`);
-  //         }
-  //       })
-  //     },
-  //     error: (error) => {
-  //       this.alertService.showError('Failed to check delete permission');
-  //     }
-  //   });
-  // }
+  protected deleteCollaborator(collaborator: CollaboratorApiModel): void {
+    this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
+      next: (response) => {
+        if (!response.canDelete) {
+          this.alertService.showError(this.translate.instant(response.reason || 'collaborators.deleteError'));
+          return;
+        }
+
+        this.pendingCallback = (result) => {
+          if (result.confirmed) {
+            this.collaboratorStore.deleteCollaborator(collaborator.id);
+            this.alertService.showSuccess(this.translate.instant('collaborators.deletedSuccess'));
+          }
+        };
+        this.confirmDialog.open({
+          title: this.translate.instant('collaborators.deleteConfirmTitle'),
+          message: this.translate.instant('collaborators.deleteConfirmMessage', { name: `${collaborator.name} ${collaborator.surname}` }),
+          type: 'error'
+        });
+      },
+      error: () => {
+        this.alertService.showError(this.translate.instant('collaborators.deleteError'));
+      }
+    });
+  }
 }

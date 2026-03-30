@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { AppLoggerService } from '../../utility/services/app-logger.service';
 import { CollaboratorInvitationModel, CollaboratorMatchModel, CollaboratorModel, CollaboratorSummaryModel, CreateCollaboratorRequest, CreateMatchRequestRequest, EnrichedCollaboratorModel, MatchRequestResponseModel, ReceivedMatchRequestModel, UpdateCollaboratorRequest } from '../models/collaborators';
 import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, ICollaboratorAccessService, UpdateCollaboratorAccessRequest } from '../../access/contract/collaborators';
 import { COLLABORATOR_TOKENS } from '../../utility/constants';
@@ -21,6 +22,7 @@ export class CollaboratorManagerService {
     @Inject(COLLABORATOR_TOKENS.MATCH_REQUEST_ACCESS_SERVICE)
     private matchRequestAccessService: ICollaboratorMatchRequestAccessService,
     private userAccessService: UserAccessService,
+    private logger: AppLoggerService,
   ) {}
 
   // Obtener todos los colaboradores del usuario
@@ -80,11 +82,16 @@ export class CollaboratorManagerService {
 
   // Verificar si se puede eliminar
   public canDeleteCollaborator = async (collaboratorId: number): Promise<{ canDelete: boolean; reason?: string }> => {
-    const canDelete = await this.collaboratorAccessService.canDeleteCollaborator(collaboratorId);
-    return {
-      canDelete,
-      reason: canDelete ? undefined : 'collaborators.collaboratorAssociatedToTransactions'
-    };
+    return await this.collaboratorAccessService.canDeleteCollaborator(collaboratorId);
+  };
+
+  // Eliminar colaborador
+  public deleteCollaborator = async (collaboratorId: number, userId: number): Promise<void> => {
+    const { canDelete, reason } = await this.collaboratorAccessService.canDeleteCollaborator(collaboratorId);
+    if (!canDelete) {
+      throw new BadRequestException(reason);
+    }
+    await this.collaboratorAccessService.deleteCollaborator(collaboratorId, userId);
   };
 
   // Obtener estadísticas
@@ -576,6 +583,7 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
 
     const requests = await this.matchRequestAccessService.getReceivedRequests(
       userId,
+      collaborator.email,
       MatchRequestStatus.Pending
     );
 
@@ -690,7 +698,7 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
    */
   private sendInvitationEmail = async (collaborator: CollaboratorAccessModel): Promise<void> => {
     // TODO: Implementar con tu servicio de email
-    console.log(`Sending invitation to ${collaborator.email}`);
+    this.logger.log(`Sending invitation to ${collaborator.email}`, CollaboratorManagerService.name);
     // await this.emailService.sendCollaboratorInvitation(collaborator);
   };
 
@@ -699,7 +707,7 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
    */
   private sendMatchRequestNotification = async (request: CollaboratorMatchRequestAccessModel): Promise<void> => {
     // TODO: Implementar notificación
-    console.log(`Match request sent to user ${request.targetUserId}`);
+    this.logger.log(`Match request sent to user ${request.targetUserId}`, CollaboratorManagerService.name);
     // await this.notificationService.sendMatchRequestNotification(request);
   };
 
@@ -708,7 +716,7 @@ private enrichCollaboratorWithMatchInfo = async (collaborator: CollaboratorAcces
    */
   private sendMatchAcceptedNotification = async (match: CollaboratorMatchAccessModel): Promise<void> => {
     // TODO: Implementar notificación
-    console.log(`Match accepted between users ${match.user1Id} and ${match.user2Id}`);
+    this.logger.log(`Match accepted between users ${match.user1Id} and ${match.user2Id}`, CollaboratorManagerService.name);
     // await this.notificationService.sendMatchAcceptedNotification(match);
   };
 

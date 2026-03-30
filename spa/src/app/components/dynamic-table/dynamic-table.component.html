@@ -1,15 +1,15 @@
 <section class="py-6 px-4">
-  <table class="table-auto shadow-2xl bg-white rounded-lg" id="principal-table">
+  <table class="table-auto shadow-2xl bg-base-100 rounded-lg" id="principal-table">
     <thead>
       <tr>
         @for (column of columnName; track column) {
-          <th class="bg-sky-200 text-bg-sky-500">{{column}}</th>
+          <th class="bg-primary/20 text-primary-content">{{column}}</th>
         }
       </tr>
     </thead>
     <tbody>
       @for (row of objectList; track row.id; let odd = $odd) {
-        <tr [ngClass]="odd ? 'bg-slate-300' : 'bg-slate-400'">
+        <tr [ngClass]="odd ? 'bg-base-200' : 'bg-base-300'">
           <td>{{row.id}}</td>
           <td>{{row.nombre}}</td>
           <td>{{row.tipo}}</td>
@@ -49,16 +49,16 @@
   <table class="table-auto shadow-2xl rounded-lg" id="secondary-table">
     <thead class="hover:border-blue-200 hover:border-solid">
       <tr>
-        <th class="bg-sky-200 text-bg-sky-500">Columnas</th>
-        <th class="bg-sky-200 text-bg-sky-500">Datos</th>
+        <th class="bg-primary/20 text-primary-content">Columnas</th>
+        <th class="bg-primary/20 text-primary-content">Datos</th>
       </tr>
     </thead>
     <tbody>
       @for (row of matrix; track row[0]; let odd = $odd) {
         @for (cellData of row; track cellData;) {
           <tr>
-            <td class="bg-sky-200"><b>{{columnName[$index]}}</b></td>
-            <td [ngClass]="odd ? 'bg-slate-300' : 'bg-slate-400'">{{cellData}}</td>
+            <td class="bg-primary/20"><b>{{columnName[$index]}}</b></td>
+            <td [ngClass]="odd ? 'bg-base-200' : 'bg-base-300'">{{cellData}}</td>
           </tr>
         }
         <br>
