@@ -102,12 +102,9 @@ export class TravelsListComponent implements OnInit {
 
   protected getTravelStatusBadgeClass(status: string): string {
     switch(status) {
-      case 'Active':
-        return 'badge-success';
-      case 'Finalized':
-        return 'badge-info';
-      default:
-        return 'badge-neutral';
+      case 'Active':    return 'badge-soft badge-success';
+      case 'Finalized': return 'badge-soft badge-info';
+      default:          return 'badge-soft badge-neutral';
     }
   }
 

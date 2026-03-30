@@ -25,9 +25,9 @@
             <!-- Metadata -->
             <div class="flex items-center gap-4 flex-wrap">
               <!-- Status Badge -->
-              <span class="badge badge-outline flex items-baseline"
+              <span class="badge gap-1"
                 [ngClass]="getTravelStatusBadgeClass(travelData.status)">
-                <i [class]="'fas ' + getTravelStatusIcon(travelData.status) + ' mr-1'"></i>
+                <i [class]="'fas ' + getTravelStatusIcon(travelData.status)"></i>
                 {{ 'travels.' + travelData.status.toLowerCase() | translate }}
               </span>
 
@@ -146,8 +146,7 @@
                             <span class="text-lg font-bold text-primary">
                               {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
                             </span>
-                            <span
-                              class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border"
+                            <span class="badge badge-sm gap-1"
                               [ngClass]="getOperationStatusBadgeClass(operation.status)"
                             >
                               <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
@@ -171,11 +170,10 @@
                             </span>
 
                             <!-- Status -->
-                            <span
-                              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+                            <span class="badge gap-1"
                               [ngClass]="getOperationStatusBadgeClass(operation.status)"
                             >
-                              <i [class]="'fas ' + getOperationStatusIcon(operation.status) + ' mr-1'"></i>
+                              <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
                               {{ 'travels.' + operation.status.toLowerCase() | translate }}
                             </span>
                           </div>

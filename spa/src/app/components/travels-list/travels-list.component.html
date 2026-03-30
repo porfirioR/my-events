@@ -128,9 +128,9 @@
                   <!-- Metadata -->
                   <div class="flex items-center gap-4 mt-3 flex-wrap">
                     <!-- Status Badge -->
-                    <span class="badge badge-sm badge-outline flex items-baseline"
+                    <span class="badge badge-sm gap-1"
                       [ngClass]="getTravelStatusBadgeClass(travel.status)">
-                      <i [class]="'fas ' + getTravelStatusIcon(travel.status) + ' mr-1'"></i>
+                      <i [class]="'fas ' + getTravelStatusIcon(travel.status)"></i>
                       {{ 'travels.' + travel.status.toLowerCase() | translate }}
                     </span>
 

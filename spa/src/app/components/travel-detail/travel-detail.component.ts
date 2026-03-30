@@ -206,14 +206,10 @@ export class TravelDetailComponent implements OnInit {
 
   protected getOperationStatusBadgeClass(status: string): string {
     switch(status) {
-      case this.approvalStatus.Pending:
-        return 'bg-warning/20 text-warning border-warning/30 dark:border-0';
-      case this.approvalStatus.Approved:
-        return 'bg-success/20 text-success border-success/30 dark:border-0';
-      case this.approvalStatus.Rejected:
-        return 'bg-error/20 text-error border-error/30 dark:border-0';
-      default:
-        return 'badge-neutral';
+      case this.approvalStatus.Pending:   return 'badge-soft badge-warning';
+      case this.approvalStatus.Approved:  return 'badge-soft badge-success';
+      case this.approvalStatus.Rejected:  return 'badge-soft badge-error';
+      default:                            return 'badge-soft badge-neutral';
     }
   }
 
@@ -232,12 +228,9 @@ export class TravelDetailComponent implements OnInit {
 
   protected getTravelStatusBadgeClass(status: string): string {
     switch(status) {
-      case 'Active':
-        return 'badge-success';
-      case 'Finalized':
-        return 'badge-info';
-      default:
-        return 'badge-neutral';
+      case 'Active':    return 'badge-soft badge-success';
+      case 'Finalized': return 'badge-soft badge-info';
+      default:          return 'badge-soft badge-neutral';
     }
   }
 

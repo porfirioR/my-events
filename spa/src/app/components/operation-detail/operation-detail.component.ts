@@ -161,14 +161,10 @@ export class OperationDetailComponent implements OnInit {
 
   protected getOperationStatusBadgeClass(status: string): string {
     switch(status) {
-      case this.approvalStatus.Pending:
-        return 'badge-warning';
-      case this.approvalStatus.Approved:
-        return 'badge-success';
-      case this.approvalStatus.Rejected:
-        return 'badge-error';
-      default:
-        return 'badge-neutral';
+      case this.approvalStatus.Pending:   return 'badge-soft badge-warning';
+      case this.approvalStatus.Approved:  return 'badge-soft badge-success';
+      case this.approvalStatus.Rejected:  return 'badge-soft badge-error';
+      default:                            return 'badge-soft badge-neutral';
     }
   }
 

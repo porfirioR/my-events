@@ -192,14 +192,10 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
 
   protected getStatusBadgeClass(status: string): string {
     switch (status.toUpperCase()) {
-      case 'PENDING':
-        return 'bg-warning/20 text-warning border-warning/30';
-      case 'ACCEPTED':
-        return 'bg-success/20 text-success border-success/30';
-      case 'EMAILNOTFOUND':
-        return 'bg-info/20 text-info border-info/30';
-      default:
-        return 'bg-base-content/20 text-base-content border-base-content/30';
+      case 'PENDING':       return 'badge-soft badge-warning';
+      case 'ACCEPTED':      return 'badge-soft badge-success';
+      case 'EMAILNOTFOUND': return 'badge-soft badge-info';
+      default:              return 'badge-soft badge-neutral';
     }
   }
 

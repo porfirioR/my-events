@@ -132,7 +132,7 @@
                           {{ 'matchRequests.requestTo' | translate }} {{ request.targetCollaboratorEmail }}
                         </p>
                         <div class="flex items-center gap-2 mt-1">
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" 
+                          <span class="badge badge-sm gap-1"
                             [ngClass]="getStatusBadgeClass(request.status)">
                             {{ request.status | translate }}
                           </span>

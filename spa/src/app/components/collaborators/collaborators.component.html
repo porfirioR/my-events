@@ -104,13 +104,13 @@
                   <!-- Badges -->
                   <div class="flex items-center mt-2 gap-2 flex-wrap">
                     <!-- Active/Inactive -->
-                    <span class="badge badge-outline flex items-baseline"
+                    <span class="badge badge-soft gap-1"
                       [ngClass]="{
                         'badge-info': collaborator.isActive,
                         'badge-error': !collaborator.isActive
                       }"
                     >
-                      <i class="fas mr-1"
+                      <i class="fas"
                         [ngClass]="{
                           'fa-check-circle': collaborator.isActive,
                           'fa-times-circle': !collaborator.isActive
@@ -121,19 +121,19 @@
                     </span>
 
                     <!-- Type -->
-                    <span class="badge badge-outline flex items-baseline"
+                    <span class="badge badge-soft gap-1"
                       [ngClass]="{
                         'badge-warning': collaborator.type === 'UNLINKED',
                         'badge-success': collaborator.type === 'LINKED'
                       }"
                     >
-                      <i class="fas mr-1"
+                      <i class="fas"
                         [ngClass]="{
                           'fa-unlink': collaborator.type === 'UNLINKED',
                           'fa-link': collaborator.type === 'LINKED'
                         }" aria-hidden="true"
                       ></i>
-                        {{ collaborator.type === 'UNLINKED' ? ('collaborators.unlinked' | translate) : ('collaborators.linked' | translate) }}
+                      {{ collaborator.type === 'UNLINKED' ? ('collaborators.unlinked' | translate) : ('collaborators.linked' | translate) }}
                     </span>
                   </div>
                 </div>

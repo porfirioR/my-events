@@ -28,9 +28,9 @@
             <!-- Metadata original (limpio) -->
             <div class="flex items-center gap-4 flex-wrap">
               <!-- Status Badge -->
-              <span class="badge badge-outline badge-lg flex items-baseline"
+              <span class="badge badge-lg gap-1"
                 [ngClass]="getOperationStatusBadgeClass(op.status)">
-                <i [class]="'fas ' + getOperationStatusIcon(op.status) + ' mr-2'"></i>
+                <i [class]="'fas ' + getOperationStatusIcon(op.status)"></i>
                 {{ 'travels.' + op.status.toLowerCase() | translate }}
               </span>
 
