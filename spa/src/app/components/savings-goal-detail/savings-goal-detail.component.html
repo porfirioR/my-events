@@ -56,7 +56,7 @@
         {{ getGoalStatusLabel(g.statusId) | translate }}
       </span>
 
-      <span class="badge badge-sm badge-outline">
+      <span class="badge badge-sm badge-soft badge-neutral">
         {{ getProgressionTypeLabel(g.progressionTypeId) | translate }}
       </span>
 
@@ -141,7 +141,7 @@
       <button role="tab" class="tab" [class.tab-active]="activeTab() === 'deposits'" (click)="setActiveTab('deposits')">
         <i class="fas fa-money-bill-wave mr-2"></i>
         {{ 'savingsGoalDetail.deposits' | translate }}
-        <span class="badge badge-sm badge-ghost ml-2">{{ deposits().length }}</span>
+        <span class="badge badge-sm badge-soft ml-2">{{ deposits().length }}</span>
       </button>
     </div>
 

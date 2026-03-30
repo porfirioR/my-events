@@ -25,7 +25,7 @@
             <!-- Metadata -->
             <div class="flex items-center gap-4 flex-wrap">
               <!-- Status Badge -->
-              <span class="badge gap-1"
+              <span class="badge badge-soft gap-1"
                 [ngClass]="getTravelStatusBadgeClass(travelData.status)">
                 <i [class]="'fas ' + getTravelStatusIcon(travelData.status)"></i>
                 {{ 'travels.' + travelData.status.toLowerCase() | translate }}
@@ -76,7 +76,7 @@
           <i class="fas fa-receipt mr-2"></i>
           {{ 'travels.operations' | translate }}
           @if (operations().length > 0) {
-            <span class="badge badge-sm ml-2">{{ operations().length }}</span>
+            <span class="badge badge-sm badge-soft ml-2">{{ operations().length }}</span>
           }
         </button>
         <button
@@ -88,7 +88,7 @@
           <i class="fas fa-users mr-2"></i>
           {{ 'travels.members' | translate }}
           @if (members().length > 0) {
-            <span class="badge badge-sm ml-2">{{ members().length }}</span>
+            <span class="badge badge-sm badge-soft ml-2">{{ members().length }}</span>
           }
         </button>
         <button
@@ -146,7 +146,7 @@
                             <span class="text-lg font-bold text-primary">
                               {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
                             </span>
-                            <span class="badge badge-sm gap-1"
+                            <span class="badge badge-sm badge-soft gap-1"
                               [ngClass]="getOperationStatusBadgeClass(operation.status)"
                             >
                               <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
@@ -170,7 +170,7 @@
                             </span>
 
                             <!-- Status -->
-                            <span class="badge gap-1"
+                            <span class="badge badge-soft gap-1"
                               [ngClass]="getOperationStatusBadgeClass(operation.status)"
                             >
                               <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>

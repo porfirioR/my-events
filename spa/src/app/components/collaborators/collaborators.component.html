@@ -43,7 +43,7 @@
             <i class="fas fa-envelope mr-1" aria-hidden="true"></i>
             {{ 'collaborators.requests' | translate }}
             @if (pendingRequestsCount() > 0) {
-              <span class="absolute -top-2 -right-2 badge badge-sm badge-error">
+              <span class="absolute -top-2 -right-2 badge badge-sm badge-soft badge-error">
                 {{ pendingRequestsCount() }}
               </span>
             }

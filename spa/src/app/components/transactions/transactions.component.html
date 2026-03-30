@@ -133,10 +133,10 @@
                       </time>
                       <span class="text-base-content/30">•</span>
                       <!-- Settled Status Badge -->
-                      <span class="badge badge-sm gap-1"
+                      <span class="badge badge-sm badge-soft gap-1"
                         [ngClass]="{
-                          'badge-soft badge-success': transaction.isSettled,
-                          'badge-soft badge-warning': !transaction.isSettled
+                          'badge-success': transaction.isSettled,
+                          'badge-warning': !transaction.isSettled
                         }"
                       >
                         <i class="fas"
@@ -153,10 +153,10 @@
                     <!-- Badges compactos en una línea -->
                     <div class="flex flex-wrap gap-1.5 items-center">
                       <!-- Who Paid Badge -->
-                      <span class="badge badge-sm gap-1 whitespace-nowrap"
+                      <span class="badge badge-sm badge-soft gap-1 whitespace-nowrap"
                         [ngClass]="{
-                          'badge-soft badge-success': transaction.iPaid > 0,
-                          'badge-soft badge-info': transaction.theyPaid > 0
+                          'badge-accent': transaction.iPaid > 0,
+                          'badge-info': transaction.theyPaid > 0
                         }"
                       >
                         <i class="fas"
