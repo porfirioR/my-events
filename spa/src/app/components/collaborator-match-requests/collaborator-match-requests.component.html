@@ -259,6 +259,8 @@
   </article>
 </section>
 
+<app-confirm-dialog (confirmed)="onConfirmResult($event)" />
+
 <!-- Modal de Selección de Colaborador -->
 @if (showCollaboratorSelectionModal) {
   <div class="modal modal-open">

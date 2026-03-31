@@ -26,10 +26,5 @@ export class HomeComponent {
   protected userLoaded = this.authStore.isLoggedIn;
   protected notificationService = inject(NotificationService);
 
-  constructor() {
-    // Cargar notificaciones si el usuario está logueado
-    // if (this.currentUser()) {
-    //   this.notificationService.loadNotifications();
-    // }
-  }
+  constructor() {}
 }

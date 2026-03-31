@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { 
   CollaboratorInvitationModel, 
   ReceivedMatchRequestModel,
@@ -14,6 +14,7 @@ import { CollaboratorMatchRequestApiService } from '../../services/api/collabora
 import { AlertService, FormatterHelperService } from '../../services';
 import { useLoadingStore } from '../../store';
 import { MessageTranslationService } from '../../services/helpers';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-collaborator-invitations',
@@ -21,15 +22,17 @@ import { MessageTranslationService } from '../../services/helpers';
   templateUrl: './collaborator-invitations.component.html',
   styleUrls: ['./collaborator-invitations.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, TranslateModule]
+  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent]
 })
 export class CollaboratorInvitationsComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private destroyRef = inject(DestroyRef);
   private invitationApiService = inject(CollaboratorInvitationApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private alertService = inject(AlertService);
   private messageTranslationService = inject(MessageTranslationService);
+  private translate = inject(TranslateService);
   private loadingStore = useLoadingStore();
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -42,6 +45,12 @@ export class CollaboratorInvitationsComponent implements OnInit {
   
   viewMode: 'summary' | 'details' = 'summary';
   isLoading = this.loadingStore.isLoading;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
+
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
 
   ngOnInit(): void {
     const collaboratorId = this.route.snapshot.paramMap.get('collaboratorId');
@@ -103,35 +112,34 @@ export class CollaboratorInvitationsComponent implements OnInit {
     this.router.navigate(['/collaborators', invitation.collaborator.id, 'invitations']);
   }
 
-  // Accept invitation from this component
   acceptInvitation(invitation: ReceivedMatchRequestModel): void {
-    const confirmMsg = `Accept match request from ${invitation.requesterCollaboratorName}?`;
-    
-    if (confirm(confirmMsg)) {
+    this.pendingCallback = (result: ConfirmDialogResult) => {
+      if (!result.confirmed) return;
       this.loadingStore.setLoading();
       this.matchRequestApiService.acceptMatchRequest(invitation.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
-          // Use message translation service for success message
           const message = this.messageTranslationService.translateSuccessMessage(
-            response, 
+            response,
             'matchRequests.requestAcceptedSuccess'
           );
           this.alertService.showSuccess(message);
-          
-          // Reload invitations
           if (this.selectedCollaborator) {
             this.loadCollaboratorInvitations(this.selectedCollaborator.id);
           }
           this.loadingStore.setLoadingSuccess();
         },
         error: (error) => {
-          // Use message translation service for error handling
           const errorMessage = this.messageTranslationService.translateErrorMessage(error);
           this.alertService.showError(errorMessage);
           this.loadingStore.setLoadingFailed();
         }
       });
-    }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('matchRequests.accept'),
+      message: this.translate.instant('matchRequests.acceptMatchRequest', { email: invitation.requesterCollaboratorName }),
+      type: 'info',
+    });
   }
 
   backToList(): void {
