@@ -142,7 +142,6 @@ export class CollaboratorsComponent implements OnInit {
         this.pendingRequestsCount.set(requests.length);
       },
       error: (error) => {
-        console.error('Failed to load pending requests count:', error);
         this.pendingRequestsCount.set(0);
       }
     });

@@ -78,13 +78,10 @@ export class TravelDetailComponent implements OnInit {
     this.activeTab.set(tab);
 
     if (tab === 'balances' && this.travelId) {
-      console.log('🔄 Refreshing balances for travel:', this.travelId);
       this.travelStore.loadBalances(this.travelId);
     } else if (tab === 'operations' && this.travelId) {
-      console.log('🔄 Refreshing operations for travel:', this.travelId);
       this.travelStore.loadOperations(this.travelId);
     } else if (tab === 'members' && this.travelId) {
-      console.log('🔄 Refreshing members for travel:', this.travelId);
       this.travelStore.loadMembers(this.travelId);
     }
   }

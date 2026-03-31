@@ -93,7 +93,6 @@ export const CollaboratorStore = signalStore(
                 error: 'Failed to load collaborators' 
               });
               loadingStore.setLoadingFailed();
-              console.error('Collaborator loading error:', error);
               return of(null);
             })
           );
@@ -122,7 +121,6 @@ export const CollaboratorStore = signalStore(
               error: 'Failed to reload collaborators' 
             });
             loadingStore.setLoadingFailed();
-            console.error('Collaborator reload error:', error);
             return of(null);
           })
         ))
@@ -143,7 +141,6 @@ export const CollaboratorStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to load collaborator' });
             loadingStore.setLoadingFailed();
-            console.error('Load collaborator by ID error:', error);
             return of(null);
           })
         ))
@@ -179,7 +176,6 @@ export const CollaboratorStore = signalStore(
         catchError(error => {
           patchState(store, { error: 'Failed to upsert collaborator' });
           loadingStore.setLoadingFailed();
-          console.error('Upsert collaborator error:', error);
           return of(null);
         })
       );
@@ -203,7 +199,6 @@ export const CollaboratorStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to change visibility' });
             loadingStore.setLoadingFailed();
-            console.error('Change visibility error:', error);
             return of(null);
           })
         ))
@@ -227,7 +222,6 @@ export const CollaboratorStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to delete collaborator' });
             loadingStore.setLoadingFailed();
-            console.error('Delete collaborator error:', error);
             return of(null);
           })
         ))

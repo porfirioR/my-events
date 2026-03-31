@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import {
@@ -25,7 +25,7 @@ export class SavingsDepositAccessService
       .select()
       .single<SavingsDepositEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -36,7 +36,10 @@ export class SavingsDepositAccessService
       .eq(DatabaseColumns.EntityId, id)
       .single<SavingsDepositEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundException(`Savings deposit with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
+    }
     return this.mapEntityToAccessModel(data);
   };
 
@@ -47,7 +50,7 @@ export class SavingsDepositAccessService
       .eq(DatabaseColumns.SavingsGoalId, savingsGoalId)
       .order(DatabaseColumns.DepositDate, { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -58,7 +61,7 @@ export class SavingsDepositAccessService
       .eq(DatabaseColumns.InstallmentId, installmentId)
       .order(DatabaseColumns.DepositDate, { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -70,7 +73,7 @@ export class SavingsDepositAccessService
       .is(DatabaseColumns.InstallmentId, null)
       .order(DatabaseColumns.DepositDate, { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -80,7 +83,7 @@ export class SavingsDepositAccessService
       .select(DatabaseColumns.Amount)
       .eq(DatabaseColumns.SavingsGoalId, savingsGoalId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
 
     const total = data?.reduce((sum, deposit) => sum + deposit.amount, 0) || 0;
     return total;
@@ -92,7 +95,7 @@ export class SavingsDepositAccessService
       .delete()
       .eq(DatabaseColumns.EntityId, id);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
   };
 
   // Mappers privados

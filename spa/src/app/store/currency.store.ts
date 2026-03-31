@@ -34,7 +34,6 @@ export const CurrencyStore = signalStore(
     formatCurrency: computed(() => (amount: number, currencyId: number) => {
       const currency = state.currencies().find(x => x.id === currencyId);
       if (!currency) {
-        console.warn(`Currency with ID ${currencyId} not found`);
         return amount.toString(); // Fallback
       }
       
@@ -87,7 +86,6 @@ export const CurrencyStore = signalStore(
                 error: 'Failed to load currencies' 
               });
               loadingStore.setLoadingFailed();
-              console.error('Currency loading error:', error);
               return of(null);
             })
           );
@@ -116,7 +114,6 @@ export const CurrencyStore = signalStore(
               error: 'Failed to reload currencies' 
             });
             loadingStore.setLoadingFailed();
-            console.error('Currency reload error:', error);
             return of(null);
           })
         ))

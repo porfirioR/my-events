@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum, ApprovalStatus } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { 
@@ -27,7 +27,7 @@ export class TravelOperationApprovalAccessService
       .single<TravelOperationApprovalEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -42,7 +42,7 @@ export class TravelOperationApprovalAccessService
       .select();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -55,7 +55,7 @@ export class TravelOperationApprovalAccessService
       .eq(DatabaseColumns.OperationId, operationId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -74,7 +74,7 @@ export class TravelOperationApprovalAccessService
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -93,7 +93,7 @@ export class TravelOperationApprovalAccessService
       .single<TravelOperationApprovalEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -117,7 +117,7 @@ export class TravelOperationApprovalAccessService
       .single<TravelOperationApprovalEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -130,7 +130,7 @@ export class TravelOperationApprovalAccessService
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -141,7 +141,7 @@ export class TravelOperationApprovalAccessService
       .eq(DatabaseColumns.OperationId, operationId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -166,7 +166,7 @@ export class TravelOperationApprovalAccessService
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (data?.length || 0) > 0;
@@ -180,7 +180,7 @@ export class TravelOperationApprovalAccessService
       .eq(DatabaseColumns.Status, ApprovalStatus.Pending);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return count || 0;
@@ -193,7 +193,7 @@ export class TravelOperationApprovalAccessService
       .eq(DatabaseColumns.OperationId, operationId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return count || 0;
@@ -206,7 +206,7 @@ export class TravelOperationApprovalAccessService
       .eq(DatabaseColumns.OperationId, operationId)
       .eq(DatabaseColumns.MemberId, memberId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
   };
 
   // Private methods

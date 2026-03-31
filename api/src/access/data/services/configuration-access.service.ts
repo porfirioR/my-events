@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { ConfigurationBaseAccessModel, CurrencyAccessModel, IConfigurationAccessService, InstallmentStatusAccessModel, SavingsProgressionTypeAccessModel, SavingsStatusAccessModel } from '../../../access/contract/configurations';
@@ -19,7 +19,7 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .select<DatabaseColumns.All, SavingsProgressionTypeEntity>(DatabaseColumns.All)
       .order(DatabaseColumns.EntityId, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.getEntityToAccessModel) || []
   };
 
@@ -30,7 +30,10 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .eq(DatabaseColumns.EntityId, id)
       .single<SavingsProgressionTypeEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundException(`Savings progression type with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
+    }
     return this.getEntityToAccessModel(data);
   };
 
@@ -41,7 +44,7 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .select<DatabaseColumns.All, SavingsStatusEntity>(DatabaseColumns.All)
       .order(DatabaseColumns.EntityId, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.getEntityToAccessModel) || [];
   };
 
@@ -52,7 +55,10 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .eq(DatabaseColumns.EntityId, id)
       .single<SavingsStatusEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundException(`Savings status with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
+    }
     return this.getEntityToAccessModel(data);
   };
 
@@ -63,7 +69,7 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .select<DatabaseColumns.All, InstallmentStatusEntity>(DatabaseColumns.All)
       .order(DatabaseColumns.EntityId, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.getEntityToAccessModel) || [];
   };
 
@@ -74,7 +80,10 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .eq(DatabaseColumns.EntityId, id)
       .single<InstallmentStatusEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundException(`Installment status with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
+    }
     return this.getEntityToAccessModel(data);
   };
 
@@ -85,7 +94,7 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .select<DatabaseColumns.All, CurrencyEntity>(DatabaseColumns.All)
       .order(DatabaseColumns.EntityId, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.getCurrencyAccessModel) || []
   };
 
@@ -96,7 +105,10 @@ export class ConfigurationAccessService extends BaseAccessService implements ICo
       .eq(DatabaseColumns.EntityId, id)
       .single<CurrencyEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundException(`Currency with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
+    }
     return this.getCurrencyAccessModel(data);
   };
 

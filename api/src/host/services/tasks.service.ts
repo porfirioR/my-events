@@ -1,5 +1,5 @@
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventManagerService, UserManagerService } from '../../manager/services';
 import { ConfigService } from '@nestjs/config';
@@ -9,6 +9,7 @@ const webpush = require('web-push');
 
 @Injectable()
 export class TasksService {
+  private readonly logger = new Logger(TasksService.name);
 
   constructor(
     private eventManagerService: EventManagerService,
@@ -60,10 +61,10 @@ export class TasksService {
           }),
           options
         ).then((log) => {
-          console.log('Push notification sent.');
-          console.log(log);
+          this.logger.log('Push notification sent.');
+          this.logger.log(log);
         }).catch((error) => {
-          console.log(error);
+          this.logger.error(error);
         });
       })
     }

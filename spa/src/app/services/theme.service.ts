@@ -30,7 +30,6 @@ export class ThemeService {
         metaThemeColor.setAttribute('content', '#4338CA');
       }
 
-      console.log('Theme applied:', isDark ? 'dark' : 'light');
     });
   }
 
@@ -41,19 +40,16 @@ export class ThemeService {
     if (savedTheme === 'dark' || savedTheme === 'light') {
       // Si hay tema guardado, usarlo
       this.isDarkMode.set(savedTheme === 'dark');
-      console.log('Theme loaded from localStorage:', savedTheme);
     } else {
       // 2. Si no hay preferencia guardada, usar la del navegador
       const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
       this.isDarkMode.set(darkModeQuery.matches);
-      console.log('Theme detected from browser:', darkModeQuery.matches ? 'dark' : 'light');
       
       // Escuchar cambios en la preferencia del sistema (solo si no hay tema guardado)
       darkModeQuery.addEventListener('change', (e) => {
         // Solo aplicar cambios del sistema si el usuario no ha guardado una preferencia
         if (!localStorage.getItem('theme')) {
           this.isDarkMode.set(e.matches);
-          console.log('System theme changed to:', e.matches ? 'dark' : 'light');
         }
       });
     }

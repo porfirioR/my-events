@@ -1,5 +1,5 @@
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import {
@@ -25,7 +25,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .select()
       .single<SavingsGoalEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -37,7 +37,10 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .eq(DatabaseColumns.UserId, userId)
       .single<SavingsGoalEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundException(`Savings goal with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
+    }
     return this.mapEntityToAccessModel(data);
   };
 
@@ -48,7 +51,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .eq(DatabaseColumns.UserId, userId)
       .order(DatabaseColumns.DateCreated, { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -60,7 +63,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .eq('statusid', statusId)
       .order(DatabaseColumns.DateCreated, { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -79,7 +82,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
         }
         throw new BadRequestException(error.details);
       }
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     };
 
     return this.mapEntityToAccessModel(data);
@@ -101,7 +104,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .select()
       .single<SavingsGoalEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -128,7 +131,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .select()
       .single<SavingsGoalEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -143,7 +146,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .eq(DatabaseColumns.EntityId, id)
       .eq(DatabaseColumns.UserId, userId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
   };
 
   public getStats = async (userId: number): Promise<{
@@ -158,7 +161,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .select('id, statusid')
       .eq(DatabaseColumns.UserId, userId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
 
     const total = data?.length || 0;
     const active = data?.filter((item) => item.statusid === 1).length || 0;

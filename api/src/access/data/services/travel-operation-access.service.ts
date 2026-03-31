@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum, TravelOperationStatus } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { 
@@ -25,7 +25,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .single<TravelOperationEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -40,7 +40,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -54,7 +54,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .order(DatabaseColumns.TransactionDate, { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -69,7 +69,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .order(DatabaseColumns.TransactionDate, { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -97,7 +97,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .single<TravelOperationEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -115,7 +115,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .single<TravelOperationEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -128,7 +128,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -140,7 +140,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .eq(DatabaseColumns.TravelId, travelId);
 
     if (opsError) {
-      throw new Error(opsError.message);
+      throw new InternalServerErrorException(opsError.message);
     }
 
     if (!operations || operations.length === 0) {
@@ -158,7 +158,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       .eq(DatabaseColumns.TravelId, travelId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return count || 0;

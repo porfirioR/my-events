@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { CollaboratorAccessModel, CreateCollaboratorAccessRequest, CreateInternalCollaboratorAccessRequest, ICollaboratorAccessService, UpdateCollaboratorAccessRequest } from '../../../access/contract/collaborators';
 import { BaseAccessService, DbContextService } from '.';
@@ -25,7 +25,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .single<CollaboratorEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return this.mapEntityToAccessModel(data);
   };
@@ -38,7 +38,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .order(DatabaseColumns.DateCreated, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return data?.map(this.mapEntityToAccessModel) || [];
   };
@@ -53,7 +53,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .order(DatabaseColumns.Name, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return data?.map(this.mapEntityToAccessModel) || [];
   };
@@ -68,7 +68,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .order(DatabaseColumns.Name, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return data?.map(this.mapEntityToAccessModel) || [];
   };
@@ -82,7 +82,8 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .single<CollaboratorEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      if (error.code === 'PGRST116') throw new NotFoundException(`Collaborator with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
     }
     return this.mapEntityToAccessModel(data);
   };
@@ -96,7 +97,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .single<CollaboratorEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return this.mapEntityToAccessModel(data);
   };
@@ -117,7 +118,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .single<CollaboratorEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return this.mapEntityToAccessModel(data);
   };
@@ -134,7 +135,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .single<CollaboratorEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return this.mapEntityToAccessModel(data);
   };
@@ -147,7 +148,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
       .limit(1);
 
-    if (transactionError) throw new Error(transactionError.message);
+    if (transactionError) throw new InternalServerErrorException(transactionError.message);
     if (transactionData && transactionData.length > 0)
       return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToTransactions' };
 
@@ -158,7 +159,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
       .limit(1);
 
-    if (splitError) throw new Error(splitError.message);
+    if (splitError) throw new InternalServerErrorException(splitError.message);
     if (splitData && splitData.length > 0)
       return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToTransactions' };
 
@@ -169,7 +170,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
       .limit(1);
 
-    if (travelMemberError) throw new Error(travelMemberError.message);
+    if (travelMemberError) throw new InternalServerErrorException(travelMemberError.message);
     if (travelMemberData && travelMemberData.length > 0)
       return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToTravels' };
 
@@ -180,7 +181,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .or(`collaborator1id.eq.${collaboratorId},collaborator2id.eq.${collaboratorId}`)
       .limit(1);
 
-    if (matchError) throw new Error(matchError.message);
+    if (matchError) throw new InternalServerErrorException(matchError.message);
     if (matchData && matchData.length > 0)
       return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToMatches' };
 
@@ -191,7 +192,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .eq(DatabaseColumns.RequesterCollaboratorId, collaboratorId)
       .limit(1);
 
-    if (requestError) throw new Error(requestError.message);
+    if (requestError) throw new InternalServerErrorException(requestError.message);
     if (requestData && requestData.length > 0)
       return { canDelete: false, reason: 'collaborators.collaboratorAssociatedToMatches' };
 
@@ -206,7 +207,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .eq(DatabaseColumns.UserId, userId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -225,7 +226,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .eq(DatabaseColumns.IsActive, true);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     const total = data?.length || 0;
@@ -250,7 +251,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return this.mapEntityToAccessModel(data);
   };
@@ -265,7 +266,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return this.mapEntityToAccessModel(data);
   };
@@ -279,7 +280,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .not(DatabaseColumns.Email, 'is', null);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
     return data?.map(this.mapEntityToAccessModel) || [];
   };
@@ -302,7 +303,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -320,7 +321,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .eq(DatabaseColumns.IsActive, true);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (count || 0) > 0;
@@ -339,7 +340,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
     // Verificar que no exista ya
     const existing = await this.hasInternalCollaborator(userId, userEmail);
     if (existing) {
-      throw new Error('Internal collaborator already exists for this user');
+      throw new ConflictException('Internal collaborator already exists for this user');
     }
 
     // ✅ Crear request especial para colaborador interno
@@ -374,7 +375,7 @@ export class CollaboratorAccessService extends BaseAccessService implements ICol
       .single<CollaboratorEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);

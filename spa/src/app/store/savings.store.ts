@@ -149,7 +149,6 @@ export const SavingsStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load savings goals' });
-              console.error('Goals loading error:', error);
               throw new Error(error);
             })
           );
@@ -173,7 +172,6 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to reload savings goals' });
-            console.error('Goals reload error:', error);
             throw new Error(error);
           })
         ))
@@ -193,7 +191,6 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load savings goal' });
-            console.error('Load goal by ID error:', error);
             throw new Error(error);
           })
         ))
@@ -215,7 +212,6 @@ export const SavingsStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to create savings goal' });
-          console.error('Create goal error:', error);
           throw new Error(error);
         })
       );
@@ -238,7 +234,6 @@ export const SavingsStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to update savings goal' });
-          console.error('Update goal error:', error);
           throw new Error(error);
         })
       );
@@ -261,7 +256,6 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete savings goal' });
-            console.error('Delete goal error:', error);
             throw new Error(error);
           })
         ))
@@ -286,7 +280,6 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load installments' });
-            console.error('Load installments error:', error);
             throw new Error(error);
           })
         ))
@@ -325,7 +318,6 @@ export const SavingsStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to pay installment' });
-          console.error('Pay installment error:', error);
           throw new Error(error);
         })
       );
@@ -348,7 +340,6 @@ export const SavingsStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to skip installment' });
-              console.error('Skip installment error:', error);
               throw new Error(error);
             })
           )
@@ -370,7 +361,6 @@ export const SavingsStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to add installments' });
-          console.error('Add installments error:', error);
           throw new Error(error);
         })
       );
@@ -394,7 +384,6 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load deposits' });
-            console.error('Load deposits error:', error);
             throw new Error(error);
           })
         ))
@@ -425,7 +414,6 @@ export const SavingsStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to create deposit' });
-          console.error('Create deposit error:', error);
           throw new Error(error);
         })
       );
@@ -445,7 +433,6 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete deposit' });
-            console.error('Delete deposit error:', error);
             throw new Error(error);
           })
         ))

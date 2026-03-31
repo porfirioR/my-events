@@ -99,7 +99,6 @@ export class AttachmentListComponent implements OnInit {
         this.travelStore.loadOperationAttachments(this.operationId());
       },
       error: (error) => {
-        console.error('Upload error:', error);
         this.alertService.showError(
           this.translate.instant('operations.attachmentUploadError')
         );

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { CreateTransactionSplitAccessRequest, ITransactionSplitAccessService, TransactionSplitAccessModel } from '../../../access/contract/transactions';
@@ -20,7 +20,7 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
       .single<TransactionSplitEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getAccessModel(data);
@@ -33,7 +33,7 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
       .eq(DatabaseColumns.TransactionId, transactionId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getAccessModel) || [];
@@ -55,7 +55,7 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
     const { data, error } = await query;
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getAccessModel) || [];
@@ -74,7 +74,7 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
     const { data, error } = await query;
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getAccessModel) || [];
@@ -89,7 +89,7 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (data?.length || 0) > 0;
@@ -102,7 +102,7 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -113,7 +113,7 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 

@@ -192,7 +192,6 @@ export const TravelStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load payment methods' });
-              console.error('Payment methods loading error:', error);
               throw new Error(error);
             })
           );
@@ -225,7 +224,6 @@ export const TravelStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load travels' });
-              console.error('Travels loading error:', error);
               throw new Error(error);
             })
           );
@@ -249,7 +247,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to reload travels' });
-            console.error('Travels reload error:', error);
             throw new Error(error);
           })
         ))
@@ -269,7 +266,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load travel' });
-            console.error('Load travel by ID error:', error);
             throw new Error(error);
           })
         ))
@@ -291,7 +287,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to create travel' });
-          console.error('Create travel error:', error);
           throw new Error(error);
         })
       );
@@ -314,7 +309,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to update travel' });
-          console.error('Update travel error:', error);
           throw new Error(error);
         })
       );
@@ -339,7 +333,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to finalize travel' });
-            console.error('Finalize travel error:', error);
             throw new Error(error);
           })
         ))
@@ -363,7 +356,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete travel' });
-            console.error('Delete travel error:', error);
             throw new Error(error);
           })
         ))
@@ -388,7 +380,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load members' });
-            console.error('Load members error:', error);
             throw new Error(error);
           })
         ))
@@ -409,7 +400,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to add member' });
-          console.error('Add member error:', error);
           throw new Error(error);
         })
       );
@@ -429,7 +419,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to remove member' });
-            console.error('Remove member error:', error);
             throw new Error(error);
           })
         ))
@@ -454,7 +443,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load operations' });
-            console.error('Load operations error:', error);
             throw new Error(error);
           })
         ))
@@ -471,7 +459,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to load operation' });
-          console.error('Load operation error:', error);
           throw new Error(error);
         })
       );
@@ -491,7 +478,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to create operation' });
-          console.error('Create operation error:', error);
           throw new Error(error);
         })
       );
@@ -511,7 +497,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to update operation' });
-          console.error('Update operation error:', error);
           throw new Error(error);
         })
       );
@@ -531,7 +516,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete operation' });
-            console.error('Delete operation error:', error);
             throw new Error(error);
           })
         ))
@@ -554,7 +538,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to approve operation' });
-            console.error('Approve operation error:', error);
             throw new Error(error);
           })
         ))
@@ -575,7 +558,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to reject operation' });
-          console.error('Reject operation error:', error);
           throw new Error(error);
         })
       );
@@ -599,7 +581,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load balances' });
-            console.error('Load balances error:', error);
             throw new Error(error);
           })
         ))
@@ -629,7 +610,6 @@ export const TravelStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load categories' });
-              console.error('Categories loading error:', error);
               throw new Error(error);
             })
           );
@@ -653,7 +633,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load category summary' });
-            console.error('Category summary loading error:', error);
             throw new Error(error);
           })
         ))
@@ -681,7 +660,6 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load attachments' });
-            console.error('Attachments loading error:', error);
             throw new Error(error);
           })
         ))
@@ -707,7 +685,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to upload attachment' });
-          console.error('Upload attachment error:', error);
           throw new Error(error);
         })
       );
@@ -732,7 +709,6 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to delete attachment' });
-          console.error('Delete attachment error:', error);
           throw new Error(error);
         })
       );

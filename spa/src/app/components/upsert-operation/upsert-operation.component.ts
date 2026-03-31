@@ -219,7 +219,6 @@ export class UpsertOperationComponent implements OnInit {
     effect(() => {
       const travel = this.travel();
       if (travel && travel.defaultCurrencyId && !this.formGroup.value.currencyId) {
-        console.log('🏦 Setting default currency:', travel.defaultCurrencyId);
         this.formGroup.patchValue({
           currencyId: travel.defaultCurrencyId
         });
@@ -298,7 +297,6 @@ export class UpsertOperationComponent implements OnInit {
           });
         }
 
-        console.log('💰 Initializing custom split data for splitType:', splitType);
         this.customSplitData.set(newData);
       }
     });
@@ -352,7 +350,6 @@ export class UpsertOperationComponent implements OnInit {
         );
 
         if (hasChanged) {
-          console.log('💰 Auto-updating Equal split amounts');
           this.customSplitData.set(updatedData);
           
           // También actualizar los controles
@@ -651,7 +648,6 @@ export class UpsertOperationComponent implements OnInit {
 
 
   private loadRequiredData(): void {
-    console.log('📡 Starting data load for travel:', this.travelId!);
 
     //Check this parts
     this.travelStore.loadTravelById(this.travelId!);
@@ -660,6 +656,5 @@ export class UpsertOperationComponent implements OnInit {
     this.travelStore.loadCategories();
     this.currencyStore.loadCurrencies();
 
-    console.log('✅ All load methods called');
   }
 }

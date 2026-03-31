@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { TRAVEL_TOKENS, COLLABORATOR_TOKENS } from '../../utility/constants';
 import { TravelStatus, TravelOperationStatus, ApprovalStatus, TravelParticipantType, SplitType, } from '../../utility/enums';
 import {
@@ -56,6 +56,8 @@ import { CloudinaryService } from '../../access/blob';
 
 @Injectable()
 export class TravelManagerService {
+  private readonly logger = new Logger(TravelManagerService.name);
+
   constructor(
     @Inject(TRAVEL_TOKENS.ACCESS_SERVICE)
     private travelAccessService: ITravelAccessService,
@@ -225,7 +227,7 @@ export class TravelManagerService {
       );
     }
 
-    console.log(`🗑️ Deleting travel ${id}: No approved operations found`);
+    this.logger.log(`Deleting travel ${id}: No approved operations found`);
     await this.travelAccessService.delete(id, userId);
   };
 
@@ -254,7 +256,7 @@ export class TravelManagerService {
 
     // ✅ NUEVO: Permitir finalizar sin operaciones
     if (operations.length === 0) {
-      console.log('✅ Travel can be finalized: No operations found');
+      this.logger.log('Travel can be finalized: No operations found');
       return; // Sin operaciones = se puede cerrar
     }
 
@@ -274,12 +276,12 @@ export class TravelManagerService {
     const approvedOperations = operations.filter(x => x.status === TravelOperationStatus.Approved);
 
     if (approvedOperations.length === 0) {
-      console.log('✅ Travel can be finalized: No approved operations to validate');
+      this.logger.log('Travel can be finalized: No approved operations to validate');
       return; // Solo operaciones rechazadas = se puede cerrar
     }
 
     // ✅ MANTENER: Validar balances solo para operaciones aprobadas
-    console.log(`💰 Validating balances for ${approvedOperations.length} approved operations`);
+    this.logger.log(`Validating balances for ${approvedOperations.length} approved operations`);
     
     const groupedByCurrency = await this.travelOperationAccessService.getGroupedByCurrency(travelId);
 
@@ -306,7 +308,7 @@ export class TravelManagerService {
       }
     }
 
-    console.log('✅ Travel can be finalized: All validations passed');
+    this.logger.log('Travel can be finalized: All validations passed');
   };
 
   // ==================== TRAVEL MEMBERS ====================
@@ -1247,7 +1249,7 @@ export class TravelManagerService {
     try {
       await this.cloudinaryService.deleteFile(attachment.externalId);
     } catch (error) {
-      console.error('Failed to delete from Cloudinary:', error);
+      this.logger.error('Failed to delete from Cloudinary:', error);
       // No fallar si no se puede eliminar de Cloudinary, pero log el error
     }
 
