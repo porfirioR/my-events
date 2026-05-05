@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { UserAccessService } from '../../access/data/services/user-access.service';
 import { PasswordResetTokenAccessService } from '../../access/data/services/password-reset-token-access.service';
 import { EmailVerificationTokenAccessService } from '../../access/data/services/email-verification-token-access.service';
@@ -22,6 +22,8 @@ import { AUTH_CONFIG, COLLABORATOR_TOKENS } from '../../utility/constants';
 
 @Injectable()
 export class UserManagerService {
+  private readonly logger = new Logger(UserManagerService.name);
+
   constructor(
     private userAccessService: UserAccessService,
     private passwordResetTokenAccessService: PasswordResetTokenAccessService,
@@ -65,7 +67,7 @@ export class UserManagerService {
       );
     } catch (error) {
       // Log del error pero no fallar el registro
-      console.error('Error creating internal collaborator:', error);
+      this.logger.error('Error creating internal collaborator:', error);
       // Opcional: podrías decidir si esto debe fallar todo el proceso o continuar
     }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { 
@@ -24,7 +24,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       .single<TravelMemberEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -38,7 +38,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       .order(DatabaseColumns.JoinedDate, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -53,7 +53,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -68,7 +68,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (data?.length || 0) > 0;
@@ -81,7 +81,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -94,7 +94,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       .limit(1);
 
     if (paidError) {
-      throw new Error(paidError.message);
+      throw new InternalServerErrorException(paidError.message);
     }
 
     if ((paidOperations?.length || 0) > 0) {
@@ -109,7 +109,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       .limit(1);
 
     if (participantError) {
-      throw new Error(participantError.message);
+      throw new InternalServerErrorException(participantError.message);
     }
 
     return (participantOperations?.length || 0) > 0;
@@ -122,7 +122,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       .eq(DatabaseColumns.TravelId, travelId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return count || 0;
@@ -137,7 +137,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
     .limit(1);
 
   if (error) {
-    throw new Error(error.message);
+    throw new InternalServerErrorException(error.message);
   }
 
   return (data?.length || 0) > 0;

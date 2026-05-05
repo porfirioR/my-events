@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { UserEntity } from '../entities/user.entity';
 import {
@@ -20,7 +20,7 @@ export class UserAccessService extends BaseAccessService {
     const { data, error } = await this.dbContext
       .from(TableEnum.Users)
       .select(DatabaseColumns.All);
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data.map(this.getUser);
   };
 
@@ -46,7 +46,7 @@ export class UserAccessService extends BaseAccessService {
       if (error.code === '23505') {
         throw new BadRequestException(error.details);
       }
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getUser(data);
@@ -68,7 +68,7 @@ export class UserAccessService extends BaseAccessService {
       if (error.code === '23505') {
         throw new BadRequestException(error.details);
       }
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getUser(data);
@@ -89,7 +89,7 @@ export class UserAccessService extends BaseAccessService {
       .single<UserEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getUser(data);
@@ -103,7 +103,8 @@ export class UserAccessService extends BaseAccessService {
       .single<UserEntity>();
 
     if (error) {
-      throw new Error(error.message)
+      if (error.code === 'PGRST116') throw new NotFoundException(`User with email ${email} not found`);
+      throw new InternalServerErrorException(error.message);
     };
     return this.getUser(data);
   };
@@ -113,7 +114,7 @@ export class UserAccessService extends BaseAccessService {
       .from(TableEnum.WebPushToken)
       .select()
       .single<WebPushTokenEntity>()
-    if (error) throw new Error(error.message)
+    if (error) throw new InternalServerErrorException(error.message)
     return new WebPushTokenAccessModel(data.id, data.endpoint, data.expirationtime, JSON.parse(data.keys), data.email);
   }
 

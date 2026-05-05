@@ -141,7 +141,6 @@ export const TransactionStore = signalStore(
             catchError(error => {
               patchState(store, { error: 'Failed to load transactions' });
               loadingStore.setLoadingFailed();
-              console.error('Transaction loading error:', error);
               throw new Error(error);
             })
           );
@@ -167,7 +166,6 @@ export const TransactionStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to reload transactions' });
             loadingStore.setLoadingFailed();
-            console.error('Transaction reload error:', error);
             throw new Error(error);
           })
         ))
@@ -189,7 +187,6 @@ export const TransactionStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to load transaction' });
             loadingStore.setLoadingFailed();
-            console.error('Load transaction by ID error:', error);
             throw new Error(error);
           })
         ))
@@ -213,7 +210,6 @@ export const TransactionStore = signalStore(
         catchError(error => {
           patchState(store, { error: 'Failed to create transaction' });
           loadingStore.setLoadingFailed();
-          console.error('Create transaction error:', error);
           throw new Error(error);
         })
       );
@@ -240,7 +236,6 @@ export const TransactionStore = signalStore(
             catchError(error => {
               patchState(store, { error: 'Failed to add reimbursement' });
               loadingStore.setLoadingFailed();
-              console.error('Add reimbursement error:', error);
               throw new Error(error);
             })
           )
@@ -273,7 +268,6 @@ export const TransactionStore = signalStore(
             catchError(error => {
               patchState(store, { error: 'Failed to load balances' });
               loadingStore.setLoadingFailed();
-              console.error('Balance loading error:', error);
               throw new Error(error);
             })
           );
@@ -299,7 +293,6 @@ export const TransactionStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to reload balances' });
             loadingStore.setLoadingFailed();
-            console.error('Balance reload error:', error);
             throw new Error(error);
           })
         ))
@@ -321,7 +314,6 @@ export const TransactionStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to load balance' });
             loadingStore.setLoadingFailed();
-            console.error('Load balance with collaborator error:', error);
             throw new Error(error);
           })
         ))
@@ -344,7 +336,6 @@ export const TransactionStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to delete transaction' });
             loadingStore.setLoadingFailed();
-            console.error('Delete transaction error:', error);
             throw new Error(error);
           })
         ))
@@ -371,7 +362,6 @@ export const TransactionStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to settle transaction' });
             loadingStore.setLoadingFailed();
-            console.error('Settle transaction error:', error);
             throw new Error(error);
           })
         ))
@@ -393,7 +383,6 @@ export const TransactionStore = signalStore(
           catchError(error => {
             patchState(store, { error: 'Failed to load transaction details' });
             loadingStore.setLoadingFailed();
-            console.error('Load transaction details error:', error);
             throw new Error(error);
           })
         ))

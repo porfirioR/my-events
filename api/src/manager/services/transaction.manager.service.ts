@@ -48,6 +48,7 @@ export class TransactionManagerService implements ITransactionManagerService {
       request.splitType,
       request.whoPaid,
       request.reimbursement?.amount || 0,
+      request.transactionDate,
     );
 
     const transaction = await this.transactionAccessService.create(transactionAccessRequest);
@@ -172,7 +173,7 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     // 6. Combinar y ordenar por fecha
     return [...myViews, ...theirViews].sort(
-      (a, b) => b.transactionDate.getTime() - a.transactionDate.getTime(),
+      (a, b) => a.transactionDate.getTime() - b.transactionDate.getTime(),
     );
   };
 

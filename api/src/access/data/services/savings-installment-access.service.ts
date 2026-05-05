@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import {
@@ -26,7 +26,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .select()
       .single<SavingsInstallmentEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -39,7 +39,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .insert(entities)
       .select();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -50,7 +50,10 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .eq(DatabaseColumns.EntityId, id)
       .single<SavingsInstallmentEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') throw new NotFoundException(`Savings installment with id ${id} not found`);
+      throw new InternalServerErrorException(error.message);
+    }
     return this.mapEntityToAccessModel(data);
   };
 
@@ -63,7 +66,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .eq(DatabaseColumns.SavingsGoalId, savingsGoalId)
       .order(DatabaseColumns.InstallmentNumber, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -78,7 +81,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .eq(DatabaseColumns.StatusId, statusId)
       .order(DatabaseColumns.InstallmentNumber, { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
@@ -98,7 +101,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .select()
       .single<SavingsInstallmentEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -113,7 +116,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .select()
       .single<SavingsInstallmentEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -125,7 +128,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .select()
       .single<SavingsInstallmentEntity>();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
     return this.mapEntityToAccessModel(data);
   };
 
@@ -135,7 +138,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .delete()
       .eq(DatabaseColumns.EntityId, id);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
   };
 
   public deleteAllBySavingsGoalId = async (savingsGoalId: number): Promise<void> => {
@@ -144,7 +147,7 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
       .delete()
       .eq(DatabaseColumns.SavingsGoalId, savingsGoalId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new InternalServerErrorException(error.message);
   };
 
   // Mappers privados

@@ -10,6 +10,7 @@ export class CreateTransactionRequest {
     public splitType: SplitType,
     public whoPaid: WhoPaid,
     public splits: TransactionSplitRequest[],
-    public reimbursement: ReimbursementRequest | null
+    public reimbursement: ReimbursementRequest | null,
+    public transactionDate: Date | null,
   ) {}
 }

@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '../../services/notification.service';
@@ -8,20 +8,15 @@ import { NotificationService } from '../../services/notification.service';
   selector: 'app-header-notification',
   templateUrl: './header-notification.component.html',
   styleUrls: ['./header-notification.component.css'],
-  imports: [
-    AsyncPipe,
-    DatePipe,
-    RouterLink,
-    TranslateModule,
-  ]
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DatePipe, RouterLink, TranslateModule],
 })
 export class HeaderNotificationComponent implements OnInit {
-  private notificationService = inject(NotificationService)
-  notifications$ = this.notificationService.notifications$;
-  pendingCount$ = this.notificationService.getPendingCount();
-  showDropdown = false;
+  private notificationService = inject(NotificationService);
 
-  constructor() {}
+  protected readonly notifications = this.notificationService.notifications;
+  protected readonly pendingCount = this.notificationService.pendingCount;
+  protected showDropdown = false;
 
   ngOnInit(): void {
     this.notificationService.loadNotifications();
@@ -34,5 +29,4 @@ export class HeaderNotificationComponent implements OnInit {
   closeDropdown(): void {
     this.showDropdown = false;
   }
-
 }

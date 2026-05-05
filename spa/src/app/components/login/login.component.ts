@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'  // ← Agregar TranslateService
@@ -13,6 +14,7 @@ import { LanguageSelectorComponent } from "../language-selector/language-selecto
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterModule,
     ReactiveFormsModule,
@@ -22,6 +24,7 @@ import { LanguageSelectorComponent } from "../language-selector/language-selecto
   ]
 })
 export class LoginComponent {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private userApiService = inject(UserApiService);
   private alertService = inject(AlertService);
@@ -49,7 +52,7 @@ export class LoginComponent {
       this.formGroup.value.email!,
       this.formGroup.value.password!
     );
-    this.userApiService.loginUser(request).subscribe({
+    this.userApiService.loginUser(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
         this.authStore.loginSuccess(user.id, user.token, user.email, user.name, user.surname, user.userCollaboratorId, user.isEmailVerified);
 

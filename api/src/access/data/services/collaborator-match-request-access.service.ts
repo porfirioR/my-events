@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { TableEnum, DatabaseColumns, MatchRequestStatus } from '../../../utility/enums';
 import { CollaboratorMatchRequestAccessModel, CreateMatchRequestAccessRequest, ICollaboratorMatchRequestAccessService } from '../../../access/contract/collaborator-match-requests';
 import { BaseAccessService, DbContextService } from '.';
@@ -26,7 +26,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
     const { data, error } = await query.order(DatabaseColumns.RequestedDate, { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getRequestAccessModel) || [];
@@ -45,7 +45,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
     const { data, error } = await query.order(DatabaseColumns.RequestedDate, { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getRequestAccessModel) || [];
@@ -67,7 +67,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
     const { data, error } = await query.order(DatabaseColumns.RequestedDate, { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getRequestAccessModel) || [];
@@ -82,7 +82,8 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      if (error.code === 'PGRST116') throw new NotFoundException(`Match request with id ${requestId} not found`);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getRequestAccessModel(data);
@@ -98,7 +99,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .single<CollaboratorMatchRequestEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getRequestAccessModel(data);
@@ -136,7 +137,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .single<CollaboratorMatchRequestEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getRequestAccessModel(data);
@@ -154,11 +155,11 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .single<CollaboratorMatchRequestEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     if (!data) {
-      throw new Error(`Match request with id ${requestId} not found`);
+      throw new NotFoundException(`Match request with id ${requestId} not found`);
     }
 
     return this.getRequestAccessModel(data);
@@ -177,7 +178,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (data?.length || 0) > 0;
@@ -196,7 +197,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
     const { data, error } = await query.order(DatabaseColumns.RequestedDate, { ascending: false });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getRequestAccessModel) || [];
@@ -210,7 +211,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .eq(DatabaseColumns.RequesterUserId, userId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -230,7 +231,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (data?.length || 0) > 0;
@@ -252,7 +253,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .limit(1);
 
     if (collabError) {
-      throw new Error(collabError.message);
+      throw new InternalServerErrorException(collabError.message);
     }
 
     if (!myCollaborators || myCollaborators.length === 0) {
@@ -269,7 +270,7 @@ export class CollaboratorMatchRequestAccessService extends BaseAccessService imp
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (data?.length || 0) > 0;

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useSavingsStore } from '../../store';
@@ -11,7 +11,8 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
   selector: 'app-savings-goals-list',
   templateUrl: './savings-goals-list.component.html',
   styleUrls: ['./savings-goals-list.component.css'],
-  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent]
+  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SavingsGoalsListComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;

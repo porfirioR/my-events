@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseColumns, TableEnum, TravelStatus } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { 
@@ -11,6 +11,8 @@ import { TravelEntity } from '../entities';
 
 @Injectable()
 export class TravelAccessService extends BaseAccessService implements ITravelAccessService {
+  private readonly logger = new Logger(TravelAccessService.name);
+
   constructor(dbContextService: DbContextService) {
     super(dbContextService);
   }
@@ -181,7 +183,7 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
     }
 
     // Fallback si RPC no está disponible
-    console.warn('RPC not available, using fallback method:', rpcError);
+    this.logger.warn('RPC not available, using fallback method:', rpcError);
     return await this.getAllByUserIdFallback(userId);
   }
 

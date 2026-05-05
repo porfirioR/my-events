@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { TransactionEntity } from '../entities';
@@ -20,7 +20,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       .single<TransactionEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getAccessModel(data);
@@ -35,7 +35,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getAccessModel(data);
@@ -46,10 +46,10 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       .from(TableEnum.Transactions)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
-      .order(DatabaseColumns.TransactionDate, { ascending: false });
+      .order(DatabaseColumns.TransactionDate, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getAccessModel) || [];
@@ -64,10 +64,10 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
-      .order(DatabaseColumns.TransactionDate, { ascending: false });
+      .order(DatabaseColumns.TransactionDate, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getAccessModel) || [];
@@ -82,7 +82,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       .eq(DatabaseColumns.EntityId, request.transactionId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -93,7 +93,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -122,6 +122,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       request.splitType,
       request.whoPaid,
       request.totalReimbursement,
+      request.transactionDate ?? undefined,
     );
   };
 }

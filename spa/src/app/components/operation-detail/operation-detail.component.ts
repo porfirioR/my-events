@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useTravelStore, useLoadingStore, useAuthStore } from '../../store';
@@ -13,6 +14,7 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
   selector: 'app-operation-detail',
   templateUrl: './operation-detail.component.html',
   styleUrls: ['./operation-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -25,6 +27,7 @@ export class OperationDetailComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
@@ -65,7 +68,7 @@ export class OperationDetailComponent implements OnInit {
     if (!this.travelId || !this.operationId) return;
 
     this.travelStore.loadTravelById(this.travelId);
-    this.travelStore.loadOperationById(this.operationId).subscribe({
+    this.travelStore.loadOperationById(this.operationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (operation) => {
         this.operation.set(operation);
         this.travelStore.getCategoryById()(operation.id)
@@ -121,7 +124,7 @@ export class OperationDetailComponent implements OnInit {
 
     this.pendingCallback = (result) => {
       if (result.confirmed && result.value) {
-        this.travelStore.rejectOperation(op.id, { rejectionReason: result.value }).subscribe({
+        this.travelStore.rejectOperation(op.id, { rejectionReason: result.value }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => {
             this.alertService.showSuccess(this.translate.instant('travels.operationRejectedSuccess'));
             this.loadOperationDetail();

@@ -1,5 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -18,6 +19,7 @@ import { Configurations } from '../../models/enums';
   selector: 'app-upsert-travel',
   templateUrl: './upsert-travel.component.html',
   styleUrls: ['./upsert-travel.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -30,6 +32,7 @@ import { Configurations } from '../../models/enums';
   ]
 })
 export class UpsertTravelComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private translate = inject(TranslateService);
@@ -125,7 +128,7 @@ export class UpsertTravelComponent implements OnInit {
         values.defaultCurrencyId
       );
 
-      this.travelStore.updateTravel(values.id!, request).subscribe({
+      this.travelStore.updateTravel(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
           this.alertService.showSuccess(
@@ -150,7 +153,7 @@ export class UpsertTravelComponent implements OnInit {
         values.defaultCurrencyId
       );
 
-      this.travelStore.createTravel(request).subscribe({
+      this.travelStore.createTravel(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
           this.alertService.showSuccess(

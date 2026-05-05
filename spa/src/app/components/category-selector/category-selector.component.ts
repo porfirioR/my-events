@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { OperationCategoryApiModel } from '../../models/api/travels';
@@ -8,7 +8,8 @@ import { useTravelStore } from '../../store';
   selector: 'app-category-selector',
   templateUrl: './category-selector.component.html',
   styleUrls: ['./category-selector.component.css'],
-  imports: [CommonModule, TranslateModule]
+  imports: [CommonModule, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategorySelectorComponent {
   private travelStore = useTravelStore();

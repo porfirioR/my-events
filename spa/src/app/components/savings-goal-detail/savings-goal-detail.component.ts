@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, inject, computed, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, inject, computed, signal, effect } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   FormControl,
@@ -26,6 +27,7 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
   selector: 'app-savings-goal-detail',
   templateUrl: './savings-goal-detail.component.html',
   styleUrls: ['./savings-goal-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -40,6 +42,7 @@ export class SavingsGoalDetailComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
@@ -158,7 +161,7 @@ export class SavingsGoalDetailComponent implements OnInit {
       values.description || undefined
     );
     this.isSubmitting.set(true);
-    this.savingsStore.payInstallment(goalId, installmentId, request).subscribe({
+    this.savingsStore.payInstallment(goalId, installmentId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.isSubmitting.set(false);
         this.alertService.showSuccess(
@@ -207,7 +210,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     );
     this.isSubmitting.set(true);
 
-    this.savingsStore.createFreeFormDeposit(goalId, request).subscribe({
+    this.savingsStore.createFreeFormDeposit(goalId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.isSubmitting.set(false);
         this.alertService.showSuccess(
@@ -250,7 +253,7 @@ export class SavingsGoalDetailComponent implements OnInit {
       +values.numberOfNewInstallments!
     );
     this.isSubmitting.set(true);
-    this.savingsStore.addInstallments(goalId, request).subscribe({
+    this.savingsStore.addInstallments(goalId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.alertService.showSuccess(
           this.translate.instant('savingsGoalDetail.installmentsAddedSuccess', {

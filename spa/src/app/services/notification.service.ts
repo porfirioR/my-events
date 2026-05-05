@@ -1,5 +1,4 @@
-import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { inject, Injectable, signal, computed } from '@angular/core';
 import { LoginNotificationsModel } from '../models/api';
 import { CollaboratorMatchRequestApiService } from './api/collaborator-match-request-api.service';
 
@@ -7,45 +6,26 @@ import { CollaboratorMatchRequestApiService } from './api/collaborator-match-req
   providedIn: 'root'
 })
 export class NotificationService {
-  private matchRequestApiService = inject(CollaboratorMatchRequestApiService)
-  private notificationsSubject = new BehaviorSubject<LoginNotificationsModel>({
+  private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
+
+  private readonly _notifications = signal<LoginNotificationsModel>({
     pendingMatchRequests: 0,
     matchRequests: []
   });
-  public notifications$: Observable<LoginNotificationsModel> = this.notificationsSubject.asObservable();
 
-  constructor() {}
+  public readonly notifications = this._notifications.asReadonly();
+  public readonly pendingCount = computed(() => this._notifications().pendingMatchRequests);
 
-  // Cargar notificaciones (llamar al hacer login o al iniciar la app)
   public loadNotifications(): void {
     this.matchRequestApiService.getLoginNotifications().subscribe({
-      next: (notifications) => {
-        this.notificationsSubject.next(notifications);
-      },
-      error: (error) => {
-        console.error('Error loading notifications:', error);
-      }
+      next: (notifications) => this._notifications.set(notifications),
     });
   }
 
-  // Obtener el contador de notificaciones pendientes
-  public getPendingCount(): Observable<number> {
-    return new Observable(observer => {
-      this.notifications$.subscribe(notifications => {
-        observer.next(notifications.pendingMatchRequests);
-      });
-    });
-  }
-
-  // Limpiar notificaciones
   public clearNotifications(): void {
-    this.notificationsSubject.next({
-      pendingMatchRequests: 0,
-      matchRequests: []
-    });
+    this._notifications.set({ pendingMatchRequests: 0, matchRequests: [] });
   }
 
-  // Refrescar notificaciones (útil después de aceptar una invitación)
   public refreshNotifications(): void {
     this.loadNotifications();
   }

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -11,6 +12,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   selector: 'app-verify-email',
   templateUrl: './verify-email.component.html',
   styleUrls: ['./verify-email.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -19,6 +21,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   ],
 })
 export class VerifyEmailComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private activeRoute = inject(ActivatedRoute);
   private userApiService = inject(UserApiService);
@@ -46,7 +49,7 @@ export class VerifyEmailComponent implements OnInit {
   private verifyEmail(token: string): void {
     const request = new VerifyEmailApiRequest(token);
 
-    this.userApiService.verifyEmail(request).subscribe({
+    this.userApiService.verifyEmail(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
         this.isVerifying.set(false);
         this.verificationSuccess.set(true);

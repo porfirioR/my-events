@@ -1,5 +1,5 @@
 // operation-attachment-access.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { 
@@ -25,7 +25,7 @@ export class OperationAttachmentAccessService extends BaseAccessService implemen
       .single<OperationAttachmentEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -39,7 +39,7 @@ export class OperationAttachmentAccessService extends BaseAccessService implemen
       .order(DatabaseColumns.UploadedDate, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -54,7 +54,7 @@ export class OperationAttachmentAccessService extends BaseAccessService implemen
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -67,7 +67,7 @@ export class OperationAttachmentAccessService extends BaseAccessService implemen
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -78,7 +78,7 @@ export class OperationAttachmentAccessService extends BaseAccessService implemen
       .eq(DatabaseColumns.OperationId, operationId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -89,7 +89,7 @@ export class OperationAttachmentAccessService extends BaseAccessService implemen
       .eq(DatabaseColumns.OperationId, operationId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return count || 0;

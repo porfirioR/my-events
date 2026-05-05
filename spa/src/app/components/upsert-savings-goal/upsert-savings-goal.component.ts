@@ -1,6 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnInit,
   inject,
   effect,
@@ -39,12 +41,13 @@ import {
 } from '../../models/enums';
 import { SavingsCalculatorHelper } from '../../services/helpers/savings-calculator-helper.service';
 import { SavingsGoalFormGroup } from '../../models/forms/saving-form-group';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-upsert-savings-goal',
   templateUrl: './upsert-savings-goal.component.html',
   styleUrls: ['./upsert-savings-goal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -57,12 +60,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
   ],
 })
 export class UpsertSavingsGoalComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
   private translate = inject(TranslateService);
-  
+
   private savingsStore = useSavingsStore();
   private currencyStore = useCurrencyStore();
 
@@ -166,14 +170,14 @@ export class UpsertSavingsGoalComponent implements OnInit {
     });
 
     // Calcular base amount y target amount en tiempo real
-    this.formGroup.controls.progressionTypeId.valueChanges.subscribe(() => {
+    this.formGroup.controls.progressionTypeId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.updateFieldValidators();
       this.calculateBaseAndTarget();
     });
-    
-    this.formGroup.controls.numberOfInstallments.valueChanges.subscribe(() => this.calculateBaseAndTarget());
-    this.formGroup.controls.baseAmount.valueChanges.subscribe(() => this.calculateBaseAndTarget());
-    this.formGroup.controls.incrementAmount.valueChanges.subscribe(() => this.calculateBaseAndTarget());
+
+    this.formGroup.controls.numberOfInstallments.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
+    this.formGroup.controls.baseAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
+    this.formGroup.controls.incrementAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
   }
 
   ngOnInit(): void {
@@ -389,7 +393,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.expectedEndDate?.toString() || undefined
       );
 
-      this.savingsStore.updateGoal(values.id!, request).subscribe({
+      this.savingsStore.updateGoal(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
           this.alertService.showSuccess(
@@ -417,7 +421,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.expectedEndDate?.toString() || undefined
       );
 
-      this.savingsStore.createGoal(request).subscribe({
+      this.savingsStore.createGoal(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.ignorePreventUnsavedChanges = true;
           this.alertService.showSuccess(

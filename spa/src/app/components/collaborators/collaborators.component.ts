@@ -1,4 +1,5 @@
-import { Component, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -13,6 +14,7 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
   selector: 'app-collaborators',
   templateUrl: './collaborators.component.html',
   styleUrls: ['./collaborators.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -24,6 +26,7 @@ export class CollaboratorsComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
+  private destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly alertService = inject(AlertService);
   private readonly translate = inject(TranslateService);  // ← Inyectar
@@ -95,7 +98,7 @@ export class CollaboratorsComponent implements OnInit {
       return;
     }
 
-    this.collaboratorApiService.resendInvitation(collaborator.id).subscribe({
+    this.collaboratorApiService.resendInvitation(collaborator.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.alertService.showSuccess(
           response.message || this.translate.instant('collaborators.invitationResent')
@@ -134,19 +137,18 @@ export class CollaboratorsComponent implements OnInit {
   }
 
   private loadPendingRequestsCount(): void {
-    this.matchRequestApiService.getReceivedRequests().subscribe({
+    this.matchRequestApiService.getReceivedRequests().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (requests) => {
         this.pendingRequestsCount.set(requests.length);
       },
       error: (error) => {
-        console.error('Failed to load pending requests count:', error);
         this.pendingRequestsCount.set(0);
       }
     });
   }
 
   protected deleteCollaborator(collaborator: CollaboratorApiModel): void {
-    this.collaboratorApiService.canDeleteCollaborator(collaborator.id).subscribe({
+    this.collaboratorApiService.canDeleteCollaborator(collaborator.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         if (!response.canDelete) {
           this.alertService.showError(this.translate.instant(response.reason || 'collaborators.deleteError'));

@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, OnInit, Signal, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -20,11 +21,13 @@ import { KeyValueViewModel } from '../../models/view';
 import { Configurations } from '../../models/enums';
 import { forkJoin } from 'rxjs';
 import { MessageTranslationService } from '../../services/helpers';
+import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-collaborator-match-requests',
   templateUrl: './collaborator-match-requests.component.html',
   styleUrls: ['./collaborator-match-requests.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -33,9 +36,12 @@ import { MessageTranslationService } from '../../services/helpers';
     TextComponent,
     ReactiveFormsModule,
     SelectInputComponent,
+    ConfirmDialogComponent,
   ]
 })
 export class CollaboratorMatchRequestsComponent implements OnInit {
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  private destroyRef = inject(DestroyRef);
   private matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorApiService = inject(CollaboratorApiService);
   private alertService = inject(AlertService);
@@ -61,7 +67,8 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   });
 
   public formGroup: FormGroup<MatchRequestFormGroup>;
-  public ignorePreventUnsavedChanges = false
+  public ignorePreventUnsavedChanges = false;
+  private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   constructor() {
     this.formGroup = new FormGroup<MatchRequestFormGroup>({
@@ -75,6 +82,11 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   protected exit = () => this.router.navigate(['/collaborators']);
+
+  protected onConfirmResult(result: ConfirmDialogResult): void {
+    this.pendingCallback?.(result);
+    this.pendingCallback = null;
+  }
 
   protected acceptRequest(request: ReceivedMatchRequestModel): void {
     const hasCollaboratorWithEmail = this.externalCollaborators.some(
@@ -98,7 +110,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
     this.matchRequestApiService.acceptMatchRequestWithCollaborator(
       this.pendingRequestToAccept.id,
       this.formGroup.value.collaboratorId
-    ).subscribe({
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         // Use message translation service for backend response
         const message = this.messageTranslationService.translateSuccessMessage(
@@ -128,28 +140,30 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   protected cancelRequest(request: CollaboratorMatchRequestModel): void {
-    const confirmMsg = this.translate.instant('matchRequests.confirmCancelRequest');
-
-    if (confirm(confirmMsg)) {
+    this.pendingCallback = (result: ConfirmDialogResult) => {
+      if (!result.confirmed) return;
       this.loadingStore.setLoading();
-      this.matchRequestApiService.cancelMatchRequest(request.id).subscribe({
+      this.matchRequestApiService.cancelMatchRequest(request.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
-          // Use message translation service for success message
           const message = this.messageTranslationService.translateSuccessMessage(
-            response, 
+            response,
             'matchRequests.requestCancelled'
           );
           this.alertService.showSuccess(message);
           this.loadAllData();
         },
         error: (error) => {
-          // Use message translation service for error handling
           const errorMessage = this.messageTranslationService.translateErrorMessage(error);
           this.alertService.showError(errorMessage);
           this.loadingStore.setLoadingFailed();
         }
       });
-    }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('matchRequests.cancel'),
+      message: this.translate.instant('matchRequests.confirmCancelRequest'),
+      type: 'warning',
+    });
   }
 
   protected createMatchRequest(): void {
@@ -166,7 +180,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       this.formGroup.value.targetEmail!
     );
 
-    this.matchRequestApiService.createMatchRequest(request).subscribe({
+    this.matchRequestApiService.createMatchRequest(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         // Use message translation service for backend response with email parameter
         const message = this.messageTranslationService.translateBackendMessage(
@@ -213,7 +227,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       sent: this.matchRequestApiService.getSentRequests(),
       internal: this.collaboratorApiService.getUnlinkedCollaborators(),
       external: this.collaboratorApiService.getLinkedCollaborators()
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (results) => {
         this.receivedRequests = results.received;
         this.sentRequests = results.sent;
@@ -240,30 +254,30 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   }
 
   private acceptDirectly(request: ReceivedMatchRequestModel): void {
-    const confirmMsg = this.translate.instant('matchRequests.acceptMatchRequest', { 
-      email: request.requesterUserEmail 
-    });
-
-    if (confirm(confirmMsg)) {
+    this.pendingCallback = (result: ConfirmDialogResult) => {
+      if (!result.confirmed) return;
       this.loadingStore.setLoading();
-      this.matchRequestApiService.acceptMatchRequest(request.id).subscribe({
+      this.matchRequestApiService.acceptMatchRequest(request.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
-          // Use message translation service for success message
           const message = this.messageTranslationService.translateSuccessMessage(
-            response, 
+            response,
             'matchRequests.requestAcceptedSuccess'
           );
           this.alertService.showSuccess(message);
           this.loadAllData();
         },
         error: (error) => {
-          // Use message translation service for error handling
           const errorMessage = this.messageTranslationService.translateErrorMessage(error);
           this.alertService.showError(errorMessage);
           this.loadingStore.setLoadingFailed();
         }
       });
-    }
+    };
+    this.confirmDialog.open({
+      title: this.translate.instant('matchRequests.accept'),
+      message: this.translate.instant('matchRequests.acceptMatchRequest', { email: request.requesterUserEmail }),
+      type: 'info',
+    });
   }
 
   private showCollaboratorSelection = (request: ReceivedMatchRequestModel): void => {

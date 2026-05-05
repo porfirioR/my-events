@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, computed, inject, Signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, signal, computed, inject, Signal, effect } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
@@ -19,6 +20,7 @@ import { debounceTime, tap } from 'rxjs';
 @Component({
   selector: 'app-upsert-transaction',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -33,6 +35,7 @@ import { debounceTime, tap } from 'rxjs';
   styleUrls: ['./upsert-transaction.component.css']
 })
 export class UpsertTransactionComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
@@ -67,6 +70,11 @@ export class UpsertTransactionComponent implements OnInit {
   protected splitType = SplitType
   protected whoPaid = WhoPaid
 
+  private getTodayDateString(): string {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  }
+
   constructor() {
     const reimbursement = new FormGroup<ReimbursementFormGroup>({
       amount: new FormControl(null),
@@ -76,6 +84,7 @@ export class UpsertTransactionComponent implements OnInit {
       collaboratorId: new FormControl(null, [Validators.required]),
       totalAmount: new FormControl(null, [Validators.required, Validators.min(0)]),
       description: new FormControl(null, [Validators.required]),
+      transactionDate: new FormControl(this.getTodayDateString(), [Validators.required]),
       splitType: new FormControl(SplitType.Equal, [Validators.required]),
       whoPaid: new FormControl(WhoPaid.User, [Validators.required]),
       splits: new FormArray<FormGroup<TransactionSplitFormGroup>>([]),
@@ -85,13 +94,14 @@ export class UpsertTransactionComponent implements OnInit {
 
     // Watch for changes in totalAmount to recalculate splits
     this.formGroup.controls.totalAmount.valueChanges.pipe(
-      tap(()=> {
+      tap(() => {
         this.customUserAmount.set(0);
         this.customCollaboratorAmount.set(0);
         this.formGroup.controls.reimbursement.controls.amount.reset();
         this.formGroup.controls.reimbursement.controls.amount.clearValidators();
       }),
-      debounceTime(100)
+      debounceTime(100),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe((totalAmount) => {
       this.recalculateSplits(this.formGroup.value.splitType!);
       if (totalAmount) {
@@ -99,18 +109,22 @@ export class UpsertTransactionComponent implements OnInit {
       }
       this.formGroup.controls.reimbursement.updateValueAndValidity()
     });
-    this.formGroup.controls.splitType.valueChanges.subscribe(splitType => {
+    this.formGroup.controls.splitType.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(splitType => {
       this.recalculateSplits(splitType!);
     });
-    this.formGroup.controls.hasReimbursement.valueChanges.subscribe(x => this.onReimbursementToggle(x));
+    this.formGroup.controls.hasReimbursement.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(x => this.onReimbursementToggle(x));
 
     effect(() => {
       this.transaction = this.selectedTransaction();
       if (this.transaction && this.isEditMode) {
+        const dateStr = this.transaction.transactionDate
+          ? new Date(this.transaction.transactionDate).toISOString().split('T')[0]
+          : this.getTodayDateString();
         this.formGroup.patchValue({
           collaboratorId: this.transaction.collaboratorId,
           totalAmount: this.transaction.totalAmount,
           description: this.transaction.description,
+          transactionDate: dateStr,
           splitType: this.transaction.splitType,
           whoPaid: this.transaction.whoPaid,
           hasReimbursement: !!this.transaction.totalReimbursement,
@@ -389,11 +403,12 @@ export class UpsertTransactionComponent implements OnInit {
       formValue.splitType!,
       formValue.whoPaid!,
       splits,
-      reimbursement
+      reimbursement,
+      formValue.transactionDate ?? null,
     );
 
     // Submit
-    this.transactionStore.createTransaction(request).subscribe({
+    this.transactionStore.createTransaction(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.alertService.showSuccess(
           this.translate.instant('upsertTransaction.transactionCreatedSuccess')

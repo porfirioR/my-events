@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ParticipantSplit } from '../../models/api/travels';
@@ -9,6 +9,7 @@ import { ParticipantSplit } from '../../models/api/travels';
   templateUrl: './custom-split.component.html',
   styleUrls: ['./custom-split.component.css'],
   imports: [CommonModule, FormsModule, CurrencyPipe, TranslateModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomSplitComponent {
 // Inputs

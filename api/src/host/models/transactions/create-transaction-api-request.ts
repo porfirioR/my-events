@@ -7,6 +7,7 @@ import {
   IsArray,
   ValidateNested,
   IsOptional,
+  IsDateString,
   Min,
   ArrayMinSize,
   ArrayMaxSize
@@ -46,4 +47,8 @@ export class CreateTransactionApiRequest {
   @ValidateNested()
   @Type(() => ReimbursementApiRequest)
   reimbursement?: ReimbursementApiRequest;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'transactionDate debe ser una fecha válida' })
+  transactionDate?: string;
 }

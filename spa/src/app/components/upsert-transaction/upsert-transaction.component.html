@@ -26,17 +26,31 @@
       <app-text-area-input formControlName="description" [label]="'upsertTransaction.description' | translate"
         id="description" name="description" [placeholder]="'upsertTransaction.descriptionPlaceholder' | translate" />
 
+      <app-text formControlName="transactionDate" type="date" [label]="'upsertTransaction.transactionDate' | translate"
+        id="transactionDate" name="transactionDate" />
+
       <!-- Reimbursement Section -->
-      <app-check-box-input formControlName="hasReimbursement" id="hasReimbursement"
-        [label]="'upsertTransaction.addReimbursement' | translate" />
+      <app-check-box-input
+        formControlName="hasReimbursement"
+        id="hasReimbursement"
+        [label]="'upsertTransaction.addReimbursement' | translate"
+      />
 
       @if (formGroup.controls.hasReimbursement.value) {
       <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mb-4" formGroupName="reimbursement">
         <h3 class="text-lg font-semibold mb-3">{{ 'upsertTransaction.reimbursementDetails' | translate }}</h3>
-        <app-text formControlName="amount" type="number" [label]="'upsertTransaction.amount' | translate" id="amount"
-          name="amount" />
-        <app-text-area-input formControlName="description" [label]="'upsertTransaction.description' | translate"
-          id="description" name="description" />
+        <app-text formControlName="amount"
+          type="number"
+          [label]="'upsertTransaction.amount' | translate"
+          id="amount"
+          name="amount"
+        />
+        <app-text-area-input formControlName="description"
+          [label]="'upsertTransaction.description' | translate"
+          [placeholder]="'upsertTransaction.description' | translate"
+          id="description"
+          name="description"
+        />
         <div class="alert alert-info alert-soft mt-3">
           <i class="fas fa-info-circle"></i>
           <span>{{ 'upsertTransaction.netAmountAfterReimbursement' | translate: { amount:

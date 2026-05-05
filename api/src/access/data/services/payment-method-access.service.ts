@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { PaymentMethodEntity } from '../entities';
@@ -17,7 +17,7 @@ export class PaymentMethodAccessService extends BaseAccessService implements IPa
       .order(DatabaseColumns.EntityId, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -32,7 +32,7 @@ export class PaymentMethodAccessService extends BaseAccessService implements IPa
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);

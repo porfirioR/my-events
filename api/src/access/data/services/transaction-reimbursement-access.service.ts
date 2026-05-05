@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { CreateTransactionReimbursementAccessRequest, ITransactionReimbursementAccessService, TransactionReimbursementAccessModel } from '../../../access/contract/transactions';
@@ -25,7 +25,7 @@ export class TransactionReimbursementAccessService
       .single<TransactionReimbursementEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.getAccessModel(data);
@@ -39,7 +39,7 @@ export class TransactionReimbursementAccessService
       .order(DatabaseColumns.ReimbursementDate, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.getAccessModel) || [];
@@ -52,7 +52,7 @@ export class TransactionReimbursementAccessService
       .eq(DatabaseColumns.TransactionId, transactionId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     const total = data?.reduce((sum, item) => sum + parseFloat(item.amount), 0) || 0;
@@ -66,7 +66,7 @@ export class TransactionReimbursementAccessService
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 

@@ -6,6 +6,7 @@ export interface TransactionFormGroup {
   collaboratorId: FormControl<number | null>;
   totalAmount: FormControl<number | null>;
   description: FormControl<string | null>;
+  transactionDate: FormControl<string | null>;
   splitType: FormControl<SplitType | null>;
   whoPaid: FormControl<WhoPaid | null>;
   splits: FormArray<FormGroup<TransactionSplitFormGroup>>;

@@ -9,6 +9,7 @@ export class CreateTransactionApiRequest {
     public splitType: SplitType,
     public whoPaid: WhoPaid,
     public splits: TransactionSplitApiRequest[],
-    public reimbursement?: ReimbursementApiRequest | null
+    public reimbursement?: ReimbursementApiRequest | null,
+    public transactionDate?: string | null,
   ) {}
 }

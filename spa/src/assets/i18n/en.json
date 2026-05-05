@@ -611,6 +611,7 @@
     "totalAmountDescription": "Total transaction amount on invoice",
     "description": "Description",
     "descriptionPlaceholder": "Description",
+    "transactionDate": "Payment Date",
     "addReimbursement": "Add Reimbursement",
     "reimbursementDetails": "Reimbursement Details",
     "amount": "Amount",

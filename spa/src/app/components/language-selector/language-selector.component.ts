@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 
@@ -6,7 +6,8 @@ import { TranslationService } from '../../services/translation.service';
   selector: 'app-language-selector',
   imports: [CommonModule],
   templateUrl: './language-selector.component.html',
-  styleUrls: ['./language-selector.component.css']
+  styleUrls: ['./language-selector.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LanguageSelectorComponent {
   private translationService = inject(TranslationService);

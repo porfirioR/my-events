@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseColumns, TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { 
@@ -27,7 +27,7 @@ export class TravelOperationParticipantAccessService
       .single<TravelOperationParticipantEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -44,7 +44,7 @@ export class TravelOperationParticipantAccessService
       .select();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -58,7 +58,7 @@ export class TravelOperationParticipantAccessService
       .order(DatabaseColumns.DateCreated, { ascending: true });
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return data?.map(this.mapEntityToAccessModel) || [];
@@ -76,7 +76,7 @@ export class TravelOperationParticipantAccessService
       .single<TravelOperationParticipantEntity>();
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return this.mapEntityToAccessModel(data);
@@ -89,7 +89,7 @@ export class TravelOperationParticipantAccessService
       .eq(DatabaseColumns.EntityId, id);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -101,7 +101,7 @@ export class TravelOperationParticipantAccessService
       .eq(DatabaseColumns.TravelMemberId, memberId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -112,7 +112,7 @@ export class TravelOperationParticipantAccessService
       .eq(DatabaseColumns.OperationId, operationId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   };
 
@@ -125,7 +125,7 @@ export class TravelOperationParticipantAccessService
       .limit(1);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return (data?.length || 0) > 0;
@@ -138,7 +138,7 @@ export class TravelOperationParticipantAccessService
       .eq(DatabaseColumns.OperationId, operationId);
 
     if (error) {
-      throw new Error(error.message);
+      throw new InternalServerErrorException(error.message);
     }
 
     return count || 0;
