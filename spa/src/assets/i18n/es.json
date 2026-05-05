@@ -611,6 +611,7 @@
     "totalAmountDescription": "Monto total de la transacción en la factura",
     "description": "Descripción",
     "descriptionPlaceholder": "Descripción",
+    "transactionDate": "Fecha del Pago",
     "addReimbursement": "Agregar Reintegro",
     "reimbursementDetails": "Detalles del Reintegro",
     "amount": "Monto",

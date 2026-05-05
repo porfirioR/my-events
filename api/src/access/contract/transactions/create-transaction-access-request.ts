@@ -9,5 +9,6 @@ export class CreateTransactionAccessRequest {
     public splitType: SplitType,
     public whoPaid: WhoPaid,
     public totalReimbursement: number,
+    public transactionDate: Date | null,
   ) {}
 }

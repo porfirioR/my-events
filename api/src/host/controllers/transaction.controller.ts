@@ -68,6 +68,7 @@ export class TransactionController {
       apiRequest.whoPaid,
       splits,
       reimbursement,
+      apiRequest.transactionDate ? new Date(apiRequest.transactionDate) : null,
     );
 
     return await this.transactionManagerService.createTransaction(request);
