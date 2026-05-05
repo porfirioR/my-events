@@ -70,6 +70,11 @@ export class UpsertTransactionComponent implements OnInit {
   protected splitType = SplitType
   protected whoPaid = WhoPaid
 
+  private getTodayDateString(): string {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  }
+
   constructor() {
     const reimbursement = new FormGroup<ReimbursementFormGroup>({
       amount: new FormControl(null),
@@ -79,6 +84,7 @@ export class UpsertTransactionComponent implements OnInit {
       collaboratorId: new FormControl(null, [Validators.required]),
       totalAmount: new FormControl(null, [Validators.required, Validators.min(0)]),
       description: new FormControl(null, [Validators.required]),
+      transactionDate: new FormControl(this.getTodayDateString(), [Validators.required]),
       splitType: new FormControl(SplitType.Equal, [Validators.required]),
       whoPaid: new FormControl(WhoPaid.User, [Validators.required]),
       splits: new FormArray<FormGroup<TransactionSplitFormGroup>>([]),
@@ -111,10 +117,14 @@ export class UpsertTransactionComponent implements OnInit {
     effect(() => {
       this.transaction = this.selectedTransaction();
       if (this.transaction && this.isEditMode) {
+        const dateStr = this.transaction.transactionDate
+          ? new Date(this.transaction.transactionDate).toISOString().split('T')[0]
+          : this.getTodayDateString();
         this.formGroup.patchValue({
           collaboratorId: this.transaction.collaboratorId,
           totalAmount: this.transaction.totalAmount,
           description: this.transaction.description,
+          transactionDate: dateStr,
           splitType: this.transaction.splitType,
           whoPaid: this.transaction.whoPaid,
           hasReimbursement: !!this.transaction.totalReimbursement,
@@ -393,7 +403,8 @@ export class UpsertTransactionComponent implements OnInit {
       formValue.splitType!,
       formValue.whoPaid!,
       splits,
-      reimbursement
+      reimbursement,
+      formValue.transactionDate ?? null,
     );
 
     // Submit

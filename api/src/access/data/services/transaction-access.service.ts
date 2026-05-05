@@ -46,7 +46,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       .from(TableEnum.Transactions)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
-      .order(DatabaseColumns.TransactionDate, { ascending: false });
+      .order(DatabaseColumns.TransactionDate, { ascending: true });
 
     if (error) {
       throw new InternalServerErrorException(error.message);
@@ -64,7 +64,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.UserId, userId)
       .eq(DatabaseColumns.CollaboratorId, collaboratorId)
-      .order(DatabaseColumns.TransactionDate, { ascending: false });
+      .order(DatabaseColumns.TransactionDate, { ascending: true });
 
     if (error) {
       throw new InternalServerErrorException(error.message);
@@ -122,6 +122,7 @@ export class TransactionAccessService extends BaseAccessService implements ITran
       request.splitType,
       request.whoPaid,
       request.totalReimbursement,
+      request.transactionDate ?? undefined,
     );
   };
 }
