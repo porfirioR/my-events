@@ -120,28 +120,27 @@ export const TransactionStore = signalStore(
     loadTransactions: rxMethod<void>(
       pipe(
         tap(() => {
-          if (store.isTransactionsLoaded()) return;
+          if (store.transactions().length > 0) return;
           loadingStore.setLoading();
           patchState(store, { error: null });
         }),
         switchMap(() => {
-          if (store.isTransactionsLoaded()) {
-            loadingStore.setLoadingSuccess();
+          if (store.transactions().length > 0) {
             return of(null);
           }
-          
+
           return transactionApiService.getMyTransactions().pipe(
             tap(transactions => {
-              patchState(store, { 
-                transactions, 
-                isTransactionsLoaded: true 
+              patchState(store, {
+                transactions,
+                isTransactionsLoaded: true
               });
               loadingStore.setLoadingSuccess();
             }),
-            catchError(error => {
+            catchError(() => {
               patchState(store, { error: 'Failed to load transactions' });
               loadingStore.setLoadingFailed();
-              throw new Error(error);
+              return of(null);
             })
           );
         })
@@ -157,16 +156,16 @@ export const TransactionStore = signalStore(
         }),
         switchMap(() => transactionApiService.getMyTransactions().pipe(
           tap(transactions => {
-            patchState(store, { 
-              transactions, 
-              isTransactionsLoaded: true 
+            patchState(store, {
+              transactions,
+              isTransactionsLoaded: true
             });
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => {
+          catchError(() => {
             patchState(store, { error: 'Failed to reload transactions' });
             loadingStore.setLoadingFailed();
-            throw new Error(error);
+            return of(null);
           })
         ))
       )
@@ -184,10 +183,10 @@ export const TransactionStore = signalStore(
             patchState(store, { selectedTransaction: transaction });
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => {
+          catchError(() => {
             patchState(store, { error: 'Failed to load transaction' });
             loadingStore.setLoadingFailed();
-            throw new Error(error);
+            return of(null);
           })
         ))
       )
@@ -233,10 +232,10 @@ export const TransactionStore = signalStore(
                 loadingStore.setLoadingSuccess();
               })
             )),
-            catchError(error => {
+            catchError(() => {
               patchState(store, { error: 'Failed to add reimbursement' });
               loadingStore.setLoadingFailed();
-              throw new Error(error);
+              return of(null);
             })
           )
         )
@@ -265,10 +264,10 @@ export const TransactionStore = signalStore(
               });
               loadingStore.setLoadingSuccess();
             }),
-            catchError(error => {
+            catchError(() => {
               patchState(store, { error: 'Failed to load balances' });
               loadingStore.setLoadingFailed();
-              throw new Error(error);
+              return of(null);
             })
           );
         })
@@ -290,10 +289,10 @@ export const TransactionStore = signalStore(
             });
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => {
+          catchError(() => {
             patchState(store, { error: 'Failed to reload balances' });
             loadingStore.setLoadingFailed();
-            throw new Error(error);
+            return of(null);
           })
         ))
       )
@@ -311,10 +310,10 @@ export const TransactionStore = signalStore(
             patchState(store, { selectedBalance: balance });
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => {
+          catchError(() => {
             patchState(store, { error: 'Failed to load balance' });
             loadingStore.setLoadingFailed();
-            throw new Error(error);
+            return of(null);
           })
         ))
       )
@@ -333,10 +332,10 @@ export const TransactionStore = signalStore(
             patchState(store, { transactions: updatedTransactions });
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => {
+          catchError(() => {
             patchState(store, { error: 'Failed to delete transaction' });
             loadingStore.setLoadingFailed();
-            throw new Error(error);
+            return of(null);
           })
         ))
       )
@@ -359,10 +358,10 @@ export const TransactionStore = signalStore(
             }
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => {
+          catchError(() => {
             patchState(store, { error: 'Failed to settle transaction' });
             loadingStore.setLoadingFailed();
-            throw new Error(error);
+            return of(null);
           })
         ))
       )
@@ -380,10 +379,10 @@ export const TransactionStore = signalStore(
             patchState(store, { selectedTransactionDetails: details });
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => {
+          catchError(() => {
             patchState(store, { error: 'Failed to load transaction details' });
             loadingStore.setLoadingFailed();
-            throw new Error(error);
+            return of(null);
           })
         ))
       )
