@@ -8,3 +8,4 @@ export { TravelParticipantType } from './travel-participant-type.enum';
 export { ProgressionType, ProgressionTypeDescriptions, ProgressionTypeIcons, ProgressionTypeLabels } from './progression-type.enum';
 export { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels } from './goal-status.enum';
 export { InstallmentStatus, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from './installment-status.enum';
+export { SavingsFrequency, SavingsFrequencyLabels } from './savings-frequency.enum';

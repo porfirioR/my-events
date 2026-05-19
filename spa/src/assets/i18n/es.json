@@ -224,7 +224,6 @@
     "deactivate": "Desactivar",
     "activate": "Activar",
     "resendInvitation": "Reenviar Invitación",
-    "delete": "Eliminar",
     "noUnlinkedYet": "No hay colaboradores no vinculados aún",
     "noLinkedYet": "No hay colaboradores vinculados aún",
     "noCollaboratorsYet": "No hay colaboradores aún",
@@ -561,7 +560,18 @@
     "installmentsAddedError": "Error al agregar cuotas",
     "skipInstallmentTitle": "Omitir Cuota",
     "skipInstallmentMessage": "¿Estás seguro de que quieres omitir la cuota #{{number}}?",
-    "installmentSkipped": "Cuota omitida"
+    "installmentSkipped": "Cuota omitida",
+    "programmedSavingsSummary": "Resumen de Rendimiento",
+    "nextInstallment": "Próxima Cuota",
+    "installmentNumber": "Cuota N°",
+    "dueOn": "Vence el",
+    "monthlyAmount": "Cuota mensual",
+    "termMonthsLabel": "Plazo",
+    "months": "meses",
+    "alreadyPaid": "Ya depositado",
+    "totalToDeposit": "Total a depositar",
+    "estimatedYield": "Ganancia estimada",
+    "totalAtMaturity": "Total a recibir al vencimiento"
   },
   "upsertSavingsGoal": {
     "editTitle": "Editar Meta de Ahorro",
@@ -601,7 +611,20 @@
     "incrementDescDefault": "Monto para aumentar/disminuir por cuota",
     "goalUpdatedSuccess": "Meta de ahorro actualizada exitosamente",
     "goalCreatedSuccess": "Meta de ahorro creada exitosamente",
-    "goalCreatedError": "Error al crear la meta de ahorro"
+    "goalCreatedError": "Error al crear la meta de ahorro",
+    "frequency": "Frecuencia de pago",
+    "frequencyOptional": "Sin frecuencia (libre)",
+    "programmedSavingsInfo": "Las fechas de vencimiento de cada cuota se calcularán automáticamente a partir de la fecha de inicio.",
+    "termMonths": "Plazo",
+    "months": "meses",
+    "annualRate": "anual",
+    "yieldInfo": "Proyección de Rendimiento",
+    "totalDeposited": "Total depositado",
+    "yieldAmount": "Ganancia estimada",
+    "totalAtEnd": "Total al vencimiento"
+  },
+  "savingsFrequency": {
+    "monthly": "Mensual"
   },
   "upsertTransaction": {
     "editTitle": "Editar Transacción",

@@ -17,7 +17,9 @@ import {
   CreateFreeFormDepositApiRequest,
   AddInstallmentsApiRequest,
   SavingsInstallmentApiModel,
+  SavingsProgrammedTermApiModel,
 } from '../../models/api/savings';
+import { SavingsGoalApiService } from '../../services/api/saving-api.service';
 import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { ProgressionTypeFormGroup } from '../../models/forms';
@@ -49,6 +51,7 @@ export class SavingsGoalDetailComponent implements OnInit {
   private formatterService = inject(FormatterHelperService);
   private translate = inject(TranslateService);
   private savingsStore = useSavingsStore();
+  private savingsGoalApiService = inject(SavingsGoalApiService);
 
   protected goal = this.savingsStore.selectedGoal;
   protected installments = this.savingsStore.installments;
@@ -57,6 +60,19 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected remaining = this.savingsStore.selectedGoalRemaining;
   protected pendingInstallments = this.savingsStore.pendingInstallments;
   protected paidInstallments = this.savingsStore.paidInstallments;
+
+  // Programmed savings
+  private programmedTerms = signal<SavingsProgrammedTermApiModel[]>([]);
+  protected isProgrammedSavings = computed(() => !!this.goal()?.frequencyId);
+  protected nextInstallment = computed(() => this.pendingInstallments()[0] ?? null);
+  protected programmedYield = computed(() => {
+    const goal = this.goal();
+    const terms = this.programmedTerms();
+    if (!goal?.frequencyId || !goal.numberOfInstallments || !goal.baseAmount || terms.length === 0) return null;
+    const term = terms.find(t => t.termMonths === goal.numberOfInstallments);
+    if (!term) return null;
+    return this.calculateProgrammedYield(goal.baseAmount, goal.numberOfInstallments, term.annualRatePercentage);
+  });
 
   // Enums
   protected GoalStatus = GoalStatus;
@@ -118,6 +134,24 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadGoalById(id);
     this.savingsStore.loadInstallments(id);
     this.savingsStore.loadDeposits(id);
+    this.savingsGoalApiService.getProgrammedTerms()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(terms => this.programmedTerms.set(terms));
+  }
+
+  private calculateProgrammedYield(
+    monthlyAmount: number,
+    termMonths: number,
+    annualRatePercentage: number,
+  ): { yieldAmount: number; totalDeposited: number; totalAmount: number } {
+    const i = annualRatePercentage / 100 / 12;
+    const fv = monthlyAmount * ((Math.pow(1 + i, termMonths) - 1) / i);
+    const totalDeposited = monthlyAmount * termMonths;
+    return {
+      yieldAmount: Math.round(fv - totalDeposited),
+      totalDeposited,
+      totalAmount: Math.round(fv),
+    };
   }
 
   protected setActiveTab(tab: 'installments' | 'deposits'): void {

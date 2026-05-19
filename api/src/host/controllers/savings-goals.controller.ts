@@ -30,6 +30,7 @@ import {
   CreateFreeFormDepositApiRequest,
   AddInstallmentsApiRequest,
 } from '../models/savings';
+import { SavingsProgrammedTermModel } from '../../manager/models/savings';
 import { MessageModel } from '../models/message.model';
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 
@@ -53,6 +54,15 @@ export class SavingsGoalsController {
   async getAllSavingsGoals(): Promise<SavingsGoalModel[]> {
     const userId = await this.currentUserService.getCurrentUserId();
     return await this.savingsManagerService.getAllSavingsGoals(userId);
+  }
+
+  /**
+   * Obtener plazos disponibles para ahorro programado
+   * GET /api/savings-goals/programmed-terms
+   */
+  @Get('programmed-terms')
+  async getProgrammedTerms(): Promise<SavingsProgrammedTermModel[]> {
+    return await this.savingsManagerService.getProgrammedTerms();
   }
 
   /**
@@ -111,6 +121,7 @@ export class SavingsGoalsController {
       apiRequest.baseAmount,
       apiRequest.incrementAmount,
       apiRequest.expectedEndDate ? new Date(apiRequest.expectedEndDate) : null,
+      apiRequest.frequencyId ?? null,
     );
 
     return await this.savingsManagerService.createSavingsGoal(request);

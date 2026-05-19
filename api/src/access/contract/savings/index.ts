@@ -13,3 +13,4 @@ export { SavingsInstallmentAccessModel } from './savings-installment-access.mode
 
 export { UpdateSavingsGoalAccessRequest } from './update-savings-goal-access-request';
 export { UpdateSavingsInstallmentAccessRequest } from './update-savings-installment-access-request';
+export { SavingsProgrammedTermAccessModel } from './savings-programmed-term-access.model';

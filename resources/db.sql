@@ -244,6 +244,16 @@ INSERT INTO installmentstatus (id, name, description) VALUES
 (2, 'Paid', 'Installment has been fully paid'),
 (3, 'Skipped', 'Installment was intentionally skipped by the user');
 
+-- Tabla de frecuencias de ahorro programado
+CREATE TABLE savingsfrequencies (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT NOT NULL
+);
+
+INSERT INTO savingsfrequencies (id, name, description) VALUES
+(1, 'Monthly', 'Payment is due once per month on the same day as the start date');
+
 -- Meta de ahorro principal
 CREATE TABLE savingsgoals (
     id SERIAL PRIMARY KEY,
@@ -276,6 +286,7 @@ CREATE TABLE savingsgoals (
     FOREIGN KEY (currencyid) REFERENCES currencies(id),
     FOREIGN KEY (progressiontypeid) REFERENCES savingsprogressiontypes(id),
     FOREIGN KEY (statusid) REFERENCES savingsstatus(id),
+    FOREIGN KEY (frequencyid) REFERENCES savingsfrequencies(id),
 
     -- Validaciones
     CONSTRAINT check_target_positive CHECK (targetamount > 0),
@@ -720,12 +731,41 @@ AS $$
         t.updatedat,
         t.finalizeddate
     FROM travels t
-    WHERE t.createdbyuserid = user_id 
+    WHERE t.createdbyuserid = user_id
         OR EXISTS (
-            SELECT 1 FROM travelmembers tm 
+            SELECT 1 FROM travelmembers tm
             WHERE tm.travelid = t.id AND tm.userid = user_id
         )
-    ORDER BY 
+    ORDER BY
         COALESCE(t.updatedat, t.datecreated) DESC,
         t.datecreated DESC;
 $$;
+
+-- =====================================================
+-- PARTE 15: TABLA DE PLAZOS Y TASAS - AHORRO PROGRAMADO
+-- =====================================================
+-- Almacena los plazos disponibles y sus tasas de interés anual.
+-- El rendimiento se calcula con la fórmula de valor futuro de anualidad:
+--   FV = P × [(1 + i)^n - 1] / i   donde i = tasa_anual / 12
+
+CREATE TABLE IF NOT EXISTS savingsprogrammedterms (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    term_months INT NOT NULL UNIQUE,
+    annual_rate_percentage DECIMAL(5,2) NOT NULL
+);
+
+INSERT INTO savingsprogrammedterms (term_months, annual_rate_percentage) VALUES
+    (3,  3.00),
+    (6,  3.00),
+    (9,  3.00),
+    (12, 4.00),
+    (15, 4.00),
+    (18, 4.00),
+    (21, 4.00),
+    (24, 4.50),
+    (36, 7.00),
+    (48, 7.50),
+    (60, 8.00)
+ON CONFLICT (term_months) DO NOTHING;
+
+CREATE INDEX idx_savingsprogrammedterms_months ON savingsprogrammedterms(term_months);

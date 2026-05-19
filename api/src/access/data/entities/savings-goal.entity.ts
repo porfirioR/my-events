@@ -17,5 +17,6 @@ export class SavingsGoalEntity {
     public completeddate?: Date | null,
     public datecreated?: Date,
     public dateupdated?: Date,
+    public frequencyid?: number | null,
   ) {}
 }

@@ -24,8 +24,10 @@ import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import {
   CreateSavingsGoalApiRequest,
+  SavingsProgrammedTermApiModel,
   UpdateSavingsGoalApiRequest,
 } from '../../models/api/savings';
+import { SavingsGoalApiService } from '../../services/api/saving-api.service';
 import { useSavingsStore } from '../../store/savings.store';
 import { useCurrencyStore } from '../../store/currency.store';
 import {
@@ -38,6 +40,8 @@ import {
   ProgressionType,
   ProgressionTypeDescriptions,
   ProgressionTypeLabels,
+  SavingsFrequency,
+  SavingsFrequencyLabels,
 } from '../../models/enums';
 import { SavingsCalculatorHelper } from '../../services/helpers/savings-calculator-helper.service';
 import { SavingsGoalFormGroup } from '../../models/forms/saving-form-group';
@@ -69,36 +73,56 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   private savingsStore = useSavingsStore();
   private currencyStore = useCurrencyStore();
+  private savingsGoalApiService = inject(SavingsGoalApiService);
 
   protected isEditMode = false;
   protected saving = false;
   public ignorePreventUnsavedChanges = false;
-  
+
   // Enums para template
   protected ProgressionType = ProgressionType;
   protected ProgressionTypeLabels = ProgressionTypeLabels;
-  
+  protected SavingsFrequency = SavingsFrequency;
+
   // Lists para selects
   protected currencyList: KeyValueViewModel[] = [];
   protected progressionTypeList: KeyValueViewModel[] = [];
-  
+  protected frequencyList: KeyValueViewModel[] = [];
+
+  // Programmed terms
+  protected programmedTerms = signal<SavingsProgrammedTermApiModel[]>([]);
+  protected termSelectList = computed(() =>
+    this.programmedTerms().map(t =>
+      new KeyValueViewModel(
+        t.termMonths,
+        `${t.termMonths} ${this.translate.instant('upsertSavingsGoal.months')} - ${t.annualRatePercentage}% ${this.translate.instant('upsertSavingsGoal.annualRate')}`,
+      )
+    )
+  );
+
+  // Yield info for programmed savings
+  protected yieldInfo = signal<{ yieldAmount: number; totalDeposited: number; totalAmount: number } | null>(null);
+
   // Form
   public formGroup: FormGroup<SavingsGoalFormGroup>;
-  
+
   // Calculated target amount
   protected calculatedTargetAmount = signal<number | null>(null);
-  
+
   // Calculated base amount (para mostrar en UI)
   protected calculatedBaseAmount = signal<number | null>(null);
-  
+
   // Signals para reactividad
   protected progressionTypeIdSignal!: ReturnType<typeof toSignal<number | null>>;
-  
+  protected frequencyIdSignal!: ReturnType<typeof toSignal<number | null>>;
+
   // Show/hide fields based on progression type
   protected showInstallmentFields!: ReturnType<typeof computed<boolean>>;
   protected showIncrementField!: ReturnType<typeof computed<boolean>>;
   protected showTargetAmountInput!: ReturnType<typeof computed<boolean>>;
   protected showBaseAmountField!: ReturnType<typeof computed<boolean>>;
+  protected showFrequencyField!: ReturnType<typeof computed<boolean>>;
+  protected isProgrammedSavings!: ReturnType<typeof computed<boolean>>;
 
   constructor() {
     const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd', 'UTC') as string;
@@ -116,15 +140,23 @@ export class UpsertSavingsGoalComponent implements OnInit {
       baseAmount: new FormControl(null),
       incrementAmount: new FormControl(null),
       expectedEndDate: new FormControl(null),
-      statusId: new FormControl(1)
+      statusId: new FormControl(1),
+      frequencyId: new FormControl<number | null>(null),
     });
 
-    // 2. SEGUNDO: Crear el signal desde el FormControl
+    // 2. SEGUNDO: Crear los signals desde los FormControls
     this.progressionTypeIdSignal = toSignal(
       this.formGroup.controls.progressionTypeId.valueChanges.pipe(
         startWith(this.formGroup.controls.progressionTypeId.value)
       ),
       { initialValue: this.formGroup.controls.progressionTypeId.value }
+    );
+
+    this.frequencyIdSignal = toSignal(
+      this.formGroup.controls.frequencyId.valueChanges.pipe(
+        startWith(this.formGroup.controls.frequencyId.value)
+      ),
+      { initialValue: this.formGroup.controls.frequencyId.value }
     );
 
     // 3. TERCERO: Crear los computed signals
@@ -150,12 +182,20 @@ export class UpsertSavingsGoalComponent implements OnInit {
       return typeId === ProgressionType.Fixed;
     });
 
+    this.showFrequencyField = computed(() => {
+      const typeId = this.progressionTypeIdSignal();
+      return typeId === ProgressionType.Fixed;
+    });
+
+    this.isProgrammedSavings = computed(() => !!this.frequencyIdSignal());
+
     // Effect para cargar currencies cuando estén listas
     effect(() => {
       const currencies = this.currencyStore.getAllCurrencies();
       if (currencies.length > 0) {
         this.currencyList = this.formatterService.convertToList(currencies, Configurations.Currencies);
         this.progressionTypeList = this.getProgressionTypeList();
+        this.frequencyList = this.getFrequencyList();
       }
     });
 
@@ -178,6 +218,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.numberOfInstallments.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
     this.formGroup.controls.baseAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
     this.formGroup.controls.incrementAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
+    this.formGroup.controls.frequencyId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
   }
 
   ngOnInit(): void {
@@ -189,8 +230,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.savingsStore.clearSelectedGoal();
     }
 
-    // Cargar currencies desde el store
     this.currencyStore.loadCurrencies();
+
+    this.savingsGoalApiService.getProgrammedTerms()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(terms => this.programmedTerms.set(terms));
   }
 
   private loadGoalIntoForm(goal: any): void {
@@ -211,7 +255,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
       baseAmount: goal.baseAmount,
       incrementAmount: goal.incrementAmount,
       expectedEndDate: expectedEndDate,
-      statusId: goal.statusId
+      statusId: goal.statusId,
+      frequencyId: goal.frequencyId ?? null,
     });
 
     this.formGroup.controls.numberOfInstallments.disable()
@@ -249,6 +294,15 @@ export class UpsertSavingsGoalComponent implements OnInit {
         this.translate.instant(ProgressionTypeLabels[ProgressionType.FreeForm]),
         this.translate.instant(ProgressionTypeDescriptions[ProgressionType.FreeForm])
       )
+    ];
+  }
+
+  private getFrequencyList(): KeyValueViewModel[] {
+    return [
+      new KeyValueViewModel(
+        SavingsFrequency.Monthly,
+        this.translate.instant(SavingsFrequencyLabels[SavingsFrequency.Monthly]),
+      ),
     ];
   }
 
@@ -301,6 +355,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       if (!baseAmount) {
         this.calculatedBaseAmount.set(null);
         this.calculatedTargetAmount.set(null);
+        this.yieldInfo.set(null);
         return;
       }
       calculatedBase = baseAmount;
@@ -344,6 +399,34 @@ export class UpsertSavingsGoalComponent implements OnInit {
     } catch (error) {
       this.calculatedTargetAmount.set(null);
     }
+
+    // Calcular rendimiento para ahorro programado
+    const frequencyId = this.formGroup.controls.frequencyId.value;
+    if (typeId === ProgressionType.Fixed && frequencyId && baseAmount && numberOfInstallments) {
+      const term = this.programmedTerms().find(t => t.termMonths === +numberOfInstallments);
+      if (term) {
+        this.yieldInfo.set(this.calculateProgrammedYield(+baseAmount, term.termMonths, term.annualRatePercentage));
+      } else {
+        this.yieldInfo.set(null);
+      }
+    } else {
+      this.yieldInfo.set(null);
+    }
+  }
+
+  private calculateProgrammedYield(
+    monthlyAmount: number,
+    termMonths: number,
+    annualRatePercentage: number,
+  ): { yieldAmount: number; totalDeposited: number; totalAmount: number } {
+    const i = annualRatePercentage / 100 / 12;
+    const fv = monthlyAmount * ((Math.pow(1 + i, termMonths) - 1) / i);
+    const totalDeposited = monthlyAmount * termMonths;
+    return {
+      yieldAmount: Math.round(fv - totalDeposited),
+      totalDeposited,
+      totalAmount: Math.round(fv),
+    };
   }
 
   protected save = (event?: Event): void => {
@@ -418,7 +501,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
         numberOfInstallments ? +numberOfInstallments : undefined,
         finalBaseAmount ? +finalBaseAmount : undefined,
         incrementAmount ? +incrementAmount : undefined,
-        values.expectedEndDate?.toString() || undefined
+        values.expectedEndDate?.toString() || undefined,
+        values.frequencyId ?? undefined,
       );
 
       this.savingsStore.createGoal(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

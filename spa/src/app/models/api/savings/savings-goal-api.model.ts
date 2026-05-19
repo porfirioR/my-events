@@ -16,4 +16,5 @@ export interface SavingsGoalApiModel {
   completedDate: Date | null;
   dateCreated: Date;
   dateUpdated: Date;
+  frequencyId: number | null;
 }

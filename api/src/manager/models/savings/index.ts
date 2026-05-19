@@ -6,3 +6,4 @@ export { UpdateSavingsGoalRequest } from './update-savings-goal-request';
 export { PayInstallmentRequest } from './pay-installment-request';
 export { CreateFreeFormDepositRequest } from './create-freeform-deposit-request';
 export { AddInstallmentsRequest } from './add-installments-request';
+export { SavingsProgrammedTermModel } from './savings-programmed-term.model';

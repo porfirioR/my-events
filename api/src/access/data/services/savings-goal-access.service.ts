@@ -200,11 +200,12 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       entity.completeddate ? new Date(entity.completeddate) : null,
       new Date(entity.datecreated),
       new Date(entity.dateupdated),
+      entity.frequencyid ?? null,
     );
   };
 
   private mapAccessRequestToEntity = (accessRequest: CreateSavingsGoalAccessRequest): SavingsGoalEntity => {
-    return new SavingsGoalEntity(
+    const entity = new SavingsGoalEntity(
       accessRequest.userId,
       accessRequest.currencyId,
       accessRequest.name,
@@ -219,6 +220,8 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       accessRequest.incrementAmount,
       accessRequest.expectedEndDate,
     );
+    entity.frequencyid = accessRequest.frequencyId ?? null;
+    return entity;
   };
 
   private mapUpdateRequestToEntity = (accessRequest: UpdateSavingsGoalAccessRequest): SavingsGoalEntity => {

@@ -10,3 +10,4 @@ export { TravelStatus } from './travel-status.enum';
 export { TravelOperationStatus } from './travel-operation-status.enum';
 export { TravelParticipantType } from './travel-participant-type.enum';
 export { ApprovalStatus } from './approval-status.enum';
+export { SavingsFrequency } from './savings-frequency.enum';

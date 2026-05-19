@@ -37,3 +37,4 @@ export { TravelOperationApprovalAccessService } from './travel-operation-approva
 
 export { OperationCategoryAccessService } from './operation-category-access.service';
 export { OperationAttachmentAccessService } from './operation-attachment-access.service';
+export { SavingsProgrammedTermAccessService } from './savings-programmed-term-access.service';

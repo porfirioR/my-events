@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { CreateSavingsGoalApiRequest, MessageModel, SavingsGoalApiModel, UpdateSavingsGoalApiRequest } from '../../models/api';
-import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel } from '../../models/api/savings';
+import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel, SavingsProgrammedTermApiModel } from '../../models/api/savings';
 
 @Injectable({
   providedIn: 'root'
@@ -87,4 +87,7 @@ export class SavingsGoalApiService {
 
   public deleteDeposit = (depositId: number): Observable<MessageModel> =>
     this.httpClient.delete<MessageModel>(`${this.section}/deposits/${depositId}`);
+
+  public getProgrammedTerms = (): Observable<SavingsProgrammedTermApiModel[]> =>
+    this.httpClient.get<SavingsProgrammedTermApiModel[]>(`${this.section}/programmed-terms`);
 }

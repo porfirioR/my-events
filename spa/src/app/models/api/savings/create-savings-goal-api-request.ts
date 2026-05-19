@@ -9,6 +9,7 @@ export class CreateSavingsGoalApiRequest {
     public numberOfInstallments?: number,
     public baseAmount?: number,
     public incrementAmount?: number,
-    public expectedEndDate?: string
+    public expectedEndDate?: string,
+    public frequencyId?: number,
   ) {}
 }

@@ -11,5 +11,6 @@ export class CreateSavingsGoalRequest {
     public readonly baseAmount?: number | null,
     public readonly incrementAmount?: number | null,
     public readonly expectedEndDate?: Date | null,
+    public readonly frequencyId?: number | null,
   ) {}
 }

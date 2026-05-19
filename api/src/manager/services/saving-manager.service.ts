@@ -15,6 +15,7 @@ import {
   SavingsGoalModel,
   SavingsInstallmentModel,
   SavingsDepositModel,
+  SavingsProgrammedTermModel,
   CreateSavingsGoalRequest,
   UpdateSavingsGoalRequest,
   PayInstallmentRequest,
@@ -24,6 +25,7 @@ import {
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { ProgressionType } from 'src/utility/enums';
+import { SavingsProgrammedTermAccessService } from '../../access/data/services/savings-programmed-term-access.service';
 
 @Injectable()
 export class SavingsManagerService {
@@ -36,6 +38,8 @@ export class SavingsManagerService {
 
     @Inject(SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE)
     private readonly savingsDepositAccessService: ISavingsDepositAccessService,
+
+    private readonly savingsProgrammedTermAccessService: SavingsProgrammedTermAccessService,
   ) {}
 
   // ==================== SAVINGS GOALS ====================
@@ -96,6 +100,19 @@ export class SavingsManagerService {
       );
     }
 
+    // Calcular fechas de vencimiento si es ahorro programado mensual
+    let dueDates: Date[] = [];
+    let computedExpectedEndDate = request.expectedEndDate ?? null;
+
+    if (request.frequencyId && request.numberOfInstallments) {
+      dueDates = SavingsCalculatorHelper.calculateMonthlyDueDates(
+        request.startDate,
+        +request.numberOfInstallments,
+      );
+      // La fecha de vencimiento del plan es la fecha de la última cuota
+      computedExpectedEndDate = dueDates[dueDates.length - 1];
+    }
+
     // Crear el objetivo de ahorro
     const accessRequest = new CreateSavingsGoalAccessRequest(
       request.userId,
@@ -108,7 +125,8 @@ export class SavingsManagerService {
       request.numberOfInstallments,
       request.baseAmount,
       request.incrementAmount,
-      request.expectedEndDate,
+      computedExpectedEndDate,
+      request.frequencyId,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -121,7 +139,7 @@ export class SavingsManagerService {
           index + 1,
           amount,
           1, // statusId = 1 (Pending)
-          null, // dueDate
+          dueDates[index] ?? null,
         )
       );
 
@@ -472,6 +490,13 @@ export class SavingsManagerService {
     await this.savingsDepositAccessService.delete(depositId);
   };
 
+  // ==================== PROGRAMMED TERMS ====================
+
+  public getProgrammedTerms = async (): Promise<SavingsProgrammedTermModel[]> => {
+    const accessModels = await this.savingsProgrammedTermAccessService.getAll();
+    return accessModels.map(a => new SavingsProgrammedTermModel(a.id, a.termMonths, a.annualRatePercentage));
+  };
+
   // ==================== MÉTODOS PRIVADOS ====================
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
@@ -501,6 +526,7 @@ export class SavingsManagerService {
       accessModel.completedDate,
       accessModel.dateCreated,
       accessModel.dateUpdated,
+      accessModel.frequencyId,
     );
   };
 
