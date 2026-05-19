@@ -286,7 +286,6 @@ CREATE TABLE savingsgoals (
     FOREIGN KEY (currencyid) REFERENCES currencies(id),
     FOREIGN KEY (progressiontypeid) REFERENCES savingsprogressiontypes(id),
     FOREIGN KEY (statusid) REFERENCES savingsstatus(id),
-    FOREIGN KEY (frequencyid) REFERENCES savingsfrequencies(id),
 
     -- Validaciones
     CONSTRAINT check_target_positive CHECK (targetamount > 0),
@@ -769,3 +768,10 @@ INSERT INTO savingsprogrammedterms (term_months, annual_rate_percentage) VALUES
 ON CONFLICT (term_months) DO NOTHING;
 
 CREATE INDEX idx_savingsprogrammedterms_months ON savingsprogrammedterms(term_months);
+
+-- =====================================================
+-- PARTE 16: COLUMNAS AGREGADAS A TABLAS EXISTENTES
+-- =====================================================
+
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS frequencyid INT NULL;
+ALTER TABLE savingsgoals ADD CONSTRAINT fk_savingsgoals_frequencyid FOREIGN KEY (frequencyid) REFERENCES savingsfrequencies(id);
