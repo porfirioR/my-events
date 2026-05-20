@@ -24,7 +24,6 @@ import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import {
   CreateSavingsGoalApiRequest,
-  SavingsProgrammedTermApiModel,
   UpdateSavingsGoalApiRequest,
 } from '../../models/api/savings';
 import { SavingsGoalApiService } from '../../services/api/saving-api.service';
@@ -89,10 +88,9 @@ export class UpsertSavingsGoalComponent implements OnInit {
   protected progressionTypeList: KeyValueViewModel[] = [];
   protected frequencyList: KeyValueViewModel[] = [];
 
-  // Programmed terms
-  protected programmedTerms = signal<SavingsProgrammedTermApiModel[]>([]);
+  // Programmed terms desde el store
   protected termSelectList = computed(() =>
-    this.programmedTerms().map(t =>
+    this.savingsStore.programmedTerms().map(t =>
       new KeyValueViewModel(
         t.termMonths,
         `${t.termMonths} ${this.translate.instant('upsertSavingsGoal.months')} - ${t.annualRatePercentage}% ${this.translate.instant('upsertSavingsGoal.annualRate')}`,
@@ -232,10 +230,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     }
 
     this.currencyStore.loadCurrencies();
-
-    this.savingsGoalApiService.getProgrammedTerms()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(terms => this.programmedTerms.set(terms));
+    this.savingsStore.loadProgrammedTerms();
   }
 
   private loadGoalIntoForm(goal: any): void {
@@ -321,12 +316,16 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.numberOfInstallments.clearValidators();
     this.formGroup.controls.baseAmount.clearValidators();
     this.formGroup.controls.incrementAmount.clearValidators();
+    this.formGroup.controls.frequencyId.clearValidators();
 
     if (typeId === ProgressionType.FreeForm) {
       this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
     } else if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.baseAmount.setValidators([Validators.required, Validators.min(1)]);
+      if (typeId === ProgressionType.Scheduled) {
+        this.formGroup.controls.frequencyId.setValidators([Validators.required]);
+      }
     } else if (typeId !== null) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.incrementAmount.setValidators([Validators.required, Validators.min(1)]);
@@ -336,6 +335,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.numberOfInstallments.updateValueAndValidity();
     this.formGroup.controls.baseAmount.updateValueAndValidity();
     this.formGroup.controls.incrementAmount.updateValueAndValidity();
+    this.formGroup.controls.frequencyId.updateValueAndValidity();
   }
 
   private calculateBaseAndTarget(): void {
@@ -408,9 +408,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
     }
 
     if (typeId === ProgressionType.Scheduled && baseAmount && numberOfInstallments) {
-      const term = this.programmedTerms().find(t => t.termMonths === +numberOfInstallments);
+      const term = this.savingsStore.programmedTerms().find(t => t.termMonths === +numberOfInstallments);
       if (term) {
-        this.yieldInfo.set(this.calculateProgrammedYield(+baseAmount, term.termMonths, term.annualRatePercentage));
+        const yi = this.calculateProgrammedYield(+baseAmount, term.termMonths, term.annualRatePercentage);
+        this.yieldInfo.set(yi);
+        this.calculatedTargetAmount.set(yi.totalAmount);
       } else {
         this.yieldInfo.set(null);
       }
@@ -478,7 +480,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
         numberOfInstallments ? +numberOfInstallments : undefined,
         finalBaseAmount ? +finalBaseAmount : undefined,
         incrementAmount ? +incrementAmount : undefined,
-        values.expectedEndDate?.toString() || undefined
+        values.expectedEndDate?.toString() || undefined,
+        values.frequencyId ?? undefined
       );
 
       this.savingsStore.updateGoal(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

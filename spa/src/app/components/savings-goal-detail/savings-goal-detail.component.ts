@@ -17,9 +17,7 @@ import {
   CreateFreeFormDepositApiRequest,
   AddInstallmentsApiRequest,
   SavingsInstallmentApiModel,
-  SavingsProgrammedTermApiModel,
 } from '../../models/api/savings';
-import { SavingsGoalApiService } from '../../services/api/saving-api.service';
 import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { ProgressionTypeFormGroup } from '../../models/forms';
@@ -51,7 +49,6 @@ export class SavingsGoalDetailComponent implements OnInit {
   private formatterService = inject(FormatterHelperService);
   private translate = inject(TranslateService);
   private savingsStore = useSavingsStore();
-  private savingsGoalApiService = inject(SavingsGoalApiService);
 
   protected goal = this.savingsStore.selectedGoal;
   protected installments = this.savingsStore.installments;
@@ -62,12 +59,11 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected paidInstallments = this.savingsStore.paidInstallments;
 
   // Programmed savings
-  private programmedTerms = signal<SavingsProgrammedTermApiModel[]>([]);
   protected isProgrammedSavings = computed(() => this.goal()?.progressionTypeId === ProgressionType.Scheduled);
   protected nextInstallment = computed(() => this.pendingInstallments()[0] ?? null);
   protected programmedYield = computed(() => {
     const goal = this.goal();
-    const terms = this.programmedTerms();
+    const terms = this.savingsStore.programmedTerms();
     if (goal?.progressionTypeId !== ProgressionType.Scheduled || !goal.numberOfInstallments || !goal.baseAmount || terms.length === 0) return null;
     const term = terms.find(t => t.termMonths === goal.numberOfInstallments);
     if (!term) return null;
@@ -135,9 +131,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadGoalById(id);
     this.savingsStore.loadInstallments(id);
     this.savingsStore.loadDeposits(id);
-    this.savingsGoalApiService.getProgrammedTerms()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(terms => this.programmedTerms.set(terms));
+    this.savingsStore.loadProgrammedTerms();
   }
 
   private calculateProgrammedYield(

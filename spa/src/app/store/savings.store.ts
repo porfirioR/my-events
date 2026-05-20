@@ -8,6 +8,7 @@ import {
   SavingsGoalApiModel,
   SavingsInstallmentApiModel,
   SavingsDepositApiModel,
+  SavingsProgrammedTermApiModel,
   CreateSavingsGoalApiRequest,
   UpdateSavingsGoalApiRequest,
   PayInstallmentApiRequest,
@@ -23,12 +24,14 @@ export interface SavingsState {
   selectedGoal: SavingsGoalApiModel | undefined;
   installments: SavingsInstallmentApiModel[];
   deposits: SavingsDepositApiModel[];
+  programmedTerms: SavingsProgrammedTermApiModel[];
   error: string | null;
   filterStatus: number | null;
   filterProgressionType: number | null;
   isGoalsLoaded: boolean;
   isInstallmentsLoaded: boolean;
   isDepositsLoaded: boolean;
+  isProgrammedTermsLoaded: boolean;
 }
 
 const initialState: SavingsState = {
@@ -36,12 +39,14 @@ const initialState: SavingsState = {
   selectedGoal: undefined,
   installments: [],
   deposits: [],
+  programmedTerms: [],
   error: null,
   filterStatus: null,
   filterProgressionType: null,
   isGoalsLoaded: false,
   isInstallmentsLoaded: false,
-  isDepositsLoaded: false
+  isDepositsLoaded: false,
+  isProgrammedTermsLoaded: false,
 };
 
 export const SavingsStore = signalStore(
@@ -186,7 +191,8 @@ export const SavingsStore = signalStore(
         }),
         switchMap((id) => savingsGoalApiService.getById(id).pipe(
           tap(goal => {
-            patchState(store, { selectedGoal: goal });
+            const updatedGoals = store.goals().map(g => g.id === goal.id ? goal : g);
+            patchState(store, { selectedGoal: goal, goals: updatedGoals });
             loadingStore.setLoadingSuccess();
           }),
           catchError(error => {
@@ -296,22 +302,24 @@ export const SavingsStore = signalStore(
           const updatedInstallments = store.installments().map(i =>
             i.id === installmentId ? { ...i, statusId: 2, paidDate: new Date() } : i
           );
-          
+
           // Agregar el depósito
           const currentDeposits = store.deposits();
-          
-          // Actualizar el goal
+
+          // Actualizar el goal en selectedGoal y en la lista
           const currentGoal = store.selectedGoal();
           if (currentGoal) {
             const updatedGoal = {
               ...currentGoal,
               currentAmount: currentGoal.currentAmount + request.amount
             };
-            
+            const updatedGoals = store.goals().map(g => g.id === goalId ? updatedGoal : g);
+
             patchState(store, {
               installments: updatedInstallments,
               deposits: [...currentDeposits, deposit],
-              selectedGoal: updatedGoal
+              selectedGoal: updatedGoal,
+              goals: updatedGoals
             });
           }
           loadingStore.setLoadingSuccess();
@@ -398,16 +406,18 @@ export const SavingsStore = signalStore(
         tap(deposit => {
           const currentDeposits = store.deposits();
           const currentGoal = store.selectedGoal();
-          
+
           if (currentGoal) {
             const updatedGoal = {
               ...currentGoal,
               currentAmount: currentGoal.currentAmount + request.amount
             };
-            
+            const updatedGoals = store.goals().map(g => g.id === currentGoal.id ? updatedGoal : g);
+
             patchState(store, {
               deposits: [...currentDeposits, deposit],
-              selectedGoal: updatedGoal
+              selectedGoal: updatedGoal,
+              goals: updatedGoals
             });
           }
           loadingStore.setLoadingSuccess();
@@ -436,6 +446,20 @@ export const SavingsStore = signalStore(
             throw new Error(error);
           })
         ))
+      )
+    ),
+
+    // ==================== PROGRAMMED TERMS ====================
+
+    loadProgrammedTerms: rxMethod<void>(
+      pipe(
+        switchMap(() => {
+          if (store.isProgrammedTermsLoaded()) return of(null);
+          return savingsGoalApiService.getProgrammedTerms().pipe(
+            tap(terms => patchState(store, { programmedTerms: terms, isProgrammedTermsLoaded: true })),
+            catchError(() => of(null))
+          );
+        })
       )
     ),
 
