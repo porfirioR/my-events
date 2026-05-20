@@ -152,6 +152,7 @@ export class SavingsGoalsController {
       apiRequest.baseAmount || null,
       apiRequest.incrementAmount || null,
       apiRequest.expectedEndDate ? new Date(apiRequest.expectedEndDate) : null,
+      apiRequest.frequencyId ?? null,
     );
 
     return await this.savingsManagerService.updateSavingsGoal(request);

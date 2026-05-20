@@ -77,6 +77,11 @@ export class TransactionManagerService implements ITransactionManagerService {
       throw new NotFoundException('Transacción no encontrada');
     }
 
+    const hasAccess = await this.verifyUserAccess(transaction, request.userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this transaction');
+    }
+
     // 2. Validar que el reintegro sea mayor a 0
     if (request.amount <= 0) {
       throw new BadRequestException('El monto del reintegro debe ser mayor a 0');
@@ -119,11 +124,16 @@ export class TransactionManagerService implements ITransactionManagerService {
     return this.mapToReimbursementManagerModel(reimbursement);
   };
 
-  public getTransactionById = async (id: number): Promise<TransactionModel> => {
+  public getTransactionById = async (id: number, userId: number): Promise<TransactionModel> => {
     const transaction = await this.transactionAccessService.getById(id);
 
     if (!transaction) {
       throw new NotFoundException('Transacción no encontrada');
+    }
+
+    const hasAccess = await this.verifyUserAccess(transaction, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this transaction');
     }
 
     return this.mapToModel(transaction);
@@ -275,13 +285,21 @@ export class TransactionManagerService implements ITransactionManagerService {
     return balances;
   };
 
-  public deleteTransaction = async (id: number): Promise<void> => {
+  public deleteTransaction = async (id: number, userId: number): Promise<void> => {
+    const transaction = await this.transactionAccessService.getById(id);
+    if (!transaction) throw new NotFoundException('Transacción no encontrada');
+    const hasAccess = await this.verifyUserAccess(transaction, userId);
+    if (!hasAccess) throw new ForbiddenException('You do not have access to this transaction');
     await this.transactionAccessService.delete(id);
   };
 
-  public settleTransaction = async (transactionId: number): Promise<void> => {
-    const splits = await this.splitAccessService.getByTransaction(transactionId);
+  public settleTransaction = async (transactionId: number, userId: number): Promise<void> => {
+    const transaction = await this.transactionAccessService.getById(transactionId);
+    if (!transaction) throw new NotFoundException('Transacción no encontrada');
+    const hasAccess = await this.verifyUserAccess(transaction, userId);
+    if (!hasAccess) throw new ForbiddenException('You do not have access to this transaction');
 
+    const splits = await this.splitAccessService.getByTransaction(transactionId);
     for (const split of splits) {
       if (!split.isSettled) {
         await this.splitAccessService.markAsSettled(split.id);

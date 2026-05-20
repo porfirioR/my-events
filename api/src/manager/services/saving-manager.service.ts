@@ -199,6 +199,7 @@ export class SavingsManagerService {
       currentGoal.completedDate,
       currentGoal.dateCreated,
       new Date(),
+      request.frequencyId,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -289,7 +290,7 @@ export class SavingsManagerService {
     const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
 
     // 4. Marcar cuota como pagada (solo si se pagó el monto completo)
-    if (request.amount === installment.amount) {
+    if (Math.abs(request.amount - installment.amount) < 0.01) {
       await this.savingsInstallmentAccessService.markAsPaid(request.installmentId, new Date());
     }
 
@@ -334,6 +335,10 @@ export class SavingsManagerService {
 
     if (goal.progressionTypeId === 5) { // FreeForm
       throw new BadRequestException('FreeForm type does not have installments');
+    }
+
+    if (goal.progressionTypeId === 6) { // Scheduled — fixed term, cannot extend
+      throw new BadRequestException('Cannot add installments to Scheduled type');
     }
 
     // 2. Obtener todas las cuotas actuales
@@ -390,6 +395,7 @@ export class SavingsManagerService {
       goal.completedDate,
       goal.dateCreated,
       new Date(),
+      goal.frequencyId,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -500,7 +506,7 @@ export class SavingsManagerService {
   // ==================== MÉTODOS PRIVADOS ====================
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
-    const validTypes = [1, 2, 3, 4, 5]; // Fixed, Ascending, Descending, Random, FreeForm
+    const validTypes = [1, 2, 3, 4, 5, 6]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled
     if (!validTypes.includes(progressionTypeId)) {
       throw new BadRequestException(`Invalid progression type: ${progressionTypeId}`);
     }

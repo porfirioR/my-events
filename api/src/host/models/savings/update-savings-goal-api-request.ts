@@ -51,4 +51,9 @@ export class UpdateSavingsGoalApiRequest {
   @IsOptional()
   @IsDateString()
   expectedEndDate?: string;
+
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  frequencyId?: number;
 }

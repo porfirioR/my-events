@@ -24,7 +24,7 @@ export interface ITransactionManagerService {
    * @returns Promise con la transacción encontrada
    * @throws NotFoundException si la transacción no existe
    */
-  getTransactionById(id: number): Promise<TransactionModel>;
+  getTransactionById(id: number, userId: number): Promise<TransactionModel>;
 
   /**
    * Obtiene todas las transacciones del usuario (propias y de matches)
@@ -53,7 +53,7 @@ export interface ITransactionManagerService {
    * @param id - ID de la transacción a eliminar
    * @returns Promise<void>
    */
-  deleteTransaction(id: number): Promise<void>;
+  deleteTransaction(id: number, userId: number): Promise<void>;
 
   
   /**
@@ -61,7 +61,7 @@ export interface ITransactionManagerService {
    * @param id - ID del split
    * @returns Promise<void>
    */
-  settleTransaction(transactionId: number): Promise<void>;
+  settleTransaction(transactionId: number, userId: number): Promise<void>;
 
 
   /**

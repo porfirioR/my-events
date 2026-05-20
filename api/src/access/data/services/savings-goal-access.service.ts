@@ -244,6 +244,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       accessRequest.dateUpdated,
     );
     entity.id = accessRequest.id;
+    entity.frequencyid = accessRequest.frequencyId ?? null;
     return entity;
   };
 }

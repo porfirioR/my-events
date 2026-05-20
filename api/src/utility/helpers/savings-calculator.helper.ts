@@ -39,6 +39,9 @@ export class SavingsCalculatorHelper {
         }
         // Fórmula: n + (n × (n-1) × incremento / 2)
         return ((n*(n+1))/2)*+incrementAmount;
+      case ProgressionType.Scheduled: // Scheduled (same as Fixed, interest calculated separately)
+        return n * baseAmount;
+
       case ProgressionType.FreeForm: // FreeForm
         throw new Error(
           'FreeForm type does not calculate target amount automatically'
@@ -92,6 +95,9 @@ export class SavingsCalculatorHelper {
           numberOfInstallments,
           incrementAmount
         );
+
+      case ProgressionType.Scheduled: // Scheduled — fixed monthly deposits
+        return this.calculateFixed(baseAmount, numberOfInstallments);
 
       case ProgressionType.FreeForm: // FreeForm
         return []; // FreeForm no tiene cuotas predefinidas

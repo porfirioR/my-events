@@ -3,5 +3,6 @@ export class AddReimbursementRequest {
     public transactionId: number,
     public amount: number,
     public description: string | null,
+    public userId: number,
   ) {}
 }

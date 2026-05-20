@@ -17,5 +17,6 @@ export class UpdateSavingsGoalAccessRequest {
     public readonly completedDate: Date | null,
     public readonly dateCreated: Date,
     public readonly dateUpdated: Date,
+    public readonly frequencyId: number | null,
   ) {}
 }

@@ -83,10 +83,12 @@ export class TransactionController {
     @Param('id', ParseIntPipe) transactionId: number,
     @Body() apiRequest: AddReimbursementApiRequest,
   ): Promise<TransactionReimbursementModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
     const request = new AddReimbursementRequest(
       transactionId,
       apiRequest.amount,
       apiRequest.description || null,
+      userId,
     );
 
     return await this.transactionManagerService.addReimbursement(request);
@@ -98,7 +100,8 @@ export class TransactionController {
    */
   @Get(':id')
   async getTransactionById(@Param('id', ParseIntPipe) id: number): Promise<TransactionModel> {
-    return await this.transactionManagerService.getTransactionById(id);
+    const userId = await this.currentUserService.getCurrentUserId();
+    return await this.transactionManagerService.getTransactionById(id, userId);
   }
 
   /**
@@ -140,13 +143,15 @@ export class TransactionController {
    */
   @Delete(':id')
   async deleteTransaction(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
-    await this.transactionManagerService.deleteTransaction(id);
+    const userId = await this.currentUserService.getCurrentUserId();
+    await this.transactionManagerService.deleteTransaction(id, userId);
     return new MessageModel('Transaction deleted successfully');
   }
 
   @Put(':id/settle')
   async settleTransaction(@Param('id', ParseIntPipe) id: number): Promise<MessageModel> {
-    await this.transactionManagerService.settleTransaction(id);
+    const userId = await this.currentUserService.getCurrentUserId();
+    await this.transactionManagerService.settleTransaction(id, userId);
     return new MessageModel('Transaction settled successfully');
   }
 
