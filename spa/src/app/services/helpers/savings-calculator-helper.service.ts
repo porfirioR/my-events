@@ -35,6 +35,9 @@ export class SavingsCalculatorHelper {
         }
         return n * baseAmount;
 
+      case ProgressionType.Scheduled:
+        return n * baseAmount;
+
       case ProgressionType.FreeForm:
         throw new Error('FreeForm type does not calculate target amount automatically');
 

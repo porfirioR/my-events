@@ -96,6 +96,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       new KeyValueViewModel(
         t.termMonths,
         `${t.termMonths} ${this.translate.instant('upsertSavingsGoal.months')} - ${t.annualRatePercentage}% ${this.translate.instant('upsertSavingsGoal.annualRate')}`,
+        ''
       )
     )
   );
@@ -179,15 +180,15 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     this.showBaseAmountField = computed(() => {
       const typeId = this.progressionTypeIdSignal();
-      return typeId === ProgressionType.Fixed;
+      return typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled;
     });
 
     this.showFrequencyField = computed(() => {
       const typeId = this.progressionTypeIdSignal();
-      return typeId === ProgressionType.Fixed;
+      return typeId === ProgressionType.Scheduled;
     });
 
-    this.isProgrammedSavings = computed(() => !!this.frequencyIdSignal());
+    this.isProgrammedSavings = computed(() => this.progressionTypeIdSignal() === ProgressionType.Scheduled);
 
     // Effect para cargar currencies cuando estén listas
     effect(() => {
@@ -293,7 +294,12 @@ export class UpsertSavingsGoalComponent implements OnInit {
         ProgressionType.FreeForm,
         this.translate.instant(ProgressionTypeLabels[ProgressionType.FreeForm]),
         this.translate.instant(ProgressionTypeDescriptions[ProgressionType.FreeForm])
-      )
+      ),
+      new KeyValueViewModel(
+        ProgressionType.Scheduled,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.Scheduled]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.Scheduled])
+      ),
     ];
   }
 
@@ -302,6 +308,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       new KeyValueViewModel(
         SavingsFrequency.Monthly,
         this.translate.instant(SavingsFrequencyLabels[SavingsFrequency.Monthly]),
+        ''
       ),
     ];
   }
@@ -317,7 +324,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     if (typeId === ProgressionType.FreeForm) {
       this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
-    } else if (typeId === ProgressionType.Fixed) {
+    } else if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.baseAmount.setValidators([Validators.required, Validators.min(1)]);
     } else if (typeId !== null) {
@@ -351,7 +358,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     let calculatedBase: number;
 
-    if (typeId === ProgressionType.Fixed) {
+    if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled) {
       if (!baseAmount) {
         this.calculatedBaseAmount.set(null);
         this.calculatedTargetAmount.set(null);
@@ -400,9 +407,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.calculatedTargetAmount.set(null);
     }
 
-    // Calcular rendimiento para ahorro programado
-    const frequencyId = this.formGroup.controls.frequencyId.value;
-    if (typeId === ProgressionType.Fixed && frequencyId && baseAmount && numberOfInstallments) {
+    if (typeId === ProgressionType.Scheduled && baseAmount && numberOfInstallments) {
       const term = this.programmedTerms().find(t => t.termMonths === +numberOfInstallments);
       if (term) {
         this.yieldInfo.set(this.calculateProgrammedYield(+baseAmount, term.termMonths, term.annualRatePercentage));
@@ -449,7 +454,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     if (typeId === ProgressionType.FreeForm) {
       finalTargetAmount = values.targetAmount!;
       finalBaseAmount = undefined;
-    } else if (typeId === ProgressionType.Fixed) {
+    } else if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled) {
       finalBaseAmount = values.baseAmount!;
       finalTargetAmount = this.calculatedTargetAmount() || 0;
     } else {

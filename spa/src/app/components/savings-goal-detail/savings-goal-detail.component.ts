@@ -63,12 +63,12 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   // Programmed savings
   private programmedTerms = signal<SavingsProgrammedTermApiModel[]>([]);
-  protected isProgrammedSavings = computed(() => !!this.goal()?.frequencyId);
+  protected isProgrammedSavings = computed(() => this.goal()?.progressionTypeId === ProgressionType.Scheduled);
   protected nextInstallment = computed(() => this.pendingInstallments()[0] ?? null);
   protected programmedYield = computed(() => {
     const goal = this.goal();
     const terms = this.programmedTerms();
-    if (!goal?.frequencyId || !goal.numberOfInstallments || !goal.baseAmount || terms.length === 0) return null;
+    if (goal?.progressionTypeId !== ProgressionType.Scheduled || !goal.numberOfInstallments || !goal.baseAmount || terms.length === 0) return null;
     const term = terms.find(t => t.termMonths === goal.numberOfInstallments);
     if (!term) return null;
     return this.calculateProgrammedYield(goal.baseAmount, goal.numberOfInstallments, term.annualRatePercentage);
@@ -100,6 +100,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     return (
       goal.progressionTypeId !== ProgressionType.Descending &&
       goal.progressionTypeId !== ProgressionType.FreeForm &&
+      goal.progressionTypeId !== ProgressionType.Scheduled &&
       goal.statusId === GoalStatus.Active
     );
   });

@@ -3,5 +3,6 @@ export enum ProgressionType {
   Ascending = 2,
   Descending = 3,
   Random = 4,
-  FreeForm = 5
+  FreeForm = 5,
+  Scheduled = 6,
 }
