@@ -570,6 +570,7 @@ export class TravelManagerService {
     if (participantIds.length === 1) {
       await this.travelOperationAccessService.updateStatus(
         operationAccessModel.id,
+        operationAccessModel.travelId,
         TravelOperationStatus.Approved
       );
     }
@@ -693,6 +694,7 @@ export class TravelManagerService {
     // Actualizar estado de la operación
     await this.travelOperationAccessService.updateStatus(
       request.operationId,
+      request.travelId,
       request.participantMemberIds.length === 1 ? TravelOperationStatus.Approved : TravelOperationStatus.Pending
     );
 
@@ -730,7 +732,7 @@ export class TravelManagerService {
       throw new BadRequestException('Cannot delete operations in a finalized travel');
     }
 
-    await this.travelOperationAccessService.delete(operationId);
+    await this.travelOperationAccessService.delete(operationId, operation.travelId);
   };
 
   public getTravelOperations = async (travelId: number, userId: number): Promise<TravelOperationModel[]> => {
@@ -816,7 +818,7 @@ export class TravelManagerService {
     const remainingParticipants = await this.travelOperationParticipantAccessService.getByOperationId(operationId);
 
     if (remainingParticipants.length === 0) {
-      await this.travelOperationAccessService.delete(operationId);
+      await this.travelOperationAccessService.delete(operationId, operation.travelId);
       return { operationDeleted: true };
     } else {
       await this.recalculateOperationSplits(operationId);
@@ -844,9 +846,9 @@ export class TravelManagerService {
     const allApproved = remainingApprovals.every(a => a.status === ApprovalStatus.Approved);
 
     if (allApproved && remainingApprovals.length > 0) {
-      await this.travelOperationAccessService.updateStatus(operationId, TravelOperationStatus.Approved);
+      await this.travelOperationAccessService.updateStatus(operationId, operation.travelId, TravelOperationStatus.Approved);
     } else {
-      await this.travelOperationAccessService.updateStatus(operationId, TravelOperationStatus.Pending);
+      await this.travelOperationAccessService.updateStatus(operationId, operation.travelId, TravelOperationStatus.Pending);
     }
   };
 
@@ -996,6 +998,7 @@ export class TravelManagerService {
     if (isFullyApproved) {
       await this.travelOperationAccessService.updateStatus(
         request.operationId,
+        operation.travelId,
         TravelOperationStatus.Approved
       );
     }
@@ -1065,6 +1068,7 @@ export class TravelManagerService {
     // Actualizar estado de la operación a Rejected
     await this.travelOperationAccessService.updateStatus(
       request.operationId,
+      operation.travelId,
       TravelOperationStatus.Rejected
     );
 

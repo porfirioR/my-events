@@ -103,7 +103,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
     return this.mapEntityToAccessModel(data);
   };
 
-  public updateStatus = async (id: number, status: string): Promise<TravelOperationAccessModel> => {
+  public updateStatus = async (id: number, travelId: number, status: string): Promise<TravelOperationAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.TravelOperations)
       .update({
@@ -111,6 +111,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
         updatedat: new Date().toISOString(),
       })
       .eq(DatabaseColumns.EntityId, id)
+      .eq(DatabaseColumns.TravelId, travelId)
       .select()
       .single<TravelOperationEntity>();
 
@@ -121,11 +122,12 @@ export class TravelOperationAccessService extends BaseAccessService implements I
     return this.mapEntityToAccessModel(data);
   };
 
-  public delete = async (id: number): Promise<void> => {
+  public delete = async (id: number, travelId: number): Promise<void> => {
     const { error } = await this.dbContext
       .from(TableEnum.TravelOperations)
       .delete()
-      .eq(DatabaseColumns.EntityId, id);
+      .eq(DatabaseColumns.EntityId, id)
+      .eq(DatabaseColumns.TravelId, travelId);
 
     if (error) {
       throw new InternalServerErrorException(error.message);

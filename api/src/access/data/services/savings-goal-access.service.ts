@@ -71,7 +71,9 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     const entity = this.mapUpdateRequestToEntity(accessRequest);
     const { data, error } = await this.dbContext
       .from(TableEnum.SavingsGoals)
-      .upsert(entity)
+      .update(entity)
+      .eq(DatabaseColumns.EntityId, accessRequest.id)
+      .eq(DatabaseColumns.UserId, accessRequest.userId)
       .select()
       .single<SavingsGoalEntity>();
     if (error) {

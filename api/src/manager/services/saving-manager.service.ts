@@ -85,7 +85,7 @@ export class SavingsManagerService {
       );
 
       // Si el usuario proporcionó un targetAmount, validar que coincida
-      if (request.targetAmount && request.targetAmount !== targetAmount) {
+      if (request.targetAmount && Math.abs(request.targetAmount - targetAmount) > 0.01) {
         throw new BadRequestException(
           `Target amount mismatch. Expected ${targetAmount}, got ${request.targetAmount}`
         );
@@ -485,7 +485,7 @@ export class SavingsManagerService {
     const goal = await this.savingsGoalAccessService.getById(deposit.savingsGoalId, userId);
 
     // Actualizar currentAmount
-    const newCurrentAmount = goal.currentAmount - deposit.amount;
+    const newCurrentAmount = Math.max(0, goal.currentAmount - deposit.amount);
     await this.savingsGoalAccessService.updateCurrentAmount(goal.id, userId, newCurrentAmount);
 
     // Si el objetivo estaba completado y ahora ya no, reactivarlo

@@ -29,12 +29,12 @@ export interface ITravelOperationAccessService {
   /**
    * Actualizar estado de operación
    */
-  updateStatus(id: number, status: string): Promise<TravelOperationAccessModel>;
+  updateStatus(id: number, travelId: number, status: string): Promise<TravelOperationAccessModel>;
 
   /**
    * Eliminar operación
    */
-  delete(id: number): Promise<void>;
+  delete(id: number, travelId: number): Promise<void>;
 
   /**
    * Verificar si todas las operaciones del viaje están aprobadas
