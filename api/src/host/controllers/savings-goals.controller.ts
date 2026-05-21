@@ -122,6 +122,7 @@ export class SavingsGoalsController {
       apiRequest.incrementAmount,
       apiRequest.expectedEndDate ? new Date(apiRequest.expectedEndDate) : null,
       apiRequest.frequencyId ?? null,
+      apiRequest.annualRatePercentage ?? null,
     );
 
     return await this.savingsManagerService.createSavingsGoal(request);
@@ -153,6 +154,7 @@ export class SavingsGoalsController {
       apiRequest.incrementAmount || null,
       apiRequest.expectedEndDate ? new Date(apiRequest.expectedEndDate) : null,
       apiRequest.frequencyId ?? null,
+      apiRequest.annualRatePercentage ?? null,
     );
 
     return await this.savingsManagerService.updateSavingsGoal(request);

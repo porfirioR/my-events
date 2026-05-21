@@ -138,6 +138,19 @@
             />
           }
 
+          <!-- Ahorro Programado: tasa de interés anual dinámica -->
+          @if (isProgrammedSavings()) {
+            <app-text
+              formControlName="annualRatePercentage"
+              type="number"
+              [label]="'upsertSavingsGoal.annualRateLabel' | translate"
+              id="annualRatePercentage"
+              name="annualRatePercentage"
+              [description]="'upsertSavingsGoal.annualRateDescription' | translate"
+              [disabled]="saving"
+            />
+          }
+
           <!-- Ahorro Programado: frecuencia (solo para Scheduled) -->
           @if (showFrequencyField()) {
             <app-select-input
@@ -204,8 +217,21 @@
             }
           }
 
-          <!-- Mostrar target amount calculado -->
-          @if (calculatedTargetAmount() !== null) {
+          <!-- Para ahorro programado: monto esperado editable (por defecto = calculado) -->
+          @if (isProgrammedSavings() && yieldInfo()) {
+            <app-text
+              formControlName="targetAmount"
+              type="number"
+              [label]="'upsertSavingsGoal.expectedAmountLabel' | translate"
+              id="targetAmount"
+              name="targetAmount"
+              [description]="'upsertSavingsGoal.expectedAmountDescription' | translate"
+              [disabled]="saving"
+            />
+          }
+
+          <!-- Para otros tipos: mostrar target amount calculado (solo lectura) -->
+          @if (!isProgrammedSavings() && calculatedTargetAmount() !== null) {
             <div class="alert alert-success shadow-lg alert-soft">
               <div class="flex items-center gap-3">
                 <i class="fas fa-piggy-bank text-2xl"></i>

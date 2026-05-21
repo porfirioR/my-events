@@ -18,5 +18,6 @@ export class SavingsGoalModel {
     public readonly dateCreated: Date,
     public readonly dateUpdated: Date,
     public readonly frequencyId: number | null,
+    public readonly annualRatePercentage: number | null,
   ) {}
 }

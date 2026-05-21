@@ -63,11 +63,8 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected nextInstallment = computed(() => this.pendingInstallments()[0] ?? null);
   protected programmedYield = computed(() => {
     const goal = this.goal();
-    const terms = this.savingsStore.programmedTerms();
-    if (goal?.progressionTypeId !== ProgressionType.Scheduled || !goal.numberOfInstallments || !goal.baseAmount || terms.length === 0) return null;
-    const term = terms.find(t => t.termMonths === goal.numberOfInstallments);
-    if (!term) return null;
-    return this.calculateProgrammedYield(goal.baseAmount, goal.numberOfInstallments, term.annualRatePercentage);
+    if (goal?.progressionTypeId !== ProgressionType.Scheduled || !goal.numberOfInstallments || !goal.baseAmount || !goal.annualRatePercentage) return null;
+    return this.calculateProgrammedYield(goal.baseAmount, goal.numberOfInstallments, goal.annualRatePercentage);
   });
 
   // Enums
@@ -140,7 +137,8 @@ export class SavingsGoalDetailComponent implements OnInit {
     annualRatePercentage: number,
   ): { yieldAmount: number; totalDeposited: number; totalAmount: number } {
     const i = annualRatePercentage / 100 / 12;
-    const fv = monthlyAmount * ((Math.pow(1 + i, termMonths) - 1) / i);
+    // Annuity due: each deposit earns interest from the moment it's made
+    const fv = monthlyAmount * ((Math.pow(1 + i, termMonths) - 1) / i) * (1 + i);
     const totalDeposited = monthlyAmount * termMonths;
     return {
       yieldAmount: Math.round(fv - totalDeposited),

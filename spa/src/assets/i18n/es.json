@@ -618,10 +618,15 @@
     "termMonths": "Plazo",
     "months": "meses",
     "annualRate": "anual",
+    "suggestedRate": "Tasa sugerida",
+    "annualRateLabel": "Tasa de interés anual (%)",
+    "annualRateDescription": "Ingrese la tasa que ofrece su banco o cooperativa (ej: 4.5)",
     "yieldInfo": "Proyección de Rendimiento",
     "totalDeposited": "Total depositado",
     "yieldAmount": "Ganancia estimada",
-    "totalAtEnd": "Total al vencimiento"
+    "totalAtEnd": "Total al vencimiento",
+    "expectedAmountLabel": "Monto esperado al vencimiento",
+    "expectedAmountDescription": "Calculado automáticamente. Puede modificarlo si su banco indica un monto diferente."
   },
   "savingsFrequency": {
     "monthly": "Mensual"

@@ -619,10 +619,15 @@
     "termMonths": "Term",
     "months": "months",
     "annualRate": "annual",
+    "suggestedRate": "Suggested rate",
+    "annualRateLabel": "Annual interest rate (%)",
+    "annualRateDescription": "Enter the rate offered by your bank or credit union (e.g. 4.5)",
     "yieldInfo": "Yield Projection",
     "totalDeposited": "Total deposited",
     "yieldAmount": "Estimated yield",
-    "totalAtEnd": "Total at maturity"
+    "totalAtEnd": "Total at maturity",
+    "expectedAmountLabel": "Expected amount at maturity",
+    "expectedAmountDescription": "Auto-calculated. You can edit it if your bank shows a different amount."
   },
   "savingsFrequency": {
     "monthly": "Monthly"

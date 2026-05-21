@@ -14,4 +14,5 @@ export interface SavingsGoalFormGroup {
   expectedEndDate: FormControl<Date | string | null>;
   statusId: FormControl<number | null>;
   frequencyId: FormControl<number | null>;
+  annualRatePercentage: FormControl<number | null>;
 }

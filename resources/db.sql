@@ -776,6 +776,8 @@ CREATE INDEX idx_savingsprogrammedterms_months ON savingsprogrammedterms(term_mo
 ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS frequencyid INT NULL;
 ALTER TABLE savingsgoals ADD CONSTRAINT fk_savingsgoals_frequencyid FOREIGN KEY (frequencyid) REFERENCES savingsfrequencies(id);
 
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS annual_rate_percentage DECIMAL(5,2) NULL;
+
 INSERT INTO savingsprogressiontypes (id, name, description) VALUES
 (6, 'Scheduled', 'Scheduled savings - fixed monthly deposits with interest yield calculated at maturity')
 ON CONFLICT (id) DO NOTHING;

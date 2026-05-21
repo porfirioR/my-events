@@ -12,6 +12,7 @@ export class UpdateSavingsGoalApiRequest {
     public baseAmount?: number,
     public incrementAmount?: number,
     public expectedEndDate?: string,
-    public frequencyId?: number
+    public frequencyId?: number,
+    public annualRatePercentage?: number,
   ) {}
 }

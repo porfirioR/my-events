@@ -76,19 +76,34 @@ export class SavingsManagerService {
         throw new BadRequestException('incrementAmount is required for Ascending/Descending types');
       }
 
-      // Calcular targetAmount
-      targetAmount = SavingsCalculatorHelper.calculateTargetAmount(
-        request.progressionTypeId,
-        +request.baseAmount,
-        +request.numberOfInstallments,
-        +request.incrementAmount,
-      );
-
-      // Si el usuario proporcionó un targetAmount, validar que coincida
-      if (request.targetAmount && Math.abs(request.targetAmount - targetAmount) > 0.01) {
-        throw new BadRequestException(
-          `Target amount mismatch. Expected ${targetAmount}, got ${request.targetAmount}`
+      if (request.progressionTypeId === ProgressionType.Scheduled) {
+        // Scheduled: requiere tasa de interés anual
+        if (!request.annualRatePercentage) {
+          throw new BadRequestException('annualRatePercentage is required for Scheduled type');
+        }
+        // Si el usuario sobrescribió el monto esperado, usarlo directamente
+        if (request.targetAmount) {
+          targetAmount = request.targetAmount;
+        } else {
+          // Calcular con fórmula de anualidad anticipada
+          const i = request.annualRatePercentage / 100 / 12;
+          targetAmount = Math.round(+request.baseAmount * ((Math.pow(1 + i, +request.numberOfInstallments) - 1) / i) * (1 + i));
+        }
+      } else {
+        // Fixed, Ascending, Descending, Random
+        targetAmount = SavingsCalculatorHelper.calculateTargetAmount(
+          request.progressionTypeId,
+          +request.baseAmount,
+          +request.numberOfInstallments,
+          +request.incrementAmount,
         );
+
+        // Validar que el targetAmount provisto coincida con el calculado
+        if (request.targetAmount && Math.abs(request.targetAmount - targetAmount) > 0.01) {
+          throw new BadRequestException(
+            `Target amount mismatch. Expected ${targetAmount}, got ${request.targetAmount}`
+          );
+        }
       }
 
       // Generar montos de cuotas
@@ -127,6 +142,7 @@ export class SavingsManagerService {
       request.incrementAmount,
       computedExpectedEndDate,
       request.frequencyId,
+      request.annualRatePercentage,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -200,6 +216,7 @@ export class SavingsManagerService {
       currentGoal.dateCreated,
       new Date(),
       request.frequencyId,
+      request.annualRatePercentage,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -396,6 +413,7 @@ export class SavingsManagerService {
       goal.dateCreated,
       new Date(),
       goal.frequencyId,
+      goal.annualRatePercentage,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -533,6 +551,7 @@ export class SavingsManagerService {
       accessModel.dateCreated,
       accessModel.dateUpdated,
       accessModel.frequencyId,
+      accessModel.annualRatePercentage,
     );
   };
 

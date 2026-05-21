@@ -93,8 +93,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.savingsStore.programmedTerms().map(t =>
       new KeyValueViewModel(
         t.termMonths,
-        `${t.termMonths} ${this.translate.instant('upsertSavingsGoal.months')} - ${t.annualRatePercentage}% ${this.translate.instant('upsertSavingsGoal.annualRate')}`,
-        ''
+        `${t.termMonths} ${this.translate.instant('upsertSavingsGoal.months')}`,
+        `${this.translate.instant('upsertSavingsGoal.suggestedRate')}: ${t.annualRatePercentage}%`
       )
     )
   );
@@ -141,6 +141,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       expectedEndDate: new FormControl(null),
       statusId: new FormControl(1),
       frequencyId: new FormControl<number | null>(null),
+      annualRatePercentage: new FormControl<number | null>(null),
     });
 
     // 2. SEGUNDO: Crear los signals desde los FormControls
@@ -218,6 +219,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.baseAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
     this.formGroup.controls.incrementAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
     this.formGroup.controls.frequencyId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
+    this.formGroup.controls.annualRatePercentage.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
   }
 
   ngOnInit(): void {
@@ -253,6 +255,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       expectedEndDate: expectedEndDate,
       statusId: goal.statusId,
       frequencyId: goal.frequencyId ?? null,
+      annualRatePercentage: goal.annualRatePercentage ?? null,
     });
 
     this.formGroup.controls.numberOfInstallments.disable()
@@ -261,6 +264,12 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     this.updateFieldValidators();
     this.calculateBaseAndTarget();
+
+    // Restore the stored targetAmount after recalculation so the user's
+    // saved value (possibly adjusted to match their bank) is preserved on load.
+    if (goal.progressionTypeId === ProgressionType.Scheduled && goal.targetAmount) {
+      this.formGroup.controls.targetAmount.setValue(goal.targetAmount, { emitEvent: false });
+    }
   }
 
   private getProgressionTypeList(): KeyValueViewModel[] {
@@ -317,6 +326,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.baseAmount.clearValidators();
     this.formGroup.controls.incrementAmount.clearValidators();
     this.formGroup.controls.frequencyId.clearValidators();
+    this.formGroup.controls.annualRatePercentage.clearValidators();
 
     if (typeId === ProgressionType.FreeForm) {
       this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
@@ -325,6 +335,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.formGroup.controls.baseAmount.setValidators([Validators.required, Validators.min(1)]);
       if (typeId === ProgressionType.Scheduled) {
         this.formGroup.controls.frequencyId.setValidators([Validators.required]);
+        this.formGroup.controls.annualRatePercentage.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
+        this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
       }
     } else if (typeId !== null) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
@@ -336,6 +348,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.baseAmount.updateValueAndValidity();
     this.formGroup.controls.incrementAmount.updateValueAndValidity();
     this.formGroup.controls.frequencyId.updateValueAndValidity();
+    this.formGroup.controls.annualRatePercentage.updateValueAndValidity();
   }
 
   private calculateBaseAndTarget(): void {
@@ -364,6 +377,16 @@ export class UpsertSavingsGoalComponent implements OnInit {
         this.calculatedTargetAmount.set(null);
         this.yieldInfo.set(null);
         return;
+      }
+      // Auto-fill suggested rate when term changes (only if rate is empty)
+      if (typeId === ProgressionType.Scheduled && numberOfInstallments) {
+        const currentRate = this.formGroup.controls.annualRatePercentage.value;
+        if (!currentRate) {
+          const term = this.savingsStore.programmedTerms().find(t => t.termMonths === +numberOfInstallments);
+          if (term) {
+            this.formGroup.controls.annualRatePercentage.setValue(term.annualRatePercentage, { emitEvent: false });
+          }
+        }
       }
       calculatedBase = baseAmount;
     } else if (typeId === ProgressionType.Ascending) {
@@ -408,11 +431,13 @@ export class UpsertSavingsGoalComponent implements OnInit {
     }
 
     if (typeId === ProgressionType.Scheduled && baseAmount && numberOfInstallments) {
-      const term = this.savingsStore.programmedTerms().find(t => t.termMonths === +numberOfInstallments);
-      if (term) {
-        const yi = this.calculateProgrammedYield(+baseAmount, term.termMonths, term.annualRatePercentage);
+      const annualRate = this.formGroup.controls.annualRatePercentage.value;
+      if (annualRate && annualRate > 0) {
+        const yi = this.calculateProgrammedYield(+baseAmount, +numberOfInstallments, annualRate);
         this.yieldInfo.set(yi);
         this.calculatedTargetAmount.set(yi.totalAmount);
+        // Pre-fill targetAmount with calculated value (user can override)
+        this.formGroup.controls.targetAmount.setValue(yi.totalAmount, { emitEvent: false });
       } else {
         this.yieldInfo.set(null);
       }
@@ -427,7 +452,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
     annualRatePercentage: number,
   ): { yieldAmount: number; totalDeposited: number; totalAmount: number } {
     const i = annualRatePercentage / 100 / 12;
-    const fv = monthlyAmount * ((Math.pow(1 + i, termMonths) - 1) / i);
+    // Annuity due: each deposit earns interest from the moment it's made
+    const fv = monthlyAmount * ((Math.pow(1 + i, termMonths) - 1) / i) * (1 + i);
     const totalDeposited = monthlyAmount * termMonths;
     return {
       yieldAmount: Math.round(fv - totalDeposited),
@@ -456,7 +482,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
     if (typeId === ProgressionType.FreeForm) {
       finalTargetAmount = values.targetAmount!;
       finalBaseAmount = undefined;
-    } else if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled) {
+    } else if (typeId === ProgressionType.Scheduled) {
+      finalBaseAmount = values.baseAmount!;
+      // Use user-edited targetAmount (pre-filled with calculated value)
+      finalTargetAmount = values.targetAmount || this.calculatedTargetAmount() || 0;
+    } else if (typeId === ProgressionType.Fixed) {
       finalBaseAmount = values.baseAmount!;
       finalTargetAmount = this.calculatedTargetAmount() || 0;
     } else {
@@ -481,7 +511,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
         finalBaseAmount ? +finalBaseAmount : undefined,
         incrementAmount ? +incrementAmount : undefined,
         values.expectedEndDate?.toString() || undefined,
-        values.frequencyId ?? undefined
+        values.frequencyId ?? undefined,
+        values.annualRatePercentage ?? undefined,
       );
 
       this.savingsStore.updateGoal(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -511,6 +542,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         incrementAmount ? +incrementAmount : undefined,
         values.expectedEndDate?.toString() || undefined,
         values.frequencyId ?? undefined,
+        values.annualRatePercentage ?? undefined,
       );
 
       this.savingsStore.createGoal(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

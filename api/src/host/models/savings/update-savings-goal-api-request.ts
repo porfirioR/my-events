@@ -1,4 +1,4 @@
-import { IsDateString, IsInt, IsOptional, IsPositive, IsString, MaxLength } from 'class-validator';
+import { IsDateString, IsInt, IsNumber, IsOptional, IsPositive, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class UpdateSavingsGoalApiRequest {
   @IsInt()
@@ -56,4 +56,10 @@ export class UpdateSavingsGoalApiRequest {
   @IsInt()
   @IsPositive()
   frequencyId?: number;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(100)
+  annualRatePercentage?: number;
 }
