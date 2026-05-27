@@ -151,22 +151,12 @@
             />
           }
 
-          <!-- Ahorro Programado: frecuencia (solo para Scheduled) -->
-          @if (showFrequencyField()) {
-            <app-select-input
-              formControlName="frequencyId"
-              id="frequencyId"
-              name="frequencyId"
-              [label]="'upsertSavingsGoal.frequency' | translate"
-              [list]="frequencyList"
-              [disabled]="saving"
-            />
-            @if (isProgrammedSavings()) {
-              <div class="alert alert-info alert-soft text-xs mt-1">
-                <i class="fas fa-calendar-alt"></i>
-                <span>{{ 'upsertSavingsGoal.programmedSavingsInfo' | translate }}</span>
-              </div>
-            }
+          <!-- Ahorro Programado: aviso de fechas automáticas -->
+          @if (isProgrammedSavings()) {
+            <div class="alert alert-info alert-soft text-xs mt-1">
+              <i class="fas fa-calendar-alt"></i>
+              <span>{{ 'upsertSavingsGoal.programmedSavingsInfo' | translate }}</span>
+            </div>
           }
 
           <!-- Rendimiento proyectado para ahorro programado -->

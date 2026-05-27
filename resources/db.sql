@@ -298,7 +298,7 @@ CREATE TABLE savingsgoals (
     CONSTRAINT check_base_positive CHECK (baseamount IS NULL OR baseamount > 0),
     CONSTRAINT check_installments_positive CHECK (numberofinstallments IS NULL OR numberofinstallments > 0),
     CONSTRAINT check_increment_for_progression CHECK (
-        (progressiontypeid IN (1, 5) AND incrementamount IS NULL) OR
+        (progressiontypeid IN (1, 5, 6) AND incrementamount IS NULL) OR
         (progressiontypeid IN (2, 3, 4) AND incrementamount IS NOT NULL AND incrementamount > 0)
     )
 );
@@ -781,3 +781,9 @@ ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS annual_rate_percentage DECIMAL
 INSERT INTO savingsprogressiontypes (id, name, description) VALUES
 (6, 'Scheduled', 'Scheduled savings - fixed monthly deposits with interest yield calculated at maturity')
 ON CONFLICT (id) DO NOTHING;
+
+ALTER TABLE savingsgoals DROP CONSTRAINT IF EXISTS check_increment_for_progression;
+ALTER TABLE savingsgoals ADD CONSTRAINT check_increment_for_progression CHECK (
+    (progressiontypeid IN (1, 5, 6) AND incrementamount IS NULL) OR
+    (progressiontypeid IN (2, 3, 4) AND incrementamount IS NOT NULL AND incrementamount > 0)
+);

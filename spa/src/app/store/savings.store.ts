@@ -15,7 +15,7 @@ import {
   CreateFreeFormDepositApiRequest,
   AddInstallmentsApiRequest
 } from '../models/api/savings';
-import { GoalStatus } from '../models/enums';
+import { GoalStatus, ProgressionType } from '../models/enums';
 import { SavingsGoalApiService } from '../services';
 import { useLoadingStore } from './loading.store';
 
@@ -98,15 +98,21 @@ export const SavingsStore = signalStore(
     selectedGoalProgress: computed(() => {
       const goal = store.selectedGoal();
       if (!goal) return 0;
-      if (goal.targetAmount === 0) return 0;
-      return Math.min(Math.round((goal.currentAmount / goal.targetAmount) * 100), 100);
+      const base = goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
+        ? goal.baseAmount * goal.numberOfInstallments
+        : goal.targetAmount;
+      if (base === 0) return 0;
+      return Math.min(Math.round((goal.currentAmount / base) * 100), 100);
     }),
 
     // Monto restante del objetivo seleccionado
     selectedGoalRemaining: computed(() => {
       const goal = store.selectedGoal();
       if (!goal) return 0;
-      return Math.max(goal.targetAmount - goal.currentAmount, 0);
+      const base = goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
+        ? goal.baseAmount * goal.numberOfInstallments
+        : goal.targetAmount;
+      return Math.max(base - goal.currentAmount, 0);
     }),
 
     // Depósitos del objetivo seleccionado ordenados por fecha

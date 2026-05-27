@@ -194,7 +194,7 @@
                     </span>
 
                     <!-- Type Badge -->
-                    <span class="badge badge-sm badge-soft badge-neutral">
+                    <span class="badge badge-sm badge-soft" [ngClass]="getProgressionTypeBadgeColor(goal.progressionTypeId)">
                       {{ getProgressionTypeLabel(goal.progressionTypeId) | translate }}
                     </span>
 

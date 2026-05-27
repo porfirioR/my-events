@@ -56,7 +56,7 @@
         {{ getGoalStatusLabel(g.statusId) | translate }}
       </span>
 
-      <span class="badge badge-sm badge-soft badge-neutral">
+      <span class="badge badge-sm badge-soft" [ngClass]="getProgressionTypeBadgeColor(g.progressionTypeId)">
         {{ getProgressionTypeLabel(g.progressionTypeId) | translate }}
       </span>
 
@@ -82,7 +82,7 @@
             'progress-info': g.statusId === GoalStatus.Completed,
             'progress-warning': g.statusId === GoalStatus.Paused,
             'progress-error': g.statusId === GoalStatus.Cancelled
-          }" [value]="g.currentAmount" [max]="g.targetAmount">
+          }" [value]="g.currentAmount" [max]="isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount">
       </progress>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mt-2 text-sm">
@@ -92,7 +92,7 @@
         </div>
         <div>
           <span class="text-base-content/70">{{ 'savingsGoalDetail.target' | translate }}</span>
-          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(g.targetAmount, g.currencyId) }}</span>
+          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount, g.currencyId) }}</span>
         </div>
         <div>
           <span class="text-base-content/70">{{ 'savingsGoalDetail.remaining' | translate }}</span>

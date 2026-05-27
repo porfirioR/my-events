@@ -64,7 +64,12 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected programmedYield = computed(() => {
     const goal = this.goal();
     if (goal?.progressionTypeId !== ProgressionType.Scheduled || !goal.numberOfInstallments || !goal.baseAmount || !goal.annualRatePercentage) return null;
-    return this.calculateProgrammedYield(goal.baseAmount, goal.numberOfInstallments, goal.annualRatePercentage);
+    const totalDeposited = goal.baseAmount * goal.numberOfInstallments;
+    return {
+      totalDeposited,
+      yieldAmount: goal.targetAmount - totalDeposited,
+      totalAmount: goal.targetAmount,
+    };
   });
 
   // Enums
@@ -129,22 +134,6 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadInstallments(id);
     this.savingsStore.loadDeposits(id);
     this.savingsStore.loadProgrammedTerms();
-  }
-
-  private calculateProgrammedYield(
-    monthlyAmount: number,
-    termMonths: number,
-    annualRatePercentage: number,
-  ): { yieldAmount: number; totalDeposited: number; totalAmount: number } {
-    const i = annualRatePercentage / 100 / 12;
-    // Annuity due: each deposit earns interest from the moment it's made
-    const fv = monthlyAmount * ((Math.pow(1 + i, termMonths) - 1) / i) * (1 + i);
-    const totalDeposited = monthlyAmount * termMonths;
-    return {
-      yieldAmount: Math.round(fv - totalDeposited),
-      totalDeposited,
-      totalAmount: Math.round(fv),
-    };
   }
 
   protected setActiveTab(tab: 'installments' | 'deposits'): void {
@@ -344,7 +333,8 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected getGoalStatusIcon = FormatterHelperService.getGoalStatusIcon.bind(this.formatterService);
   protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor.bind(this.formatterService);
   protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel.bind(this.formatterService);
+  protected getProgressionTypeBadgeColor = FormatterHelperService.getProgressionTypeBadgeColor.bind(this.formatterService);
 
   protected formatCurrency = this.formatterService.formatCurrency.bind(this.formatterService);
-  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
+  protected getFormattedDate = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
 }

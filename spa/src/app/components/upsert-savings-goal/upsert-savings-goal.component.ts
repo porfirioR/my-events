@@ -40,7 +40,6 @@ import {
   ProgressionTypeDescriptions,
   ProgressionTypeLabels,
   SavingsFrequency,
-  SavingsFrequencyLabels,
 } from '../../models/enums';
 import { SavingsCalculatorHelper } from '../../services/helpers/savings-calculator-helper.service';
 import { SavingsGoalFormGroup } from '../../models/forms/saving-form-group';
@@ -81,12 +80,10 @@ export class UpsertSavingsGoalComponent implements OnInit {
   // Enums para template
   protected ProgressionType = ProgressionType;
   protected ProgressionTypeLabels = ProgressionTypeLabels;
-  protected SavingsFrequency = SavingsFrequency;
 
   // Lists para selects
   protected currencyList: KeyValueViewModel[] = [];
   protected progressionTypeList: KeyValueViewModel[] = [];
-  protected frequencyList: KeyValueViewModel[] = [];
 
   // Programmed terms desde el store
   protected termSelectList = computed(() =>
@@ -113,14 +110,12 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
   // Signals para reactividad
   protected progressionTypeIdSignal!: ReturnType<typeof toSignal<number | null>>;
-  protected frequencyIdSignal!: ReturnType<typeof toSignal<number | null>>;
 
   // Show/hide fields based on progression type
   protected showInstallmentFields!: ReturnType<typeof computed<boolean>>;
   protected showIncrementField!: ReturnType<typeof computed<boolean>>;
   protected showTargetAmountInput!: ReturnType<typeof computed<boolean>>;
   protected showBaseAmountField!: ReturnType<typeof computed<boolean>>;
-  protected showFrequencyField!: ReturnType<typeof computed<boolean>>;
   protected isProgrammedSavings!: ReturnType<typeof computed<boolean>>;
 
   constructor() {
@@ -140,7 +135,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       incrementAmount: new FormControl(null),
       expectedEndDate: new FormControl(null),
       statusId: new FormControl(1),
-      frequencyId: new FormControl<number | null>(null),
+      frequencyId: new FormControl<number | null>(SavingsFrequency.Monthly),
       annualRatePercentage: new FormControl<number | null>(null),
     });
 
@@ -150,13 +145,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
         startWith(this.formGroup.controls.progressionTypeId.value)
       ),
       { initialValue: this.formGroup.controls.progressionTypeId.value }
-    );
-
-    this.frequencyIdSignal = toSignal(
-      this.formGroup.controls.frequencyId.valueChanges.pipe(
-        startWith(this.formGroup.controls.frequencyId.value)
-      ),
-      { initialValue: this.formGroup.controls.frequencyId.value }
     );
 
     // 3. TERCERO: Crear los computed signals
@@ -182,11 +170,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
       return typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled;
     });
 
-    this.showFrequencyField = computed(() => {
-      const typeId = this.progressionTypeIdSignal();
-      return typeId === ProgressionType.Scheduled;
-    });
-
     this.isProgrammedSavings = computed(() => this.progressionTypeIdSignal() === ProgressionType.Scheduled);
 
     // Effect para cargar currencies cuando estén listas
@@ -195,7 +178,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
       if (currencies.length > 0) {
         this.currencyList = this.formatterService.convertToList(currencies, Configurations.Currencies);
         this.progressionTypeList = this.getProgressionTypeList();
-        this.frequencyList = this.getFrequencyList();
       }
     });
 
@@ -218,7 +200,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.numberOfInstallments.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
     this.formGroup.controls.baseAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
     this.formGroup.controls.incrementAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
-    this.formGroup.controls.frequencyId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
     this.formGroup.controls.annualRatePercentage.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateBaseAndTarget());
   }
 
@@ -307,16 +288,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
     ];
   }
 
-  private getFrequencyList(): KeyValueViewModel[] {
-    return [
-      new KeyValueViewModel(
-        SavingsFrequency.Monthly,
-        this.translate.instant(SavingsFrequencyLabels[SavingsFrequency.Monthly]),
-        ''
-      ),
-    ];
-  }
-
   private updateFieldValidators(): void {
     const typeId = this.formGroup.controls.progressionTypeId.value;
 
@@ -325,7 +296,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.numberOfInstallments.clearValidators();
     this.formGroup.controls.baseAmount.clearValidators();
     this.formGroup.controls.incrementAmount.clearValidators();
-    this.formGroup.controls.frequencyId.clearValidators();
     this.formGroup.controls.annualRatePercentage.clearValidators();
 
     if (typeId === ProgressionType.FreeForm) {
@@ -334,7 +304,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.baseAmount.setValidators([Validators.required, Validators.min(1)]);
       if (typeId === ProgressionType.Scheduled) {
-        this.formGroup.controls.frequencyId.setValidators([Validators.required]);
         this.formGroup.controls.annualRatePercentage.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
         this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
       }
@@ -347,7 +316,6 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.numberOfInstallments.updateValueAndValidity();
     this.formGroup.controls.baseAmount.updateValueAndValidity();
     this.formGroup.controls.incrementAmount.updateValueAndValidity();
-    this.formGroup.controls.frequencyId.updateValueAndValidity();
     this.formGroup.controls.annualRatePercentage.updateValueAndValidity();
   }
 
@@ -471,9 +439,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
     }
 
     this.saving = true;
-    this.formGroup.disable();
-
     const values = this.formGroup.getRawValue();
+    this.formGroup.disable({ emitEvent: false });
     const typeId = values.progressionTypeId!;
     
     let finalBaseAmount: number | undefined;
@@ -524,7 +491,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
           this.exit();
         },
         error: (e) => {
-          this.formGroup.enable();
+          this.formGroup.enable({ emitEvent: false });
           this.saving = false;
           throw e;
         }
@@ -554,7 +521,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
           this.exit();
         },
         error: (e) => {
-          this.formGroup.enable();
+          this.formGroup.enable({ emitEvent: false });
           this.saving = false;
           this.alertService.showError(
             this.translate.instant('upsertSavingsGoal.goalCreatedError')

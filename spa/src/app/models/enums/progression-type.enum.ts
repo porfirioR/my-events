@@ -34,6 +34,15 @@ export const ProgressionTypeIcons: Record<ProgressionType, string> = {
   [ProgressionType.Scheduled]: 'fa-calendar-check',
 };
 
+export const ProgressionTypeBadgeColors: Record<ProgressionType, string> = {
+  [ProgressionType.Fixed]: 'badge-primary',
+  [ProgressionType.Ascending]: 'badge-success',
+  [ProgressionType.Descending]: 'badge-warning',
+  [ProgressionType.Random]: 'badge-secondary',
+  [ProgressionType.FreeForm]: 'badge-accent',
+  [ProgressionType.Scheduled]: 'badge-info',
+};
+
 
 
 
