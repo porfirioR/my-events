@@ -104,15 +104,26 @@
             </div>
           </div>
 
-          <app-text
-            formControlName="numberOfInstallments"
-            type="number"
-            [label]="'upsertSavingsGoal.numberOfInstallments' | translate"
-            id="numberOfInstallments"
-            name="numberOfInstallments"
-            [description]="'upsertSavingsGoal.numberOfInstallmentsExample' | translate"
-            [disabled]="saving"
-          />
+          @if (isProgrammedSavings()) {
+            <app-select-input
+              formControlName="numberOfInstallments"
+              id="numberOfInstallments"
+              name="numberOfInstallments"
+              [label]="'upsertSavingsGoal.termMonths' | translate"
+              [list]="termSelectList()"
+              [disabled]="saving"
+            />
+          } @else {
+            <app-text
+              formControlName="numberOfInstallments"
+              type="number"
+              [label]="'upsertSavingsGoal.numberOfInstallments' | translate"
+              id="numberOfInstallments"
+              name="numberOfInstallments"
+              [description]="'upsertSavingsGoal.numberOfInstallmentsExample' | translate"
+              [disabled]="saving"
+            />
+          }
 
           <!-- Fixed: Mostrar Base Amount -->
           @if (showBaseAmountField()) {
@@ -125,6 +136,51 @@
               [description]="'upsertSavingsGoal.sameAmountDescription' | translate"
               [disabled]="saving"
             />
+          }
+
+          <!-- Ahorro Programado: tasa de interés anual dinámica -->
+          @if (isProgrammedSavings()) {
+            <app-text
+              formControlName="annualRatePercentage"
+              type="number"
+              [label]="'upsertSavingsGoal.annualRateLabel' | translate"
+              id="annualRatePercentage"
+              name="annualRatePercentage"
+              [description]="'upsertSavingsGoal.annualRateDescription' | translate"
+              [disabled]="saving"
+            />
+          }
+
+          <!-- Ahorro Programado: aviso de fechas automáticas -->
+          @if (isProgrammedSavings()) {
+            <div class="alert alert-info alert-soft text-xs mt-1">
+              <i class="fas fa-calendar-alt"></i>
+              <span>{{ 'upsertSavingsGoal.programmedSavingsInfo' | translate }}</span>
+            </div>
+          }
+
+          <!-- Rendimiento proyectado para ahorro programado -->
+          @if (isProgrammedSavings() && yieldInfo()) {
+            <div class="alert alert-success alert-soft border-2">
+              <i class="fas fa-chart-line text-xl"></i>
+              <div class="w-full">
+                <h4 class="font-semibold">{{ 'upsertSavingsGoal.yieldInfo' | translate }}</h4>
+                <div class="grid grid-cols-3 gap-2 mt-1 text-sm">
+                  <div>
+                    <p class="opacity-70 text-xs">{{ 'upsertSavingsGoal.totalDeposited' | translate }}</p>
+                    <p class="font-semibold">{{ formatCurrency(yieldInfo()!.totalDeposited, formGroup.value.currencyId) }}</p>
+                  </div>
+                  <div>
+                    <p class="opacity-70 text-xs">{{ 'upsertSavingsGoal.yieldAmount' | translate }}</p>
+                    <p class="font-semibold text-success">+ {{ formatCurrency(yieldInfo()!.yieldAmount, formGroup.value.currencyId) }}</p>
+                  </div>
+                  <div>
+                    <p class="opacity-70 text-xs">{{ 'upsertSavingsGoal.totalAtEnd' | translate }}</p>
+                    <p class="font-bold text-lg">{{ formatCurrency(yieldInfo()!.totalAmount, formGroup.value.currencyId) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           }
 
           <!-- Ascending/Descending/Random: Mostrar Increment Amount -->
@@ -151,8 +207,21 @@
             }
           }
 
-          <!-- Mostrar target amount calculado -->
-          @if (calculatedTargetAmount() !== null) {
+          <!-- Para ahorro programado: monto esperado editable (por defecto = calculado) -->
+          @if (isProgrammedSavings() && yieldInfo()) {
+            <app-text
+              formControlName="targetAmount"
+              type="number"
+              [label]="'upsertSavingsGoal.expectedAmountLabel' | translate"
+              id="targetAmount"
+              name="targetAmount"
+              [description]="'upsertSavingsGoal.expectedAmountDescription' | translate"
+              [disabled]="saving"
+            />
+          }
+
+          <!-- Para otros tipos: mostrar target amount calculado (solo lectura) -->
+          @if (!isProgrammedSavings() && calculatedTargetAmount() !== null) {
             <div class="alert alert-success shadow-lg alert-soft">
               <div class="flex items-center gap-3">
                 <i class="fas fa-piggy-bank text-2xl"></i>
@@ -172,14 +241,16 @@
         </div>
       }
 
-      <!-- Fecha esperada de finalización (opcional) -->
-      <app-date-input 
-        formControlName="expectedEndDate" 
-        [label]="'upsertSavingsGoal.expectedEndDate' | translate"
-        id="expectedEndDate"
-        name="expectedEndDate" 
-        [disabled]="saving" 
-      />
+      <!-- Fecha esperada de finalización (no aplica a ahorro programado, se calcula automáticamente) -->
+      @if (!isProgrammedSavings()) {
+        <app-date-input
+          formControlName="expectedEndDate"
+          [label]="'upsertSavingsGoal.expectedEndDate' | translate"
+          id="expectedEndDate"
+          name="expectedEndDate"
+          [disabled]="saving"
+        />
+      }
 
       <!-- Action Buttons -->
       <footer class="flex justify-between items-center pt-6 gap-4">

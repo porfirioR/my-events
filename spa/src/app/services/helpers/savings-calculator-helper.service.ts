@@ -35,6 +35,9 @@ export class SavingsCalculatorHelper {
         }
         return n * baseAmount;
 
+      case ProgressionType.Scheduled:
+        return n * baseAmount;
+
       case ProgressionType.FreeForm:
         throw new Error('FreeForm type does not calculate target amount automatically');
 
@@ -77,7 +80,8 @@ export class SavingsCalculatorHelper {
    * Valida si se pueden agregar más cuotas a un tipo de progresión
    */
   static canAddInstallments(progressionTypeId: number): boolean {
-    return progressionTypeId !== ProgressionType.Descending && 
-      progressionTypeId !== ProgressionType.FreeForm;
+    return progressionTypeId !== ProgressionType.Descending &&
+      progressionTypeId !== ProgressionType.FreeForm &&
+      progressionTypeId !== ProgressionType.Scheduled;
   }
 }

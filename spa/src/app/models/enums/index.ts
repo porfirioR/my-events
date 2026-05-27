@@ -5,6 +5,7 @@ export { ApprovalStatus } from './approval-status.enum'
 export { MatchRequestStatus } from './match-request-status.enum';
 export { ParticipantType } from './participant-type.enum';
 export { TravelParticipantType } from './travel-participant-type.enum';
-export { ProgressionType, ProgressionTypeDescriptions, ProgressionTypeIcons, ProgressionTypeLabels } from './progression-type.enum';
+export { ProgressionType, ProgressionTypeBadgeColors, ProgressionTypeDescriptions, ProgressionTypeIcons, ProgressionTypeLabels } from './progression-type.enum';
 export { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels } from './goal-status.enum';
 export { InstallmentStatus, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from './installment-status.enum';
+export { SavingsFrequency, SavingsFrequencyLabels } from './savings-frequency.enum';

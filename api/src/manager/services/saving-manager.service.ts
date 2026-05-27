@@ -15,6 +15,7 @@ import {
   SavingsGoalModel,
   SavingsInstallmentModel,
   SavingsDepositModel,
+  SavingsProgrammedTermModel,
   CreateSavingsGoalRequest,
   UpdateSavingsGoalRequest,
   PayInstallmentRequest,
@@ -24,6 +25,7 @@ import {
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { ProgressionType } from 'src/utility/enums';
+import { SavingsProgrammedTermAccessService } from '../../access/data/services/savings-programmed-term-access.service';
 
 @Injectable()
 export class SavingsManagerService {
@@ -36,6 +38,8 @@ export class SavingsManagerService {
 
     @Inject(SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE)
     private readonly savingsDepositAccessService: ISavingsDepositAccessService,
+
+    private readonly savingsProgrammedTermAccessService: SavingsProgrammedTermAccessService,
   ) {}
 
   // ==================== SAVINGS GOALS ====================
@@ -72,19 +76,34 @@ export class SavingsManagerService {
         throw new BadRequestException('incrementAmount is required for Ascending/Descending types');
       }
 
-      // Calcular targetAmount
-      targetAmount = SavingsCalculatorHelper.calculateTargetAmount(
-        request.progressionTypeId,
-        +request.baseAmount,
-        +request.numberOfInstallments,
-        +request.incrementAmount,
-      );
-
-      // Si el usuario proporcionó un targetAmount, validar que coincida
-      if (request.targetAmount && request.targetAmount !== targetAmount) {
-        throw new BadRequestException(
-          `Target amount mismatch. Expected ${targetAmount}, got ${request.targetAmount}`
+      if (request.progressionTypeId === ProgressionType.Scheduled) {
+        // Scheduled: requiere tasa de interés anual
+        if (!request.annualRatePercentage) {
+          throw new BadRequestException('annualRatePercentage is required for Scheduled type');
+        }
+        // Si el usuario sobrescribió el monto esperado, usarlo directamente
+        if (request.targetAmount) {
+          targetAmount = request.targetAmount;
+        } else {
+          // Calcular con fórmula de anualidad anticipada
+          const i = request.annualRatePercentage / 100 / 12;
+          targetAmount = Math.round(+request.baseAmount * ((Math.pow(1 + i, +request.numberOfInstallments) - 1) / i) * (1 + i));
+        }
+      } else {
+        // Fixed, Ascending, Descending, Random
+        targetAmount = SavingsCalculatorHelper.calculateTargetAmount(
+          request.progressionTypeId,
+          +request.baseAmount,
+          +request.numberOfInstallments,
+          +request.incrementAmount,
         );
+
+        // Validar que el targetAmount provisto coincida con el calculado
+        if (request.targetAmount && Math.abs(request.targetAmount - targetAmount) > 0.01) {
+          throw new BadRequestException(
+            `Target amount mismatch. Expected ${targetAmount}, got ${request.targetAmount}`
+          );
+        }
       }
 
       // Generar montos de cuotas
@@ -94,6 +113,19 @@ export class SavingsManagerService {
         +request.numberOfInstallments,
         +request.incrementAmount,
       );
+    }
+
+    // Calcular fechas de vencimiento si es ahorro programado mensual
+    let dueDates: Date[] = [];
+    let computedExpectedEndDate = request.expectedEndDate ?? null;
+
+    if (request.frequencyId && request.numberOfInstallments) {
+      dueDates = SavingsCalculatorHelper.calculateMonthlyDueDates(
+        request.startDate,
+        +request.numberOfInstallments,
+      );
+      // La fecha de vencimiento del plan es la fecha de la última cuota
+      computedExpectedEndDate = dueDates[dueDates.length - 1];
     }
 
     // Crear el objetivo de ahorro
@@ -108,7 +140,9 @@ export class SavingsManagerService {
       request.numberOfInstallments,
       request.baseAmount,
       request.incrementAmount,
-      request.expectedEndDate,
+      computedExpectedEndDate,
+      request.frequencyId,
+      request.annualRatePercentage,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -121,7 +155,7 @@ export class SavingsManagerService {
           index + 1,
           amount,
           1, // statusId = 1 (Pending)
-          null, // dueDate
+          dueDates[index] ?? null,
         )
       );
 
@@ -181,6 +215,8 @@ export class SavingsManagerService {
       currentGoal.completedDate,
       currentGoal.dateCreated,
       new Date(),
+      request.frequencyId,
+      request.annualRatePercentage,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -271,7 +307,7 @@ export class SavingsManagerService {
     const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
 
     // 4. Marcar cuota como pagada (solo si se pagó el monto completo)
-    if (request.amount === installment.amount) {
+    if (Math.abs(request.amount - installment.amount) < 0.01) {
       await this.savingsInstallmentAccessService.markAsPaid(request.installmentId, new Date());
     }
 
@@ -280,7 +316,12 @@ export class SavingsManagerService {
     await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, newCurrentAmount);
 
     // 6. Verificar si se completó el objetivo
-    if (newCurrentAmount >= goal.targetAmount) {
+    // Para Scheduled el umbral es lo depositado (baseAmount × cuotas), no el total con interés
+    const completionThreshold = (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments)
+      ? goal.baseAmount * goal.numberOfInstallments
+      : goal.targetAmount;
+
+    if (newCurrentAmount >= completionThreshold) {
       await this.savingsGoalAccessService.markAsCompleted(request.savingsGoalId, request.userId);
     }
 
@@ -316,6 +357,10 @@ export class SavingsManagerService {
 
     if (goal.progressionTypeId === 5) { // FreeForm
       throw new BadRequestException('FreeForm type does not have installments');
+    }
+
+    if (goal.progressionTypeId === 6) { // Scheduled — fixed term, cannot extend
+      throw new BadRequestException('Cannot add installments to Scheduled type');
     }
 
     // 2. Obtener todas las cuotas actuales
@@ -372,6 +417,8 @@ export class SavingsManagerService {
       goal.completedDate,
       goal.dateCreated,
       new Date(),
+      goal.frequencyId,
+      goal.annualRatePercentage,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -461,21 +508,32 @@ export class SavingsManagerService {
     const goal = await this.savingsGoalAccessService.getById(deposit.savingsGoalId, userId);
 
     // Actualizar currentAmount
-    const newCurrentAmount = goal.currentAmount - deposit.amount;
+    const newCurrentAmount = Math.max(0, goal.currentAmount - deposit.amount);
     await this.savingsGoalAccessService.updateCurrentAmount(goal.id, userId, newCurrentAmount);
 
     // Si el objetivo estaba completado y ahora ya no, reactivarlo
-    if (goal.statusId === 2 && newCurrentAmount < goal.targetAmount) { // 2 = Completed
+    const completionThreshold = (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments)
+      ? goal.baseAmount * goal.numberOfInstallments
+      : goal.targetAmount;
+
+    if (goal.statusId === 2 && newCurrentAmount < completionThreshold) { // 2 = Completed
       await this.savingsGoalAccessService.updateStatus(goal.id, userId, 1); // 1 = Active
     }
 
     await this.savingsDepositAccessService.delete(depositId);
   };
 
+  // ==================== PROGRAMMED TERMS ====================
+
+  public getProgrammedTerms = async (): Promise<SavingsProgrammedTermModel[]> => {
+    const accessModels = await this.savingsProgrammedTermAccessService.getAll();
+    return accessModels.map(a => new SavingsProgrammedTermModel(a.id, a.termMonths, a.annualRatePercentage));
+  };
+
   // ==================== MÉTODOS PRIVADOS ====================
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
-    const validTypes = [1, 2, 3, 4, 5]; // Fixed, Ascending, Descending, Random, FreeForm
+    const validTypes = [1, 2, 3, 4, 5, 6]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled
     if (!validTypes.includes(progressionTypeId)) {
       throw new BadRequestException(`Invalid progression type: ${progressionTypeId}`);
     }
@@ -501,6 +559,8 @@ export class SavingsManagerService {
       accessModel.completedDate,
       accessModel.dateCreated,
       accessModel.dateUpdated,
+      accessModel.frequencyId,
+      accessModel.annualRatePercentage,
     );
   };
 

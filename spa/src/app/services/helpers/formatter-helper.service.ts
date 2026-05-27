@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { KeyValueViewModel } from '../../models/view/key-value-view-model';
 import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, PeriodApiModel, TypeApiModel } from '../../models/api';
-import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
+import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeBadgeColors, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { useCurrencyStore } from '../../store';
 import { PaymentMethodApiModel } from '../../models/api/travels';
 
@@ -159,5 +159,9 @@ export class FormatterHelperService {
 
   public static getProgressionTypeIcon(typeId: number): string {
     return ProgressionTypeIcons[typeId as ProgressionType] || 'fa-question';
+  }
+
+  public static getProgressionTypeBadgeColor(typeId: number): string {
+    return ProgressionTypeBadgeColors[typeId as ProgressionType] || 'badge-neutral';
   }
 }

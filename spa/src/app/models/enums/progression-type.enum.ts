@@ -3,7 +3,8 @@ export enum ProgressionType {
   Ascending = 2,
   Descending = 3,
   Random = 4,
-  FreeForm = 5
+  FreeForm = 5,
+  Scheduled = 6,
 }
 
 export const ProgressionTypeLabels: Record<ProgressionType, string> = {
@@ -11,7 +12,8 @@ export const ProgressionTypeLabels: Record<ProgressionType, string> = {
   [ProgressionType.Ascending]: 'Ascending',
   [ProgressionType.Descending]: 'Descending',
   [ProgressionType.Random]: 'Random',
-  [ProgressionType.FreeForm]: 'Free Form'
+  [ProgressionType.FreeForm]: 'Free Form',
+  [ProgressionType.Scheduled]: 'Scheduled Savings',
 };
 
 export const ProgressionTypeDescriptions: Record<ProgressionType, string> = {
@@ -19,7 +21,8 @@ export const ProgressionTypeDescriptions: Record<ProgressionType, string> = {
   [ProgressionType.Ascending]: 'Amounts increase by a fixed increment',
   [ProgressionType.Descending]: 'Amounts decrease by a fixed increment',
   [ProgressionType.Random]: 'Amounts are shuffled randomly',
-  [ProgressionType.FreeForm]: 'No predefined installments, deposit freely'
+  [ProgressionType.FreeForm]: 'No predefined installments, deposit freely',
+  [ProgressionType.Scheduled]: 'Fixed monthly deposits with interest yield at maturity',
 };
 
 export const ProgressionTypeIcons: Record<ProgressionType, string> = {
@@ -27,7 +30,17 @@ export const ProgressionTypeIcons: Record<ProgressionType, string> = {
   [ProgressionType.Ascending]: 'fa-arrow-trend-up',
   [ProgressionType.Descending]: 'fa-arrow-trend-down',
   [ProgressionType.Random]: 'fa-shuffle',
-  [ProgressionType.FreeForm]: 'fa-hand-holding-dollar'
+  [ProgressionType.FreeForm]: 'fa-hand-holding-dollar',
+  [ProgressionType.Scheduled]: 'fa-calendar-check',
+};
+
+export const ProgressionTypeBadgeColors: Record<ProgressionType, string> = {
+  [ProgressionType.Fixed]: 'badge-primary',
+  [ProgressionType.Ascending]: 'badge-success',
+  [ProgressionType.Descending]: 'badge-warning',
+  [ProgressionType.Random]: 'badge-secondary',
+  [ProgressionType.FreeForm]: 'badge-accent',
+  [ProgressionType.Scheduled]: 'badge-info',
 };
 
 

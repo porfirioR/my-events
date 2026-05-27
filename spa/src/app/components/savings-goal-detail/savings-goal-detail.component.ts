@@ -58,6 +58,20 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected pendingInstallments = this.savingsStore.pendingInstallments;
   protected paidInstallments = this.savingsStore.paidInstallments;
 
+  // Programmed savings
+  protected isProgrammedSavings = computed(() => this.goal()?.progressionTypeId === ProgressionType.Scheduled);
+  protected nextInstallment = computed(() => this.pendingInstallments()[0] ?? null);
+  protected programmedYield = computed(() => {
+    const goal = this.goal();
+    if (goal?.progressionTypeId !== ProgressionType.Scheduled || !goal.numberOfInstallments || !goal.baseAmount || !goal.annualRatePercentage) return null;
+    const totalDeposited = goal.baseAmount * goal.numberOfInstallments;
+    return {
+      totalDeposited,
+      yieldAmount: goal.targetAmount - totalDeposited,
+      totalAmount: goal.targetAmount,
+    };
+  });
+
   // Enums
   protected GoalStatus = GoalStatus;
 
@@ -84,6 +98,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     return (
       goal.progressionTypeId !== ProgressionType.Descending &&
       goal.progressionTypeId !== ProgressionType.FreeForm &&
+      goal.progressionTypeId !== ProgressionType.Scheduled &&
       goal.statusId === GoalStatus.Active
     );
   });
@@ -118,6 +133,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadGoalById(id);
     this.savingsStore.loadInstallments(id);
     this.savingsStore.loadDeposits(id);
+    this.savingsStore.loadProgrammedTerms();
   }
 
   protected setActiveTab(tab: 'installments' | 'deposits'): void {
@@ -317,7 +333,8 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected getGoalStatusIcon = FormatterHelperService.getGoalStatusIcon.bind(this.formatterService);
   protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor.bind(this.formatterService);
   protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel.bind(this.formatterService);
+  protected getProgressionTypeBadgeColor = FormatterHelperService.getProgressionTypeBadgeColor.bind(this.formatterService);
 
   protected formatCurrency = this.formatterService.formatCurrency.bind(this.formatterService);
-  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
+  protected getFormattedDate = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
 }

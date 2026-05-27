@@ -5,7 +5,7 @@ import { UtilityModule } from '../../utility/utility.module';
 import { DbContextService } from './services/db-context.service';
 import { EventAccessService } from './services/event-access.service';
 import { EventFollowAccessService } from './services/event-follow-access.service';
-import { CollaboratorMatchAccessService, ConfigurationAccessService, EmailVerificationTokenAccessService, OperationAttachmentAccessService, OperationCategoryAccessService, PasswordResetTokenAccessService, PaymentMethodAccessService, SavingsGoalAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService, TravelAccessService, TravelMemberAccessService, TravelOperationAccessService, TravelOperationApprovalAccessService, TravelOperationParticipantAccessService } from './services';
+import { CollaboratorMatchAccessService, ConfigurationAccessService, EmailVerificationTokenAccessService, OperationAttachmentAccessService, OperationCategoryAccessService, PasswordResetTokenAccessService, PaymentMethodAccessService, SavingsGoalAccessService, SavingsProgrammedTermAccessService, TransactionAccessService, TransactionReimbursementAccessService, TransactionSplitAccessService, TravelAccessService, TravelMemberAccessService, TravelOperationAccessService, TravelOperationApprovalAccessService, TravelOperationParticipantAccessService } from './services';
 import { CollaboratorAccessService } from './services/collaborator-access.service';
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
@@ -38,6 +38,7 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     SavingsGoalAccessService,
     SavingsInstallmentAccessService,
     SavingsDepositAccessService,
+    SavingsProgrammedTermAccessService,
     PaymentMethodAccessService,
     TravelAccessService,
     TravelMemberAccessService,
@@ -136,6 +137,7 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     SAVINGS_TOKENS.INSTALLMENT_ACCESS_SERVICE,
     SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE,
     SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE,
+    SavingsProgrammedTermAccessService,
     TRAVEL_TOKENS.ACCESS_SERVICE,
     TRAVEL_TOKENS.MEMBER_ACCESS_SERVICE,
     TRAVEL_TOKENS.OPERATION_ACCESS_SERVICE,

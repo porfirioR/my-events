@@ -102,8 +102,16 @@ export class SavingsGoalsListComponent implements OnInit {
   protected getGoalStatusColor = FormatterHelperService.getGoalStatusColor.bind(this.formatterService);
   protected getProgressionTypeLabel = FormatterHelperService.getProgressionTypeLabel.bind(this.formatterService);
   protected getProgressionTypeIcon = FormatterHelperService.getProgressionTypeIcon.bind(this.formatterService);
-  protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
+  protected getProgressionTypeBadgeColor = FormatterHelperService.getProgressionTypeBadgeColor.bind(this.formatterService);
+  protected getFormattedDate = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
+
+  protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null }): number {
+    if (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments) {
+      return goal.baseAmount * goal.numberOfInstallments;
+    }
+    return goal.targetAmount;
+  }
 
   protected calculateProgress(current: number, target: number): number {
     if (target === 0) return 0;

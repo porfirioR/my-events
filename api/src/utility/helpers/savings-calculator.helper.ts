@@ -39,6 +39,9 @@ export class SavingsCalculatorHelper {
         }
         // Fórmula: n + (n × (n-1) × incremento / 2)
         return ((n*(n+1))/2)*+incrementAmount;
+      case ProgressionType.Scheduled: // Scheduled (same as Fixed, interest calculated separately)
+        return n * baseAmount;
+
       case ProgressionType.FreeForm: // FreeForm
         throw new Error(
           'FreeForm type does not calculate target amount automatically'
@@ -92,6 +95,9 @@ export class SavingsCalculatorHelper {
           numberOfInstallments,
           incrementAmount
         );
+
+      case ProgressionType.Scheduled: // Scheduled — fixed monthly deposits
+        return this.calculateFixed(baseAmount, numberOfInstallments);
 
       case ProgressionType.FreeForm: // FreeForm
         return []; // FreeForm no tiene cuotas predefinidas
@@ -167,6 +173,33 @@ export class SavingsCalculatorHelper {
     targetAmount: number
   ): number {
     return Math.max(targetAmount - currentAmount, 0);
+  }
+
+  /**
+   * Suma meses a una fecha manteniendo el día del mes original.
+   * Si el mes destino no tiene ese día (ej: 31 en febrero), usa el último día del mes.
+   */
+  static addMonths(date: Date, months: number): Date {
+    const result = new Date(date);
+    const day = result.getDate();
+    result.setMonth(result.getMonth() + months);
+    // Si el día cambió por overflow (ej: 31 → 3), retroceder al último día del mes anterior
+    if (result.getDate() !== day) {
+      result.setDate(0);
+    }
+    return result;
+  }
+
+  /**
+   * Genera las fechas de vencimiento para un ahorro programado mensual.
+   * El primer vencimiento es startDate + 1 mes, el segundo startDate + 2 meses, etc.
+   */
+  static calculateMonthlyDueDates(startDate: Date, numberOfInstallments: number): Date[] {
+    const dates: Date[] = [];
+    for (let i = 1; i <= numberOfInstallments; i++) {
+      dates.push(this.addMonths(startDate, i));
+    }
+    return dates;
   }
 
   // ===== Métodos privados =====

@@ -32,4 +32,5 @@ export enum TableEnum {
   PaymentMethods = 'paymentmethods',
   OperationCategories = 'operationcategories',
   OperationAttachments = 'operationattachments',
+  SavingsProgrammedTerms = 'savingsprogrammedterms',
 }

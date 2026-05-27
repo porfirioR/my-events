@@ -160,13 +160,13 @@
                   <div class="mt-3">
                     <div class="flex items-center justify-between text-sm mb-1">
                       <span class="text-base-content/70">
-                        {{ formatCurrency(goal.currentAmount, goal.currencyId) }} / {{ formatCurrency(goal.targetAmount, goal.currencyId) }}
+                        {{ formatCurrency(goal.currentAmount, goal.currencyId) }} / {{ formatCurrency(getProgressTarget(goal), goal.currencyId) }}
                       </span>
                       <span class="font-semibold" [ngClass]="getGoalStatusColor(goal.statusId)">
-                        {{ calculateProgress(goal.currentAmount, goal.targetAmount) }}%
+                        {{ calculateProgress(goal.currentAmount, getProgressTarget(goal)) }}%
                       </span>
                     </div>
-                    <progress 
+                    <progress
                       class="progress w-full"
                       [ngClass]="{
                         'progress-success': goal.statusId === GoalStatus.Active,
@@ -174,8 +174,8 @@
                         'progress-warning': goal.statusId === GoalStatus.Paused,
                         'progress-error': goal.statusId === GoalStatus.Cancelled
                       }"
-                      [value]="goal.currentAmount" 
-                      [max]="goal.targetAmount">
+                      [value]="goal.currentAmount"
+                      [max]="getProgressTarget(goal)">
                     </progress>
                   </div>
 
@@ -194,7 +194,7 @@
                     </span>
 
                     <!-- Type Badge -->
-                    <span class="badge badge-sm badge-soft badge-neutral">
+                    <span class="badge badge-sm badge-soft" [ngClass]="getProgressionTypeBadgeColor(goal.progressionTypeId)">
                       {{ getProgressionTypeLabel(goal.progressionTypeId) | translate }}
                     </span>
 
