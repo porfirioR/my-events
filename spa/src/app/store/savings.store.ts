@@ -78,7 +78,9 @@ export const SavingsStore = signalStore(
         filtered = filtered.filter(g => g.progressionTypeId === typeFilter);
       }
 
-      return filtered;
+      return [...filtered].sort((a, b) =>
+        new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      );
     }),
 
     // Total de objetivos

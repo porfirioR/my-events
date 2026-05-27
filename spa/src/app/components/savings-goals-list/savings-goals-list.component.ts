@@ -106,6 +106,13 @@ export class SavingsGoalsListComponent implements OnInit {
   protected getFormattedDate = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
 
+  protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null }): number {
+    if (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments) {
+      return goal.baseAmount * goal.numberOfInstallments;
+    }
+    return goal.targetAmount;
+  }
+
   protected calculateProgress(current: number, target: number): number {
     if (target === 0) return 0;
     return Math.min(Math.round((current / target) * 100), 100);

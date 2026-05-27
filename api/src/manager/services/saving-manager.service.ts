@@ -316,7 +316,12 @@ export class SavingsManagerService {
     await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, newCurrentAmount);
 
     // 6. Verificar si se completó el objetivo
-    if (newCurrentAmount >= goal.targetAmount) {
+    // Para Scheduled el umbral es lo depositado (baseAmount × cuotas), no el total con interés
+    const completionThreshold = (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments)
+      ? goal.baseAmount * goal.numberOfInstallments
+      : goal.targetAmount;
+
+    if (newCurrentAmount >= completionThreshold) {
       await this.savingsGoalAccessService.markAsCompleted(request.savingsGoalId, request.userId);
     }
 
@@ -507,7 +512,11 @@ export class SavingsManagerService {
     await this.savingsGoalAccessService.updateCurrentAmount(goal.id, userId, newCurrentAmount);
 
     // Si el objetivo estaba completado y ahora ya no, reactivarlo
-    if (goal.statusId === 2 && newCurrentAmount < goal.targetAmount) { // 2 = Completed
+    const completionThreshold = (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments)
+      ? goal.baseAmount * goal.numberOfInstallments
+      : goal.targetAmount;
+
+    if (goal.statusId === 2 && newCurrentAmount < completionThreshold) { // 2 = Completed
       await this.savingsGoalAccessService.updateStatus(goal.id, userId, 1); // 1 = Active
     }
 
