@@ -344,11 +344,60 @@
     </div>
   </article>
   } @else {
-  <!-- Loading State -->
-  <div class="flex justify-center items-center py-12">
-    <span class="loading loading-spinner loading-lg"></span>
-    <p class="ml-3 text-base-content/70">{{ 'savingsGoalDetail.loadingGoal' | translate }}</p>
-  </div>
+  <!-- Skeleton loader -->
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 mb-6 animate-pulse">
+    <header class="flex items-start justify-between mb-6">
+      <div class="flex-grow">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="skeleton w-8 h-8 rounded-full"></div>
+          <div class="skeleton h-7 w-48 rounded"></div>
+        </div>
+        <div class="skeleton h-4 w-72 rounded ml-4 mt-2"></div>
+      </div>
+      <div class="flex gap-2">
+        <div class="skeleton h-8 w-24 rounded"></div>
+      </div>
+    </header>
+    <div class="flex gap-2 mb-4 ml-4">
+      <div class="skeleton h-5 w-20 rounded-full"></div>
+      <div class="skeleton h-5 w-24 rounded-full"></div>
+    </div>
+    <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
+      <div class="flex justify-between mb-2">
+        <div class="skeleton h-4 w-20 rounded"></div>
+        <div class="skeleton h-7 w-12 rounded"></div>
+      </div>
+      <div class="skeleton h-4 w-full rounded-full mb-2"></div>
+      <div class="grid grid-cols-3 gap-4 mt-2">
+        <div class="skeleton h-4 w-full rounded"></div>
+        <div class="skeleton h-4 w-full rounded"></div>
+        <div class="skeleton h-4 w-full rounded"></div>
+      </div>
+    </div>
+  </article>
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 animate-pulse">
+    <div class="flex gap-4 mb-6 border-b border-base-300 pb-4">
+      <div class="skeleton h-6 w-28 rounded"></div>
+      <div class="skeleton h-6 w-24 rounded"></div>
+    </div>
+    <div class="space-y-3">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="skeleton h-6 w-8 rounded-full"></div>
+            <div>
+              <div class="skeleton h-5 w-24 rounded mb-1"></div>
+              <div class="skeleton h-3 w-32 rounded"></div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <div class="skeleton h-8 w-20 rounded"></div>
+            <div class="skeleton h-8 w-16 rounded"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </article>
   }
 </section>
 
