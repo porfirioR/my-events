@@ -130,6 +130,7 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = +this.activatedRoute.snapshot.params['id'];
+    this.savingsStore.clearSelectedGoal();
     this.savingsStore.loadGoalById(id);
     this.savingsStore.loadInstallments(id);
     this.savingsStore.loadDeposits(id);
