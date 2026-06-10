@@ -138,6 +138,19 @@
             />
           }
 
+          <!-- Ahorro Programado: período de pago -->
+          @if (isProgrammedSavings()) {
+            <app-select-input
+              formControlName="paymentPeriod"
+              id="paymentPeriod"
+              name="paymentPeriod"
+              [label]="'upsertSavingsGoal.paymentPeriodLabel' | translate"
+              [list]="paymentPeriodList"
+              [description]="'upsertSavingsGoal.paymentPeriodDescription' | translate"
+              [disabled]="saving"
+            />
+          }
+
           <!-- Ahorro Programado: tasa de interés anual dinámica -->
           @if (isProgrammedSavings()) {
             <app-text

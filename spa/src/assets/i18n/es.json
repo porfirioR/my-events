@@ -572,7 +572,8 @@
     "totalToDeposit": "Total a depositar",
     "estimatedYield": "Ganancia estimada",
     "totalAtMaturity": "Total a recibir al vencimiento",
-    "annualRateLabel": "Tasa anual"
+    "annualRateLabel": "Tasa anual",
+    "paymentPeriodLabel": "Período de pago"
   },
   "upsertSavingsGoal": {
     "editTitle": "Editar Meta de Ahorro",
@@ -622,6 +623,11 @@
     "suggestedRate": "Tasa sugerida",
     "annualRateLabel": "Tasa de interés anual (%)",
     "annualRateDescription": "Ingrese la tasa que ofrece su banco o cooperativa (ej: 4.5)",
+    "paymentPeriodLabel": "Período de pago",
+    "paymentPeriodDescription": "¿En qué período del mes realizas el depósito?",
+    "paymentPeriod1": "Del 1 al 10 (día 1)",
+    "paymentPeriod2": "Del 11 al 20 (día 11)",
+    "paymentPeriod3": "Del 21 a fin de mes (día 21)",
     "yieldInfo": "Proyección de Rendimiento",
     "totalDeposited": "Total depositado",
     "yieldAmount": "Ganancia estimada",

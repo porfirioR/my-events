@@ -96,6 +96,12 @@ export class UpsertSavingsGoalComponent implements OnInit {
     )
   );
 
+  protected paymentPeriodList: KeyValueViewModel[] = [
+    new KeyValueViewModel(1, this.translate.instant('upsertSavingsGoal.paymentPeriod1'), ''),
+    new KeyValueViewModel(2, this.translate.instant('upsertSavingsGoal.paymentPeriod2'), ''),
+    new KeyValueViewModel(3, this.translate.instant('upsertSavingsGoal.paymentPeriod3'), ''),
+  ];
+
   // Yield info for programmed savings
   protected yieldInfo = signal<{ yieldAmount: number; totalDeposited: number; totalAmount: number } | null>(null);
 
@@ -137,6 +143,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       statusId: new FormControl(1),
       frequencyId: new FormControl<number | null>(SavingsFrequency.Monthly),
       annualRatePercentage: new FormControl<number | null>(null),
+      paymentPeriod: new FormControl<number | null>(null),
     });
 
     // 2. SEGUNDO: Crear los signals desde los FormControls
@@ -237,6 +244,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       statusId: goal.statusId,
       frequencyId: goal.frequencyId ?? null,
       annualRatePercentage: goal.annualRatePercentage ?? null,
+      paymentPeriod: goal.paymentPeriod ?? null,
     });
 
     this.formGroup.controls.numberOfInstallments.disable()
@@ -306,6 +314,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       if (typeId === ProgressionType.Scheduled) {
         this.formGroup.controls.annualRatePercentage.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
         this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
+        this.formGroup.controls.paymentPeriod.setValidators([Validators.required]);
       }
     } else if (typeId !== null) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
@@ -317,6 +326,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.baseAmount.updateValueAndValidity();
     this.formGroup.controls.incrementAmount.updateValueAndValidity();
     this.formGroup.controls.annualRatePercentage.updateValueAndValidity();
+    this.formGroup.controls.paymentPeriod.updateValueAndValidity();
   }
 
   private calculateBaseAndTarget(): void {
@@ -480,6 +490,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.expectedEndDate?.toString() || undefined,
         values.frequencyId ?? undefined,
         values.annualRatePercentage ?? undefined,
+        values.paymentPeriod ?? undefined,
       );
 
       this.savingsStore.updateGoal(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -510,6 +521,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.expectedEndDate?.toString() || undefined,
         values.frequencyId ?? undefined,
         values.annualRatePercentage ?? undefined,
+        values.paymentPeriod ?? undefined,
       );
 
       this.savingsStore.createGoal(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

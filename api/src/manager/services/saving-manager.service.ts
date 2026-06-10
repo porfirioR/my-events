@@ -120,11 +120,12 @@ export class SavingsManagerService {
     let computedExpectedEndDate = request.expectedEndDate ?? null;
 
     if (request.frequencyId && request.numberOfInstallments) {
+      const paymentDay = SavingsCalculatorHelper.getPaymentDayFromPeriod(request.paymentPeriod ?? 1);
       dueDates = SavingsCalculatorHelper.calculateMonthlyDueDates(
         request.startDate,
         +request.numberOfInstallments,
+        paymentDay,
       );
-      // La fecha de vencimiento del plan es la fecha de la última cuota
       computedExpectedEndDate = dueDates[dueDates.length - 1];
     }
 
@@ -143,6 +144,7 @@ export class SavingsManagerService {
       computedExpectedEndDate,
       request.frequencyId,
       request.annualRatePercentage,
+      request.paymentPeriod,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -234,6 +236,7 @@ export class SavingsManagerService {
       new Date(),
       request.frequencyId,
       request.annualRatePercentage,
+      request.paymentPeriod,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -436,6 +439,7 @@ export class SavingsManagerService {
       new Date(),
       goal.frequencyId,
       goal.annualRatePercentage,
+      goal.paymentPeriod,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -578,6 +582,7 @@ export class SavingsManagerService {
       accessModel.dateUpdated,
       accessModel.frequencyId,
       accessModel.annualRatePercentage,
+      accessModel.paymentPeriod,
     );
   };
 
