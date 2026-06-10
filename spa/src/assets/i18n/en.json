@@ -572,7 +572,9 @@
     "alreadyPaid": "Already deposited",
     "totalToDeposit": "Total to deposit",
     "estimatedYield": "Estimated yield",
-    "totalAtMaturity": "Total at maturity"
+    "totalAtMaturity": "Total at maturity",
+    "annualRateLabel": "Annual rate",
+    "paymentPeriodLabel": "Payment period"
   },
   "upsertSavingsGoal": {
     "editTitle": "Edit Savings Goal",
@@ -622,6 +624,11 @@
     "suggestedRate": "Suggested rate",
     "annualRateLabel": "Annual interest rate (%)",
     "annualRateDescription": "Enter the rate offered by your bank or credit union (e.g. 4.5)",
+    "paymentPeriodLabel": "Payment period",
+    "paymentPeriodDescription": "Which period of the month do you make the deposit?",
+    "paymentPeriod1": "1st–10th (day 1)",
+    "paymentPeriod2": "11th–20th (day 11)",
+    "paymentPeriod3": "21st–end of month (day 21)",
     "yieldInfo": "Yield Projection",
     "totalDeposited": "Total deposited",
     "yieldAmount": "Estimated yield",

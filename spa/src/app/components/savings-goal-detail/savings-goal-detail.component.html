@@ -130,7 +130,7 @@
         }
 
         <!-- Resumen de montos -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
           <div>
             <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.monthlyAmount' | translate }}</p>
             <p class="font-semibold text-base-content">{{ formatCurrency(g.baseAmount ?? 0, g.currencyId) }}</p>
@@ -143,9 +143,21 @@
             <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.alreadyPaid' | translate }}</p>
             <p class="font-semibold text-base-content">{{ formatCurrency(g.currentAmount, g.currencyId) }}</p>
           </div>
+          @if (g.annualRatePercentage) {
+          <div>
+            <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.annualRateLabel' | translate }}</p>
+            <p class="font-semibold text-success">{{ g.annualRatePercentage }}%</p>
+          </div>
+          }
+          @if (g.paymentPeriod) {
+          <div>
+            <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.paymentPeriodLabel' | translate }}</p>
+            <p class="font-semibold text-base-content">{{ 'upsertSavingsGoal.paymentPeriod' + g.paymentPeriod | translate }}</p>
+          </div>
+          }
         </div>
 
-        <!-- Total a recibir al vencimiento -->
+        <!-- Maturity yield breakdown -->
         @if (programmedYield()) {
           <div class="mt-3 grid grid-cols-2 gap-3">
             <div class="bg-base-200 dark:bg-base-300 rounded-lg p-3">
@@ -257,7 +269,7 @@
                     {{ 'savingsGoalDetail.skip' | translate }}
                   </button>
                 } @else {
-                  <!-- ✅ Mostrar mensaje informativo si está completed -->
+                  <!-- Goal is completed — show info instead of actions -->
                   <span class="text-sm text-success font-medium">
                     <i class="fas fa-check-circle mr-1"></i>
                     {{ 'savingsGoalDetail.goalCompleted' | translate }}

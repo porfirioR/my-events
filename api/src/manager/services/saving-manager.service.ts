@@ -120,11 +120,12 @@ export class SavingsManagerService {
     let computedExpectedEndDate = request.expectedEndDate ?? null;
 
     if (request.frequencyId && request.numberOfInstallments) {
+      const paymentDay = SavingsCalculatorHelper.getPaymentDayFromPeriod(request.paymentPeriod ?? 1);
       dueDates = SavingsCalculatorHelper.calculateMonthlyDueDates(
         request.startDate,
         +request.numberOfInstallments,
+        paymentDay,
       );
-      // La fecha de vencimiento del plan es la fecha de la última cuota
       computedExpectedEndDate = dueDates[dueDates.length - 1];
     }
 
@@ -143,6 +144,7 @@ export class SavingsManagerService {
       computedExpectedEndDate,
       request.frequencyId,
       request.annualRatePercentage,
+      request.paymentPeriod,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -159,7 +161,24 @@ export class SavingsManagerService {
         )
       );
 
-      await this.savingsInstallmentAccessService.createMany(installmentRequests);
+      const createdInstallments = await this.savingsInstallmentAccessService.createMany(installmentRequests);
+
+      // Scheduled savings: auto-pay the first installment using the goal start date
+      if (request.progressionTypeId === ProgressionType.Scheduled && createdInstallments.length > 0) {
+        const first = createdInstallments.find(i => i.installmentNumber === 1) ?? createdInstallments[0];
+        await this.savingsDepositAccessService.create(new CreateSavingsDepositAccessRequest(
+          goalAccessModel.id,
+          first.amount,
+          request.startDate,
+          first.id,
+          null,
+        ));
+        await this.savingsInstallmentAccessService.markAsPaid(first.id, request.startDate);
+        await this.savingsGoalAccessService.updateCurrentAmount(goalAccessModel.id, request.userId, first.amount);
+        // Re-fetch so the returned model reflects the updated currentAmount
+        const refreshed = await this.savingsGoalAccessService.getById(goalAccessModel.id, request.userId);
+        return this.mapGoalAccessModelToModel(refreshed);
+      }
     }
 
     return this.mapGoalAccessModelToModel(goalAccessModel);
@@ -217,6 +236,7 @@ export class SavingsManagerService {
       new Date(),
       request.frequencyId,
       request.annualRatePercentage,
+      request.paymentPeriod,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -254,7 +274,7 @@ export class SavingsManagerService {
    * Obtener cuotas pendientes de un objetivo
    */
   public getPendingInstallments = async (savingsGoalId: number, userId: number): Promise<SavingsInstallmentModel[]> => {
-    // Validar que el objetivo pertenece al usuario
+    // Verify the goal belongs to the user
     await this.savingsGoalAccessService.getById(savingsGoalId, userId);
 
     const accessModelList = await this.savingsInstallmentAccessService.getPendingInstallments(savingsGoalId);
@@ -262,24 +282,24 @@ export class SavingsManagerService {
   };
 
   /**
-   * Pagar una cuota
-   * FLUJO COMPLETO:
-   * 1. Validar que el objetivo existe y está activo
-   * 2. Validar que la cuota existe y está pendiente
-   * 3. Crear el depósito
-   * 4. Marcar la cuota como pagada
-   * 5. Actualizar currentAmount del objetivo
-   * 6. Si currentAmount >= targetAmount, marcar objetivo como completado
+   * Pay an installment
+   * Full flow:
+   * 1. Validate goal exists and is active
+   * 2. Validate installment exists and is pending
+   * 3. Create deposit
+   * 4. Mark installment as paid
+   * 5. Update goal currentAmount
+   * 6. If currentAmount >= targetAmount, mark goal as completed
    */
   public payInstallment = async (request: PayInstallmentRequest): Promise<SavingsDepositModel> => {
-    // 1. Validar objetivo
+    // 1. Validate goal
     const goal = await this.savingsGoalAccessService.getById(request.savingsGoalId, request.userId);
 
     if (goal.statusId !== 1) { // 1 = Active
       throw new BadRequestException('Cannot pay installments for inactive goals');
     }
 
-    // 2. Validar cuota
+    // 2. Validate installment
     const installment = await this.savingsInstallmentAccessService.getById(request.installmentId);
 
     if (installment.savingsGoalId !== request.savingsGoalId) {
@@ -290,12 +310,12 @@ export class SavingsManagerService {
       throw new BadRequestException('Installment is not pending');
     }
 
-    // Validar que el monto no exceda el monto de la cuota
+    // Amount must not exceed the installment amount
     if (request.amount > installment.amount) {
       throw new BadRequestException(`Amount cannot exceed installment amount (${installment.amount})`);
     }
 
-    // 3. Crear el depósito
+    // 3. Create deposit
     const depositAccessRequest = new CreateSavingsDepositAccessRequest(
       request.savingsGoalId,
       request.amount,
@@ -306,17 +326,17 @@ export class SavingsManagerService {
 
     const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
 
-    // 4. Marcar cuota como pagada (solo si se pagó el monto completo)
+    // 4. Mark installment as paid (only if full amount was paid)
     if (Math.abs(request.amount - installment.amount) < 0.01) {
       await this.savingsInstallmentAccessService.markAsPaid(request.installmentId, new Date());
     }
 
-    // 5. Actualizar currentAmount
+    // 5. Update currentAmount
     const newCurrentAmount = goal.currentAmount + request.amount;
     await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, newCurrentAmount);
 
-    // 6. Verificar si se completó el objetivo
-    // Para Scheduled el umbral es lo depositado (baseAmount × cuotas), no el total con interés
+    // 6. Check if goal is completed
+    // For Scheduled, threshold is total deposited (baseAmount × installments), not the total with interest
     const completionThreshold = (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments)
       ? goal.baseAmount * goal.numberOfInstallments
       : goal.targetAmount;
@@ -329,10 +349,10 @@ export class SavingsManagerService {
   };
 
   /**
-   * Omitir una cuota (marcar como skipped)
+   * Skip an installment (mark as skipped)
    */
   public skipInstallment = async (installmentId: number, userId: number, savingsGoalId: number): Promise<SavingsInstallmentModel> => {
-    // Validar que el objetivo pertenece al usuario
+    // Verify the goal belongs to the user
     await this.savingsGoalAccessService.getById(savingsGoalId, userId);
 
     const accessModel = await this.savingsInstallmentAccessService.markAsSkipped(installmentId);
@@ -340,15 +360,15 @@ export class SavingsManagerService {
   };
 
   /**
-   * Agregar más cuotas a un objetivo (solo Ascending, Random, Fixed)
-   * FLUJO:
-   * 1. Validar que el tipo permite agregar cuotas
-   * 2. Obtener la última cuota
-   * 3. Generar nuevas cuotas
-   * 4. Actualizar targetAmount del objetivo
+   * Add more installments to a goal (Ascending, Random, Fixed only)
+   * Flow:
+   * 1. Validate the progression type allows adding installments
+   * 2. Get the last installment
+   * 3. Generate new installments
+   * 4. Update goal targetAmount
    */
   public addInstallments = async (request: AddInstallmentsRequest): Promise<SavingsInstallmentModel[]> => {
-    // 1. Validar objetivo
+    // 1. Validate goal
     const goal = await this.savingsGoalAccessService.getById(request.savingsGoalId, request.userId);
 
     if (goal.progressionTypeId === 3) { // Descending
@@ -363,19 +383,19 @@ export class SavingsManagerService {
       throw new BadRequestException('Cannot add installments to Scheduled type');
     }
 
-    // 2. Obtener todas las cuotas actuales
+    // 2. Get all current installments
     const currentInstallments = await this.savingsInstallmentAccessService.getBySavingsGoalId(request.savingsGoalId);
 
     if (currentInstallments.length === 0) {
       throw new BadRequestException('No existing installments found');
     }
 
-    // Obtener la última cuota
+    // Get the last installment
     const lastInstallment = currentInstallments[currentInstallments.length - 1];
     const lastAmount = lastInstallment.amount;
     const increment = goal.incrementAmount || goal.baseAmount || 0;
 
-    // 3. Generar nuevas cuotas
+    // 3. Generate new installments
     const newAmounts = SavingsCalculatorHelper.generateAdditionalInstallments(
       goal.progressionTypeId,
       lastAmount,
@@ -395,7 +415,7 @@ export class SavingsManagerService {
 
     const newInstallments = await this.savingsInstallmentAccessService.createMany(newInstallmentRequests);
 
-    // 4. Actualizar targetAmount del objetivo
+    // 4. Update goal targetAmount
     const additionalAmount = newAmounts.reduce((sum, amount) => sum + amount, 0);
     const newTargetAmount = goal.targetAmount + additionalAmount;
 
@@ -419,6 +439,7 @@ export class SavingsManagerService {
       new Date(),
       goal.frequencyId,
       goal.annualRatePercentage,
+      goal.paymentPeriod,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -429,16 +450,16 @@ export class SavingsManagerService {
   // ==================== DEPOSITS ====================
 
   /**
-   * Crear depósito libre (FreeForm)
-   * FLUJO:
-   * 1. Validar que el objetivo es FreeForm y está activo
-   * 2. Validar que el monto no exceda el target
-   * 3. Crear el depósito
-   * 4. Actualizar currentAmount
-   * 5. Si currentAmount >= targetAmount, marcar como completado
+   * Create a free-form deposit (FreeForm goals only)
+   * Flow:
+   * 1. Validate goal is FreeForm and active
+   * 2. Validate amount does not exceed remaining target
+   * 3. Create deposit
+   * 4. Update currentAmount
+   * 5. If currentAmount >= targetAmount, mark goal as completed
    */
   public createFreeFormDeposit = async (request: CreateFreeFormDepositRequest): Promise<SavingsDepositModel> => {
-    // 1. Validar objetivo
+    // 1. Validate goal
     const goal = await this.savingsGoalAccessService.getById(request.savingsGoalId, request.userId);
 
     if (goal.progressionTypeId !== 5) { // FreeForm
@@ -449,7 +470,7 @@ export class SavingsManagerService {
       throw new BadRequestException('Cannot add deposits to inactive goals');
     }
 
-    // 2. Validar que no exceda el target
+    // 2. Validate amount does not exceed target
     const newTotal = goal.currentAmount + request.amount;
     if (newTotal > goal.targetAmount) {
       const remaining = goal.targetAmount - goal.currentAmount;
@@ -458,21 +479,21 @@ export class SavingsManagerService {
       );
     }
 
-    // 3. Crear el depósito
+    // 3. Create deposit
     const depositAccessRequest = new CreateSavingsDepositAccessRequest(
       request.savingsGoalId,
       request.amount,
       new Date(),
-      null, // installmentId = null para FreeForm
+      null, // installmentId is null for FreeForm
       request.description,
     );
 
     const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
 
-    // 4. Actualizar currentAmount
+    // 4. Update currentAmount
     await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, newTotal);
 
-    // 5. Verificar si se completó
+    // 5. Check if goal is completed
     if (newTotal >= goal.targetAmount) {
       await this.savingsGoalAccessService.markAsCompleted(request.savingsGoalId, request.userId);
     }
@@ -481,10 +502,10 @@ export class SavingsManagerService {
   };
 
   /**
-   * Obtener todos los depósitos de un objetivo
+   * Get all deposits for a goal
    */
   public getDepositsByGoalId = async (savingsGoalId: number, userId: number): Promise<SavingsDepositModel[]> => {
-    // Validar que el objetivo pertenece al usuario
+    // Verify the goal belongs to the user
     await this.savingsGoalAccessService.getById(savingsGoalId, userId);
 
     const accessModelList = await this.savingsDepositAccessService.getBySavingsGoalId(savingsGoalId);
@@ -492,7 +513,7 @@ export class SavingsManagerService {
   };
 
   /**
-   * Obtener depósitos de una cuota específica
+   * Get deposits for a specific installment
    */
   public getDepositsByInstallmentId = async (installmentId: number): Promise<SavingsDepositModel[]> => {
     const accessModelList = await this.savingsDepositAccessService.getByInstallmentId(installmentId);
@@ -500,18 +521,18 @@ export class SavingsManagerService {
   };
 
   /**
-   * Eliminar un depósito
-   * IMPORTANTE: También actualiza el currentAmount del objetivo
+   * Delete a deposit
+   * NOTE: Also updates the goal's currentAmount
    */
   public deleteDeposit = async (depositId: number, userId: number): Promise<void> => {
     const deposit = await this.savingsDepositAccessService.getById(depositId);
     const goal = await this.savingsGoalAccessService.getById(deposit.savingsGoalId, userId);
 
-    // Actualizar currentAmount
+    // Update currentAmount
     const newCurrentAmount = Math.max(0, goal.currentAmount - deposit.amount);
     await this.savingsGoalAccessService.updateCurrentAmount(goal.id, userId, newCurrentAmount);
 
-    // Si el objetivo estaba completado y ahora ya no, reactivarlo
+    // If goal was completed but no longer meets threshold, reactivate it
     const completionThreshold = (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments)
       ? goal.baseAmount * goal.numberOfInstallments
       : goal.targetAmount;
@@ -530,7 +551,7 @@ export class SavingsManagerService {
     return accessModels.map(a => new SavingsProgrammedTermModel(a.id, a.termMonths, a.annualRatePercentage));
   };
 
-  // ==================== MÉTODOS PRIVADOS ====================
+  // ==================== PRIVATE METHODS ====================
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
     const validTypes = [1, 2, 3, 4, 5, 6]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled
@@ -561,6 +582,7 @@ export class SavingsManagerService {
       accessModel.dateUpdated,
       accessModel.frequencyId,
       accessModel.annualRatePercentage,
+      accessModel.paymentPeriod,
     );
   };
 

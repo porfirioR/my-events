@@ -192,14 +192,34 @@ export class SavingsCalculatorHelper {
 
   /**
    * Genera las fechas de vencimiento para un ahorro programado mensual.
-   * El primer vencimiento es startDate + 1 mes, el segundo startDate + 2 meses, etc.
+   * - Cuota 1: fecha de inicio del ahorro (se paga automáticamente al crear)
+   * - Cuotas 2+: día 1 de cada mes siguiente
    */
-  static calculateMonthlyDueDates(startDate: Date, numberOfInstallments: number): Date[] {
+  static calculateMonthlyDueDates(startDate: Date, numberOfInstallments: number, paymentDay: number = 1): Date[] {
     const dates: Date[] = [];
-    for (let i = 1; i <= numberOfInstallments; i++) {
-      dates.push(this.addMonths(startDate, i));
+
+    // First installment: start date as-is (auto-paid on creation)
+    dates.push(new Date(startDate));
+
+    // Remaining installments: payment day of each subsequent month
+    for (let i = 1; i < numberOfInstallments; i++) {
+      const d = new Date(startDate);
+      d.setDate(1); // avoid month overflow before adding months
+      d.setMonth(d.getMonth() + i);
+      d.setDate(paymentDay);
+      dates.push(d);
     }
+
     return dates;
+  }
+
+  static getPaymentDayFromPeriod(paymentPeriod: number): number {
+    switch (paymentPeriod) {
+      case 1: return 1;
+      case 2: return 11;
+      case 3: return 21;
+      default: return 1;
+    }
   }
 
   // ===== Métodos privados =====

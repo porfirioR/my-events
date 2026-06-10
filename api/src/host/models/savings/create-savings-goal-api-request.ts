@@ -55,4 +55,10 @@ export class CreateSavingsGoalApiRequest {
   @Min(0.01)
   @Max(100)
   annualRatePercentage?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(3)
+  paymentPeriod?: number;
 }
