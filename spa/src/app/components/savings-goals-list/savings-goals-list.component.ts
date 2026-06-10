@@ -55,7 +55,7 @@ export class SavingsGoalsListComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.savingsStore.loadGoals();
+    this.savingsStore.reloadGoals();
   }
 
   protected setStatusFilter(statusId: number | null): void {

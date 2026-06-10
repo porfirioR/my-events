@@ -130,7 +130,7 @@
         }
 
         <!-- Resumen de montos -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
           <div>
             <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.monthlyAmount' | translate }}</p>
             <p class="font-semibold text-base-content">{{ formatCurrency(g.baseAmount ?? 0, g.currencyId) }}</p>
@@ -143,6 +143,12 @@
             <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.alreadyPaid' | translate }}</p>
             <p class="font-semibold text-base-content">{{ formatCurrency(g.currentAmount, g.currencyId) }}</p>
           </div>
+          @if (g.annualRatePercentage) {
+          <div>
+            <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.annualRateLabel' | translate }}</p>
+            <p class="font-semibold text-success">{{ g.annualRatePercentage }}%</p>
+          </div>
+          }
         </div>
 
         <!-- Total a recibir al vencimiento -->

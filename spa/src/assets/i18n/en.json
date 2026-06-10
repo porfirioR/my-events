@@ -572,7 +572,8 @@
     "alreadyPaid": "Already deposited",
     "totalToDeposit": "Total to deposit",
     "estimatedYield": "Estimated yield",
-    "totalAtMaturity": "Total at maturity"
+    "totalAtMaturity": "Total at maturity",
+    "annualRateLabel": "Annual rate"
   },
   "upsertSavingsGoal": {
     "editTitle": "Edit Savings Goal",

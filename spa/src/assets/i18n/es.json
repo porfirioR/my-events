@@ -571,7 +571,8 @@
     "alreadyPaid": "Ya depositado",
     "totalToDeposit": "Total a depositar",
     "estimatedYield": "Ganancia estimada",
-    "totalAtMaturity": "Total a recibir al vencimiento"
+    "totalAtMaturity": "Total a recibir al vencimiento",
+    "annualRateLabel": "Tasa anual"
   },
   "upsertSavingsGoal": {
     "editTitle": "Editar Meta de Ahorro",
