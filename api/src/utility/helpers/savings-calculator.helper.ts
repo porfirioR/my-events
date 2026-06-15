@@ -47,6 +47,9 @@ export class SavingsCalculatorHelper {
           'FreeForm type does not calculate target amount automatically'
         );
 
+      case ProgressionType.FixedDeposit: // FixedDeposit — target computed in manager using simple interest
+        return baseAmount;
+
       default:
         throw new Error(`Invalid progression type: ${progressionTypeId}`);
     }
@@ -101,6 +104,9 @@ export class SavingsCalculatorHelper {
 
       case ProgressionType.FreeForm: // FreeForm
         return []; // FreeForm no tiene cuotas predefinidas
+
+      case ProgressionType.FixedDeposit: // FixedDeposit — no installments, single auto-deposit on creation
+        return [];
 
       default:
         throw new Error(`Invalid progression type: ${progressionTypeId}`);

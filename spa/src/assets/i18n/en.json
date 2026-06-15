@@ -496,6 +496,7 @@
     "descending": "Descending",
     "random": "Random",
     "freeForm": "Free Form",
+    "fixedDeposit": "Fixed Deposit",
     "newGoal": "New Goal",
     "loadingGoals": "Loading savings goals...",
     "viewDetails": "View Details",
@@ -574,7 +575,12 @@
     "estimatedYield": "Estimated yield",
     "totalAtMaturity": "Total at maturity",
     "annualRateLabel": "Annual rate",
-    "paymentPeriodLabel": "Payment period"
+    "paymentPeriodLabel": "Payment period",
+    "fixedDepositSummary": "Fixed Deposit Summary",
+    "fixedDepositPrincipal": "Principal",
+    "fixedDepositInterest": "Interest earned",
+    "fixedDepositTotalAtMaturity": "Total at maturity",
+    "maturityDate": "Maturity date"
   },
   "upsertSavingsGoal": {
     "editTitle": "Edit Savings Goal",
@@ -634,7 +640,14 @@
     "yieldAmount": "Estimated yield",
     "totalAtEnd": "Total at maturity",
     "expectedAmountLabel": "Expected amount at maturity",
-    "expectedAmountDescription": "Auto-calculated. You can edit it if your bank shows a different amount."
+    "expectedAmountDescription": "Auto-calculated. You can edit it if your bank shows a different amount.",
+    "fixedDepositTermLabel": "Term",
+    "fixedDepositPrincipalLabel": "Principal amount",
+    "fixedDepositPrincipalDescription": "Amount to lock in the fixed deposit",
+    "fixedDepositInfo": "Maturity date will be automatically calculated from the start date and the selected term.",
+    "fixedDepositYieldInfo": "Fixed Deposit Summary",
+    "fixedDepositInterest": "Interest",
+    "fixedDepositTotal": "Total at maturity"
   },
   "savingsFrequency": {
     "monthly": "Monthly"
@@ -863,12 +876,14 @@
   "Random": "Random",
   "Free Form": "Free Form",
   "Scheduled Savings": "Scheduled Savings",
+  "Fixed Deposit": "Fixed Deposit",
   "Same amount for each installment": "Same amount for each installment",
   "Amounts increase by a fixed increment": "Amounts increase by a fixed increment",
   "Amounts decrease by a fixed increment": "Amounts decrease by a fixed increment",
   "Amounts are shuffled randomly": "Amounts are shuffled randomly",
   "No predefined installments, deposit freely": "No predefined installments, deposit freely",
   "Fixed monthly deposits with interest yield at maturity": "Fixed monthly deposits with interest yield at maturity",
+  "Single lump-sum deposit locked for a fixed term with simple interest": "Single lump-sum deposit locked for a fixed term with simple interest",
   "Invitation resent successfully": "Invitation resent successfully",
   "Bank": "Bank",
   "Cash": "Cash",

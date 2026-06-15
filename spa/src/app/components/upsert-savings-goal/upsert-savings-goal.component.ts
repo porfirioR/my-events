@@ -102,7 +102,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     new KeyValueViewModel(3, this.translate.instant('upsertSavingsGoal.paymentPeriod3'), ''),
   ];
 
-  // Yield info for programmed savings
+  // Yield info for programmed savings and fixed deposit
   protected yieldInfo = signal<{ yieldAmount: number; totalDeposited: number; totalAmount: number } | null>(null);
 
   // Form
@@ -123,6 +123,9 @@ export class UpsertSavingsGoalComponent implements OnInit {
   protected showTargetAmountInput!: ReturnType<typeof computed<boolean>>;
   protected showBaseAmountField!: ReturnType<typeof computed<boolean>>;
   protected isProgrammedSavings!: ReturnType<typeof computed<boolean>>;
+  protected isFixedDeposit!: ReturnType<typeof computed<boolean>>;
+
+  protected fixedDepositTermList: KeyValueViewModel[] = [];
 
   constructor() {
     const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd', 'UTC') as string;
@@ -174,10 +177,16 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     this.showBaseAmountField = computed(() => {
       const typeId = this.progressionTypeIdSignal();
-      return typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled;
+      return typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled || typeId === ProgressionType.FixedDeposit;
     });
 
     this.isProgrammedSavings = computed(() => this.progressionTypeIdSignal() === ProgressionType.Scheduled);
+    this.isFixedDeposit = computed(() => this.progressionTypeIdSignal() === ProgressionType.FixedDeposit);
+
+    const months = this.translate.instant('upsertSavingsGoal.months');
+    this.fixedDepositTermList = [1, 2, 3, 6, 12, 15, 18].map(
+      m => new KeyValueViewModel(m, `${m} ${months}`, '')
+    );
 
     // Effect para cargar currencies cuando estén listas
     effect(() => {
@@ -293,6 +302,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
         this.translate.instant(ProgressionTypeLabels[ProgressionType.Scheduled]),
         this.translate.instant(ProgressionTypeDescriptions[ProgressionType.Scheduled])
       ),
+      new KeyValueViewModel(
+        ProgressionType.FixedDeposit,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.FixedDeposit]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.FixedDeposit])
+      ),
     ];
   }
 
@@ -308,13 +322,15 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     if (typeId === ProgressionType.FreeForm) {
       this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
-    } else if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled) {
+    } else if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled || typeId === ProgressionType.FixedDeposit) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.baseAmount.setValidators([Validators.required, Validators.min(1)]);
       if (typeId === ProgressionType.Scheduled) {
         this.formGroup.controls.annualRatePercentage.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
         this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
         this.formGroup.controls.paymentPeriod.setValidators([Validators.required]);
+      } else if (typeId === ProgressionType.FixedDeposit) {
+        this.formGroup.controls.annualRatePercentage.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
       }
     } else if (typeId !== null) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
@@ -349,14 +365,14 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     let calculatedBase: number;
 
-    if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled) {
+    if (typeId === ProgressionType.Fixed || typeId === ProgressionType.Scheduled || typeId === ProgressionType.FixedDeposit) {
       if (!baseAmount) {
         this.calculatedBaseAmount.set(null);
         this.calculatedTargetAmount.set(null);
         this.yieldInfo.set(null);
         return;
       }
-      // Auto-fill suggested rate when term changes (only if rate is empty)
+      // Auto-fill suggested rate when term changes (only if rate is empty, Scheduled only)
       if (typeId === ProgressionType.Scheduled && numberOfInstallments) {
         const currentRate = this.formGroup.controls.annualRatePercentage.value;
         if (!currentRate) {
@@ -419,6 +435,15 @@ export class UpsertSavingsGoalComponent implements OnInit {
       } else {
         this.yieldInfo.set(null);
       }
+    } else if (typeId === ProgressionType.FixedDeposit && baseAmount && numberOfInstallments) {
+      const annualRate = this.formGroup.controls.annualRatePercentage.value;
+      if (annualRate && annualRate > 0) {
+        const yi = this.calculateFixedDepositYield(+baseAmount, +numberOfInstallments, annualRate);
+        this.yieldInfo.set(yi);
+        this.calculatedTargetAmount.set(yi.totalAmount);
+      } else {
+        this.yieldInfo.set(null);
+      }
     } else {
       this.yieldInfo.set(null);
     }
@@ -437,6 +462,20 @@ export class UpsertSavingsGoalComponent implements OnInit {
       yieldAmount: Math.round(fv - totalDeposited),
       totalDeposited,
       totalAmount: Math.round(fv),
+    };
+  }
+
+  private calculateFixedDepositYield(
+    principal: number,
+    termMonths: number,
+    annualRatePercentage: number,
+  ): { yieldAmount: number; totalDeposited: number; totalAmount: number } {
+    // Simple interest: I = P × r × t
+    const interest = Math.round(principal * (annualRatePercentage / 100) * (termMonths / 12));
+    return {
+      yieldAmount: interest,
+      totalDeposited: principal,
+      totalAmount: principal + interest,
     };
   }
 
@@ -464,6 +503,9 @@ export class UpsertSavingsGoalComponent implements OnInit {
       // Use user-edited targetAmount (pre-filled with calculated value)
       finalTargetAmount = values.targetAmount || this.calculatedTargetAmount() || 0;
     } else if (typeId === ProgressionType.Fixed) {
+      finalBaseAmount = values.baseAmount!;
+      finalTargetAmount = this.calculatedTargetAmount() || 0;
+    } else if (typeId === ProgressionType.FixedDeposit) {
       finalBaseAmount = values.baseAmount!;
       finalTargetAmount = this.calculatedTargetAmount() || 0;
     } else {

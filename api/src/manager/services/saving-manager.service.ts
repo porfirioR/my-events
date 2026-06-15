@@ -65,6 +65,14 @@ export class SavingsManagerService {
         throw new BadRequestException('FreeForm type should not have numberOfInstallments or baseAmount');
       }
       targetAmount = request.targetAmount;
+    } else if (request.progressionTypeId === ProgressionType.FixedDeposit) {
+      // FixedDeposit: single lump-sum with simple interest
+      if (!request.baseAmount || !request.numberOfInstallments || !request.annualRatePercentage) {
+        throw new BadRequestException('baseAmount, numberOfInstallments (term in months), and annualRatePercentage are required for FixedDeposit type');
+      }
+      const interest = +request.baseAmount * (request.annualRatePercentage / 100) * (+request.numberOfInstallments / 12);
+      targetAmount = Math.round(+request.baseAmount + interest);
+      // No installments generated — a single deposit is auto-created below
     } else {
       // Otros tipos: validar campos requeridos
       if (!request.numberOfInstallments || !request.baseAmount) {
@@ -119,7 +127,9 @@ export class SavingsManagerService {
     let dueDates: Date[] = [];
     let computedExpectedEndDate = request.expectedEndDate ?? null;
 
-    if (request.frequencyId && request.numberOfInstallments) {
+    if (request.progressionTypeId === ProgressionType.FixedDeposit && request.numberOfInstallments) {
+      computedExpectedEndDate = SavingsCalculatorHelper.addMonths(request.startDate, +request.numberOfInstallments);
+    } else if (request.frequencyId && request.numberOfInstallments) {
       const paymentDay = SavingsCalculatorHelper.getPaymentDayFromPeriod(request.paymentPeriod ?? 1);
       dueDates = SavingsCalculatorHelper.calculateMonthlyDueDates(
         request.startDate,
@@ -179,6 +189,20 @@ export class SavingsManagerService {
         const refreshed = await this.savingsGoalAccessService.getById(goalAccessModel.id, request.userId);
         return this.mapGoalAccessModelToModel(refreshed);
       }
+    }
+
+    // FixedDeposit: auto-create the initial deposit for the full principal
+    if (request.progressionTypeId === ProgressionType.FixedDeposit && request.baseAmount) {
+      await this.savingsDepositAccessService.create(new CreateSavingsDepositAccessRequest(
+        goalAccessModel.id,
+        +request.baseAmount,
+        request.startDate,
+        null,
+        null,
+      ));
+      await this.savingsGoalAccessService.updateCurrentAmount(goalAccessModel.id, request.userId, +request.baseAmount);
+      const refreshed = await this.savingsGoalAccessService.getById(goalAccessModel.id, request.userId);
+      return this.mapGoalAccessModelToModel(refreshed);
     }
 
     return this.mapGoalAccessModelToModel(goalAccessModel);
@@ -383,6 +407,10 @@ export class SavingsManagerService {
       throw new BadRequestException('Cannot add installments to Scheduled type');
     }
 
+    if (goal.progressionTypeId === 7) { // FixedDeposit — single deposit, no installments
+      throw new BadRequestException('Cannot add installments to FixedDeposit type');
+    }
+
     // 2. Get all current installments
     const currentInstallments = await this.savingsInstallmentAccessService.getBySavingsGoalId(request.savingsGoalId);
 
@@ -554,7 +582,7 @@ export class SavingsManagerService {
   // ==================== PRIVATE METHODS ====================
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
-    const validTypes = [1, 2, 3, 4, 5, 6]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled
+    const validTypes = [1, 2, 3, 4, 5, 6, 7]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit
     if (!validTypes.includes(progressionTypeId)) {
       throw new BadRequestException(`Invalid progression type: ${progressionTypeId}`);
     }

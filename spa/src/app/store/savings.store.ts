@@ -100,6 +100,16 @@ export const SavingsStore = signalStore(
     selectedGoalProgress: computed(() => {
       const goal = store.selectedGoal();
       if (!goal) return 0;
+      if (goal.progressionTypeId === ProgressionType.FixedDeposit) {
+        if (!goal.startDate || !goal.expectedEndDate) return 0;
+        const now = Date.now();
+        const start = new Date(goal.startDate).getTime();
+        const end = new Date(goal.expectedEndDate).getTime();
+        if (end <= start) return 100;
+        if (now >= end) return 100;
+        if (now <= start) return 0;
+        return Math.min(Math.round(((now - start) / (end - start)) * 100), 100);
+      }
       const base = goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
         ? goal.baseAmount * goal.numberOfInstallments
         : goal.targetAmount;

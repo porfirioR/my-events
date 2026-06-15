@@ -62,6 +62,9 @@
               <li>
                 <button (click)="setProgressionTypeFilter(ProgressionType.FreeForm)">{{ 'savingsGoals.freeForm' | translate }}</button>
               </li>
+              <li>
+                <button (click)="setProgressionTypeFilter(ProgressionType.FixedDeposit)">{{ 'savingsGoals.fixedDeposit' | translate }}</button>
+              </li>
             </ul>
           </div>
 
@@ -163,20 +166,34 @@
                         {{ formatCurrency(goal.currentAmount, goal.currencyId) }} / {{ formatCurrency(getProgressTarget(goal), goal.currencyId) }}
                       </span>
                       <span class="font-semibold" [ngClass]="getGoalStatusColor(goal.statusId)">
-                        {{ calculateProgress(goal.currentAmount, getProgressTarget(goal)) }}%
+                        {{ getGoalProgress(goal) }}%
                       </span>
                     </div>
-                    <progress
-                      class="progress w-full"
-                      [ngClass]="{
-                        'progress-success': goal.statusId === GoalStatus.Active,
-                        'progress-info': goal.statusId === GoalStatus.Completed,
-                        'progress-warning': goal.statusId === GoalStatus.Paused,
-                        'progress-error': goal.statusId === GoalStatus.Cancelled
-                      }"
-                      [value]="goal.currentAmount"
-                      [max]="getProgressTarget(goal)">
-                    </progress>
+                    @if (goal.progressionTypeId === ProgressionType.FixedDeposit) {
+                      <progress
+                        class="progress w-full"
+                        [ngClass]="{
+                          'progress-success': goal.statusId === GoalStatus.Active,
+                          'progress-info': goal.statusId === GoalStatus.Completed,
+                          'progress-warning': goal.statusId === GoalStatus.Paused,
+                          'progress-error': goal.statusId === GoalStatus.Cancelled
+                        }"
+                        [value]="getGoalProgress(goal)"
+                        [max]="100">
+                      </progress>
+                    } @else {
+                      <progress
+                        class="progress w-full"
+                        [ngClass]="{
+                          'progress-success': goal.statusId === GoalStatus.Active,
+                          'progress-info': goal.statusId === GoalStatus.Completed,
+                          'progress-warning': goal.statusId === GoalStatus.Paused,
+                          'progress-error': goal.statusId === GoalStatus.Cancelled
+                        }"
+                        [value]="goal.currentAmount"
+                        [max]="getProgressTarget(goal)">
+                      </progress>
+                    }
                   </div>
 
                   <!-- Metadata -->
