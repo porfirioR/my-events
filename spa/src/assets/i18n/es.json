@@ -646,7 +646,9 @@
     "fixedDepositInfo": "La fecha de vencimiento se calculará automáticamente a partir de la fecha de inicio y el plazo seleccionado.",
     "fixedDepositYieldInfo": "Resumen del Plazo Fijo",
     "fixedDepositInterest": "Interés",
-    "fixedDepositTotal": "Total al vencimiento"
+    "fixedDepositTotal": "Total al vencimiento",
+    "fixedDepositExpectedAmountLabel": "Monto esperado al vencimiento",
+    "fixedDepositExpectedAmountDescription": "Calculado automáticamente. Puede modificarlo si el banco indica un monto diferente."
   },
   "savingsFrequency": {
     "monthly": "Mensual"

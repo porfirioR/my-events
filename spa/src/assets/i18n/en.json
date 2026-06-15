@@ -647,7 +647,9 @@
     "fixedDepositInfo": "Maturity date will be automatically calculated from the start date and the selected term.",
     "fixedDepositYieldInfo": "Fixed Deposit Summary",
     "fixedDepositInterest": "Interest",
-    "fixedDepositTotal": "Total at maturity"
+    "fixedDepositTotal": "Total at maturity",
+    "fixedDepositExpectedAmountLabel": "Expected amount at maturity",
+    "fixedDepositExpectedAmountDescription": "Auto-calculated. You can edit it if your bank quotes a different amount."
   },
   "savingsFrequency": {
     "monthly": "Monthly"

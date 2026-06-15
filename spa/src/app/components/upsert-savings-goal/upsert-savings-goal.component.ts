@@ -265,7 +265,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
 
     // Restore the stored targetAmount after recalculation so the user's
     // saved value (possibly adjusted to match their bank) is preserved on load.
-    if (goal.progressionTypeId === ProgressionType.Scheduled && goal.targetAmount) {
+    if ((goal.progressionTypeId === ProgressionType.Scheduled || goal.progressionTypeId === ProgressionType.FixedDeposit) && goal.targetAmount) {
       this.formGroup.controls.targetAmount.setValue(goal.targetAmount, { emitEvent: false });
     }
   }
@@ -331,6 +331,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         this.formGroup.controls.paymentPeriod.setValidators([Validators.required]);
       } else if (typeId === ProgressionType.FixedDeposit) {
         this.formGroup.controls.annualRatePercentage.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
+        this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
       }
     } else if (typeId !== null) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
@@ -441,6 +442,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
         const yi = this.calculateFixedDepositYield(+baseAmount, +numberOfInstallments, annualRate);
         this.yieldInfo.set(yi);
         this.calculatedTargetAmount.set(yi.totalAmount);
+        // Pre-fill targetAmount (user can override if bank quotes a different amount)
+        this.formGroup.controls.targetAmount.setValue(yi.totalAmount, { emitEvent: false });
       } else {
         this.yieldInfo.set(null);
       }
@@ -507,7 +510,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
       finalTargetAmount = this.calculatedTargetAmount() || 0;
     } else if (typeId === ProgressionType.FixedDeposit) {
       finalBaseAmount = values.baseAmount!;
-      finalTargetAmount = this.calculatedTargetAmount() || 0;
+      // Use user-edited targetAmount (pre-filled with calculated value, but bank may differ)
+      finalTargetAmount = values.targetAmount || this.calculatedTargetAmount() || 0;
     } else {
       finalBaseAmount = this.calculatedBaseAmount() || undefined;
       finalTargetAmount = this.calculatedTargetAmount() || 0;

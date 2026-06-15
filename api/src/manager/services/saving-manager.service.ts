@@ -70,8 +70,13 @@ export class SavingsManagerService {
       if (!request.baseAmount || !request.numberOfInstallments || !request.annualRatePercentage) {
         throw new BadRequestException('baseAmount, numberOfInstallments (term in months), and annualRatePercentage are required for FixedDeposit type');
       }
-      const interest = +request.baseAmount * (request.annualRatePercentage / 100) * (+request.numberOfInstallments / 12);
-      targetAmount = Math.round(+request.baseAmount + interest);
+      // Use user-provided targetAmount if given (bank may quote a different amount than calculated)
+      if (request.targetAmount) {
+        targetAmount = request.targetAmount;
+      } else {
+        const interest = +request.baseAmount * (request.annualRatePercentage / 100) * (+request.numberOfInstallments / 12);
+        targetAmount = Math.round(+request.baseAmount + interest);
+      }
       // No installments generated — a single deposit is auto-created below
     } else {
       // Otros tipos: validar campos requeridos

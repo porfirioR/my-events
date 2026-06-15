@@ -235,6 +235,17 @@
                 </div>
               </div>
             </div>
+
+            <!-- Monto final editable (el banco puede indicar un monto distinto al calculado) -->
+            <app-text
+              formControlName="targetAmount"
+              type="number"
+              [label]="'upsertSavingsGoal.fixedDepositExpectedAmountLabel' | translate"
+              id="targetAmount"
+              name="targetAmount"
+              [description]="'upsertSavingsGoal.fixedDepositExpectedAmountDescription' | translate"
+              [disabled]="saving"
+            />
           }
 
           <!-- Ascending/Descending/Random: Mostrar Increment Amount -->
