@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   ISavingsGoalAccessService,
   ISavingsInstallmentAccessService,
@@ -218,7 +218,8 @@ export class SavingsManagerService {
    */
   public getSavingsGoalById = async (id: number, userId: number): Promise<SavingsGoalModel> => {
     const accessModel = await this.savingsGoalAccessService.getById(id, userId);
-    return this.mapGoalAccessModelToModel(accessModel);
+    const matured = await this.autoCompleteIfMatured(accessModel, userId);
+    return this.mapGoalAccessModelToModel(matured);
   };
 
   /**
@@ -226,7 +227,8 @@ export class SavingsManagerService {
    */
   public getAllSavingsGoals = async (userId: number): Promise<SavingsGoalModel[]> => {
     const accessModelList = await this.savingsGoalAccessService.getAll(userId);
-    return accessModelList.map(this.mapGoalAccessModelToModel);
+    const resolved = await Promise.all(accessModelList.map(g => this.autoCompleteIfMatured(g, userId)));
+    return resolved.map(this.mapGoalAccessModelToModel);
   };
 
   /**
@@ -586,6 +588,19 @@ export class SavingsManagerService {
 
   // ==================== PRIVATE METHODS ====================
 
+  private autoCompleteIfMatured = async (goal: SavingsGoalAccessModel, userId: number): Promise<SavingsGoalAccessModel> => {
+    if (
+      goal.progressionTypeId !== ProgressionType.FixedDeposit ||
+      goal.statusId !== 1 ||
+      !goal.expectedEndDate ||
+      new Date(goal.expectedEndDate) > new Date()
+    ) {
+      return goal;
+    }
+    await this.savingsGoalAccessService.markAsCompleted(goal.id, userId);
+    return { ...goal, statusId: 2, completedDate: new Date() };
+  };
+
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
     const validTypes = [1, 2, 3, 4, 5, 6, 7]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit
     if (!validTypes.includes(progressionTypeId)) {
@@ -616,6 +631,7 @@ export class SavingsManagerService {
       accessModel.frequencyId,
       accessModel.annualRatePercentage,
       accessModel.paymentPeriod,
+      accessModel.paidInstallmentsCount,
     );
   };
 

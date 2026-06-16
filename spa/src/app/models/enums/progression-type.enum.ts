@@ -41,11 +41,11 @@ export const ProgressionTypeIcons: Record<ProgressionType, string> = {
 export const ProgressionTypeBadgeColors: Record<ProgressionType, string> = {
   [ProgressionType.Fixed]: 'badge-primary',
   [ProgressionType.Ascending]: 'badge-success',
-  [ProgressionType.Descending]: 'badge-warning',
+  [ProgressionType.Descending]: 'badge-error',
   [ProgressionType.Random]: 'badge-secondary',
   [ProgressionType.FreeForm]: 'badge-accent',
   [ProgressionType.Scheduled]: 'badge-info',
-  [ProgressionType.FixedDeposit]: 'badge-neutral',
+  [ProgressionType.FixedDeposit]: 'badge-warning',
 };
 
 

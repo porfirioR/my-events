@@ -20,5 +20,6 @@ export class SavingsGoalModel {
     public readonly frequencyId: number | null,
     public readonly annualRatePercentage: number | null,
     public readonly paymentPeriod: number | null,
+    public readonly paidInstallmentsCount: number = 0,
   ) {}
 }

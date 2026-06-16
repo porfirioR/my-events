@@ -568,6 +568,7 @@
     "dueOn": "Vence el",
     "monthlyAmount": "Cuota mensual",
     "termMonthsLabel": "Plazo",
+    "month": "mes",
     "months": "meses",
     "alreadyPaid": "Ya depositado",
     "totalToDeposit": "Total a depositar",

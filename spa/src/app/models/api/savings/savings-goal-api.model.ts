@@ -19,4 +19,5 @@ export interface SavingsGoalApiModel {
   frequencyId: number | null;
   annualRatePercentage: number | null;
   paymentPeriod: number | null;
+  paidInstallmentsCount: number;
 }

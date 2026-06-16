@@ -169,31 +169,17 @@
                         {{ getGoalProgress(goal) }}%
                       </span>
                     </div>
-                    @if (goal.progressionTypeId === ProgressionType.FixedDeposit) {
-                      <progress
-                        class="progress w-full"
-                        [ngClass]="{
-                          'progress-success': goal.statusId === GoalStatus.Active,
-                          'progress-info': goal.statusId === GoalStatus.Completed,
-                          'progress-warning': goal.statusId === GoalStatus.Paused,
-                          'progress-error': goal.statusId === GoalStatus.Cancelled
-                        }"
-                        [value]="getGoalProgress(goal)"
-                        [max]="100">
-                      </progress>
-                    } @else {
-                      <progress
-                        class="progress w-full"
-                        [ngClass]="{
-                          'progress-success': goal.statusId === GoalStatus.Active,
-                          'progress-info': goal.statusId === GoalStatus.Completed,
-                          'progress-warning': goal.statusId === GoalStatus.Paused,
-                          'progress-error': goal.statusId === GoalStatus.Cancelled
-                        }"
-                        [value]="goal.currentAmount"
-                        [max]="getProgressTarget(goal)">
-                      </progress>
-                    }
+                    <progress
+                      class="progress w-full"
+                      [ngClass]="{
+                        'progress-success': goal.statusId === GoalStatus.Active,
+                        'progress-info': goal.statusId === GoalStatus.Completed,
+                        'progress-warning': goal.statusId === GoalStatus.Paused,
+                        'progress-error': goal.statusId === GoalStatus.Cancelled
+                      }"
+                      [value]="goal.currentAmount"
+                      [max]="getProgressTarget(goal)">
+                    </progress>
                   </div>
 
                   <!-- Metadata -->
@@ -215,11 +201,17 @@
                       {{ getProgressionTypeLabel(goal.progressionTypeId) | translate }}
                     </span>
 
-                    <!-- Installments Info -->
-                    @if (goal.numberOfInstallments) {
+                    <!-- Installments / Term Info -->
+                    @if (goal.numberOfInstallments && goal.progressionTypeId !== ProgressionType.FixedDeposit) {
                       <span class="text-xs text-base-content/70">
                         <i class="fas fa-list-ol mr-1"></i>
-                        {{ goal.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
+                        {{ goal.paidInstallmentsCount }}/{{ goal.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
+                      </span>
+                    }
+                    @if (goal.numberOfInstallments && goal.progressionTypeId === ProgressionType.FixedDeposit) {
+                      <span class="badge badge-sm badge-soft badge-warning gap-1">
+                        <i class="fas fa-clock"></i>
+                        {{ goal.numberOfInstallments }} {{ (goal.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
                       </span>
                     }
 
