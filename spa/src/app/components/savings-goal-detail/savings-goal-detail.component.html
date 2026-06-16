@@ -60,10 +60,16 @@
         {{ getProgressionTypeLabel(g.progressionTypeId) | translate }}
       </span>
 
-      @if (g.numberOfInstallments) {
+      @if (g.numberOfInstallments && !isFixedDeposit()) {
       <span class="text-sm text-base-content/70">
         <i class="fas fa-list-ol mr-1"></i>
-        {{ g.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
+        {{ paidInstallments().length }}/{{ g.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
+      </span>
+      }
+      @if (g.numberOfInstallments && isFixedDeposit()) {
+      <span class="badge badge-sm badge-soft badge-warning gap-1">
+        <i class="fas fa-clock"></i>
+        {{ g.numberOfInstallments }} {{ (g.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
       </span>
       }
     </div>
@@ -82,7 +88,9 @@
             'progress-info': g.statusId === GoalStatus.Completed,
             'progress-warning': g.statusId === GoalStatus.Paused,
             'progress-error': g.statusId === GoalStatus.Cancelled
-          }" [value]="g.currentAmount" [max]="isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount">
+          }"
+          [value]="g.currentAmount"
+          [max]="isFixedDeposit() ? (g.baseAmount ?? g.targetAmount) : isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount">
       </progress>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mt-2 text-sm">
@@ -92,7 +100,7 @@
         </div>
         <div>
           <span class="text-base-content/70">{{ 'savingsGoalDetail.target' | translate }}</span>
-          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount, g.currencyId) }}</span>
+          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(isFixedDeposit() ? (g.baseAmount ?? g.targetAmount) : isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount, g.currencyId) }}</span>
         </div>
         <div>
           <span class="text-base-content/70">{{ 'savingsGoalDetail.remaining' | translate }}</span>
@@ -177,6 +185,56 @@
       </div>
     }
 
+    <!-- Fixed Deposit Summary -->
+    @if (isFixedDeposit()) {
+      <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mt-4">
+        <h3 class="font-semibold text-base-content mb-3 flex items-center gap-2">
+          <i class="fas fa-vault text-info"></i>
+          {{ 'savingsGoalDetail.fixedDepositSummary' | translate }}
+        </h3>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+          <div>
+            <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.fixedDepositPrincipal' | translate }}</p>
+            <p class="font-semibold text-base-content">{{ formatCurrency(g.baseAmount ?? 0, g.currencyId) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.termMonthsLabel' | translate }}</p>
+            <p class="font-semibold text-base-content">{{ g.numberOfInstallments }} {{ 'savingsGoalDetail.months' | translate }}</p>
+          </div>
+          @if (g.annualRatePercentage) {
+          <div>
+            <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.annualRateLabel' | translate }}</p>
+            <p class="font-semibold text-success">{{ g.annualRatePercentage }}%</p>
+          </div>
+          }
+          @if (g.expectedEndDate) {
+          <div>
+            <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.maturityDate' | translate }}</p>
+            <p class="font-semibold text-info">{{ getFormattedDate(g.expectedEndDate) }}</p>
+          </div>
+          }
+        </div>
+
+        @if (fixedDepositMaturity()) {
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class="bg-base-200 dark:bg-base-300 rounded-lg p-3">
+              <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.fixedDepositPrincipal' | translate }}</p>
+              <p class="font-semibold text-base-content">{{ formatCurrency(fixedDepositMaturity()!.principal, g.currencyId) }}</p>
+            </div>
+            <div class="bg-success/10 border border-success/30 rounded-lg p-3">
+              <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.fixedDepositInterest' | translate }}</p>
+              <p class="font-semibold text-success">+ {{ formatCurrency(fixedDepositMaturity()!.interest, g.currencyId) }}</p>
+            </div>
+            <div class="col-span-2 bg-info/10 border-2 border-info/40 rounded-lg p-3 text-center">
+              <p class="text-xs text-base-content/60 mb-1">{{ 'savingsGoalDetail.fixedDepositTotalAtMaturity' | translate }}</p>
+              <p class="font-bold text-2xl text-info">{{ formatCurrency(fixedDepositMaturity()!.totalAmount, g.currencyId) }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
     <!-- Metadata -->
     <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-base-content/70 ml-4">
       <div>
@@ -202,8 +260,8 @@
   <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg">
     <!-- Tab Headers -->
     <div role="tablist" class="tabs tabs-bordered px-6 pt-4">
-      <!-- ✅ Solo mostrar tab de Installments si NO es FreeForm -->
-      @if (!isFreeForm()) {
+      <!-- Solo mostrar tab de Installments si NO es FreeForm ni FixedDeposit -->
+      @if (!isFreeForm() && !isFixedDeposit()) {
         <button role="tab" class="tab" [class.tab-active]="activeTab() === 'installments'"
           (click)="setActiveTab('installments')">
           <i class="fas fa-list-ol mr-2"></i>

@@ -60,6 +60,7 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   // Programmed savings
   protected isProgrammedSavings = computed(() => this.goal()?.progressionTypeId === ProgressionType.Scheduled);
+  protected isFixedDeposit = computed(() => this.goal()?.progressionTypeId === ProgressionType.FixedDeposit);
   protected nextInstallment = computed(() => this.pendingInstallments()[0] ?? null);
   protected programmedYield = computed(() => {
     const goal = this.goal();
@@ -69,6 +70,19 @@ export class SavingsGoalDetailComponent implements OnInit {
       totalDeposited,
       yieldAmount: goal.targetAmount - totalDeposited,
       totalAmount: goal.targetAmount,
+    };
+  });
+
+  protected fixedDepositMaturity = computed(() => {
+    const goal = this.goal();
+    if (goal?.progressionTypeId !== ProgressionType.FixedDeposit || !goal.baseAmount || !goal.annualRatePercentage || !goal.numberOfInstallments) return null;
+    const principal = goal.baseAmount;
+    const interest = Math.round(principal * (goal.annualRatePercentage / 100) * (goal.numberOfInstallments / 12));
+    return {
+      principal,
+      interest,
+      totalAmount: goal.targetAmount,
+      termMonths: goal.numberOfInstallments,
     };
   });
 
@@ -99,6 +113,7 @@ export class SavingsGoalDetailComponent implements OnInit {
       goal.progressionTypeId !== ProgressionType.Descending &&
       goal.progressionTypeId !== ProgressionType.FreeForm &&
       goal.progressionTypeId !== ProgressionType.Scheduled &&
+      goal.progressionTypeId !== ProgressionType.FixedDeposit &&
       goal.statusId === GoalStatus.Active
     );
   });
@@ -122,7 +137,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     });
 
     effect(() => {
-      if (this.isFreeForm() && this.activeTab() === 'installments') {
+      if ((this.isFreeForm() || this.isFixedDeposit()) && this.activeTab() === 'installments') {
         this.setActiveTab('deposits');
       }
     });

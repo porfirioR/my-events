@@ -41,6 +41,9 @@ export class SavingsCalculatorHelper {
       case ProgressionType.FreeForm:
         throw new Error('FreeForm type does not calculate target amount automatically');
 
+      case ProgressionType.FixedDeposit:
+        return baseAmount;
+
       default:
         throw new Error(`Invalid progression type: ${progressionTypeId}`);
     }
@@ -82,6 +85,17 @@ export class SavingsCalculatorHelper {
   static canAddInstallments(progressionTypeId: number): boolean {
     return progressionTypeId !== ProgressionType.Descending &&
       progressionTypeId !== ProgressionType.FreeForm &&
-      progressionTypeId !== ProgressionType.Scheduled;
+      progressionTypeId !== ProgressionType.Scheduled &&
+      progressionTypeId !== ProgressionType.FixedDeposit;
+  }
+
+  static calculateTimeElapsedProgress(startDate: string | Date, endDate: string | Date): number {
+    const now = Date.now();
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+    if (end <= start) return 100;
+    if (now >= end) return 100;
+    if (now <= start) return 0;
+    return Math.min(Math.round(((now - start) / (end - start)) * 100), 100);
   }
 }

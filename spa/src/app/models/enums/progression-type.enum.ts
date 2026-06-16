@@ -5,6 +5,7 @@ export enum ProgressionType {
   Random = 4,
   FreeForm = 5,
   Scheduled = 6,
+  FixedDeposit = 7,
 }
 
 export const ProgressionTypeLabels: Record<ProgressionType, string> = {
@@ -14,6 +15,7 @@ export const ProgressionTypeLabels: Record<ProgressionType, string> = {
   [ProgressionType.Random]: 'Random',
   [ProgressionType.FreeForm]: 'Free Form',
   [ProgressionType.Scheduled]: 'Scheduled Savings',
+  [ProgressionType.FixedDeposit]: 'Fixed Deposit',
 };
 
 export const ProgressionTypeDescriptions: Record<ProgressionType, string> = {
@@ -23,6 +25,7 @@ export const ProgressionTypeDescriptions: Record<ProgressionType, string> = {
   [ProgressionType.Random]: 'Amounts are shuffled randomly',
   [ProgressionType.FreeForm]: 'No predefined installments, deposit freely',
   [ProgressionType.Scheduled]: 'Fixed monthly deposits with interest yield at maturity',
+  [ProgressionType.FixedDeposit]: 'Single lump-sum deposit locked for a fixed term with simple interest',
 };
 
 export const ProgressionTypeIcons: Record<ProgressionType, string> = {
@@ -32,15 +35,17 @@ export const ProgressionTypeIcons: Record<ProgressionType, string> = {
   [ProgressionType.Random]: 'fa-shuffle',
   [ProgressionType.FreeForm]: 'fa-hand-holding-dollar',
   [ProgressionType.Scheduled]: 'fa-calendar-check',
+  [ProgressionType.FixedDeposit]: 'fa-vault',
 };
 
 export const ProgressionTypeBadgeColors: Record<ProgressionType, string> = {
   [ProgressionType.Fixed]: 'badge-primary',
   [ProgressionType.Ascending]: 'badge-success',
-  [ProgressionType.Descending]: 'badge-warning',
+  [ProgressionType.Descending]: 'badge-error',
   [ProgressionType.Random]: 'badge-secondary',
   [ProgressionType.FreeForm]: 'badge-accent',
   [ProgressionType.Scheduled]: 'badge-info',
+  [ProgressionType.FixedDeposit]: 'badge-warning',
 };
 
 

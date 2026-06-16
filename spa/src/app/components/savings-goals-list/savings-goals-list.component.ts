@@ -107,6 +107,9 @@ export class SavingsGoalsListComponent implements OnInit {
   protected formatCurrency = this.formatterService.formatCurrency;
 
   protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null }): number {
+    if (goal.progressionTypeId === ProgressionType.FixedDeposit) {
+      return goal.baseAmount ?? goal.targetAmount;
+    }
     if (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments) {
       return goal.baseAmount * goal.numberOfInstallments;
     }
@@ -116,5 +119,9 @@ export class SavingsGoalsListComponent implements OnInit {
   protected calculateProgress(current: number, target: number): number {
     if (target === 0) return 0;
     return Math.min(Math.round((current / target) * 100), 100);
+  }
+
+  protected getGoalProgress(goal: any): number {
+    return this.calculateProgress(goal.currentAmount, this.getProgressTarget(goal));
   }
 }

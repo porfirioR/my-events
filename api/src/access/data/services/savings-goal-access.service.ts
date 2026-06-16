@@ -41,7 +41,9 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       if (error.code === 'PGRST116') throw new NotFoundException(`Savings goal with id ${id} not found`);
       throw new InternalServerErrorException(error.message);
     }
-    return this.mapEntityToAccessModel(data);
+
+    const paidCount = await this.getPaidInstallmentsCount(id);
+    return this.mapEntityToAccessModel(data, paidCount);
   };
 
   public getAll = async (userId: number): Promise<SavingsGoalAccessModel[]> => {
@@ -52,7 +54,14 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       .order(DatabaseColumns.DateCreated, { ascending: false });
 
     if (error) throw new InternalServerErrorException(error.message);
-    return data?.map(this.mapEntityToAccessModel) || [];
+    if (!data?.length) return [];
+
+    const goalIds = data.map(g => g.id);
+    const paidCountMap = await this.getPaidInstallmentsCountMap(goalIds);
+
+    return data.map(entity =>
+      this.mapEntityToAccessModel(entity, paidCountMap.get(entity.id) ?? 0)
+    );
   };
 
   public getByStatus = async (userId: number, statusId: number): Promise<SavingsGoalAccessModel[]> => {
@@ -180,9 +189,35 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     };
   };
 
+  private getPaidInstallmentsCount = async (goalId: number): Promise<number> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.SavingsInstallments)
+      .select('id')
+      .eq('savingsgoalid', goalId)
+      .eq('statusid', 2);
+    if (error) return 0;
+    return data?.length ?? 0;
+  };
+
+  private getPaidInstallmentsCountMap = async (goalIds: number[]): Promise<Map<number, number>> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.SavingsInstallments)
+      .select('savingsgoalid')
+      .in('savingsgoalid', goalIds)
+      .eq('statusid', 2);
+
+    const map = new Map<number, number>();
+    if (error || !data) return map;
+    data.forEach(row => {
+      map.set(row.savingsgoalid, (map.get(row.savingsgoalid) ?? 0) + 1);
+    });
+    return map;
+  };
+
   // Mappers privados
   private mapEntityToAccessModel = (
     entity: SavingsGoalEntity,
+    paidInstallmentsCount = 0,
   ): SavingsGoalAccessModel => {
     return new SavingsGoalAccessModel(
       entity.id,
@@ -205,6 +240,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       entity.frequencyid ?? null,
       entity.annual_rate_percentage ?? null,
       entity.payment_period ?? null,
+      paidInstallmentsCount,
     );
   };
 

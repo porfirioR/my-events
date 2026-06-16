@@ -100,9 +100,11 @@ export const SavingsStore = signalStore(
     selectedGoalProgress: computed(() => {
       const goal = store.selectedGoal();
       if (!goal) return 0;
-      const base = goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
-        ? goal.baseAmount * goal.numberOfInstallments
-        : goal.targetAmount;
+      const base = goal.progressionTypeId === ProgressionType.FixedDeposit
+        ? (goal.baseAmount ?? goal.targetAmount)
+        : goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
+          ? goal.baseAmount * goal.numberOfInstallments
+          : goal.targetAmount;
       if (base === 0) return 0;
       return Math.min(Math.round((goal.currentAmount / base) * 100), 100);
     }),
@@ -111,9 +113,11 @@ export const SavingsStore = signalStore(
     selectedGoalRemaining: computed(() => {
       const goal = store.selectedGoal();
       if (!goal) return 0;
-      const base = goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
-        ? goal.baseAmount * goal.numberOfInstallments
-        : goal.targetAmount;
+      const base = goal.progressionTypeId === ProgressionType.FixedDeposit
+        ? (goal.baseAmount ?? goal.targetAmount)
+        : goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
+          ? goal.baseAmount * goal.numberOfInstallments
+          : goal.targetAmount;
       return Math.max(base - goal.currentAmount, 0);
     }),
 

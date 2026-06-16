@@ -785,6 +785,10 @@ ON CONFLICT (id) DO NOTHING;
 
 ALTER TABLE savingsgoals DROP CONSTRAINT IF EXISTS check_increment_for_progression;
 ALTER TABLE savingsgoals ADD CONSTRAINT check_increment_for_progression CHECK (
-    (progressiontypeid IN (1, 5, 6) AND incrementamount IS NULL) OR
+    (progressiontypeid IN (1, 5, 6, 7) AND incrementamount IS NULL) OR
     (progressiontypeid IN (2, 3, 4) AND incrementamount IS NOT NULL AND incrementamount > 0)
 );
+
+INSERT INTO savingsprogressiontypes (id, name, description) VALUES
+(7, 'FixedDeposit', 'Fixed deposit (Plazo Fijo) - single lump-sum deposit locked for a fixed term with simple interest at maturity')
+ON CONFLICT (id) DO NOTHING;

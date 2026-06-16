@@ -113,6 +113,15 @@
               [list]="termSelectList()"
               [disabled]="saving"
             />
+          } @else if (isFixedDeposit()) {
+            <app-select-input
+              formControlName="numberOfInstallments"
+              id="numberOfInstallments"
+              name="numberOfInstallments"
+              [label]="'upsertSavingsGoal.fixedDepositTermLabel' | translate"
+              [list]="fixedDepositTermList"
+              [disabled]="saving"
+            />
           } @else {
             <app-text
               formControlName="numberOfInstallments"
@@ -125,15 +134,15 @@
             />
           }
 
-          <!-- Fixed: Mostrar Base Amount -->
+          <!-- Fixed / Scheduled / FixedDeposit: Mostrar Base Amount -->
           @if (showBaseAmountField()) {
             <app-text
               formControlName="baseAmount"
               type="number"
-              [label]="'upsertSavingsGoal.amountPerInstallment' | translate"
+              [label]="(isFixedDeposit() ? 'upsertSavingsGoal.fixedDepositPrincipalLabel' : 'upsertSavingsGoal.amountPerInstallment') | translate"
               id="baseAmount"
               name="baseAmount"
-              [description]="'upsertSavingsGoal.sameAmountDescription' | translate"
+              [description]="(isFixedDeposit() ? 'upsertSavingsGoal.fixedDepositPrincipalDescription' : 'upsertSavingsGoal.sameAmountDescription') | translate"
               [disabled]="saving"
             />
           }
@@ -151,8 +160,8 @@
             />
           }
 
-          <!-- Ahorro Programado: tasa de interés anual dinámica -->
-          @if (isProgrammedSavings()) {
+          <!-- Ahorro Programado / Plazo Fijo: tasa de interés anual -->
+          @if (isProgrammedSavings() || isFixedDeposit()) {
             <app-text
               formControlName="annualRatePercentage"
               type="number"
@@ -169,6 +178,14 @@
             <div class="alert alert-info alert-soft text-xs mt-1">
               <i class="fas fa-calendar-alt"></i>
               <span>{{ 'upsertSavingsGoal.programmedSavingsInfo' | translate }}</span>
+            </div>
+          }
+
+          <!-- Plazo Fijo: aviso de vencimiento automático -->
+          @if (isFixedDeposit()) {
+            <div class="alert alert-info alert-soft text-xs mt-1">
+              <i class="fas fa-vault"></i>
+              <span>{{ 'upsertSavingsGoal.fixedDepositInfo' | translate }}</span>
             </div>
           }
 
@@ -194,6 +211,41 @@
                 </div>
               </div>
             </div>
+          }
+
+          <!-- Rendimiento proyectado para plazo fijo -->
+          @if (isFixedDeposit() && yieldInfo()) {
+            <div class="alert alert-success alert-soft border-2">
+              <i class="fas fa-vault text-xl"></i>
+              <div class="w-full">
+                <h4 class="font-semibold">{{ 'upsertSavingsGoal.fixedDepositYieldInfo' | translate }}</h4>
+                <div class="grid grid-cols-3 gap-2 mt-1 text-sm">
+                  <div>
+                    <p class="opacity-70 text-xs">{{ 'upsertSavingsGoal.fixedDepositPrincipalLabel' | translate }}</p>
+                    <p class="font-semibold">{{ formatCurrency(yieldInfo()!.totalDeposited, formGroup.value.currencyId) }}</p>
+                  </div>
+                  <div>
+                    <p class="opacity-70 text-xs">{{ 'upsertSavingsGoal.fixedDepositInterest' | translate }}</p>
+                    <p class="font-semibold text-success">+ {{ formatCurrency(yieldInfo()!.yieldAmount, formGroup.value.currencyId) }}</p>
+                  </div>
+                  <div>
+                    <p class="opacity-70 text-xs">{{ 'upsertSavingsGoal.fixedDepositTotal' | translate }}</p>
+                    <p class="font-bold text-lg">{{ formatCurrency(yieldInfo()!.totalAmount, formGroup.value.currencyId) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Monto final editable (el banco puede indicar un monto distinto al calculado) -->
+            <app-text
+              formControlName="targetAmount"
+              type="number"
+              [label]="'upsertSavingsGoal.fixedDepositExpectedAmountLabel' | translate"
+              id="targetAmount"
+              name="targetAmount"
+              [description]="'upsertSavingsGoal.fixedDepositExpectedAmountDescription' | translate"
+              [disabled]="saving"
+            />
           }
 
           <!-- Ascending/Descending/Random: Mostrar Increment Amount -->
@@ -233,8 +285,8 @@
             />
           }
 
-          <!-- Para otros tipos: mostrar target amount calculado (solo lectura) -->
-          @if (!isProgrammedSavings() && calculatedTargetAmount() !== null) {
+          <!-- Para otros tipos (no Programado ni Plazo Fijo): mostrar target amount calculado (solo lectura) -->
+          @if (!isProgrammedSavings() && !isFixedDeposit() && calculatedTargetAmount() !== null) {
             <div class="alert alert-success shadow-lg alert-soft">
               <div class="flex items-center gap-3">
                 <i class="fas fa-piggy-bank text-2xl"></i>
@@ -254,8 +306,8 @@
         </div>
       }
 
-      <!-- Fecha esperada de finalización (no aplica a ahorro programado, se calcula automáticamente) -->
-      @if (!isProgrammedSavings()) {
+      <!-- Fecha esperada de finalización (no aplica a ahorro programado ni plazo fijo, se calculan automáticamente) -->
+      @if (!isProgrammedSavings() && !isFixedDeposit()) {
         <app-date-input
           formControlName="expectedEndDate"
           [label]="'upsertSavingsGoal.expectedEndDate' | translate"
