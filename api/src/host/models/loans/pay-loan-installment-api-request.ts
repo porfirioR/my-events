@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class PayLoanInstallmentApiRequest {
   @IsNumber()
@@ -8,4 +8,8 @@ export class PayLoanInstallmentApiRequest {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsDateString()
+  paymentDate?: string;
 }
