@@ -7,4 +7,5 @@ export { FormatterHelperService } from './helpers/formatter-helper.service';
 export { ThemeService } from './theme.service';
 export { ConfigurationApiService } from './api/configurations-api.service';
 export { UserApiService } from './api/user-api.service';
-export { AppTitleStrategy } from './shared/index'
+export { AppTitleStrategy } from './shared/index';
+export { DashboardApiService } from './api/dashboard-api.service';

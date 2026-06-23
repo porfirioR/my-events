@@ -62,10 +62,8 @@ export class DashboardManagerService extends BaseAccessService {
         .eq(DatabaseColumns.UserId, userId)
         .eq(DatabaseColumns.IsSettled, true),
     ]);
-    const myCreatedCount = myCreated.count ?? 0;
     return {
-      total: myCreatedCount,
-      myCreated: myCreatedCount,
+      total: myCreated.count ?? 0,
       unsettled: unsettled.count ?? 0,
       settled: settled.count ?? 0,
     };

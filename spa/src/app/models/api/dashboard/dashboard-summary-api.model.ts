@@ -20,7 +20,6 @@ export class DashboardSummaryApiModel {
     },
     public transactions: {
       total: number;
-      myCreated: number;
       unsettled: number;
       settled: number;
     },

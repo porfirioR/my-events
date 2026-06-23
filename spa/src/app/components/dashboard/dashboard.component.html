@@ -4,7 +4,7 @@
   <section aria-labelledby="metrics-heading" class="mb-8 mt-6">
     <h2 id="metrics-heading" class="sr-only">{{ 'dashboard.metricsHeading' | translate }}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      
+
       <!-- Collaborators Card -->
       <article [routerLink]="['collaborators']" class="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
         <header role="button" class="flex items-center justify-between">
@@ -18,8 +18,8 @@
         </header>
         <footer class="mt-4">
           <span class="text-blue-100 dark:text-blue-50 text-xs">
-            {{activeCollaborators().length}} {{ 'collaborators.active' | translate }}, 
-            {{inactiveCollaborators().length}} {{ 'collaborators.inactive' | translate }}
+            {{activeCollaborators()}} {{ 'collaborators.active' | translate }},
+            {{inactiveCollaborators()}} {{ 'collaborators.inactive' | translate }}
           </span>
         </footer>
       </article>
@@ -29,7 +29,7 @@
         <header class="flex items-center justify-between">
           <div>
             <h3 class="text-green-100 dark:text-green-50 text-sm font-medium">{{ 'dashboard.transactions' | translate }}</h3>
-            <data value="12" class="text-3xl font-bold mt-1 text-white">{{myCreatedTransactions().length}}</data>
+            <data [value]="totalTransactions()" class="text-3xl font-bold mt-1 text-white">{{totalTransactions()}}</data>
           </div>
           <figure class="bg-green-400 bg-opacity-30 dark:bg-green-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
             <i class="fas fa-dollar-sign text-xl text-white" aria-hidden="true"></i>
@@ -37,8 +37,8 @@
         </header>
         <footer class="mt-4">
           <span class="text-green-100 dark:text-green-50 text-xs">
-            {{unsettledTransactions().length}} {{ 'dashboard.unsettled' | translate }},
-            {{settledTransactions().length}} {{ 'dashboard.settled' | translate }}
+            {{unsettledTransactions()}} {{ 'dashboard.unsettled' | translate }},
+            {{settledTransactions()}} {{ 'dashboard.settled' | translate }}
           </span>
         </footer>
       </article>
@@ -56,7 +56,7 @@
         </header>
         <footer class="mt-4">
           <span class="text-emerald-100 dark:text-emerald-50 text-xs">
-            {{savingsStats().active}} {{ 'dashboard.active' | translate }}, 
+            {{savingsStats().active}} {{ 'dashboard.active' | translate }},
             {{savingsStats().completed}} {{ 'dashboard.completed' | translate }}
           </span>
         </footer>
@@ -94,7 +94,7 @@
         </header>
         <footer class="mt-4">
           <span class="text-orange-100 dark:text-orange-50 text-xs">
-            {{travelStats().active}} {{ 'dashboard.active' | translate }}, 
+            {{travelStats().active}} {{ 'dashboard.active' | translate }},
             {{travelStats().finalized}} {{ 'dashboard.finalized' | translate }}
           </span>
         </footer>
@@ -193,9 +193,9 @@
                           <div class="w-full bg-base-300 dark:bg-base-100 rounded-full h-2">
                             <div class="bg-gradient-to-r from-success to-success h-2 rounded-full transition-all duration-300"
                               [style.width.%]="calculateProgress(goal)"
-                              role="progressbar" 
-                              [attr.aria-valuenow]="calculateProgress(goal)" 
-                              aria-valuemin="0" 
+                              role="progressbar"
+                              [attr.aria-valuenow]="calculateProgress(goal)"
+                              aria-valuemin="0"
                               aria-valuemax="100">
                             </div>
                           </div>
@@ -211,7 +211,7 @@
                 </ul>
 
                 @if (savingsStats().active > 3) {
-                  <button 
+                  <button
                     type="button"
                     [routerLink]="['savings']"
                     class="w-full mt-4 py-2 text-sm text-primary hover:text-primary-focus hover:bg-primary/10 rounded-lg transition-colors duration-200">
@@ -227,7 +227,7 @@
                 </figure>
                 <h3 class="text-lg font-medium text-base-content mb-2">{{ 'dashboard.noActiveGoalsYet' | translate }}</h3>
                 <p class="text-base-content/70 mb-4 text-sm">{{ 'dashboard.startSavingMessage' | translate }}</p>
-                <button 
+                <button
                   type="button"
                   [routerLink]="['savings/create']"
                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors duration-200 cursor-pointer ">
@@ -329,10 +329,10 @@
 
                 <div class="w-full bg-base-300 dark:bg-base-100 rounded-full h-2">
                   <div class="bg-gradient-to-r from-primary to-primary-focus h-2 rounded-full transition-all duration-300"
-                    style="width: 65%" 
-                    role="progressbar" 
-                    aria-valuenow="65" 
-                    aria-valuemin="0" 
+                    style="width: 65%"
+                    role="progressbar"
+                    aria-valuenow="65"
+                    aria-valuemin="0"
                     aria-valuemax="100">
                   </div>
                 </div>
