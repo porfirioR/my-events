@@ -9,3 +9,6 @@ export { ProgressionType, ProgressionTypeBadgeColors, ProgressionTypeDescription
 export { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels } from './goal-status.enum';
 export { InstallmentStatus, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from './installment-status.enum';
 export { SavingsFrequency, SavingsFrequencyLabels } from './savings-frequency.enum';
+export { LoanType, LoanTypeLabels, LoanTypeBadgeColors } from './loan-type.enum';
+export { LoanEntity, LoanEntityLabels } from './loan-entity.enum';
+export { AmortizationType, AmortizationTypeLabels } from './amortization-type.enum';

@@ -1,0 +1,28 @@
+export class LoanApiModel {
+  constructor(
+    public id: number,
+    public userId: number,
+    public currencyId: number,
+    public loanTypeId: number,
+    public loanEntityId: number,
+    public lenderCustomName: string | null,
+    public name: string,
+    public description: string | null,
+    public principalAmount: number,
+    public annualRatePercentage: number,
+    public numberOfInstallments: number,
+    public calculatedInstallmentAmount: number,
+    public actualInstallmentAmount: number,
+    public calculatedTotalInterest: number,
+    public calculatedTotalAmount: number,
+    public actualTotalAmount: number,
+    public currentBalance: number,
+    public totalPaid: number,
+    public amortizationType: string,
+    public statusId: number,
+    public startDate: string,
+    public expectedEndDate: string | null,
+    public completedDate: string | null,
+    public paidInstallmentsCount: number,
+  ) {}
+}
