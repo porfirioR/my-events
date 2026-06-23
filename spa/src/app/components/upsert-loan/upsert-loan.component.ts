@@ -307,7 +307,7 @@ export class UpsertLoanComponent implements OnInit {
     }
   };
 
-  protected cancel = (): void => this.exit();
-  protected exit = (): void => this.router.navigate(['/loans']);
+  protected cancel = (): void => { this.exit(); };
+  protected exit = (): void => { this.router.navigate(['/loans']); };
   protected formatCurrency = this.formatterService.formatCurrency;
 }
