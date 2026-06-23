@@ -122,6 +122,15 @@
               [list]="fixedDepositTermList"
               [disabled]="saving"
             />
+          } @else if (isCDA()) {
+            <app-select-input
+              formControlName="numberOfInstallments"
+              id="numberOfInstallments"
+              name="numberOfInstallments"
+              [label]="'upsertSavingsGoal.cdaTermLabel' | translate"
+              [list]="cdaTermList"
+              [disabled]="saving"
+            />
           } @else {
             <app-text
               formControlName="numberOfInstallments"
@@ -139,10 +148,10 @@
             <app-text
               formControlName="baseAmount"
               type="number"
-              [label]="(isFixedDeposit() ? 'upsertSavingsGoal.fixedDepositPrincipalLabel' : 'upsertSavingsGoal.amountPerInstallment') | translate"
+              [label]="(isLumpSum() ? 'upsertSavingsGoal.fixedDepositPrincipalLabel' : 'upsertSavingsGoal.amountPerInstallment') | translate"
               id="baseAmount"
               name="baseAmount"
-              [description]="(isFixedDeposit() ? 'upsertSavingsGoal.fixedDepositPrincipalDescription' : 'upsertSavingsGoal.sameAmountDescription') | translate"
+              [description]="(isLumpSum() ? 'upsertSavingsGoal.fixedDepositPrincipalDescription' : 'upsertSavingsGoal.sameAmountDescription') | translate"
               [disabled]="saving"
             />
           }
@@ -160,8 +169,8 @@
             />
           }
 
-          <!-- Ahorro Programado / Plazo Fijo: tasa de interés anual -->
-          @if (isProgrammedSavings() || isFixedDeposit()) {
+          <!-- Ahorro Programado / Plazo Fijo / CDA: tasa de interés anual -->
+          @if (isProgrammedSavings() || isLumpSum()) {
             <app-text
               formControlName="annualRatePercentage"
               type="number"
@@ -181,11 +190,17 @@
             </div>
           }
 
-          <!-- Plazo Fijo: aviso de vencimiento automático -->
+          <!-- Plazo Fijo / CDA: aviso de vencimiento automático -->
           @if (isFixedDeposit()) {
             <div class="alert alert-info alert-soft text-xs mt-1">
               <i class="fas fa-vault"></i>
               <span>{{ 'upsertSavingsGoal.fixedDepositInfo' | translate }}</span>
+            </div>
+          }
+          @if (isCDA()) {
+            <div class="alert alert-neutral alert-soft text-xs mt-1">
+              <i class="fas fa-certificate"></i>
+              <span>{{ 'upsertSavingsGoal.cdaInfo' | translate }}</span>
             </div>
           }
 
@@ -213,12 +228,12 @@
             </div>
           }
 
-          <!-- Rendimiento proyectado para plazo fijo -->
-          @if (isFixedDeposit() && yieldInfo()) {
+          <!-- Rendimiento proyectado para plazo fijo / CDA -->
+          @if (isLumpSum() && yieldInfo()) {
             <div class="alert alert-success alert-soft border-2">
-              <i class="fas fa-vault text-xl"></i>
+              <i [class]="'fas text-xl ' + (isCDA() ? 'fa-certificate' : 'fa-vault')"></i>
               <div class="w-full">
-                <h4 class="font-semibold">{{ 'upsertSavingsGoal.fixedDepositYieldInfo' | translate }}</h4>
+                <h4 class="font-semibold">{{ (isCDA() ? 'upsertSavingsGoal.cdaYieldInfo' : 'upsertSavingsGoal.fixedDepositYieldInfo') | translate }}</h4>
                 <div class="grid grid-cols-3 gap-2 mt-1 text-sm">
                   <div>
                     <p class="opacity-70 text-xs">{{ 'upsertSavingsGoal.fixedDepositPrincipalLabel' | translate }}</p>
@@ -240,10 +255,10 @@
             <app-text
               formControlName="targetAmount"
               type="number"
-              [label]="'upsertSavingsGoal.fixedDepositExpectedAmountLabel' | translate"
+              [label]="(isCDA() ? 'upsertSavingsGoal.cdaExpectedAmountLabel' : 'upsertSavingsGoal.fixedDepositExpectedAmountLabel') | translate"
               id="targetAmount"
               name="targetAmount"
-              [description]="'upsertSavingsGoal.fixedDepositExpectedAmountDescription' | translate"
+              [description]="(isCDA() ? 'upsertSavingsGoal.cdaExpectedAmountDescription' : 'upsertSavingsGoal.fixedDepositExpectedAmountDescription') | translate"
               [disabled]="saving"
             />
           }
@@ -285,8 +300,8 @@
             />
           }
 
-          <!-- Para otros tipos (no Programado ni Plazo Fijo): mostrar target amount calculado (solo lectura) -->
-          @if (!isProgrammedSavings() && !isFixedDeposit() && calculatedTargetAmount() !== null) {
+          <!-- Para otros tipos (no Programado, Plazo Fijo, ni CDA): mostrar target amount calculado (solo lectura) -->
+          @if (!isProgrammedSavings() && !isLumpSum() && calculatedTargetAmount() !== null) {
             <div class="alert alert-success shadow-lg alert-soft">
               <div class="flex items-center gap-3">
                 <i class="fas fa-piggy-bank text-2xl"></i>
@@ -306,8 +321,8 @@
         </div>
       }
 
-      <!-- Fecha esperada de finalización (no aplica a ahorro programado ni plazo fijo, se calculan automáticamente) -->
-      @if (!isProgrammedSavings() && !isFixedDeposit()) {
+      <!-- Fecha esperada de finalización (no aplica a ahorro programado, plazo fijo ni CDA, se calculan automáticamente) -->
+      @if (!isProgrammedSavings() && !isLumpSum()) {
         <app-date-input
           formControlName="expectedEndDate"
           [label]="'upsertSavingsGoal.expectedEndDate' | translate"

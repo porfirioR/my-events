@@ -65,6 +65,9 @@
               <li>
                 <button (click)="setProgressionTypeFilter(ProgressionType.FixedDeposit)">{{ 'savingsGoals.fixedDeposit' | translate }}</button>
               </li>
+              <li>
+                <button (click)="setProgressionTypeFilter(ProgressionType.CDA)">{{ 'savingsGoals.cda' | translate }}</button>
+              </li>
             </ul>
           </div>
 
@@ -202,14 +205,14 @@
                     </span>
 
                     <!-- Installments / Term Info -->
-                    @if (goal.numberOfInstallments && goal.progressionTypeId !== ProgressionType.FixedDeposit) {
+                    @if (goal.numberOfInstallments && goal.progressionTypeId !== ProgressionType.FixedDeposit && goal.progressionTypeId !== ProgressionType.CDA) {
                       <span class="text-xs text-base-content/70">
                         <i class="fas fa-list-ol mr-1"></i>
                         {{ goal.paidInstallmentsCount }}/{{ goal.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
                       </span>
                     }
-                    @if (goal.numberOfInstallments && goal.progressionTypeId === ProgressionType.FixedDeposit) {
-                      <span class="badge badge-sm badge-soft badge-warning gap-1">
+                    @if (goal.numberOfInstallments && (goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA)) {
+                      <span class="badge badge-sm badge-soft gap-1" [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'badge-neutral' : 'badge-warning'">
                         <i class="fas fa-clock"></i>
                         {{ goal.numberOfInstallments }} {{ (goal.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
                       </span>

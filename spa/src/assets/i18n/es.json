@@ -496,6 +496,7 @@
     "random": "Aleatorio",
     "freeForm": "Forma Libre",
     "fixedDeposit": "Plazo Fijo",
+    "cda": "CDA",
     "newGoal": "Nueva Meta",
     "loadingGoals": "Cargando metas de ahorro...",
     "viewDetails": "Ver Detalles",
@@ -577,6 +578,7 @@
     "annualRateLabel": "Tasa anual",
     "paymentPeriodLabel": "Período de pago",
     "fixedDepositSummary": "Resumen Plazo Fijo",
+    "cdaSummary": "Resumen CDA",
     "fixedDepositPrincipal": "Capital",
     "fixedDepositInterest": "Interés generado",
     "fixedDepositTotalAtMaturity": "Total al vencimiento",
@@ -649,7 +651,12 @@
     "fixedDepositInterest": "Interés",
     "fixedDepositTotal": "Total al vencimiento",
     "fixedDepositExpectedAmountLabel": "Monto esperado al vencimiento",
-    "fixedDepositExpectedAmountDescription": "Calculado automáticamente. Puede modificarlo si el banco indica un monto diferente."
+    "fixedDepositExpectedAmountDescription": "Calculado automáticamente. Puede modificarlo si el banco indica un monto diferente.",
+    "cdaTermLabel": "Plazo del CDA",
+    "cdaInfo": "El CDA vence automáticamente al cumplir el plazo seleccionado. La tasa de interés suele ser mayor que la de un plazo fijo tradicional.",
+    "cdaYieldInfo": "Resumen del CDA",
+    "cdaExpectedAmountLabel": "Monto esperado al vencimiento (CDA)",
+    "cdaExpectedAmountDescription": "Calculado automáticamente. Puede modificarlo si la entidad financiera indica un monto diferente."
   },
   "savingsFrequency": {
     "monthly": "Mensual"

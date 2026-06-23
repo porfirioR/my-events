@@ -48,6 +48,7 @@ export class SavingsCalculatorHelper {
         );
 
       case ProgressionType.FixedDeposit: // FixedDeposit — target computed in manager using simple interest
+      case ProgressionType.CDA: // CDA — same as FixedDeposit, higher rates
         return baseAmount;
 
       default:
@@ -106,6 +107,7 @@ export class SavingsCalculatorHelper {
         return []; // FreeForm no tiene cuotas predefinidas
 
       case ProgressionType.FixedDeposit: // FixedDeposit — no installments, single auto-deposit on creation
+      case ProgressionType.CDA: // CDA — same as FixedDeposit
         return [];
 
       default:

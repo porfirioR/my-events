@@ -107,7 +107,7 @@ export class SavingsGoalsListComponent implements OnInit {
   protected formatCurrency = this.formatterService.formatCurrency;
 
   protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null }): number {
-    if (goal.progressionTypeId === ProgressionType.FixedDeposit) {
+    if (goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA) {
       return goal.baseAmount ?? goal.targetAmount;
     }
     if (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments) {
