@@ -9,6 +9,7 @@ import { LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants
 import { TravelManagerService } from './services/travel-manager.service';
 import { LoanManagerService } from './services/loan-manager.service';
 import { LoanEntityTermAccessService } from '../access/data/services/loan-entity-term-access.service';
+import { DashboardManagerService } from './services/dashboard-manager.service';
 import { BlobModule } from '../access/blob/blob.module';
 
 @Module({
@@ -31,6 +32,7 @@ import { BlobModule } from '../access/blob/blob.module';
     TravelManagerService,
     LoanManagerService,
     LoanEntityTermAccessService,
+    DashboardManagerService,
     {
       provide: TRANSACTION_TOKENS.MANAGER_SERVICE,
       useExisting: TransactionManagerService,
@@ -59,6 +61,7 @@ import { BlobModule } from '../access/blob/blob.module';
     SAVINGS_TOKENS.MANAGER_SERVICE,
     TRAVEL_TOKENS.MANAGER_SERVICE,
     LOAN_TOKENS.MANAGER_SERVICE,
+    DashboardManagerService,
   ]
 })
 export class ManagerModule {}

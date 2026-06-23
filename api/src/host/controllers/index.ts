@@ -5,4 +5,5 @@ export { CollaboratorInvitationsController } from './collaborator-invitations.co
 export { SavingsGoalsController } from './savings-goals.controller';
 export { TravelsController } from './travels.controller';
 export { LoansController } from './loans.controller';
+export { DashboardController } from './dashboard.controller';
 
