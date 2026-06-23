@@ -155,6 +155,7 @@ export class LoanManagerService {
       request.installmentId,
       request.amount,
       request.description,
+      request.paymentDate,
     );
     const payment = await this.paymentAccessService.create(paymentAccessRequest);
     return this.mapPaymentToModel(payment);

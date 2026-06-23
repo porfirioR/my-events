@@ -28,11 +28,11 @@
             </label>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
               <li><button (click)="setTypeFilter(null)">{{ 'loans.allTypes' | translate }}</button></li>
-              <li><button (click)="setTypeFilter(LoanType.Personal)">{{ LoanTypeLabels[LoanType.Personal] }}</button></li>
-              <li><button (click)="setTypeFilter(LoanType.Hipoteca)">{{ LoanTypeLabels[LoanType.Hipoteca] }}</button></li>
-              <li><button (click)="setTypeFilter(LoanType.Auto)">{{ LoanTypeLabels[LoanType.Auto] }}</button></li>
-              <li><button (click)="setTypeFilter(LoanType.Tarjeta)">{{ LoanTypeLabels[LoanType.Tarjeta] }}</button></li>
-              <li><button (click)="setTypeFilter(LoanType.Informal)">{{ LoanTypeLabels[LoanType.Informal] }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Personal)">{{ LoanTypeLabels[LoanType.Personal] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Hipoteca)">{{ LoanTypeLabels[LoanType.Hipoteca] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Auto)">{{ LoanTypeLabels[LoanType.Auto] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Tarjeta)">{{ LoanTypeLabels[LoanType.Tarjeta] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Informal)">{{ LoanTypeLabels[LoanType.Informal] | translate }}</button></li>
             </ul>
           </div>
 

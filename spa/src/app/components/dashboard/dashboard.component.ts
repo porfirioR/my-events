@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   useCollaboratorStore,
+  useLoansStore,
   useSavingsStore,
   useTransactionStore,
   useTravelStore,
@@ -25,6 +26,7 @@ export class DashboardComponent {
   private transactionStore = useTransactionStore();
   private savingsStore = useSavingsStore();
   private travelStore = useTravelStore();
+  private loansStore = useLoansStore();
   private formatterService = inject(FormatterHelperService);
 
   unsettledTransactions = this.transactionStore.unsettledTransactions;
@@ -54,6 +56,19 @@ export class DashboardComponent {
       finalized: travels.filter(x => x.status === 'Finalized').length,
     };
   });
+
+  protected loansStats = computed(() => {
+    const loans = this.loansStore.loans();
+    return {
+      total: loans.length,
+      active: loans.filter(x => x.statusId === 1).length,
+      completed: loans.filter(x => x.statusId === 2).length,
+    };
+  });
+
+  protected activeLoans = computed(() =>
+    this.loansStore.activeLoans().slice(0, 3)
+  );
 
   // Savings Goals - Active Goals (top 3)
   protected activeGoals = computed(() => {

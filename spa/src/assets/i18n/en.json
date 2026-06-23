@@ -310,7 +310,9 @@
     "left": "Left",
     "travels": "Travels",
     "newTravel": "New Travel",
-    "finalized": "Finalized"
+    "finalized": "Finalized",
+    "loans": "Loans",
+    "newLoan": "New Loan"
   },
   "matchRequests": {
     "title": "Match Requests",
@@ -924,6 +926,11 @@
     "resetting": "Resetting...",
     "rememberPassword": "Remember your password?"
   },
+  "installmentStatus": {
+    "pending": "Pending",
+    "paid": "Paid",
+    "skipped": "Skipped"
+  },
   "loans": {
     "title": "Loans",
     "newLoan": "New Loan",
@@ -937,6 +944,13 @@
     "statusCompleted": "Paid off",
     "statusPaused": "Paused",
     "statusCancelled": "Cancelled",
+    "typePersonal": "Personal",
+    "typeHipoteca": "Mortgage",
+    "typeAuto": "Auto",
+    "typeTarjeta": "Credit card",
+    "typeInformal": "Informal",
+    "amortFrench": "French (fixed payment)",
+    "amortSimple": "Simple interest",
     "installments": "installments",
     "month": "month",
     "since": "since",

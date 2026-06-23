@@ -6,11 +6,11 @@
       <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="back()">
         <i class="fas fa-arrow-left"></i>
       </button>
-      <div class="flex-grow">
+      <div class="grow">
         <h1 class="text-2xl font-bold text-base-content">{{ l.name }}</h1>
         <p class="text-base-content/70 text-sm">
           <i class="fas fa-building-columns mr-1"></i>{{ entityLabel() }}
-          · {{ LoanTypeLabels[l.loanTypeId] }}
+          · {{ loanTypeLabel(l.loanTypeId) | translate }}
         </p>
       </div>
       @if (l.statusId !== 2) {
@@ -71,18 +71,18 @@
       </div>
       <div>
         <p class="text-base-content/60">{{ 'loanDetail.startDate' | translate }}</p>
-        <p class="font-semibold">{{ getFormattedDate(l.startDate) }}</p>
+        <p class="font-semibold">{{ formatDate(l.startDate) }}</p>
       </div>
       @if (l.expectedEndDate) {
         <div>
           <p class="text-base-content/60">{{ 'loanDetail.expectedEnd' | translate }}</p>
-          <p class="font-semibold">{{ getFormattedDate(l.expectedEndDate) }}</p>
+          <p class="font-semibold">{{ formatDate(l.expectedEndDate) }}</p>
         </div>
       }
       @if (l.completedDate) {
         <div>
           <p class="text-base-content/60">{{ 'loanDetail.completedDate' | translate }}</p>
-          <p class="font-semibold text-success">{{ getFormattedDate(l.completedDate) }}</p>
+          <p class="font-semibold text-success">{{ formatDate(l.completedDate) }}</p>
         </div>
       }
     </div>
@@ -95,7 +95,7 @@
           <h4 class="font-semibold">{{ 'loanDetail.nextInstallment' | translate }} #{{ next.installmentNumber }}</h4>
           <p class="text-sm">
             {{ formatCurrency(next.totalAmount, l.currencyId) }}
-            @if (next.dueDate) { · {{ 'loanDetail.dueDate' | translate }}: {{ getFormattedDate(next.dueDate) }} }
+            @if (next.dueDate) { · {{ 'loanDetail.dueDate' | translate }}: {{ formatDate(next.dueDate) }} }
           </p>
         </div>
         <button type="button" class="btn btn-sm btn-warning" (click)="openPayModal(next.id)">
@@ -139,18 +139,18 @@
                   'bg-warning/5': inst.statusId === InstallmentStatus.Pending
                 }">
                   <td class="font-mono text-xs">{{ inst.installmentNumber }}</td>
-                  <td class="text-xs">{{ inst.dueDate ? getFormattedDate(inst.dueDate) : '—' }}</td>
+                  <td class="text-xs">{{ inst.dueDate ? formatDate(inst.dueDate) : '—' }}</td>
                   <td class="text-right font-semibold">{{ formatCurrency(inst.totalAmount, l.currencyId) }}</td>
                   <td class="text-right text-primary">{{ formatCurrency(inst.principalAmount, l.currencyId) }}</td>
                   <td class="text-right text-error">{{ formatCurrency(inst.interestAmount, l.currencyId) }}</td>
                   <td class="text-right text-base-content/70">{{ formatCurrency(inst.remainingBalance, l.currencyId) }}</td>
                   <td>
-                    <span class="badge badge-xs badge-soft" [ngClass]="InstallmentStatusColors[inst.statusId]">
-                      <i [class]="'fas ' + InstallmentStatusIcons[inst.statusId] + ' mr-1'"></i>
-                      {{ InstallmentStatusLabels[inst.statusId] | translate }}
+                    <span class="badge badge-xs badge-soft" [ngClass]="instBadgeColor(inst.statusId)">
+                      <i [class]="'fas ' + instIcon(inst.statusId) + ' mr-1'"></i>
+                      {{ instLabel(inst.statusId) | translate }}
                     </span>
                     @if (inst.paidDate) {
-                      <div class="text-xs text-base-content/50">{{ getFormattedDate(inst.paidDate) }}</div>
+                      <div class="text-xs text-base-content/50">{{ formatDate(inst.paidDate) }}</div>
                     }
                   </td>
                   <td>
@@ -187,13 +187,13 @@
             <div class="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
               <i class="fas fa-check text-success"></i>
             </div>
-            <div class="flex-grow">
+            <div class="grow">
               <p class="font-semibold">{{ formatCurrency(payment.amount, l.currencyId) }}</p>
               @if (payment.description) {
                 <p class="text-sm text-base-content/70">{{ payment.description }}</p>
               }
             </div>
-            <time class="text-xs text-base-content/60">{{ getFormattedDate(payment.paymentDate) }}</time>
+            <time class="text-xs text-base-content/60">{{ formatDate(payment.paymentDate) }}</time>
           </div>
         } @empty {
           <div class="text-center py-12 text-base-content/50">

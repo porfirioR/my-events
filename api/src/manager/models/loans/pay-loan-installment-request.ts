@@ -5,5 +5,6 @@ export class PayLoanInstallmentRequest {
     public readonly installmentId: number,
     public readonly amount: number,
     public readonly description: string | null,
+    public readonly paymentDate: Date | null,
   ) {}
 }

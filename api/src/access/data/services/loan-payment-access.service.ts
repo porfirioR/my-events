@@ -22,6 +22,7 @@ export class LoanPaymentAccessService extends BaseAccessService implements ILoan
         installmentid: request.installmentId,
         amount: request.amount,
         description: request.description,
+        paymentdate: request.paymentDate ?? new Date(),
       })
       .select()
       .single<LoanPaymentEntity>();

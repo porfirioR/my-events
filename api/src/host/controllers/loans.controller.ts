@@ -136,6 +136,7 @@ export class LoansController {
       installmentId,
       apiRequest.amount,
       apiRequest.description ?? null,
+      apiRequest.paymentDate ? new Date(apiRequest.paymentDate) : null,
     );
     return await this.loanManagerService.payInstallment(request);
   }

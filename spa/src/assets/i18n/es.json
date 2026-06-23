@@ -309,7 +309,9 @@
     "left": "Restante",
     "travels": "Viajes",
     "newTravel": "Nuevo Viaje",
-    "finalized": "Finalizados"
+    "finalized": "Finalizados",
+    "loans": "Préstamos",
+    "newLoan": "Nuevo Préstamo"
   },
   "matchRequests": {
     "title": "Solicitudes de Vinculación",
@@ -923,6 +925,11 @@
     "resetting": "Restableciendo...",
     "rememberPassword": "¿Recordás tu contraseña?"
   },
+  "installmentStatus": {
+    "pending": "Pendiente",
+    "paid": "Pagada",
+    "skipped": "Omitida"
+  },
   "loans": {
     "title": "Préstamos",
     "newLoan": "Nuevo Préstamo",
@@ -933,9 +940,16 @@
     "noLoansYet": "Sin préstamos aún",
     "noLoansMessage": "Registrá tus préstamos para hacer seguimiento",
     "statusActive": "Activo",
-    "statusCompleted": "Cancelado",
+    "statusCompleted": "Saldado",
     "statusPaused": "Pausado",
     "statusCancelled": "Anulado",
+    "typePersonal": "Personal",
+    "typeHipoteca": "Hipoteca",
+    "typeAuto": "Auto",
+    "typeTarjeta": "Tarjeta",
+    "typeInformal": "Informal",
+    "amortFrench": "Francés (cuota fija)",
+    "amortSimple": "Simple (interés simple)",
     "installments": "cuotas",
     "month": "mes",
     "since": "desde",

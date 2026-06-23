@@ -10,7 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService, FormatterHelperService } from '../../services';
 import { useLoansStore } from '../../store';
 import { PayLoanInstallmentApiRequest } from '../../models/api/loans';
-import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, InstallmentStatus, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
+import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
 
 @Component({
   selector: 'app-loan-detail',
@@ -40,6 +40,7 @@ export class LoanDetailComponent implements OnInit {
   protected LoanType = LoanType;
   protected LoanTypeLabels = LoanTypeLabels;
   protected InstallmentStatus = InstallmentStatus;
+  protected InstallmentStatusBadgeColors = InstallmentStatusBadgeColors;
   protected InstallmentStatusColors = InstallmentStatusColors;
   protected InstallmentStatusIcons = InstallmentStatusIcons;
   protected InstallmentStatusLabels = InstallmentStatusLabels;
@@ -145,5 +146,17 @@ export class LoanDetailComponent implements OnInit {
   }
 
   protected formatCurrency = this.formatterService.formatCurrency;
-  protected getFormattedDate = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
+  protected formatDate = (dateStr: string | null | undefined): string => {
+    if (!dateStr) return '';
+    return this.formatterService.getFormattedDateCustom(new Date(dateStr));
+  };
+
+  protected instBadgeColor = (statusId: number): string =>
+    InstallmentStatusBadgeColors[statusId as InstallmentStatus] ?? 'badge-ghost';
+  protected instIcon = (statusId: number): string =>
+    InstallmentStatusIcons[statusId as InstallmentStatus] ?? '';
+  protected instLabel = (statusId: number): string =>
+    InstallmentStatusLabels[statusId as InstallmentStatus] ?? '';
+  protected loanTypeLabel = (typeId: number): string =>
+    LoanTypeLabels[typeId as LoanType] ?? '';
 }

@@ -62,6 +62,25 @@
         </footer>
       </article>
 
+      <!-- Loans Card -->
+      <article [routerLink]="['loans']" class="cursor-pointer bg-gradient-to-r from-amber-500 to-yellow-600 dark:from-amber-600 dark:to-yellow-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
+        <header class="flex items-center justify-between">
+          <div>
+            <h3 class="text-amber-100 dark:text-amber-50 text-sm font-medium">{{ 'dashboard.loans' | translate }}</h3>
+            <data [value]="loansStats().total" class="text-3xl font-bold mt-1 text-white">{{loansStats().total}}</data>
+          </div>
+          <figure class="bg-amber-400 bg-opacity-30 dark:bg-amber-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
+            <i class="fas fa-hand-holding-dollar text-xl text-white" aria-hidden="true"></i>
+          </figure>
+        </header>
+        <footer class="mt-4">
+          <span class="text-amber-100 dark:text-amber-50 text-xs">
+            {{loansStats().active}} {{ 'dashboard.active' | translate }},
+            {{loansStats().completed}} {{ 'loans.statusCompleted' | translate }}
+          </span>
+        </footer>
+      </article>
+
       <!-- Travels Card -->
       <article [routerLink]="['travels']" class="cursor-pointer bg-gradient-to-r from-orange-500 to-red-500 dark:from-orange-600 dark:to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
         <header class="flex items-center justify-between">
@@ -255,6 +274,12 @@
                 <a [routerLink]="['travels/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-warning/10 hover:text-warning rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-suitcase-rolling mr-3 text-warning" aria-hidden="true"></i>
                   <span>{{ 'dashboard.newTravel' | translate }}</span>
+                </a>
+              </li>
+              <li>
+                <a [routerLink]="['loans/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-amber-500/10 hover:text-amber-600 rounded-lg transition-colors duration-200 cursor-pointer">
+                  <i class="fas fa-hand-holding-dollar mr-3 text-amber-500" aria-hidden="true"></i>
+                  <span>{{ 'dashboard.newLoan' | translate }}</span>
                 </a>
               </li>
               <li>
