@@ -60,14 +60,14 @@
         {{ getProgressionTypeLabel(g.progressionTypeId) | translate }}
       </span>
 
-      @if (g.numberOfInstallments && !isFixedDeposit()) {
+      @if (g.numberOfInstallments && !isLumpSum()) {
       <span class="text-sm text-base-content/70">
         <i class="fas fa-list-ol mr-1"></i>
         {{ paidInstallments().length }}/{{ g.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
       </span>
       }
-      @if (g.numberOfInstallments && isFixedDeposit()) {
-      <span class="badge badge-sm badge-soft badge-warning gap-1">
+      @if (g.numberOfInstallments && isLumpSum()) {
+      <span class="badge badge-sm badge-soft gap-1" [ngClass]="isCDA() ? 'badge-neutral' : 'badge-warning'">
         <i class="fas fa-clock"></i>
         {{ g.numberOfInstallments }} {{ (g.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
       </span>
@@ -90,7 +90,7 @@
             'progress-error': g.statusId === GoalStatus.Cancelled
           }"
           [value]="g.currentAmount"
-          [max]="isFixedDeposit() ? (g.baseAmount ?? g.targetAmount) : isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount">
+          [max]="isLumpSum() ? (g.baseAmount ?? g.targetAmount) : isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount">
       </progress>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mt-2 text-sm">
@@ -100,7 +100,7 @@
         </div>
         <div>
           <span class="text-base-content/70">{{ 'savingsGoalDetail.target' | translate }}</span>
-          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(isFixedDeposit() ? (g.baseAmount ?? g.targetAmount) : isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount, g.currencyId) }}</span>
+          <span class="font-semibold text-base-content ml-1">{{ formatCurrency(isLumpSum() ? (g.baseAmount ?? g.targetAmount) : isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount, g.currencyId) }}</span>
         </div>
         <div>
           <span class="text-base-content/70">{{ 'savingsGoalDetail.remaining' | translate }}</span>
@@ -185,12 +185,12 @@
       </div>
     }
 
-    <!-- Fixed Deposit Summary -->
-    @if (isFixedDeposit()) {
+    <!-- Fixed Deposit / CDA Summary -->
+    @if (isLumpSum()) {
       <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 mt-4">
         <h3 class="font-semibold text-base-content mb-3 flex items-center gap-2">
-          <i class="fas fa-vault text-info"></i>
-          {{ 'savingsGoalDetail.fixedDepositSummary' | translate }}
+          <i [class]="'fas ' + (isCDA() ? 'fa-certificate text-secondary' : 'fa-vault text-info')"></i>
+          {{ (isCDA() ? 'savingsGoalDetail.cdaSummary' : 'savingsGoalDetail.fixedDepositSummary') | translate }}
         </h3>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
@@ -211,7 +211,7 @@
           @if (g.expectedEndDate) {
           <div>
             <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.maturityDate' | translate }}</p>
-            <p class="font-semibold text-info">{{ getFormattedDate(g.expectedEndDate) }}</p>
+            <p class="font-semibold" [ngClass]="isCDA() ? 'text-secondary' : 'text-info'">{{ getFormattedDate(g.expectedEndDate) }}</p>
           </div>
           }
         </div>
@@ -226,9 +226,10 @@
               <p class="text-xs text-base-content/60">{{ 'savingsGoalDetail.fixedDepositInterest' | translate }}</p>
               <p class="font-semibold text-success">+ {{ formatCurrency(fixedDepositMaturity()!.interest, g.currencyId) }}</p>
             </div>
-            <div class="col-span-2 bg-info/10 border-2 border-info/40 rounded-lg p-3 text-center">
+            <div class="col-span-2 rounded-lg p-3 text-center border-2"
+              [ngClass]="isCDA() ? 'bg-secondary/10 border-secondary/40' : 'bg-info/10 border-info/40'">
               <p class="text-xs text-base-content/60 mb-1">{{ 'savingsGoalDetail.fixedDepositTotalAtMaturity' | translate }}</p>
-              <p class="font-bold text-2xl text-info">{{ formatCurrency(fixedDepositMaturity()!.totalAmount, g.currencyId) }}</p>
+              <p class="font-bold text-2xl" [ngClass]="isCDA() ? 'text-secondary' : 'text-info'">{{ formatCurrency(fixedDepositMaturity()!.totalAmount, g.currencyId) }}</p>
             </div>
           </div>
         }
@@ -260,8 +261,8 @@
   <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg">
     <!-- Tab Headers -->
     <div role="tablist" class="tabs tabs-bordered px-6 pt-4">
-      <!-- Solo mostrar tab de Installments si NO es FreeForm ni FixedDeposit -->
-      @if (!isFreeForm() && !isFixedDeposit()) {
+      <!-- Solo mostrar tab de Installments si NO es FreeForm, FixedDeposit ni CDA -->
+      @if (!isFreeForm() && !isLumpSum()) {
         <button role="tab" class="tab" [class.tab-active]="activeTab() === 'installments'"
           (click)="setActiveTab('installments')">
           <i class="fas fa-list-ol mr-2"></i>

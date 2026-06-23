@@ -65,10 +65,10 @@ export class SavingsManagerService {
         throw new BadRequestException('FreeForm type should not have numberOfInstallments or baseAmount');
       }
       targetAmount = request.targetAmount;
-    } else if (request.progressionTypeId === ProgressionType.FixedDeposit) {
-      // FixedDeposit: single lump-sum with simple interest
+    } else if (request.progressionTypeId === ProgressionType.FixedDeposit || request.progressionTypeId === ProgressionType.CDA) {
+      // FixedDeposit / CDA: single lump-sum with simple interest (CDA has higher rates)
       if (!request.baseAmount || !request.numberOfInstallments || !request.annualRatePercentage) {
-        throw new BadRequestException('baseAmount, numberOfInstallments (term in months), and annualRatePercentage are required for FixedDeposit type');
+        throw new BadRequestException('baseAmount, numberOfInstallments (term in months), and annualRatePercentage are required for FixedDeposit/CDA type');
       }
       // Use user-provided targetAmount if given (bank may quote a different amount than calculated)
       if (request.targetAmount) {
@@ -132,7 +132,7 @@ export class SavingsManagerService {
     let dueDates: Date[] = [];
     let computedExpectedEndDate = request.expectedEndDate ?? null;
 
-    if (request.progressionTypeId === ProgressionType.FixedDeposit && request.numberOfInstallments) {
+    if ((request.progressionTypeId === ProgressionType.FixedDeposit || request.progressionTypeId === ProgressionType.CDA) && request.numberOfInstallments) {
       computedExpectedEndDate = SavingsCalculatorHelper.addMonths(request.startDate, +request.numberOfInstallments);
     } else if (request.frequencyId && request.numberOfInstallments) {
       const paymentDay = SavingsCalculatorHelper.getPaymentDayFromPeriod(request.paymentPeriod ?? 1);
@@ -196,8 +196,8 @@ export class SavingsManagerService {
       }
     }
 
-    // FixedDeposit: auto-create the initial deposit for the full principal
-    if (request.progressionTypeId === ProgressionType.FixedDeposit && request.baseAmount) {
+    // FixedDeposit / CDA: auto-create the initial deposit for the full principal
+    if ((request.progressionTypeId === ProgressionType.FixedDeposit || request.progressionTypeId === ProgressionType.CDA) && request.baseAmount) {
       await this.savingsDepositAccessService.create(new CreateSavingsDepositAccessRequest(
         goalAccessModel.id,
         +request.baseAmount,
@@ -414,8 +414,8 @@ export class SavingsManagerService {
       throw new BadRequestException('Cannot add installments to Scheduled type');
     }
 
-    if (goal.progressionTypeId === 7) { // FixedDeposit — single deposit, no installments
-      throw new BadRequestException('Cannot add installments to FixedDeposit type');
+    if (goal.progressionTypeId === 7 || goal.progressionTypeId === 8) { // FixedDeposit / CDA — single deposit, no installments
+      throw new BadRequestException('Cannot add installments to FixedDeposit/CDA type');
     }
 
     // 2. Get all current installments
@@ -590,7 +590,7 @@ export class SavingsManagerService {
 
   private autoCompleteIfMatured = async (goal: SavingsGoalAccessModel, userId: number): Promise<SavingsGoalAccessModel> => {
     if (
-      goal.progressionTypeId !== ProgressionType.FixedDeposit ||
+      (goal.progressionTypeId !== ProgressionType.FixedDeposit && goal.progressionTypeId !== ProgressionType.CDA) ||
       goal.statusId !== 1 ||
       !goal.expectedEndDate ||
       new Date(goal.expectedEndDate) > new Date()
@@ -602,7 +602,7 @@ export class SavingsManagerService {
   };
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
-    const validTypes = [1, 2, 3, 4, 5, 6, 7]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit
+    const validTypes = [1, 2, 3, 4, 5, 6, 7, 8]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit, CDA
     if (!validTypes.includes(progressionTypeId)) {
       throw new BadRequestException(`Invalid progression type: ${progressionTypeId}`);
     }

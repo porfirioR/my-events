@@ -100,7 +100,8 @@ export const SavingsStore = signalStore(
     selectedGoalProgress: computed(() => {
       const goal = store.selectedGoal();
       if (!goal) return 0;
-      const base = goal.progressionTypeId === ProgressionType.FixedDeposit
+      const isLumpSum = goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA;
+      const base = isLumpSum
         ? (goal.baseAmount ?? goal.targetAmount)
         : goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
           ? goal.baseAmount * goal.numberOfInstallments
@@ -113,7 +114,8 @@ export const SavingsStore = signalStore(
     selectedGoalRemaining: computed(() => {
       const goal = store.selectedGoal();
       if (!goal) return 0;
-      const base = goal.progressionTypeId === ProgressionType.FixedDeposit
+      const isLumpSum = goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA;
+      const base = isLumpSum
         ? (goal.baseAmount ?? goal.targetAmount)
         : goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
           ? goal.baseAmount * goal.numberOfInstallments

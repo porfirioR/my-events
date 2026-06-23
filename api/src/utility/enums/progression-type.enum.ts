@@ -6,4 +6,5 @@ export enum ProgressionType {
   FreeForm = 5,
   Scheduled = 6,
   FixedDeposit = 7,
+  CDA = 8,
 }

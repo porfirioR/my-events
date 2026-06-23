@@ -497,6 +497,7 @@
     "random": "Random",
     "freeForm": "Free Form",
     "fixedDeposit": "Fixed Deposit",
+    "cda": "CDA",
     "newGoal": "New Goal",
     "loadingGoals": "Loading savings goals...",
     "viewDetails": "View Details",
@@ -578,6 +579,7 @@
     "annualRateLabel": "Annual rate",
     "paymentPeriodLabel": "Payment period",
     "fixedDepositSummary": "Fixed Deposit Summary",
+    "cdaSummary": "CDA Summary",
     "fixedDepositPrincipal": "Principal",
     "fixedDepositInterest": "Interest earned",
     "fixedDepositTotalAtMaturity": "Total at maturity",
@@ -650,7 +652,12 @@
     "fixedDepositInterest": "Interest",
     "fixedDepositTotal": "Total at maturity",
     "fixedDepositExpectedAmountLabel": "Expected amount at maturity",
-    "fixedDepositExpectedAmountDescription": "Auto-calculated. You can edit it if your bank quotes a different amount."
+    "fixedDepositExpectedAmountDescription": "Auto-calculated. You can edit it if your bank quotes a different amount.",
+    "cdaTermLabel": "CDA Term",
+    "cdaInfo": "The CDA matures automatically at the end of the selected term. Interest rates are typically higher than a traditional fixed deposit.",
+    "cdaYieldInfo": "CDA Summary",
+    "cdaExpectedAmountLabel": "Expected amount at maturity (CDA)",
+    "cdaExpectedAmountDescription": "Auto-calculated. You can edit it if your financial institution quotes a different amount."
   },
   "savingsFrequency": {
     "monthly": "Monthly"
