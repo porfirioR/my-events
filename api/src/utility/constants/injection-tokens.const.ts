@@ -20,6 +20,13 @@ export const SAVINGS_TOKENS = {
   MANAGER_SERVICE: Symbol('ISavingsManagerService')
 } as const;
 
+export const LOAN_TOKENS = {
+  LOAN_ACCESS_SERVICE: Symbol('ILoanAccessService'),
+  INSTALLMENT_ACCESS_SERVICE: Symbol('ILoanInstallmentAccessService'),
+  PAYMENT_ACCESS_SERVICE: Symbol('ILoanPaymentAccessService'),
+  MANAGER_SERVICE: Symbol('ILoanManagerService'),
+} as const;
+
 export const TRAVEL_TOKENS = {
   ACCESS_SERVICE: Symbol('ITravelAccessService'),
   MEMBER_ACCESS_SERVICE: Symbol('ITravelMemberAccessService'),

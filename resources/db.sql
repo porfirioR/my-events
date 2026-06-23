@@ -796,3 +796,166 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO savingsprogressiontypes (id, name, description) VALUES
 (8, 'CDA', 'Certificado de Depósito de Ahorro - single lump-sum deposit with higher interest rate, locked for a fixed term')
 ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- MÓDULO DE PRÉSTAMOS
+-- =====================================================
+
+-- Entidades prestamistas
+CREATE TABLE loanentities (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    isother BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+INSERT INTO loanentities (id, name, isother) VALUES
+(1, 'Ueno', false),
+(2, 'Itaú', false),
+(3, 'Personal', false),
+(4, 'Otros', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Plazos/tasas recomendados por entidad
+CREATE TABLE loanentityterms (
+    id SERIAL PRIMARY KEY,
+    loanentityid INT NOT NULL,
+    termmonths INT NOT NULL,
+    annualratepercentage DECIMAL(5,2) NOT NULL,
+    FOREIGN KEY (loanentityid) REFERENCES loanentities(id) ON DELETE CASCADE
+);
+
+INSERT INTO loanentityterms (loanentityid, termmonths, annualratepercentage) VALUES
+-- Ueno
+(1, 3, 90.00),
+(1, 6, 85.00),
+(1, 12, 80.00),
+-- Itaú
+(2, 12, 32.00),
+(2, 24, 36.00),
+(2, 36, 40.00),
+(2, 48, 44.00),
+(2, 60, 48.00);
+
+-- Tipos de préstamo (propósito del préstamo)
+CREATE TABLE loantypes (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT NOT NULL
+);
+
+INSERT INTO loantypes (id, name, description) VALUES
+(1, 'Personal', 'Personal loan for general expenses'),
+(2, 'Hipoteca', 'Mortgage - home purchase or construction'),
+(3, 'Auto', 'Vehicle loan'),
+(4, 'Tarjeta', 'Credit card debt'),
+(5, 'Informal', 'Informal loan between individuals')
+ON CONFLICT (id) DO NOTHING;
+
+-- Estado del préstamo
+CREATE TABLE loanstatus (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT NOT NULL
+);
+
+INSERT INTO loanstatus (id, name, description) VALUES
+(1, 'Active', 'Loan is currently active and being paid'),
+(2, 'Completed', 'Loan has been fully paid off'),
+(3, 'Paused', 'Loan payments are temporarily paused'),
+(4, 'Cancelled', 'Loan has been cancelled')
+ON CONFLICT (id) DO NOTHING;
+
+-- Préstamos
+CREATE TABLE loans (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    currencyid INT NOT NULL,
+    loantypeid INT NOT NULL,
+    loanentityid INT NOT NULL,
+    lendercustomname VARCHAR(200) NULL,
+
+    name VARCHAR(200) NOT NULL,
+    description TEXT NULL,
+
+    principalamount BIGINT NOT NULL,
+    annualratepercentage DECIMAL(5,2) NOT NULL,
+    numberofinstallments INT NOT NULL,
+
+    -- Calculado automáticamente con la fórmula
+    calculatedinstallmentamount BIGINT NOT NULL,
+    calculatedtotalinterest BIGINT NOT NULL,
+    calculatedtotalamount BIGINT NOT NULL,
+
+    -- Real (puede diferir si la entidad aplica cargos adicionales)
+    actualinstallmentamount BIGINT NOT NULL,
+    actualtotalamount BIGINT NOT NULL,
+
+    currentbalance BIGINT NOT NULL,
+    totalpaid BIGINT NOT NULL DEFAULT 0,
+
+    amortizationtype VARCHAR(10) NOT NULL DEFAULT 'french',
+
+    statusid INT NOT NULL DEFAULT 1,
+    startdate DATE NOT NULL,
+    expectedenddate DATE NULL,
+    completeddate TIMESTAMP NULL,
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (currencyid) REFERENCES currencies(id),
+    FOREIGN KEY (loantypeid) REFERENCES loantypes(id),
+    FOREIGN KEY (loanentityid) REFERENCES loanentities(id),
+    FOREIGN KEY (statusid) REFERENCES loanstatus(id),
+
+    CONSTRAINT check_loan_principal_positive CHECK (principalamount > 0),
+    CONSTRAINT check_loan_installments_positive CHECK (numberofinstallments > 0),
+    CONSTRAINT check_loan_rate_positive CHECK (annualratepercentage >= 0),
+    CONSTRAINT check_loan_others_name CHECK (loanentityid != 4 OR lendercustomname IS NOT NULL)
+);
+
+-- Cuotas del préstamo (tabla de amortización)
+CREATE TABLE loaninstallments (
+    id SERIAL PRIMARY KEY,
+    loanid INT NOT NULL,
+    installmentnumber INT NOT NULL,
+    duedate DATE NULL,
+    totalamount BIGINT NOT NULL,
+    principalamount BIGINT NOT NULL,
+    interestamount BIGINT NOT NULL,
+    remainingbalance BIGINT NOT NULL,
+    statusid INT NOT NULL DEFAULT 1,
+    paiddate TIMESTAMP NULL,
+    paidamount BIGINT NULL,
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (loanid) REFERENCES loans(id) ON DELETE CASCADE,
+    FOREIGN KEY (statusid) REFERENCES installmentstatus(id),
+
+    CONSTRAINT check_loan_installment_amount CHECK (totalamount > 0),
+    CONSTRAINT unique_loan_installment UNIQUE (loanid, installmentnumber)
+);
+
+-- Pagos realizados
+CREATE TABLE loanpayments (
+    id SERIAL PRIMARY KEY,
+    loanid INT NOT NULL,
+    installmentid INT NULL,
+    amount BIGINT NOT NULL,
+    description VARCHAR(255) NULL,
+    paymentdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (loanid) REFERENCES loans(id) ON DELETE CASCADE,
+    FOREIGN KEY (installmentid) REFERENCES loaninstallments(id) ON DELETE SET NULL,
+
+    CONSTRAINT check_loan_payment_positive CHECK (amount > 0)
+);
+
+-- Índices
+CREATE INDEX idx_loans_user_status ON loans(userid, statusid);
+CREATE INDEX idx_loans_user ON loans(userid);
+CREATE INDEX idx_loaninstallments_loan_status ON loaninstallments(loanid, statusid);
+CREATE INDEX idx_loaninstallments_loan_number ON loaninstallments(loanid, installmentnumber);
+CREATE INDEX idx_loanpayments_loan ON loanpayments(loanid);
+CREATE INDEX idx_loanpayments_installment ON loanpayments(installmentid);
