@@ -5,5 +5,5 @@ export interface ILoanInstallmentAccessService {
   createMany(requests: CreateLoanInstallmentAccessRequest[]): Promise<LoanInstallmentAccessModel[]>;
   getByLoanId(loanId: number): Promise<LoanInstallmentAccessModel[]>;
   markAsPaid(id: number, paidAmount: number): Promise<LoanInstallmentAccessModel>;
-  skip(id: number): Promise<LoanInstallmentAccessModel>;
+  markAsSkipped(id: number): Promise<LoanInstallmentAccessModel>;
 }

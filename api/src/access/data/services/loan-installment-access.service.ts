@@ -58,7 +58,7 @@ export class LoanInstallmentAccessService extends BaseAccessService implements I
     return this.mapEntityToModel(data);
   };
 
-  public skip = async (id: number): Promise<LoanInstallmentAccessModel> => {
+  public markAsSkipped = async (id: number): Promise<LoanInstallmentAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.LoanInstallments)
       .update({ statusid: 3 })

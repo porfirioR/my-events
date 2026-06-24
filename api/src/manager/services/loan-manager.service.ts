@@ -163,7 +163,7 @@ export class LoanManagerService {
 
   public skipInstallment = async (installmentId: number, loanId: number, userId: number): Promise<LoanInstallmentModel> => {
     await this.loanAccessService.getById(loanId, userId);
-    const updated = await this.installmentAccessService.skip(installmentId);
+    const updated = await this.installmentAccessService.markAsSkipped(installmentId);
     return this.mapInstallmentToModel(updated);
   };
 
