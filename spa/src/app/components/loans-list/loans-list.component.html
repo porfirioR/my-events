@@ -143,8 +143,8 @@
                     </span>
 
                     <!-- Tipo -->
-                    <span class="badge badge-sm badge-soft" [ngClass]="LoanTypeBadgeColors[loan.loanTypeId]">
-                      {{ LoanTypeLabels[loan.loanTypeId] }}
+                    <span class="badge badge-sm badge-soft" [ngClass]="getLoanTypeBadgeColor(loan.loanTypeId)">
+                      {{ getLoanTypeLabel(loan.loanTypeId) | translate }}
                     </span>
 
                     <!-- Cuotas -->

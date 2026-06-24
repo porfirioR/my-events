@@ -115,6 +115,13 @@ export class LoansListComponent implements OnInit {
     return icons[statusId] ?? 'fa-circle';
   }
 
+  protected getLoanTypeLabel = (typeId: number): string =>
+    LoanTypeLabels[typeId as LoanType] ?? '';
+
+  protected getLoanTypeBadgeColor = (typeId: number): string =>
+    LoanTypeBadgeColors[typeId as LoanType] ?? '';
+
   protected formatCurrency = this.formatterService.formatCurrency;
-  protected getFormattedDate = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
+  protected getFormattedDate = (dateStr: string): string =>
+    this.formatterService.getFormattedDateCustom(new Date(dateStr));
 }

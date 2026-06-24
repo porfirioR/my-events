@@ -17,8 +17,8 @@ import { UpsertSavingsGoalComponent } from './components/upsert-savings-goal/ups
 import { SavingsGoalDetailComponent } from './components/savings-goal-detail/savings-goal-detail.component';
 import { SavingsGoalsListComponent } from './components/savings-goals-list/savings-goals-list.component';
 import { LoansListComponent } from './components/loans-list/loans-list.component';
-import { LoanDetailComponent } from './components/loan-detail/loan-detail.component';
 import { UpsertLoanComponent } from './components/upsert-loan/upsert-loan.component';
+import { LoanDetailComponent } from './components/loan-detail/loan-detail.component';
 
 export const routes: Routes = [
   {
@@ -67,24 +67,24 @@ export const routes: Routes = [
           {
             path: '',
             title: 'Loans',
-            loadComponent: () => LoansListComponent,
+            loadComponent: () => LoansListComponent
           },
           {
             path: 'create',
             title: 'New Loan',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertLoanComponent,
+            loadComponent: () => UpsertLoanComponent
           },
           {
             path: ':id',
             title: 'Loan Detail',
-            loadComponent: () => LoanDetailComponent,
+            loadComponent: () => LoanDetailComponent
           },
           {
             path: ':id/edit',
             title: 'Edit Loan',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertLoanComponent,
+            loadComponent: () => UpsertLoanComponent
           },
         ],
       },

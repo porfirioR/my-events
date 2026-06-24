@@ -8,7 +8,6 @@ import { TRANSACTION_TOKENS } from '../utility/constants';
 import { LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants/injection-tokens.const';
 import { TravelManagerService } from './services/travel-manager.service';
 import { LoanManagerService } from './services/loan-manager.service';
-import { LoanEntityTermAccessService } from '../access/data/services/loan-entity-term-access.service';
 import { DashboardManagerService } from './services/dashboard-manager.service';
 import { BlobModule } from '../access/blob/blob.module';
 
@@ -31,7 +30,6 @@ import { BlobModule } from '../access/blob/blob.module';
     TransactionManagerService,
     TravelManagerService,
     LoanManagerService,
-    LoanEntityTermAccessService,
     DashboardManagerService,
     {
       provide: TRANSACTION_TOKENS.MANAGER_SERVICE,

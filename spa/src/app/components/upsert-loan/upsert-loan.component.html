@@ -118,9 +118,9 @@
                   type="button"
                   class="btn btn-xs"
                   [ngClass]="{'btn-info': formGroup.controls.numberOfInstallments.value == term.key, 'btn-outline btn-info': formGroup.controls.numberOfInstallments.value != term.key}"
-                  (click)="formGroup.controls.numberOfInstallments.setValue(term.key)"
+                  (click)="formGroup.controls.numberOfInstallments.setValue(+term.key)"
                 >
-                  {{ term.value }} <span class="text-xs opacity-70">({{ term.description }})</span>
+                  {{ term.value }} <span class="text-xs opacity-70">({{ term.moreData }})</span>
                 </button>
               }
             </div>
