@@ -24,7 +24,7 @@
         id="name"
         name="name"
         [description]="'upsertLoan.nameExample' | translate"
-        [disabled]="saving"
+        [disabled]="saving()"
       />
 
       <!-- Descripción -->
@@ -34,7 +34,7 @@
         [placeholder]="'upsertLoan.descriptionPlaceholder' | translate"
         id="description"
         name="description"
-        [disabled]="saving"
+        [disabled]="saving()"
       />
 
       @if (!isEditMode) {
@@ -45,7 +45,7 @@
           [label]="'upsertLoan.currency' | translate"
           name="currency"
           [list]="currencyList"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
 
         <!-- Entidad prestamista -->
@@ -55,7 +55,7 @@
           [label]="'upsertLoan.lenderEntity' | translate"
           name="loanEntityId"
           [list]="loanEntityList"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
 
         <!-- Nombre personalizado (Otros) -->
@@ -67,7 +67,7 @@
             id="lenderCustomName"
             name="lenderCustomName"
             [description]="'upsertLoan.lenderCustomNameExample' | translate"
-            [disabled]="saving"
+            [disabled]="saving()"
           />
         }
 
@@ -78,7 +78,7 @@
           [label]="'upsertLoan.loanType' | translate"
           name="loanTypeId"
           [list]="loanTypeList"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
 
         <!-- Tipo de Amortización -->
@@ -88,7 +88,7 @@
           [label]="'upsertLoan.amortizationType' | translate"
           name="amortizationType"
           [list]="amortizationTypeList"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
 
         <!-- Monto principal -->
@@ -99,7 +99,7 @@
           id="principalAmount"
           name="principalAmount"
           [description]="'upsertLoan.principalAmountDesc' | translate"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
 
         <!-- Plazos disponibles para la entidad -->
@@ -135,7 +135,7 @@
           id="numberOfInstallments"
           name="numberOfInstallments"
           [description]="'upsertLoan.numberOfInstallmentsDesc' | translate"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
 
         <!-- Tasa anual -->
@@ -146,7 +146,7 @@
           id="annualRatePercentage"
           name="annualRatePercentage"
           [description]="'upsertLoan.annualRateDesc' | translate"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
       }
 
@@ -156,7 +156,7 @@
         [label]="'upsertLoan.startDate' | translate"
         id="startDate"
         name="startDate"
-        [disabled]="saving || isEditMode"
+        [disabled]="saving() || isEditMode"
       />
 
       <!-- Preview calculado -->
@@ -199,7 +199,7 @@
                 [label]="'upsertLoan.actualInstallmentAmount' | translate"
                 id="actualInstallmentAmount"
                 name="actualInstallmentAmount"
-                [disabled]="saving"
+                [disabled]="saving()"
               />
               <app-text
                 formControlName="actualTotalAmount"
@@ -207,7 +207,7 @@
                 [label]="'upsertLoan.actualTotalAmount' | translate"
                 id="actualTotalAmount"
                 name="actualTotalAmount"
-                [disabled]="saving"
+                [disabled]="saving()"
               />
             </div>
           </div>
@@ -222,17 +222,17 @@
           [label]="'upsertLoan.loanType' | translate"
           name="loanTypeId"
           [list]="loanTypeList"
-          [disabled]="saving"
+          [disabled]="saving()"
         />
       }
 
       <!-- Botones -->
       <div class="flex justify-end gap-3 pt-4">
-        <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving">
+        <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
           {{ 'common.cancel' | translate }}
         </button>
-        <button type="submit" class="btn btn-warning" [disabled]="saving || formGroup.invalid">
-          @if (saving) {
+        <button type="submit" class="btn btn-warning" [disabled]="saving() || formGroup.invalid">
+          @if (saving()) {
             <span class="loading loading-spinner loading-sm"></span>
           } @else {
             <i class="fas fa-save mr-1"></i>
