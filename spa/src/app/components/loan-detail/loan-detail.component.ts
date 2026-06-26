@@ -68,6 +68,7 @@ export class LoanDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = this.activatedRoute.snapshot.params['id'];
     if (!id) { this.router.navigate(['/loans']); return; }
+    this.loansStore.clearSelectedLoan();
     this.loansStore.loadLoanById(+id);
     this.loansStore.loadInstallments(+id);
     this.loansStore.loadPayments(+id);
@@ -122,8 +123,12 @@ export class LoanDetailComponent implements OnInit {
   protected skipInstallment(installmentId: number): void {
     const loanId = this.loan()?.id;
     if (!loanId) return;
-    this.loansStore.skipInstallment({ loanId, installmentId });
-    this.alertService.showSuccess(this.translate.instant('loanDetail.skippedSuccess'));
+    this.loansStore.skipInstallment(loanId, installmentId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.alertService.showSuccess(this.translate.instant('loanDetail.skippedSuccess')),
+        error: (e) => { this.alertService.showError(this.translate.instant('loanDetail.skippedError')); throw e; },
+      });
   }
 
   protected back(): void {

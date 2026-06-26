@@ -58,7 +58,7 @@ export class UpsertLoanComponent implements OnInit {
   private currencyStore = useCurrencyStore();
 
   protected isEditMode = false;
-  protected saving = false;
+  protected saving = signal(false);
   public ignorePreventUnsavedChanges = false;
 
   protected LoanEntity = LoanEntity;
@@ -267,7 +267,7 @@ export class UpsertLoanComponent implements OnInit {
   protected save = (event?: Event): void => {
     event?.preventDefault();
     if (this.formGroup.invalid) { this.formGroup.markAllAsTouched(); return; }
-    this.saving = true;
+    this.saving.set(true);
     const values = this.formGroup.getRawValue();
     this.formGroup.disable({ emitEvent: false });
 
@@ -282,7 +282,7 @@ export class UpsertLoanComponent implements OnInit {
           this.alertService.showSuccess(this.translate.instant('upsertLoan.updatedSuccess'));
           this.exit();
         },
-        error: (e) => { this.formGroup.enable({ emitEvent: false }); this.saving = false; throw e; },
+        error: (e) => { this.formGroup.enable({ emitEvent: false }); this.saving.set(false); throw e; },
       });
     } else {
       const request = new CreateLoanApiRequest(
@@ -299,7 +299,7 @@ export class UpsertLoanComponent implements OnInit {
           this.exit();
         },
         error: (e) => {
-          this.formGroup.enable({ emitEvent: false }); this.saving = false;
+          this.formGroup.enable({ emitEvent: false }); this.saving.set(false);
           this.alertService.showError(this.translate.instant('upsertLoan.createdError'));
           throw e;
         },

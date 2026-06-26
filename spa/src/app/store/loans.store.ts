@@ -1,7 +1,7 @@
 import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
 import { inject, computed } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, tap, switchMap, catchError, of } from 'rxjs';
+import { pipe, tap, switchMap, catchError, of, Observable } from 'rxjs';
 import {
   LoanApiModel,
   LoanInstallmentApiModel,
@@ -219,7 +219,14 @@ export const LoansStore = signalStore(
             const paidInst = updatedInstallments.find(i => i.id === installmentId);
             const newTotalPaid = loan.totalPaid + request.amount;
             const newBalance = Math.max(loan.currentBalance - (paidInst?.principalAmount ?? 0), 0);
-            const updatedLoan = { ...loan, totalPaid: newTotalPaid, currentBalance: newBalance };
+            const isCompleted = newBalance === 0;
+            const updatedLoan = {
+              ...loan,
+              totalPaid: newTotalPaid,
+              currentBalance: newBalance,
+              paidInstallmentsCount: loan.paidInstallmentsCount + 1,
+              ...(isCompleted ? { statusId: 2, completedDate: new Date().toISOString() } : {}),
+            };
             patchState(store, {
               installments: updatedInstallments,
               payments: [payment, ...store.payments()],
@@ -237,20 +244,18 @@ export const LoansStore = signalStore(
       );
     },
 
-    skipInstallment: rxMethod<{ loanId: number; installmentId: number }>(
-      pipe(
-        tap(() => { loadingStore.setLoading(); }),
-        switchMap(({ loanId, installmentId }) => loanApiService.skipInstallment(loanId, installmentId).pipe(
-          tap(updated => {
-            patchState(store, {
-              installments: store.installments().map(i => i.id === installmentId ? updated : i),
-            });
-            loadingStore.setLoadingSuccess();
-          }),
-          catchError(error => { loadingStore.setLoadingSuccess(); throw new Error(error); }),
-        ))
-      )
-    ),
+    skipInstallment: (loanId: number, installmentId: number): Observable<LoanInstallmentApiModel> => {
+      loadingStore.setLoading();
+      return loanApiService.skipInstallment(loanId, installmentId).pipe(
+        tap(updated => {
+          patchState(store, {
+            installments: store.installments().map(i => i.id === installmentId ? updated : i),
+          });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => { loadingStore.setLoadingSuccess(); throw new Error(error); }),
+      );
+    },
 
     clearSelectedLoan: () => patchState(store, {
       selectedLoan: undefined,
