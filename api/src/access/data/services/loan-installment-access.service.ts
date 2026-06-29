@@ -46,10 +46,10 @@ export class LoanInstallmentAccessService extends BaseAccessService implements I
     return (data as LoanInstallmentEntity[] ?? []).map(this.mapEntityToModel);
   };
 
-  public markAsPaid = async (id: number, paidAmount: number): Promise<LoanInstallmentAccessModel> => {
+  public markAsPaid = async (id: number, paidAmount: number, paymentDate?: Date | null): Promise<LoanInstallmentAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.LoanInstallments)
-      .update({ statusid: 2, paiddate: new Date().toISOString(), paidamount: paidAmount })
+      .update({ statusid: 2, paiddate: (paymentDate ?? new Date()).toISOString(), paidamount: paidAmount })
       .eq('id', id)
       .select()
       .single<LoanInstallmentEntity>();

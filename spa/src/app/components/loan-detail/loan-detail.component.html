@@ -48,7 +48,7 @@
         <span class="font-bold" [ngClass]="l.statusId === 2 ? 'text-success' : 'text-warning'">{{ progress() }}%</span>
       </div>
       <progress class="progress w-full" [ngClass]="l.statusId === 2 ? 'progress-success' : 'progress-warning'"
-        [value]="l.totalPaid" [max]="l.actualTotalAmount"></progress>
+        [value]="l.totalPaid" [max]="l.actualTotalAmount || 1"></progress>
       <div class="flex justify-between text-xs text-base-content/60 mt-1">
         <span>{{ l.paidInstallmentsCount }}/{{ l.numberOfInstallments }} {{ 'loans.installments' | translate }}</span>
         <span>{{ 'loanDetail.rate' | translate }}: {{ l.annualRatePercentage }}%</span>
@@ -212,7 +212,7 @@
 }
 
 <!-- Modal: Pagar cuota -->
-<dialog id="pay-modal" class="modal">
+<dialog id="pay-modal" class="modal" (close)="closePayModal()">
   <div class="modal-box">
     <h3 class="font-bold text-lg mb-4">
       <i class="fas fa-credit-card mr-2 text-warning"></i>{{ 'loanDetail.payInstallment' | translate }}
@@ -220,11 +220,25 @@
     <form [formGroup]="payForm" class="space-y-4">
       <label class="form-control w-full">
         <div class="label"><span class="label-text">{{ 'loanDetail.payAmount' | translate }}</span></div>
-        <input type="number" formControlName="amount" class="input input-bordered w-full" min="1" />
+        <input type="number" formControlName="amount"
+          class="input input-bordered w-full"
+          [ngClass]="{'input-error': payForm.controls.amount.invalid && payForm.controls.amount.touched}"
+          min="1" />
+        @if (payForm.controls.amount.touched && payForm.controls.amount.hasError('required')) {
+          <p class="text-error text-xs mt-1">{{ 'loanDetail.payAmount' | translate }} {{ 'validation.required' | translate }}</p>
+        }
+        @if (payForm.controls.amount.touched && payForm.controls.amount.hasError('min')) {
+          <p class="text-error text-xs mt-1">{{ 'validation.min' | translate: { value: 1 } }}</p>
+        }
       </label>
       <label class="form-control w-full">
         <div class="label"><span class="label-text">{{ 'loanDetail.paymentDate' | translate }}</span></div>
-        <input type="date" formControlName="paymentDate" class="input input-bordered w-full" />
+        <input type="date" formControlName="paymentDate"
+          class="input input-bordered w-full"
+          [ngClass]="{'input-error': payForm.controls.paymentDate.invalid && payForm.controls.paymentDate.touched}" />
+        @if (payForm.controls.paymentDate.touched && payForm.controls.paymentDate.hasError('required')) {
+          <p class="text-error text-xs mt-1">{{ 'loanDetail.paymentDate' | translate }} {{ 'validation.required' | translate }}</p>
+        }
       </label>
       <label class="form-control w-full">
         <div class="label"><span class="label-text">{{ 'loanDetail.payDescription' | translate }}</span></div>

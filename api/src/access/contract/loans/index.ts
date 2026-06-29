@@ -9,3 +9,4 @@ export { CreateLoanPaymentAccessRequest } from './create-loan-payment-access-req
 export { ILoanAccessService } from './loan-access.interface';
 export { ILoanInstallmentAccessService } from './loan-installment-access.interface';
 export { ILoanPaymentAccessService } from './loan-payment-access.interface';
+export { ILoanEntityTermAccessService } from './loan-entity-term-access.interface';

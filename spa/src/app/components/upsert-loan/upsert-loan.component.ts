@@ -96,7 +96,7 @@ export class UpsertLoanComponent implements OnInit {
   protected isOtherEntity!: ReturnType<typeof computed<boolean>>;
 
   constructor() {
-    const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd', 'UTC') as string;
+    const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd') as string;
 
     this.formGroup = new FormGroup<LoanFormGroup>({
       id: new FormControl(null),
@@ -181,7 +181,7 @@ export class UpsertLoanComponent implements OnInit {
     const months = this.formGroup.controls.numberOfInstallments.value;
     if (!entityId || !months) return;
     const currentRate = this.formGroup.controls.annualRatePercentage.value;
-    if (currentRate) return;
+    if (currentRate !== null && currentRate !== undefined) return;
     const terms = this.loansStore.entityTermsByEntity().get(entityId) ?? [];
     const match = terms.find(t => t.termMonths === +months);
     if (match) {
@@ -195,7 +195,7 @@ export class UpsertLoanComponent implements OnInit {
     const n = this.formGroup.controls.numberOfInstallments.value;
     const amortType = this.formGroup.controls.amortizationType.value;
 
-    if (!principal || !rate || !n) {
+    if (!principal || rate === null || rate === undefined || !n) {
       this.calculatedInstallment.set(null);
       this.calculatedTotal.set(null);
       this.calculatedInterest.set(null);
@@ -236,14 +236,13 @@ export class UpsertLoanComponent implements OnInit {
   }
 
   private loadLoanIntoForm(loan: any): void {
-    const startDate = new DatePipe('en-US').transform(new Date(loan.startDate), 'yyyy-MM-dd', 'UTC') as string;
+    const startDate = (loan.startDate as string).substring(0, 10);
     this.formGroup.patchValue({
       id: loan.id,
       name: loan.name,
       description: loan.description,
       currencyId: loan.currencyId,
       loanTypeId: loan.loanTypeId,
-      loanEntityId: loan.loanEntityId,
       lenderCustomName: loan.lenderCustomName,
       principalAmount: loan.principalAmount,
       annualRatePercentage: loan.annualRatePercentage,
@@ -253,12 +252,14 @@ export class UpsertLoanComponent implements OnInit {
       amortizationType: loan.amortizationType,
       startDate,
       statusId: loan.statusId,
-    });
+    }, { emitEvent: false });
+    // Set loanEntityId with event so entityIdSignal receives the value before the control is disabled
+    this.formGroup.controls.loanEntityId.setValue(loan.loanEntityId);
     this.formGroup.controls.principalAmount.disable();
     this.formGroup.controls.annualRatePercentage.disable();
     this.formGroup.controls.numberOfInstallments.disable();
     this.formGroup.controls.amortizationType.disable();
-    this.formGroup.controls.loanEntityId.disable();
+    this.formGroup.controls.loanEntityId.disable({ emitEvent: false });
     this.recalculate();
     this.formGroup.controls.actualInstallmentAmount.setValue(loan.actualInstallmentAmount, { emitEvent: false });
     this.formGroup.controls.actualTotalAmount.setValue(loan.actualTotalAmount, { emitEvent: false });
@@ -282,7 +283,12 @@ export class UpsertLoanComponent implements OnInit {
           this.alertService.showSuccess(this.translate.instant('upsertLoan.updatedSuccess'));
           this.exit();
         },
-        error: (e) => { this.formGroup.enable({ emitEvent: false }); this.saving.set(false); throw e; },
+        error: (e) => {
+          this.formGroup.enable({ emitEvent: false });
+          this.saving.set(false);
+          this.alertService.showError(this.translate.instant('upsertLoan.updatedError'));
+          throw e;
+        },
       });
     } else {
       const request = new CreateLoanApiRequest(

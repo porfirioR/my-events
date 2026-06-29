@@ -130,7 +130,7 @@
                       class="progress w-full"
                       [ngClass]="loan.statusId === 2 ? 'progress-success' : 'progress-warning'"
                       [value]="loan.totalPaid"
-                      [max]="loan.actualTotalAmount">
+                      [max]="loan.actualTotalAmount || 1">
                     </progress>
                   </div>
 

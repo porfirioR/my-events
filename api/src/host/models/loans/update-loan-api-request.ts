@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min, MinLength } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 
 export class UpdateLoanApiRequest {
   @IsString()
@@ -15,5 +15,6 @@ export class UpdateLoanApiRequest {
 
   @IsInt()
   @Min(1)
+  @Max(4)
   statusId: number;
 }

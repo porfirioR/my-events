@@ -153,7 +153,12 @@ export class LoanDetailComponent implements OnInit {
   protected formatCurrency = this.formatterService.formatCurrency;
   protected formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return '';
-    return this.formatterService.getFormattedDateCustom(new Date(dateStr));
+    // Date-only DB columns arrive as UTC midnight ("YYYY-MM-DDT00:00:00.000Z").
+    // Re-parse as local midnight to avoid showing the previous day in UTC- timezones.
+    const normalized = dateStr.length > 10 && dateStr.substring(10) === 'T00:00:00.000Z'
+      ? dateStr.substring(0, 10) + 'T00:00:00'
+      : dateStr;
+    return this.formatterService.getFormattedDateCustom(new Date(normalized));
   };
 
   protected instBadgeColor = (statusId: number): string =>

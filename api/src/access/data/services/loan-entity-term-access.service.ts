@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { BaseAccessService, DbContextService } from '.';
 import { TableEnum } from '../../../utility/enums';
-import { LoanEntityTermAccessModel } from '../../contract/loans';
+import { ILoanEntityTermAccessService, LoanEntityTermAccessModel } from '../../contract/loans';
 import { LoanEntityTermEntity } from '../entities/loan-entity-term.entity';
 
 @Injectable()
-export class LoanEntityTermAccessService extends BaseAccessService {
+export class LoanEntityTermAccessService extends BaseAccessService implements ILoanEntityTermAccessService {
   constructor(dbContextService: DbContextService) {
     super(dbContextService);
   }

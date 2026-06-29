@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useTravelStore } from '../../store';
@@ -18,6 +19,7 @@ export class TravelsListComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
@@ -76,8 +78,12 @@ export class TravelsListComponent implements OnInit {
   protected finalizeTravel(travel: TravelApiModel): void {
     this.pendingCallback = (result) => {
       if (result.confirmed) {
-        this.travelStore.finalizeTravel(travel.id);
-        this.alertService.showSuccess(this.translate.instant('travels.travelFinalizedSuccess'));
+        this.travelStore.finalizeTravel(travel.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => this.alertService.showSuccess(this.translate.instant('travels.travelFinalizedSuccess')),
+            error: () => this.alertService.showError(this.translate.instant('travels.travelFinalizedError')),
+          });
       }
     };
     this.confirmDialog.open({
@@ -90,8 +96,12 @@ export class TravelsListComponent implements OnInit {
   protected deleteTravel(travel: TravelApiModel): void {
     this.pendingCallback = (result) => {
       if (result.confirmed) {
-        this.travelStore.deleteTravel(travel.id);
-        this.alertService.showSuccess(this.translate.instant('travels.travelDeletedSuccess'));
+        this.travelStore.deleteTravel(travel.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => this.alertService.showSuccess(this.translate.instant('travels.travelDeletedSuccess')),
+            error: () => this.alertService.showError(this.translate.instant('travels.travelDeletedError')),
+          });
       }
     };
     this.confirmDialog.open({

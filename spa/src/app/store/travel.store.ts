@@ -314,53 +314,49 @@ export const TravelStore = signalStore(
       );
     },
 
-    finalizeTravel: rxMethod<number>(
-      pipe(
-        tap(() => {
-          loadingStore.setLoading();
-          patchState(store, { error: null });
-        }),
-        switchMap((id) => travelApiService.finalizeTravel(id).pipe(
-          tap(finalizedTravel => {
-            const updatedTravels = store.travels().map(t =>
-              t.id === id ? finalizedTravel : t
-            );
-            patchState(store, {
-              travels: updatedTravels,
-              selectedTravel: finalizedTravel
-            });
-            loadingStore.setLoadingSuccess();
-          }),
-          catchError(error => {
-            patchState(store, { error: 'Failed to finalize travel' });
-            throw new Error(error);
-          })
-        ))
-      )
-    ),
+    finalizeTravel: (id: number) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
 
-    deleteTravel: rxMethod<number>(
-      pipe(
-        tap(() => {
-          loadingStore.setLoading();
-          patchState(store, { error: null });
+      return travelApiService.finalizeTravel(id).pipe(
+        tap(finalizedTravel => {
+          const updatedTravels = store.travels().map(t =>
+            t.id === id ? finalizedTravel : t
+          );
+          patchState(store, {
+            travels: updatedTravels,
+            selectedTravel: finalizedTravel
+          });
+          loadingStore.setLoadingSuccess();
         }),
-        switchMap((id) => travelApiService.deleteTravel(id).pipe(
-          tap(() => {
-            const updatedTravels = store.travels().filter(t => t.id !== id);
-            patchState(store, {
-              travels: updatedTravels,
-              selectedTravel: undefined
-            });
-            loadingStore.setLoadingSuccess();
-          }),
-          catchError(error => {
-            patchState(store, { error: 'Failed to delete travel' });
-            throw new Error(error);
-          })
-        ))
-      )
-    ),
+        catchError(error => {
+          patchState(store, { error: 'Failed to finalize travel' });
+          loadingStore.setLoadingSuccess();
+          throw new Error(error);
+        })
+      );
+    },
+
+    deleteTravel: (id: number) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+
+      return travelApiService.deleteTravel(id).pipe(
+        tap(() => {
+          const updatedTravels = store.travels().filter(t => t.id !== id);
+          patchState(store, {
+            travels: updatedTravels,
+            selectedTravel: undefined
+          });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to delete travel' });
+          loadingStore.setLoadingSuccess();
+          throw new Error(error);
+        })
+      );
+    },
 
     // ==================== TRAVEL MEMBERS ====================
 

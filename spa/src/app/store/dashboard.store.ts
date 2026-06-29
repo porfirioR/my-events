@@ -34,7 +34,6 @@ export const DashboardStore = signalStore(
         }),
         switchMap(() => {
           if (store.isLoaded()) {
-            loadingStore.setLoadingSuccess();
             return of(null);
           }
           return dashboardApiService.getSummary().pipe(

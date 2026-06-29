@@ -162,28 +162,67 @@
                     </div>
                   </div>
 
-                  <!-- Progress Bar -->
-                  <div class="mt-3">
-                    <div class="flex items-center justify-between text-sm mb-1">
-                      <span class="text-base-content/70">
-                        {{ formatCurrency(goal.currentAmount, goal.currencyId) }} / {{ formatCurrency(getProgressTarget(goal), goal.currencyId) }}
-                      </span>
-                      <span class="font-semibold" [ngClass]="getGoalStatusColor(goal.statusId)">
-                        {{ getGoalProgress(goal) }}%
-                      </span>
+                  <!-- Progress: Plazo Fijo / CDA -->
+                  @if (isDepositType(goal)) {
+                    <div class="mt-3 p-3 bg-base-200/60 rounded-lg">
+                      <div class="flex items-center justify-between gap-2 text-sm flex-wrap">
+                        <div>
+                          <p class="text-xs text-base-content/50 mb-0.5">{{ 'savingsGoals.deposit' | translate }}</p>
+                          <span class="font-semibold">{{ formatCurrency(goal.baseAmount ?? goal.currentAmount, goal.currencyId) }}</span>
+                        </div>
+                        <i class="fas fa-arrow-right text-base-content/30 text-xs"></i>
+                        <div class="text-right">
+                          <p class="text-xs text-base-content/50 mb-0.5">{{ 'savingsGoals.atMaturity' | translate }}</p>
+                          <span class="font-bold">{{ formatCurrency(goal.targetAmount, goal.currencyId) }}</span>
+                          @if (getMaturityGain(goal) > 0) {
+                            <p class="text-xs text-success font-semibold mt-0.5">
+                              <i class="fas fa-arrow-trend-up mr-1"></i>+{{ formatCurrency(getMaturityGain(goal), goal.currencyId) }}
+                            </p>
+                          }
+                        </div>
+                      </div>
                     </div>
-                    <progress
-                      class="progress w-full"
-                      [ngClass]="{
-                        'progress-success': goal.statusId === GoalStatus.Active,
-                        'progress-info': goal.statusId === GoalStatus.Completed,
-                        'progress-warning': goal.statusId === GoalStatus.Paused,
-                        'progress-error': goal.statusId === GoalStatus.Cancelled
-                      }"
-                      [value]="goal.currentAmount"
-                      [max]="getProgressTarget(goal)">
-                    </progress>
-                  </div>
+                    @if (goal.numberOfInstallments) {
+                      <div class="mt-2">
+                        <div class="flex items-center justify-between text-xs mb-1">
+                          <span class="text-base-content/60">
+                            {{ getMonthsElapsed(goal.startDate) }} / {{ goal.numberOfInstallments }}
+                            {{ (goal.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
+                          </span>
+                          <span class="font-medium">{{ getDepositTimeProgress(goal) }}%</span>
+                        </div>
+                        <progress
+                          class="progress w-full"
+                          [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'progress-success' : 'progress-warning'"
+                          [value]="getDepositTimeProgress(goal)"
+                          [max]="100">
+                        </progress>
+                      </div>
+                    }
+                  } @else {
+                    <!-- Progress Bar estándar -->
+                    <div class="mt-3">
+                      <div class="flex items-center justify-between text-sm mb-1">
+                        <span class="text-base-content/70">
+                          {{ formatCurrency(goal.currentAmount, goal.currencyId) }} / {{ formatCurrency(getProgressTarget(goal), goal.currencyId) }}
+                        </span>
+                        <span class="font-semibold" [ngClass]="getGoalStatusColor(goal.statusId)">
+                          {{ getGoalProgress(goal) }}%
+                        </span>
+                      </div>
+                      <progress
+                        class="progress w-full"
+                        [ngClass]="{
+                          'progress-success': goal.statusId === GoalStatus.Active,
+                          'progress-info': goal.statusId === GoalStatus.Completed,
+                          'progress-warning': goal.statusId === GoalStatus.Paused,
+                          'progress-error': goal.statusId === GoalStatus.Cancelled
+                        }"
+                        [value]="goal.currentAmount"
+                        [max]="getProgressTarget(goal) || 1">
+                      </progress>
+                    </div>
+                  }
 
                   <!-- Metadata -->
                   <div class="flex items-center gap-4 mt-3 flex-wrap">
@@ -211,8 +250,14 @@
                         {{ goal.paidInstallmentsCount }}/{{ goal.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
                       </span>
                     }
-                    @if (goal.numberOfInstallments && (goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA)) {
-                      <span class="badge badge-sm badge-soft gap-1" [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'badge-neutral' : 'badge-warning'">
+                    @if (isDepositType(goal) && goal.annualRatePercentage) {
+                      <span class="badge badge-sm badge-soft gap-1" [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'badge-info' : 'badge-warning'">
+                        <i class="fas fa-percent"></i>
+                        {{ goal.annualRatePercentage }}% TNA
+                      </span>
+                    }
+                    @if (goal.numberOfInstallments && isDepositType(goal)) {
+                      <span class="badge badge-sm badge-soft gap-1" [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'badge-info' : 'badge-warning'">
                         <i class="fas fa-clock"></i>
                         {{ goal.numberOfInstallments }} {{ (goal.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
                       </span>

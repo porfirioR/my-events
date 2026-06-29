@@ -4,6 +4,7 @@ import {
   ILoanAccessService,
   ILoanInstallmentAccessService,
   ILoanPaymentAccessService,
+  ILoanEntityTermAccessService,
   CreateLoanAccessRequest,
   UpdateLoanAccessRequest,
   CreateLoanInstallmentAccessRequest,
@@ -20,7 +21,6 @@ import {
   PayLoanInstallmentRequest,
 } from '../models/loans';
 import { LoanCalculatorHelper } from '../../utility/helpers/loan-calculator.helper';
-import { LoanEntityTermAccessService } from '../../access/data/services/loan-entity-term-access.service';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
 
 @Injectable()
@@ -35,7 +35,8 @@ export class LoanManagerService {
     @Inject(LOAN_TOKENS.PAYMENT_ACCESS_SERVICE)
     private readonly paymentAccessService: ILoanPaymentAccessService,
 
-    private readonly loanEntityTermAccessService: LoanEntityTermAccessService,
+    @Inject(LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE)
+    private readonly loanEntityTermAccessService: ILoanEntityTermAccessService,
   ) {}
 
   // ==================== ENTITY TERMS ====================
@@ -142,9 +143,12 @@ export class LoanManagerService {
     const installment = installments.find(i => i.id === request.installmentId);
 
     if (!installment) throw new NotFoundException(`Installment ${request.installmentId} not found`);
-    if (installment.statusId === 2) throw new BadRequestException('Installment already paid');
+    if (installment.statusId !== 1) throw new BadRequestException('Installment is not in pending status');
+    if (request.amount < 1) {
+      throw new BadRequestException('Payment amount must be greater than zero');
+    }
 
-    await this.installmentAccessService.markAsPaid(request.installmentId, request.amount);
+    await this.installmentAccessService.markAsPaid(request.installmentId, request.amount, request.paymentDate);
 
     const newTotalPaid = loan.totalPaid + request.amount;
     const newBalance = Math.max(loan.currentBalance - installment.principalAmount, 0);

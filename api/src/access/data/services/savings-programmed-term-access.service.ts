@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { TableEnum } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
-import { SavingsProgrammedTermAccessModel } from '../../contract/savings/savings-programmed-term-access.model';
+import { ISavingsProgrammedTermAccessService, SavingsProgrammedTermAccessModel } from '../../contract/savings';
 import { SavingsProgrammedTermEntity } from '../entities/savings-programmed-term.entity';
 
 @Injectable()
-export class SavingsProgrammedTermAccessService extends BaseAccessService {
+export class SavingsProgrammedTermAccessService extends BaseAccessService implements ISavingsProgrammedTermAccessService {
   constructor(dbContextService: DbContextService) {
     super(dbContextService);
   }

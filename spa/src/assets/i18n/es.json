@@ -457,7 +457,7 @@
     "rejected": "Rechazada",
     "pending": "Pendiente",
     "individualAmounts": "Montos individuales",
-    "youAlreadyApproved":"Aaprobado",
+    "youAlreadyApproved": "Ya aprobaste esta operación",
     "addFirstAttachment": "Agregar Primer Archivo",
     "attachmentUploadedSuccess": "Archivo subido exitosamente",
     "attachmentUploadError": "Error al subir el archivo",
@@ -513,7 +513,9 @@
     "createGoal": "Crear Meta",
     "deleteGoalTitle": "Eliminar Meta de Ahorro",
     "deleteGoalMessage": "¿Estás seguro de que quieres eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
-    "goalDeletedSuccess": "Meta de ahorro eliminada exitosamente"
+    "goalDeletedSuccess": "Meta de ahorro eliminada exitosamente",
+    "deposit": "Depósito",
+    "atMaturity": "Al vencimiento"
   },
   "savingsGoalDetail": {
     "edit": "Editar",
@@ -764,7 +766,11 @@
     "Edit Travel": "Editar Viaje",
     "New Operation": "Nueva Operación",
     "Operation Detail": "Detalle de Operación",
-    "Edit Operation": "Editar Operación"
+    "Edit Operation": "Editar Operación",
+    "Loans": "Préstamos",
+    "New Loan": "Nuevo Préstamo",
+    "Loan Detail": "Detalle del Préstamo",
+    "Edit Loan": "Editar Préstamo"
   },
   "travels": {
     "title": "Viajes",
@@ -996,7 +1002,8 @@
     "confirmPay": "Confirmar pago",
     "paidSuccess": "Cuota registrada como pagada",
     "paidError": "Error al registrar el pago",
-    "skippedSuccess": "Cuota omitida"
+    "skippedSuccess": "Cuota omitida",
+    "skippedError": "Error al omitir la cuota"
   },
   "upsertLoan": {
     "newTitle": "Nuevo Préstamo",
@@ -1035,6 +1042,7 @@
     "createLoan": "Crear Préstamo",
     "createdSuccess": "Préstamo creado correctamente",
     "createdError": "Error al crear el préstamo",
-    "updatedSuccess": "Préstamo actualizado correctamente"
+    "updatedSuccess": "Préstamo actualizado correctamente",
+    "updatedError": "Error al actualizar el préstamo"
   }
 }

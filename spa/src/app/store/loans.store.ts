@@ -212,7 +212,7 @@ export const LoansStore = signalStore(
       return loanApiService.payInstallment(loanId, installmentId, request).pipe(
         tap(payment => {
           const updatedInstallments = store.installments().map(i =>
-            i.id === installmentId ? { ...i, statusId: 2, paidDate: new Date().toISOString(), paidAmount: request.amount } : i
+            i.id === installmentId ? { ...i, statusId: 2, paidDate: request.paymentDate ?? new Date().toISOString(), paidAmount: request.amount } : i
           );
           const loan = store.selectedLoan();
           if (loan) {

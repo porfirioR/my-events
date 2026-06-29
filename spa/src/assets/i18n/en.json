@@ -458,7 +458,7 @@
     "rejected": "Rejected",
     "pending": "Pending",
     "individualAmounts": "Individual amounts",
-    "youAlreadyApproved":"Approved",
+    "youAlreadyApproved": "You already approved this operation",
     "addFirstAttachment": "Add First File",
     "attachmentUploadedSuccess": "File uploaded successfully",
     "attachmentUploadError": "Failed to upload file",
@@ -514,7 +514,9 @@
     "createGoal": "Create Goal",
     "deleteGoalTitle": "Delete Savings Goal",
     "deleteGoalMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-    "goalDeletedSuccess": "Savings goal deleted successfully"
+    "goalDeletedSuccess": "Savings goal deleted successfully",
+    "deposit": "Deposit",
+    "atMaturity": "At maturity"
   },
   "savingsGoalDetail": {
     "edit": "Edit",
@@ -765,7 +767,11 @@
     "Edit Travel": "Edit Travel",
     "New Operation": "New Operation",
     "Operation Detail": "Operation Detail",
-    "Edit Operation": "Edit Operation"
+    "Edit Operation": "Edit Operation",
+    "Loans": "Loans",
+    "New Loan": "New Loan",
+    "Loan Detail": "Loan Detail",
+    "Edit Loan": "Edit Loan"
   },
   "travels": {
     "title": "Travels",
@@ -997,7 +1003,8 @@
     "confirmPay": "Confirm payment",
     "paidSuccess": "Installment marked as paid",
     "paidError": "Error recording payment",
-    "skippedSuccess": "Installment skipped"
+    "skippedSuccess": "Installment skipped",
+    "skippedError": "Error skipping installment"
   },
   "upsertLoan": {
     "newTitle": "New Loan",
@@ -1036,6 +1043,7 @@
     "createLoan": "Create Loan",
     "createdSuccess": "Loan created successfully",
     "createdError": "Error creating loan",
-    "updatedSuccess": "Loan updated successfully"
+    "updatedSuccess": "Loan updated successfully",
+    "updatedError": "Error updating loan"
   }
 }

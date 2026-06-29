@@ -3,6 +3,7 @@ import {
   ISavingsGoalAccessService,
   ISavingsInstallmentAccessService,
   ISavingsDepositAccessService,
+  ISavingsProgrammedTermAccessService,
   CreateSavingsGoalAccessRequest,
   UpdateSavingsGoalAccessRequest,
   CreateSavingsInstallmentAccessRequest,
@@ -25,7 +26,6 @@ import {
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { ProgressionType } from 'src/utility/enums';
-import { SavingsProgrammedTermAccessService } from '../../access/data/services/savings-programmed-term-access.service';
 
 @Injectable()
 export class SavingsManagerService {
@@ -39,7 +39,8 @@ export class SavingsManagerService {
     @Inject(SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE)
     private readonly savingsDepositAccessService: ISavingsDepositAccessService,
 
-    private readonly savingsProgrammedTermAccessService: SavingsProgrammedTermAccessService,
+    @Inject(SAVINGS_TOKENS.PROGRAMMED_TERM_ACCESS_SERVICE)
+    private readonly savingsProgrammedTermAccessService: ISavingsProgrammedTermAccessService,
   ) {}
 
   // ==================== SAVINGS GOALS ====================

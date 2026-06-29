@@ -122,6 +122,10 @@ export class LoansListComponent implements OnInit {
     LoanTypeBadgeColors[typeId as LoanType] ?? '';
 
   protected formatCurrency = this.formatterService.formatCurrency;
-  protected getFormattedDate = (dateStr: string): string =>
-    this.formatterService.getFormattedDateCustom(new Date(dateStr));
+  protected getFormattedDate = (dateStr: string): string => {
+    const normalized = dateStr.length > 10 && dateStr.substring(10) === 'T00:00:00.000Z'
+      ? dateStr.substring(0, 10) + 'T00:00:00'
+      : dateStr;
+    return this.formatterService.getFormattedDateCustom(new Date(normalized));
+  };
 }

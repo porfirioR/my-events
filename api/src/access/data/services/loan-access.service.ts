@@ -96,7 +96,8 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
       .single<LoanEntity>();
 
     if (error) throw new InternalServerErrorException(error.message);
-    return this.mapEntityToModel(data);
+    const paidCount = await this.getPaidInstallmentsCount(request.id);
+    return this.mapEntityToModel(data, paidCount);
   };
 
   public updateBalance = async (id: number, userId: number, currentBalance: number, totalPaid: number): Promise<LoanAccessModel> => {
@@ -119,7 +120,8 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
       .single<LoanEntity>();
 
     if (error) throw new InternalServerErrorException(error.message);
-    return this.mapEntityToModel(data);
+    const paidCount = await this.getPaidInstallmentsCount(id);
+    return this.mapEntityToModel(data, paidCount);
   };
 
   public markAsCompleted = async (id: number, userId: number): Promise<LoanAccessModel> => {
@@ -132,7 +134,8 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
       .single<LoanEntity>();
 
     if (error) throw new InternalServerErrorException(error.message);
-    return this.mapEntityToModel(data);
+    const paidCount = await this.getPaidInstallmentsCount(id);
+    return this.mapEntityToModel(data, paidCount);
   };
 
   public delete = async (id: number, userId: number): Promise<void> => {
