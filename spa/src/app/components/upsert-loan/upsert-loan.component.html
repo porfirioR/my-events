@@ -1,5 +1,5 @@
 <section class="container mx-auto px-4 py-8">
-  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-warning ring-warning ring-1">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
     <header class="mb-6">
       <div class="flex items-center justify-between">
         <button type="button" class="btn btn-sm btn-ghost btn-circle" [routerLink]="['/loans']">
@@ -159,6 +159,44 @@
         [disabled]="saving() || isEditMode"
       />
 
+      <!-- Costos adicionales opcionales -->
+      <div class="p-4 bg-base-100 border border-base-300 rounded-lg">
+        <div class="flex items-start gap-2 mb-3">
+          <i class="fas fa-receipt text-base-content/60 mt-1"></i>
+          <div>
+            <h3 class="font-semibold text-base-content">{{ 'upsertLoan.additionalCosts' | translate }}</h3>
+            <p class="text-sm text-base-content/70">{{ 'upsertLoan.additionalCostsDesc' | translate }}</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <app-text
+            formControlName="administrativeFees"
+            type="number"
+            [label]="'upsertLoan.administrativeFees' | translate"
+            id="administrativeFees"
+            name="administrativeFees"
+            [disabled]="saving()"
+          />
+          <app-text
+            formControlName="ivaPercentage"
+            type="number"
+            [label]="'upsertLoan.ivaPercentage' | translate"
+            id="ivaPercentage"
+            name="ivaPercentage"
+            [description]="'upsertLoan.ivaPercentageDesc' | translate"
+            [disabled]="saving()"
+          />
+          <app-text
+            formControlName="insuranceAmount"
+            type="number"
+            [label]="'upsertLoan.insuranceAmount' | translate"
+            id="insuranceAmount"
+            name="insuranceAmount"
+            [disabled]="saving()"
+          />
+        </div>
+      </div>
+
       <!-- Preview calculado -->
       @if (yieldInfo(); as info) {
         <div class="p-4 bg-warning/10 border border-warning rounded-lg">
@@ -180,6 +218,32 @@
               <p class="text-lg font-bold text-base-content">{{ formatCurrency(info.totalAmount, formGroup.controls.currencyId.value ?? 1) }}</p>
             </div>
           </div>
+          @if (info.extraCosts > 0) {
+            <div class="mt-3 pt-3 border-t border-warning/30 space-y-1 text-sm">
+              @if (formGroup.controls.administrativeFees.value) {
+                <div class="flex justify-between text-base-content/70">
+                  <span>+ {{ 'upsertLoan.administrativeFees' | translate }}</span>
+                  <span>{{ formatCurrency(formGroup.controls.administrativeFees.value, formGroup.controls.currencyId.value ?? 1) }}</span>
+                </div>
+              }
+              @if (info.ivaAmount > 0) {
+                <div class="flex justify-between text-base-content/70">
+                  <span>+ {{ 'upsertLoan.ivaPercentage' | translate }} ({{ formGroup.controls.ivaPercentage.value }}%)</span>
+                  <span>{{ formatCurrency(info.ivaAmount, formGroup.controls.currencyId.value ?? 1) }}</span>
+                </div>
+              }
+              @if (formGroup.controls.insuranceAmount.value) {
+                <div class="flex justify-between text-base-content/70">
+                  <span>+ {{ 'upsertLoan.insuranceAmount' | translate }}</span>
+                  <span>{{ formatCurrency(formGroup.controls.insuranceAmount.value, formGroup.controls.currencyId.value ?? 1) }}</span>
+                </div>
+              }
+              <div class="flex justify-between font-bold text-base-content pt-1 border-t border-warning/30">
+                <span>{{ 'upsertLoan.calculatedTotal' | translate }}</span>
+                <span class="text-warning">{{ formatCurrency(info.totalWithExtras, formGroup.controls.currencyId.value ?? 1) }}</span>
+              </div>
+            </div>
+          }
         </div>
 
         @if (!isEditMode) {
@@ -231,7 +295,7 @@
         <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
           {{ 'common.cancel' | translate }}
         </button>
-        <button type="submit" class="btn btn-warning" [disabled]="saving() || formGroup.invalid">
+        <button type="submit" class="btn btn-primary" [disabled]="saving() || formGroup.invalid">
           @if (saving()) {
             <span class="loading loading-spinner loading-sm"></span>
           } @else {

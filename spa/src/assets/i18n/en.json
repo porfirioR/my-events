@@ -1007,7 +1007,10 @@
     "paidSuccess": "Installment marked as paid",
     "paidError": "Error recording payment",
     "skippedSuccess": "Installment skipped",
-    "skippedError": "Error skipping installment"
+    "skippedError": "Error skipping installment",
+    "administrativeFees": "Administrative fees",
+    "ivaOnInterest": "VAT on interest",
+    "insurance": "Insurance"
   },
   "upsertLoan": {
     "newTitle": "New Loan",
@@ -1043,6 +1046,12 @@
     "actualAmountsDesc": "If the bank charges a different amount (fees, insurance, etc.), enter it here",
     "actualInstallmentAmount": "Actual installment",
     "actualTotalAmount": "Actual total to pay",
+    "additionalCosts": "Additional costs",
+    "additionalCostsDesc": "Optional fields. Fill in if the lender charges these.",
+    "administrativeFees": "Administrative fees",
+    "ivaPercentage": "VAT on interest (%)",
+    "ivaPercentageDesc": "E.g.: 10 for 10% VAT",
+    "insuranceAmount": "Insurance (total)",
     "createLoan": "Create Loan",
     "createdSuccess": "Loan created successfully",
     "createdError": "Error creating loan",

@@ -35,6 +35,9 @@ interface LoanFormGroup {
   amortizationType: FormControl<string | null>;
   startDate: FormControl<string | null>;
   statusId: FormControl<number | null>;
+  administrativeFees: FormControl<number | null>;
+  ivaPercentage: FormControl<number | null>;
+  insuranceAmount: FormControl<number | null>;
 }
 
 @Component({
@@ -89,7 +92,15 @@ export class UpsertLoanComponent implements OnInit {
   protected calculatedInstallment = signal<number | null>(null);
   protected calculatedTotal = signal<number | null>(null);
   protected calculatedInterest = signal<number | null>(null);
-  protected yieldInfo = signal<{ installment: number; totalInterest: number; totalAmount: number } | null>(null);
+  protected yieldInfo = signal<{
+    installment: number;
+    totalInterest: number;
+    totalAmount: number;
+    ivaAmount: number;
+    extraCosts: number;
+    totalWithExtras: number;
+    installmentWithExtras: number;
+  } | null>(null);
 
   public formGroup: FormGroup<LoanFormGroup>;
   protected entityIdSignal!: ReturnType<typeof toSignal<number | null>>;
@@ -114,6 +125,9 @@ export class UpsertLoanComponent implements OnInit {
       amortizationType: new FormControl(AmortizationType.French, [Validators.required]),
       startDate: new FormControl(today, [Validators.required]),
       statusId: new FormControl(1),
+      administrativeFees: new FormControl<number | null>(null),
+      ivaPercentage: new FormControl<number | null>(null, [Validators.min(0), Validators.max(100)]),
+      insuranceAmount: new FormControl<number | null>(null),
     });
 
     this.entityIdSignal = toSignal(
@@ -162,6 +176,9 @@ export class UpsertLoanComponent implements OnInit {
       recalc();
     });
     this.formGroup.controls.amortizationType.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
+    this.formGroup.controls.administrativeFees.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
+    this.formGroup.controls.ivaPercentage.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
+    this.formGroup.controls.insuranceAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
   }
 
   ngOnInit(): void {
@@ -222,17 +239,21 @@ export class UpsertLoanComponent implements OnInit {
       totalInterest = totalAmount - +principal;
     }
 
+    const adminFees = +(this.formGroup.controls.administrativeFees.value ?? 0);
+    const ivaPct = +(this.formGroup.controls.ivaPercentage.value ?? 0);
+    const insurance = +(this.formGroup.controls.insuranceAmount.value ?? 0);
+    const ivaAmount = Math.round(totalInterest * (ivaPct / 100));
+    const extraCosts = adminFees + ivaAmount + insurance;
+    const totalWithExtras = totalAmount + extraCosts;
+    const installmentWithExtras = Math.round(totalWithExtras / n);
+
     this.calculatedInstallment.set(installment);
     this.calculatedTotal.set(totalAmount);
     this.calculatedInterest.set(totalInterest);
-    this.yieldInfo.set({ installment, totalInterest, totalAmount });
+    this.yieldInfo.set({ installment, totalInterest, totalAmount, ivaAmount, extraCosts, totalWithExtras, installmentWithExtras });
 
-    if (!this.formGroup.controls.actualInstallmentAmount.value) {
-      this.formGroup.controls.actualInstallmentAmount.setValue(installment, { emitEvent: false });
-    }
-    if (!this.formGroup.controls.actualTotalAmount.value) {
-      this.formGroup.controls.actualTotalAmount.setValue(totalAmount, { emitEvent: false });
-    }
+    this.formGroup.controls.actualInstallmentAmount.setValue(installmentWithExtras, { emitEvent: false });
+    this.formGroup.controls.actualTotalAmount.setValue(totalWithExtras, { emitEvent: false });
   }
 
   private loadLoanIntoForm(loan: any): void {
@@ -252,6 +273,9 @@ export class UpsertLoanComponent implements OnInit {
       amortizationType: loan.amortizationType,
       startDate,
       statusId: loan.statusId,
+      administrativeFees: loan.administrativeFees ?? null,
+      ivaPercentage: loan.ivaPercentage ?? null,
+      insuranceAmount: loan.insuranceAmount ?? null,
     }, { emitEvent: false });
     // Set loanEntityId with event so entityIdSignal receives the value before the control is disabled
     this.formGroup.controls.loanEntityId.setValue(loan.loanEntityId);
@@ -276,6 +300,9 @@ export class UpsertLoanComponent implements OnInit {
       const request = new UpdateLoanApiRequest(
         values.name!, values.description ?? null,
         values.loanTypeId!, values.statusId ?? 1,
+        values.administrativeFees ?? null,
+        values.ivaPercentage ?? null,
+        values.insuranceAmount ?? null,
       );
       this.loansStore.updateLoan(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
@@ -297,6 +324,9 @@ export class UpsertLoanComponent implements OnInit {
         values.principalAmount!, values.annualRatePercentage!, values.numberOfInstallments!,
         values.actualInstallmentAmount ?? null, values.actualTotalAmount ?? null,
         values.amortizationType!, values.startDate!,
+        values.administrativeFees ?? null,
+        values.ivaPercentage ?? null,
+        values.insuranceAmount ?? null,
       );
       this.loansStore.createLoan(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {

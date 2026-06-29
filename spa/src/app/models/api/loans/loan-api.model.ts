@@ -24,5 +24,8 @@ export class LoanApiModel {
     public expectedEndDate: string | null,
     public completedDate: string | null,
     public paidInstallmentsCount: number,
+    public administrativeFees: number | null = null,
+    public ivaPercentage: number | null = null,
+    public insuranceAmount: number | null = null,
   ) {}
 }

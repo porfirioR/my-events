@@ -1,5 +1,6 @@
 import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 
+
 export class CreateLoanApiRequest {
   @IsInt()
   currencyId: number;
@@ -51,4 +52,20 @@ export class CreateLoanApiRequest {
 
   @IsString()
   startDate: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  administrativeFees?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  ivaPercentage?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  insuranceAmount?: number;
 }

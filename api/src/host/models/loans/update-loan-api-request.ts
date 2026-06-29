@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 
 export class UpdateLoanApiRequest {
   @IsString()
@@ -17,4 +17,20 @@ export class UpdateLoanApiRequest {
   @Min(1)
   @Max(4)
   statusId: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  administrativeFees?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  ivaPercentage?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  insuranceAmount?: number;
 }
