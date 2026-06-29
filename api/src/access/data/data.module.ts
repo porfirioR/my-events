@@ -10,9 +10,14 @@ import { CollaboratorAccessService } from './services/collaborator-access.servic
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
 import { UserAccessService } from './services/user-access.service';
-import { SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { DASHBOARD_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { SavingsInstallmentAccessService } from './services/savings-installment-access.service';
 import { SavingsDepositAccessService } from './services/savings-deposit-access.service';
+import { LoanAccessService } from './services/loan-access.service';
+import { LoanInstallmentAccessService } from './services/loan-installment-access.service';
+import { LoanPaymentAccessService } from './services/loan-payment-access.service';
+import { LoanEntityTermAccessService } from './services/loan-entity-term-access.service';
+import { DashboardAccessService } from './services/dashboard-access.service';
 
 @Module({
   imports: [
@@ -47,6 +52,35 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     TravelOperationApprovalAccessService,
     OperationCategoryAccessService,
     OperationAttachmentAccessService,
+    LoanAccessService,
+    LoanInstallmentAccessService,
+    LoanPaymentAccessService,
+    LoanEntityTermAccessService,
+    DashboardAccessService,
+    {
+      provide: DASHBOARD_TOKENS.ACCESS_SERVICE,
+      useExisting: DashboardAccessService,
+    },
+    {
+      provide: LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE,
+      useExisting: LoanEntityTermAccessService,
+    },
+    {
+      provide: SAVINGS_TOKENS.PROGRAMMED_TERM_ACCESS_SERVICE,
+      useExisting: SavingsProgrammedTermAccessService,
+    },
+    {
+      provide: LOAN_TOKENS.LOAN_ACCESS_SERVICE,
+      useExisting: LoanAccessService,
+    },
+    {
+      provide: LOAN_TOKENS.INSTALLMENT_ACCESS_SERVICE,
+      useExisting: LoanInstallmentAccessService,
+    },
+    {
+      provide: LOAN_TOKENS.PAYMENT_ACCESS_SERVICE,
+      useExisting: LoanPaymentAccessService,
+    },
     {
       provide: COLLABORATOR_TOKENS.ACCESS_SERVICE,
       useExisting: CollaboratorAccessService,
@@ -137,7 +171,7 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     SAVINGS_TOKENS.INSTALLMENT_ACCESS_SERVICE,
     SAVINGS_TOKENS.DEPOSIT_ACCESS_SERVICE,
     SAVINGS_TOKENS.CONFIGURATION_ACCESS_SERVICE,
-    SavingsProgrammedTermAccessService,
+    SAVINGS_TOKENS.PROGRAMMED_TERM_ACCESS_SERVICE,
     TRAVEL_TOKENS.ACCESS_SERVICE,
     TRAVEL_TOKENS.MEMBER_ACCESS_SERVICE,
     TRAVEL_TOKENS.OPERATION_ACCESS_SERVICE,
@@ -146,6 +180,11 @@ import { SavingsDepositAccessService } from './services/savings-deposit-access.s
     TRAVEL_TOKENS.PAYMENT_METHOD_ACCESS_SERVICE,
     TRAVEL_TOKENS.OPERATION_CATEGORY_ACCESS_SERVICE,
     TRAVEL_TOKENS.OPERATION_ATTACHMENT_ACCESS_SERVICE,
+    LOAN_TOKENS.LOAN_ACCESS_SERVICE,
+    LOAN_TOKENS.INSTALLMENT_ACCESS_SERVICE,
+    LOAN_TOKENS.PAYMENT_ACCESS_SERVICE,
+    LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE,
+    DASHBOARD_TOKENS.ACCESS_SERVICE,
   ],
 })
 export class DataModule {}

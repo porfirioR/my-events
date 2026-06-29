@@ -5,4 +5,6 @@ export { useTransactionStore } from './transaction.store';
 export { useSavingsStore } from './savings.store';
 export { useCurrencyStore } from './currency.store';
 export { useTravelStore } from './travel.store';
+export { useLoansStore } from './loans.store';
+export { useDashboardStore } from './dashboard.store';
 

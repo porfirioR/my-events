@@ -17,7 +17,21 @@ export const SAVINGS_TOKENS = {
   INSTALLMENT_ACCESS_SERVICE: Symbol('ISavingsInstallmentAccessService'),
   DEPOSIT_ACCESS_SERVICE: Symbol('ISavingsDepositAccessService'),
   CONFIGURATION_ACCESS_SERVICE: Symbol('IConfigurationAccessService'),
+  PROGRAMMED_TERM_ACCESS_SERVICE: Symbol('ISavingsProgrammedTermAccessService'),
   MANAGER_SERVICE: Symbol('ISavingsManagerService')
+} as const;
+
+export const LOAN_TOKENS = {
+  LOAN_ACCESS_SERVICE: Symbol('ILoanAccessService'),
+  INSTALLMENT_ACCESS_SERVICE: Symbol('ILoanInstallmentAccessService'),
+  PAYMENT_ACCESS_SERVICE: Symbol('ILoanPaymentAccessService'),
+  ENTITY_TERM_ACCESS_SERVICE: Symbol('ILoanEntityTermAccessService'),
+  MANAGER_SERVICE: Symbol('ILoanManagerService'),
+} as const;
+
+export const DASHBOARD_TOKENS = {
+  ACCESS_SERVICE: Symbol('IDashboardAccessService'),
+  MANAGER_SERVICE: Symbol('IDashboardManagerService'),
 } as const;
 
 export const TRAVEL_TOKENS = {

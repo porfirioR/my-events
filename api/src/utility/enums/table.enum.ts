@@ -33,4 +33,11 @@ export enum TableEnum {
   OperationCategories = 'operationcategories',
   OperationAttachments = 'operationattachments',
   SavingsProgrammedTerms = 'savingsprogrammedterms',
+
+  // ===== LOANS MODULE TABLES =====
+  Loans = 'loans',
+  LoanInstallments = 'loaninstallments',
+  LoanPayments = 'loanpayments',
+  LoanEntityTerms = 'loanentityterms',
+  LoanEntities = 'loanentities',
 }

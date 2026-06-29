@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useLoadingStore, useTravelStore } from '../../store';
+import { useAuthStore, useLoadingStore, useTravelStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelApiModel } from '../../models/api/travels';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -18,6 +20,7 @@ export class TravelsListComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private formatterService = inject(FormatterHelperService);
@@ -25,6 +28,7 @@ export class TravelsListComponent implements OnInit {
 
   private travelStore = useTravelStore();
   private loadingStore = useLoadingStore();
+  private authStore = useAuthStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected filterStatus = signal<string | null>('Active');
@@ -74,24 +78,56 @@ export class TravelsListComponent implements OnInit {
   }
 
   protected finalizeTravel(travel: TravelApiModel): void {
-    this.pendingCallback = (result) => {
-      if (result.confirmed) {
-        this.travelStore.finalizeTravel(travel.id);
-        this.alertService.showSuccess(this.translate.instant('travels.travelFinalizedSuccess'));
-      }
-    };
-    this.confirmDialog.open({
-      title: this.translate.instant('travels.finalizeTravelTitle'),
-      message: this.translate.instant('travels.finalizeTravelMessage', { name: travel.name }),
-      type: 'warning'
-    });
+    const currentUserId = this.authStore.userId();
+    const isCreator = currentUserId !== null && Number(travel.createdByUserId) === Number(currentUserId);
+
+    if (isCreator) {
+      this.pendingCallback = (result) => {
+        if (result.confirmed) {
+          this.travelStore.bulkApprovePendingOperations(travel.id)
+            .pipe(
+              switchMap(() => this.travelStore.finalizeTravel(travel.id)),
+              takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe({
+              next: () => this.alertService.showSuccess(this.translate.instant('travels.travelFinalizedSuccess')),
+              error: () => this.alertService.showError(this.translate.instant('travels.travelFinalizedError')),
+            });
+        }
+      };
+      this.confirmDialog.open({
+        title: this.translate.instant('travels.finalizeTravelWithPendingTitle'),
+        message: this.translate.instant('travels.finalizeTravelWithPendingMessage', { name: travel.name }),
+        type: 'warning'
+      });
+    } else {
+      this.pendingCallback = (result) => {
+        if (result.confirmed) {
+          this.travelStore.finalizeTravel(travel.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: () => this.alertService.showSuccess(this.translate.instant('travels.travelFinalizedSuccess')),
+              error: () => this.alertService.showError(this.translate.instant('travels.travelFinalizedError')),
+            });
+        }
+      };
+      this.confirmDialog.open({
+        title: this.translate.instant('travels.finalizeTravelTitle'),
+        message: this.translate.instant('travels.finalizeTravelMessage', { name: travel.name }),
+        type: 'warning'
+      });
+    }
   }
 
   protected deleteTravel(travel: TravelApiModel): void {
     this.pendingCallback = (result) => {
       if (result.confirmed) {
-        this.travelStore.deleteTravel(travel.id);
-        this.alertService.showSuccess(this.translate.instant('travels.travelDeletedSuccess'));
+        this.travelStore.deleteTravel(travel.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => this.alertService.showSuccess(this.translate.instant('travels.travelDeletedSuccess')),
+            error: () => this.alertService.showError(this.translate.instant('travels.travelDeletedError')),
+          });
       }
     };
     this.confirmDialog.open({

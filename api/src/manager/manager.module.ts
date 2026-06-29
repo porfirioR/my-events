@@ -5,8 +5,10 @@ import { AuthModule } from '../access/auth/auth.module';
 import { DataModule } from '../access/data/data.module';
 import { TransactionManagerService } from './services/transaction.manager.service';
 import { TRANSACTION_TOKENS } from '../utility/constants';
-import { SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants/injection-tokens.const';
+import { DASHBOARD_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants/injection-tokens.const';
 import { TravelManagerService } from './services/travel-manager.service';
+import { LoanManagerService } from './services/loan-manager.service';
+import { DashboardManagerService } from './services/dashboard-manager.service';
 import { BlobModule } from '../access/blob/blob.module';
 
 @Module({
@@ -27,6 +29,12 @@ import { BlobModule } from '../access/blob/blob.module';
     CollaboratorManagerService,
     TransactionManagerService,
     TravelManagerService,
+    LoanManagerService,
+    DashboardManagerService,
+    {
+      provide: DASHBOARD_TOKENS.MANAGER_SERVICE,
+      useExisting: DashboardManagerService,
+    },
     {
       provide: TRANSACTION_TOKENS.MANAGER_SERVICE,
       useExisting: TransactionManagerService,
@@ -39,6 +47,10 @@ import { BlobModule } from '../access/blob/blob.module';
       provide: TRAVEL_TOKENS.MANAGER_SERVICE,
       useExisting: TravelManagerService,
     },
+    {
+      provide: LOAN_TOKENS.MANAGER_SERVICE,
+      useExisting: LoanManagerService,
+    },
   ],
   exports: [
     EventManagerService,
@@ -50,6 +62,8 @@ import { BlobModule } from '../access/blob/blob.module';
     TRANSACTION_TOKENS.MANAGER_SERVICE,
     SAVINGS_TOKENS.MANAGER_SERVICE,
     TRAVEL_TOKENS.MANAGER_SERVICE,
+    LOAN_TOKENS.MANAGER_SERVICE,
+    DASHBOARD_TOKENS.MANAGER_SERVICE,
   ]
 })
 export class ManagerModule {}

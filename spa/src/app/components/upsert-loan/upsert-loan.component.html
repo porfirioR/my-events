@@ -1,0 +1,245 @@
+<section class="container mx-auto px-4 py-8">
+  <article class="max-w-3xl mx-auto bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 border-warning ring-warning ring-1">
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle" [routerLink]="['/loans']">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
+          {{ isEditMode ? ('upsertLoan.editTitle' | translate) : ('upsertLoan.newTitle' | translate) }}
+        </h1>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="cancel()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+
+    <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
+
+      <!-- Nombre -->
+      <app-text
+        formControlName="name"
+        type="text"
+        [label]="'upsertLoan.name' | translate"
+        id="name"
+        name="name"
+        [description]="'upsertLoan.nameExample' | translate"
+        [disabled]="saving()"
+      />
+
+      <!-- Descripción -->
+      <app-text-area-input
+        formControlName="description"
+        [label]="'upsertLoan.descriptionOptional' | translate"
+        [placeholder]="'upsertLoan.descriptionPlaceholder' | translate"
+        id="description"
+        name="description"
+        [disabled]="saving()"
+      />
+
+      @if (!isEditMode) {
+        <!-- Moneda -->
+        <app-select-input
+          formControlName="currencyId"
+          id="currency"
+          [label]="'upsertLoan.currency' | translate"
+          name="currency"
+          [list]="currencyList"
+          [disabled]="saving()"
+        />
+
+        <!-- Entidad prestamista -->
+        <app-select-input
+          formControlName="loanEntityId"
+          id="loanEntityId"
+          [label]="'upsertLoan.lenderEntity' | translate"
+          name="loanEntityId"
+          [list]="loanEntityList"
+          [disabled]="saving()"
+        />
+
+        <!-- Nombre personalizado (Otros) -->
+        @if (isOtherEntity()) {
+          <app-text
+            formControlName="lenderCustomName"
+            type="text"
+            [label]="'upsertLoan.lenderCustomName' | translate"
+            id="lenderCustomName"
+            name="lenderCustomName"
+            [description]="'upsertLoan.lenderCustomNameExample' | translate"
+            [disabled]="saving()"
+          />
+        }
+
+        <!-- Tipo de Préstamo -->
+        <app-select-input
+          formControlName="loanTypeId"
+          id="loanTypeId"
+          [label]="'upsertLoan.loanType' | translate"
+          name="loanTypeId"
+          [list]="loanTypeList"
+          [disabled]="saving()"
+        />
+
+        <!-- Tipo de Amortización -->
+        <app-select-input
+          formControlName="amortizationType"
+          id="amortizationType"
+          [label]="'upsertLoan.amortizationType' | translate"
+          name="amortizationType"
+          [list]="amortizationTypeList"
+          [disabled]="saving()"
+        />
+
+        <!-- Monto principal -->
+        <app-text
+          formControlName="principalAmount"
+          type="number"
+          [label]="'upsertLoan.principalAmount' | translate"
+          id="principalAmount"
+          name="principalAmount"
+          [description]="'upsertLoan.principalAmountDesc' | translate"
+          [disabled]="saving()"
+        />
+
+        <!-- Plazos disponibles para la entidad -->
+        @if (termList.length > 0) {
+          <div class="p-4 bg-info/10 border border-info rounded-lg">
+            <div class="flex items-start gap-2 mb-3">
+              <i class="fas fa-info-circle text-info mt-1"></i>
+              <div>
+                <h3 class="font-semibold text-base-content">{{ 'upsertLoan.availableTerms' | translate }}</h3>
+                <p class="text-sm text-base-content/70">{{ 'upsertLoan.availableTermsDesc' | translate }}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              @for (term of termList; track term.key) {
+                <button
+                  type="button"
+                  class="btn btn-xs"
+                  [ngClass]="{'btn-info': formGroup.controls.numberOfInstallments.value == term.key, 'btn-outline btn-info': formGroup.controls.numberOfInstallments.value != term.key}"
+                  (click)="formGroup.controls.numberOfInstallments.setValue(+term.key)"
+                >
+                  {{ term.value }} <span class="text-xs opacity-70">({{ term.moreData }})</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Número de cuotas -->
+        <app-text
+          formControlName="numberOfInstallments"
+          type="number"
+          [label]="'upsertLoan.numberOfInstallments' | translate"
+          id="numberOfInstallments"
+          name="numberOfInstallments"
+          [description]="'upsertLoan.numberOfInstallmentsDesc' | translate"
+          [disabled]="saving()"
+        />
+
+        <!-- Tasa anual -->
+        <app-text
+          formControlName="annualRatePercentage"
+          type="number"
+          [label]="'upsertLoan.annualRate' | translate"
+          id="annualRatePercentage"
+          name="annualRatePercentage"
+          [description]="'upsertLoan.annualRateDesc' | translate"
+          [disabled]="saving()"
+        />
+      }
+
+      <!-- Fecha de inicio -->
+      <app-date-input
+        formControlName="startDate"
+        [label]="'upsertLoan.startDate' | translate"
+        id="startDate"
+        name="startDate"
+        [disabled]="saving() || isEditMode"
+      />
+
+      <!-- Preview calculado -->
+      @if (yieldInfo(); as info) {
+        <div class="p-4 bg-warning/10 border border-warning rounded-lg">
+          <div class="flex items-start gap-2 mb-3">
+            <i class="fas fa-calculator text-warning mt-1"></i>
+            <h3 class="font-semibold text-base-content">{{ 'upsertLoan.calculatedPreview' | translate }}</h3>
+          </div>
+          <div class="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p class="text-xs text-base-content/60">{{ 'upsertLoan.calculatedInstallment' | translate }}</p>
+              <p class="text-lg font-bold text-warning">{{ formatCurrency(info.installment, formGroup.controls.currencyId.value ?? 1) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-base-content/60">{{ 'upsertLoan.calculatedInterest' | translate }}</p>
+              <p class="text-lg font-bold text-error">{{ formatCurrency(info.totalInterest, formGroup.controls.currencyId.value ?? 1) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-base-content/60">{{ 'upsertLoan.calculatedTotal' | translate }}</p>
+              <p class="text-lg font-bold text-base-content">{{ formatCurrency(info.totalAmount, formGroup.controls.currencyId.value ?? 1) }}</p>
+            </div>
+          </div>
+        </div>
+
+        @if (!isEditMode) {
+          <!-- Cuota real (si el banco cobra diferente) -->
+          <div class="p-4 bg-base-100 border border-base-300 rounded-lg">
+            <div class="flex items-start gap-2 mb-3">
+              <i class="fas fa-building-columns text-base-content/60 mt-1"></i>
+              <div>
+                <h3 class="font-semibold text-base-content">{{ 'upsertLoan.actualAmounts' | translate }}</h3>
+                <p class="text-sm text-base-content/70">{{ 'upsertLoan.actualAmountsDesc' | translate }}</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <app-text
+                formControlName="actualInstallmentAmount"
+                type="number"
+                [label]="'upsertLoan.actualInstallmentAmount' | translate"
+                id="actualInstallmentAmount"
+                name="actualInstallmentAmount"
+                [disabled]="saving()"
+              />
+              <app-text
+                formControlName="actualTotalAmount"
+                type="number"
+                [label]="'upsertLoan.actualTotalAmount' | translate"
+                id="actualTotalAmount"
+                name="actualTotalAmount"
+                [disabled]="saving()"
+              />
+            </div>
+          </div>
+        }
+      }
+
+      @if (isEditMode) {
+        <!-- Tipo de préstamo (editable) -->
+        <app-select-input
+          formControlName="loanTypeId"
+          id="loanTypeId"
+          [label]="'upsertLoan.loanType' | translate"
+          name="loanTypeId"
+          [list]="loanTypeList"
+          [disabled]="saving()"
+        />
+      }
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-3 pt-4">
+        <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="submit" class="btn btn-warning" [disabled]="saving() || formGroup.invalid">
+          @if (saving()) {
+            <span class="loading loading-spinner loading-sm"></span>
+          } @else {
+            <i class="fas fa-save mr-1"></i>
+          }
+          {{ isEditMode ? ('common.save' | translate) : ('upsertLoan.createLoan' | translate) }}
+        </button>
+      </div>
+    </form>
+  </article>
+</section>

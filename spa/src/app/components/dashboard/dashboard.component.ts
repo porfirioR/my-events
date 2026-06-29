@@ -1,13 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import {
-  useCollaboratorStore,
-  useSavingsStore,
-  useTransactionStore,
-  useTravelStore,
-} from '../../store';
+import { useDashboardStore } from '../../store';
+import { ActiveGoalSummaryApiModel } from '../../models/api/dashboard/dashboard-summary-api.model';
 import { FormatterHelperService } from '../../services';
+import { ProgressionType } from '../../models/enums';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,58 +18,48 @@ import { FormatterHelperService } from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent {
-  private collaboratorStore = useCollaboratorStore();
-  private transactionStore = useTransactionStore();
-  private savingsStore = useSavingsStore();
-  private travelStore = useTravelStore();
+  private dashboardStore = useDashboardStore();
   private formatterService = inject(FormatterHelperService);
 
-  unsettledTransactions = this.transactionStore.unsettledTransactions;
-  myCreatedTransactions = this.transactionStore.myCreatedTransactions;
-  settledTransactions = this.transactionStore.settledTransactions;
+  private summary = this.dashboardStore.summary;
 
-  protected totalCollaborators = this.collaboratorStore.totalCount;
-  protected activeCollaborators = this.collaboratorStore.activeCollaborators;
-  protected inactiveCollaborators = this.collaboratorStore.inactiveCollaborators;
+  protected totalCollaborators = computed(() => this.summary()?.collaborators.total ?? 0);
+  protected activeCollaborators = computed(() => this.summary()?.collaborators.active ?? 0);
+  protected inactiveCollaborators = computed(() => this.summary()?.collaborators.inactive ?? 0);
 
-  protected savingsStats = computed(() => {
-    const goals = this.savingsStore.goals();
-    return {
-      total: goals.length,
-      active: goals.filter(x => x.statusId === 1).length,
-      completed: goals.filter(x => x.statusId === 2).length,
-      paused: goals.filter(x => x.statusId === 3).length,
-      cancelled: goals.filter(x => x.statusId === 4).length,
-    };
-  });
+  protected totalTransactions = computed(() => this.summary()?.transactions.total ?? 0);
+  protected unsettledTransactions = computed(() => this.summary()?.transactions.unsettled ?? 0);
+  protected settledTransactions = computed(() => this.summary()?.transactions.settled ?? 0);
 
-  protected travelStats = computed(() => {
-    const travels = this.travelStore.travels();
-    return {
-      total: travels.length,
-      active: travels.filter(x => x.status === 'Active').length,
-      finalized: travels.filter(x => x.status === 'Finalized').length,
-    };
-  });
+  protected savingsStats = computed(() => ({
+    total: this.summary()?.savingsGoals.total ?? 0,
+    active: this.summary()?.savingsGoals.active ?? 0,
+    completed: this.summary()?.savingsGoals.completed ?? 0,
+  }));
 
-  // Savings Goals - Active Goals (top 3)
-  protected activeGoals = computed(() => {
-    return this.savingsStore
-      .goals()
-      .filter(x => x.statusId === 1)
-      .sort(
-        (a, b) => new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime()
-      )
-      .slice(0, 3);
-  });
+  protected travelStats = computed(() => ({
+    total: this.summary()?.travels.total ?? 0,
+    active: this.summary()?.travels.active ?? 0,
+    finalized: this.summary()?.travels.finalized ?? 0,
+  }));
 
-  // Helper Methods
-  protected calculateProgress(goal: any): number {
-    if (goal.targetAmount === 0) return 0;
-    return Math.min(
-      Math.round((goal.currentAmount / goal.targetAmount) * 100),
-      100
-    );
+  protected loansStats = computed(() => ({
+    total: this.summary()?.loans.total ?? 0,
+    active: this.summary()?.loans.active ?? 0,
+    completed: this.summary()?.loans.completed ?? 0,
+  }));
+
+  protected activeGoals = computed(() => this.summary()?.savingsGoals.topActive ?? []);
+
+  protected calculateProgress(goal: ActiveGoalSummaryApiModel): number {
+    const isLumpSum = goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA;
+    const base = isLumpSum
+      ? (goal.baseAmount ?? goal.targetAmount)
+      : goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
+        ? goal.baseAmount * goal.numberOfInstallments
+        : goal.targetAmount;
+    if (base === 0) return 0;
+    return Math.min(Math.round((goal.currentAmount / base) * 100), 100);
   }
 
   protected formatCurrency = this.formatterService.formatCurrency;

@@ -1,0 +1,187 @@
+<section aria-labelledby="loans-heading" class="mb-8">
+  <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
+    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <h2 id="loans-heading" class="text-xl font-semibold text-base-content">
+          <i class="fas fa-hand-holding-dollar mr-2 text-warning"></i>
+          {{ 'loans.title' | translate }}
+        </h2>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Filtro por Estado -->
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterStatus() === null}" (click)="setStatusFilter(null)">
+              {{ 'loans.all' | translate }}
+            </button>
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterStatus() === 1}" (click)="setStatusFilter(1)">
+              <i class="fas fa-clock mr-1"></i>{{ 'loans.statusActive' | translate }}
+            </button>
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterStatus() === 2}" (click)="setStatusFilter(2)">
+              <i class="fas fa-circle-check mr-1"></i>{{ 'loans.statusCompleted' | translate }}
+            </button>
+          </div>
+
+          <!-- Filtro por Tipo -->
+          <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-sm btn-outline">
+              <i class="fas fa-filter mr-1"></i>{{ 'loans.loanType' | translate }}
+            </label>
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
+              <li><button (click)="setTypeFilter(null)">{{ 'loans.allTypes' | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Personal)">{{ LoanTypeLabels[LoanType.Personal] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Hipoteca)">{{ LoanTypeLabels[LoanType.Hipoteca] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Auto)">{{ LoanTypeLabels[LoanType.Auto] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Tarjeta)">{{ LoanTypeLabels[LoanType.Tarjeta] | translate }}</button></li>
+              <li><button (click)="setTypeFilter(LoanType.Informal)">{{ LoanTypeLabels[LoanType.Informal] | translate }}</button></li>
+            </ul>
+          </div>
+
+          <button type="button" class="btn btn-sm btn-warning" (click)="create()">
+            <i class="fas fa-plus mr-1" aria-hidden="true"></i>
+            {{ 'loans.newLoan' | translate }}
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-6">
+      @if (isLoading()) {
+        <div class="flex justify-center items-center py-12">
+          <span class="loading loading-spinner loading-lg"></span>
+          <p class="ml-3 text-base-content/70">{{ 'loans.loading' | translate }}</p>
+        </div>
+      } @else {
+        <ul class="space-y-4" role="list">
+          @for (loan of loans(); track loan.id) {
+            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
+                (click)="viewDetail(loan)">
+              <article class="flex items-start gap-4">
+                <!-- Icon -->
+                <figure class="flex-shrink-0">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md"
+                    [ngClass]="{
+                      'bg-warning': loan.statusId === 1,
+                      'bg-success': loan.statusId === 2,
+                      'bg-neutral': loan.statusId === 3,
+                      'bg-error': loan.statusId === 4
+                    }">
+                    <i [class]="'fas ' + getStatusIcon(loan.statusId)"></i>
+                  </div>
+                </figure>
+
+                <div class="flex-grow min-w-0">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-grow">
+                      <h3 class="font-semibold text-base-content text-lg">{{ loan.name }}</h3>
+                      <p class="text-sm text-base-content/70">
+                        <i class="fas fa-building-columns mr-1"></i>{{ getEntityLabel(loan) }}
+                        @if (loan.description) {
+                          · {{ loan.description }}
+                        }
+                      </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
+                      <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </label>
+                      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
+                        <li>
+                          <button (click)="viewDetail(loan)">
+                            <i class="fas fa-eye text-info"></i>{{ 'loans.viewDetails' | translate }}
+                          </button>
+                        </li>
+                        @if (loan.statusId !== 2) {
+                          <li>
+                            <button (click)="editLoan(loan)">
+                              <i class="fas fa-edit text-primary"></i>{{ 'loans.edit' | translate }}
+                            </button>
+                          </li>
+                          <li><hr class="my-1 border-base-300"></li>
+                          <li>
+                            <button (click)="deleteLoan(loan)">
+                              <i class="fas fa-trash text-error"></i>{{ 'loans.delete' | translate }}
+                            </button>
+                          </li>
+                        } @else {
+                          <li><hr class="my-1 border-base-300"></li>
+                          <li>
+                            <span class="text-sm text-success font-medium px-2 py-1">
+                              <i class="fas fa-check-circle mr-1"></i>{{ 'loans.loanCompleted' | translate }}
+                            </span>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- Barra de progreso (pagado/total) -->
+                  <div class="mt-3">
+                    <div class="flex items-center justify-between text-sm mb-1">
+                      <span class="text-base-content/70">
+                        {{ formatCurrency(loan.totalPaid, loan.currencyId) }} / {{ formatCurrency(loan.actualTotalAmount, loan.currencyId) }}
+                      </span>
+                      <span class="font-semibold" [ngClass]="loan.statusId === 2 ? 'text-success' : 'text-warning'">
+                        {{ getProgress(loan) }}%
+                      </span>
+                    </div>
+                    <progress
+                      class="progress w-full"
+                      [ngClass]="loan.statusId === 2 ? 'progress-success' : 'progress-warning'"
+                      [value]="loan.totalPaid"
+                      [max]="loan.actualTotalAmount || 1">
+                    </progress>
+                  </div>
+
+                  <!-- Metadata -->
+                  <div class="flex items-center gap-4 mt-3 flex-wrap">
+                    <!-- Estado -->
+                    <span class="badge badge-sm badge-soft gap-1" [ngClass]="getStatusColor(loan.statusId)">
+                      <i [class]="'fas ' + getStatusIcon(loan.statusId)"></i>
+                      {{ getStatusLabel(loan.statusId) | translate }}
+                    </span>
+
+                    <!-- Tipo -->
+                    <span class="badge badge-sm badge-soft" [ngClass]="getLoanTypeBadgeColor(loan.loanTypeId)">
+                      {{ getLoanTypeLabel(loan.loanTypeId) | translate }}
+                    </span>
+
+                    <!-- Cuotas -->
+                    <span class="text-xs text-base-content/70">
+                      <i class="fas fa-list-ol mr-1"></i>
+                      {{ loan.paidInstallmentsCount }}/{{ loan.numberOfInstallments }} {{ 'loans.installments' | translate }}
+                    </span>
+
+                    <!-- Monto cuota -->
+                    <span class="text-xs text-base-content/70">
+                      <i class="fas fa-calendar-check mr-1"></i>
+                      {{ formatCurrency(loan.actualInstallmentAmount, loan.currencyId) }}/{{ 'loans.month' | translate }}
+                    </span>
+
+                    <!-- Fecha inicio -->
+                    <time class="text-xs text-base-content/60" [attr.datetime]="loan.startDate">
+                      {{ 'loans.since' | translate }} {{ getFormattedDate(loan.startDate) }}
+                    </time>
+                  </div>
+                </div>
+              </article>
+            </li>
+          } @empty {
+            <li class="text-center py-12">
+              <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-hand-holding-dollar text-2xl text-base-content/50"></i>
+              </figure>
+              <h3 class="text-lg font-medium text-base-content mb-2">{{ 'loans.noLoansYet' | translate }}</h3>
+              <p class="text-base-content/70 mb-4">{{ 'loans.noLoansMessage' | translate }}</p>
+              <button class="btn btn-warning" (click)="create()">
+                <i class="fas fa-plus mr-2"></i>{{ 'loans.newLoan' | translate }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </article>
+</section>
+<app-confirm-dialog (confirmed)="onConfirmResult($event)" />

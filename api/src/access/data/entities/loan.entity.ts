@@ -1,0 +1,27 @@
+export interface LoanEntity {
+  id: number;
+  userid: number;
+  currencyid: number;
+  loantypeid: number;
+  loanentityid: number;
+  lendercustomname: string | null;
+  name: string;
+  description: string | null;
+  principalamount: number;
+  annualratepercentage: number;
+  numberofinstallments: number;
+  calculatedinstallmentamount: number;
+  actualinstallmentamount: number;
+  calculatedtotalinterest: number;
+  calculatedtotalamount: number;
+  actualtotalamount: number;
+  currentbalance: number;
+  totalpaid: number;
+  amortizationtype: string;
+  statusid: number;
+  startdate: string;
+  expectedenddate: string | null;
+  completeddate: string | null;
+  datecreated: string;
+  dateupdated: string;
+}

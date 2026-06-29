@@ -106,8 +106,12 @@ export class SavingsGoalsListComponent implements OnInit {
   protected getFormattedDate = this.formatterService.getFormattedDateCustom.bind(this.formatterService);
   protected formatCurrency = this.formatterService.formatCurrency;
 
+  protected isDepositType(goal: any): boolean {
+    return goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA;
+  }
+
   protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null }): number {
-    if (goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA) {
+    if (this.isDepositType(goal)) {
       return goal.baseAmount ?? goal.targetAmount;
     }
     if (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments) {
@@ -123,5 +127,32 @@ export class SavingsGoalsListComponent implements OnInit {
 
   protected getGoalProgress(goal: any): number {
     return this.calculateProgress(goal.currentAmount, this.getProgressTarget(goal));
+  }
+
+  protected getMaturityGain(goal: any): number {
+    return Math.max(0, goal.targetAmount - (goal.baseAmount ?? goal.targetAmount));
+  }
+
+  protected getDepositTimeProgress(goal: any): number {
+    if (!goal.startDate || !goal.numberOfInstallments) return 0;
+    const start = new Date(this.normalizeDate(String(goal.startDate)));
+    const end = goal.expectedEndDate
+      ? new Date(this.normalizeDate(String(goal.expectedEndDate)))
+      : new Date(start.getFullYear(), start.getMonth() + goal.numberOfInstallments, start.getDate());
+    const now = new Date();
+    if (now >= end) return 100;
+    const total = end.getTime() - start.getTime();
+    const elapsed = Math.max(0, now.getTime() - start.getTime());
+    return Math.min(Math.round((elapsed / total) * 100), 100);
+  }
+
+  protected getMonthsElapsed(dateStr: any): number {
+    const start = new Date(this.normalizeDate(String(dateStr)));
+    const now = new Date();
+    return Math.max(0, (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()));
+  }
+
+  private normalizeDate(s: string): string {
+    return s.length > 10 && s.substring(10) === 'T00:00:00.000Z' ? s.substring(0, 10) + 'T00:00:00' : s;
   }
 }
