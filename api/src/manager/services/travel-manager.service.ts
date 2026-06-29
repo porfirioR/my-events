@@ -199,6 +199,15 @@ export class TravelManagerService {
     return this.mapTravelAccessToModel(accessModel);
   };
 
+  public bulkApprovePendingOperations = async (travelId: number, userId: number): Promise<void> => {
+    const isCreator = await this.travelAccessService.isCreator(travelId, userId);
+    if (!isCreator) {
+      throw new BadRequestException('Only the travel creator can bulk-approve pending operations');
+    }
+
+    await this.travelOperationAccessService.bulkApprovePending(travelId);
+  };
+
   public deleteTravel = async (id: number, userId: number): Promise<void> => {
     const isCreator = await this.travelAccessService.isCreator(id, userId);
     if (!isCreator) {
@@ -299,11 +308,13 @@ export class TravelManagerService {
         totalOwed += participants.reduce((sum, p) => sum + p.shareAmount, 0);
       }
 
-      const difference = Math.abs(totalPaid - totalOwed);
-      if (difference > 0.01) {
+      const totalPaidRounded = Math.round(totalPaid * 100) / 100;
+      const totalOwedRounded = Math.round(totalOwed * 100) / 100;
+      const difference = Math.abs(totalPaidRounded - totalOwedRounded);
+      if (difference > 0.10) {
         throw new BadRequestException(
           `Balances do not match for currency ${group.currencyId}. ` +
-          `Total paid: ${totalPaid}, Total owed: ${totalOwed}`
+          `Total paid: ${totalPaidRounded}, Total owed: ${totalOwedRounded}`
         );
       }
     }

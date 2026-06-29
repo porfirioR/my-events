@@ -188,6 +188,21 @@ export class TravelOperationAccessService extends BaseAccessService implements I
     return grouped;
   };
 
+  public bulkApprovePending = async (travelId: number): Promise<void> => {
+    const { error } = await this.dbContext
+      .from(TableEnum.TravelOperations)
+      .update({
+        status: TravelOperationStatus.Approved,
+        updatedat: new Date().toISOString(),
+      })
+      .eq(DatabaseColumns.TravelId, travelId)
+      .eq(DatabaseColumns.Status, TravelOperationStatus.Pending);
+
+    if (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  };
+
   // Private methods
   private mapEntityToAccessModel = (entity: TravelOperationEntity): TravelOperationAccessModel => {
     return new TravelOperationAccessModel(

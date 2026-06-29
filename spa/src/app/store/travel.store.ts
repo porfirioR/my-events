@@ -337,6 +337,26 @@ export const TravelStore = signalStore(
       );
     },
 
+    bulkApprovePendingOperations: (travelId: number) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+
+      return travelApiService.bulkApprovePendingOperations(travelId).pipe(
+        tap(() => {
+          const updatedOperations = store.operations().map(op =>
+            op.status === 'Pending' ? { ...op, status: 'Approved' as const } : op
+          );
+          patchState(store, { operations: updatedOperations });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to approve pending operations' });
+          loadingStore.setLoadingSuccess();
+          throw new Error(error);
+        })
+      );
+    },
+
     deleteTravel: (id: number) => {
       loadingStore.setLoading();
       patchState(store, { error: null });

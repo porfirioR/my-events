@@ -180,6 +180,19 @@ export class TravelsController {
   }
 
   /**
+   * Aprobar en bulk todas las operaciones pendientes del viaje (solo creador)
+   * POST /api/travels/:id/operations/approve-pending
+   */
+  @Post(':id/operations/approve-pending')
+  async bulkApprovePendingOperations(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<MessageModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    await this.travelManagerService.bulkApprovePendingOperations(id, userId);
+    return new MessageModel('Pending operations approved successfully');
+  }
+
+  /**
    * Eliminar viaje
    * DELETE /api/travels/:id
    */

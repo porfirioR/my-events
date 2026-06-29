@@ -55,6 +55,9 @@ export class TravelApiService {
   public finalizeTravel = (id: number): Observable<TravelApiModel> =>
     this.httpClient.post<TravelApiModel>(`${this.section}/${id}/finalize`, {});
 
+  public bulkApprovePendingOperations = (id: number): Observable<MessageModel> =>
+    this.httpClient.post<MessageModel>(`${this.section}/${id}/operations/approve-pending`, {});
+
   public deleteTravel = (id: number): Observable<MessageModel> =>
     this.httpClient.delete<MessageModel>(`${this.section}/${id}`);
 

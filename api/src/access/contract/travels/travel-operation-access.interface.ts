@@ -50,4 +50,9 @@ export interface ITravelOperationAccessService {
    * Obtener operaciones agrupadas por moneda
    */
   getGroupedByCurrency(travelId: number): Promise<{ currencyId: number; operations: TravelOperationAccessModel[] }[]>;
+
+  /**
+   * Aprobar en bulk todas las operaciones pendientes de un viaje
+   */
+  bulkApprovePending(travelId: number): Promise<void>;
 }
