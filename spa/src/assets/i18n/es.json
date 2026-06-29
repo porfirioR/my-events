@@ -1006,7 +1006,10 @@
     "paidSuccess": "Cuota registrada como pagada",
     "paidError": "Error al registrar el pago",
     "skippedSuccess": "Cuota omitida",
-    "skippedError": "Error al omitir la cuota"
+    "skippedError": "Error al omitir la cuota",
+    "administrativeFees": "Gastos administrativos",
+    "ivaOnInterest": "IVA sobre interés",
+    "insurance": "Seguro"
   },
   "upsertLoan": {
     "newTitle": "Nuevo Préstamo",
@@ -1042,6 +1045,12 @@
     "actualAmountsDesc": "Si el banco te cobra un monto diferente (por seguros, comisiones, etc.), ingresalo aquí",
     "actualInstallmentAmount": "Cuota real",
     "actualTotalAmount": "Total real a pagar",
+    "additionalCosts": "Costos adicionales",
+    "additionalCostsDesc": "Campos opcionales. Completá si la entidad cobra estos conceptos.",
+    "administrativeFees": "Gastos administrativos",
+    "ivaPercentage": "IVA sobre interés (%)",
+    "ivaPercentageDesc": "Ej: 10 para IVA del 10%",
+    "insuranceAmount": "Seguro (total)",
     "createLoan": "Crear Préstamo",
     "createdSuccess": "Préstamo creado correctamente",
     "createdError": "Error al crear el préstamo",

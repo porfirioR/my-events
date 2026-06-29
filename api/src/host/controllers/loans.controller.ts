@@ -84,6 +84,9 @@ export class LoansController {
       apiRequest.actualTotalAmount ?? null,
       amortType,
       new Date(apiRequest.startDate),
+      apiRequest.administrativeFees ?? null,
+      apiRequest.ivaPercentage ?? null,
+      apiRequest.insuranceAmount ?? null,
     );
 
     return await this.loanManagerService.createLoan(request);
@@ -102,6 +105,9 @@ export class LoansController {
       apiRequest.description ?? null,
       apiRequest.loanTypeId,
       apiRequest.statusId,
+      apiRequest.administrativeFees ?? null,
+      apiRequest.ivaPercentage ?? null,
+      apiRequest.insuranceAmount ?? null,
     );
     return await this.loanManagerService.updateLoan(request);
   }

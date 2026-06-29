@@ -19,5 +19,8 @@ export class CreateLoanAccessRequest {
     public readonly amortizationType: string,
     public readonly startDate: Date,
     public readonly expectedEndDate: Date | null,
+    public readonly administrativeFees: number | null = null,
+    public readonly ivaPercentage: number | null = null,
+    public readonly insuranceAmount: number | null = null,
   ) {}
 }

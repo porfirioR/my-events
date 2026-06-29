@@ -14,7 +14,7 @@
         </p>
       </div>
       @if (l.statusId !== 2) {
-        <button type="button" class="btn btn-sm btn-outline" (click)="edit()">
+        <button type="button" class="btn btn-sm btn-outline hover:btn-primary" (click)="edit()">
           <i class="fas fa-edit mr-1"></i>{{ 'loans.edit' | translate }}
         </button>
       }
@@ -85,6 +85,24 @@
           <p class="font-semibold text-success">{{ formatDate(l.completedDate) }}</p>
         </div>
       }
+      @if (l.administrativeFees) {
+        <div>
+          <p class="text-base-content/60">{{ 'loanDetail.administrativeFees' | translate }}</p>
+          <p class="font-semibold">{{ formatCurrency(l.administrativeFees, l.currencyId) }}</p>
+        </div>
+      }
+      @if (l.ivaPercentage) {
+        <div>
+          <p class="text-base-content/60">{{ 'loanDetail.ivaOnInterest' | translate }} ({{ l.ivaPercentage }}%)</p>
+          <p class="font-semibold">{{ formatCurrency(l.calculatedTotalInterest * l.ivaPercentage / 100, l.currencyId) }}</p>
+        </div>
+      }
+      @if (l.insuranceAmount) {
+        <div>
+          <p class="text-base-content/60">{{ 'loanDetail.insurance' | translate }}</p>
+          <p class="font-semibold">{{ formatCurrency(l.insuranceAmount, l.currencyId) }}</p>
+        </div>
+      }
     </div>
 
     <!-- Próxima cuota -->
@@ -98,7 +116,7 @@
             @if (next.dueDate) { · {{ 'loanDetail.dueDate' | translate }}: {{ formatDate(next.dueDate) }} }
           </p>
         </div>
-        <button type="button" class="btn btn-sm btn-warning" (click)="openPayModal(next.id)">
+        <button type="button" class="btn btn-sm btn-primary" (click)="openPayModal(next.id)">
           <i class="fas fa-credit-card mr-1"></i>{{ 'loanDetail.pay' | translate }}
         </button>
       </div>
@@ -156,7 +174,7 @@
                   <td>
                     @if (inst.statusId === InstallmentStatus.Pending && l.statusId === 1) {
                       <div class="flex gap-1">
-                        <button type="button" class="btn btn-xs btn-warning" (click)="openPayModal(inst.id)">
+                        <button type="button" class="btn btn-xs btn-primary" (click)="openPayModal(inst.id)">
                           <i class="fas fa-check"></i>
                         </button>
                         <button type="button" class="btn btn-xs btn-ghost" (click)="skipInstallment(inst.id)" [title]="'loanDetail.skip' | translate">
@@ -249,7 +267,7 @@
       <button type="button" class="btn btn-ghost" (click)="closePayModal()" [disabled]="isSaving()">
         {{ 'common.cancel' | translate }}
       </button>
-      <button type="button" class="btn btn-warning" (click)="confirmPay()" [disabled]="isSaving() || payForm.invalid">
+      <button type="button" class="btn btn-primary" (click)="confirmPay()" [disabled]="isSaving() || payForm.invalid">
         @if (isSaving()) { <span class="loading loading-spinner loading-sm"></span> }
         {{ 'loanDetail.confirmPay' | translate }}
       </button>

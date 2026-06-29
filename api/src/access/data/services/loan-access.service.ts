@@ -39,6 +39,9 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
         amortizationtype: request.amortizationType,
         startdate: request.startDate.toISOString().split('T')[0],
         expectedenddate: request.expectedEndDate ? request.expectedEndDate.toISOString().split('T')[0] : null,
+        administrativefees: request.administrativeFees ?? null,
+        ivapercentage: request.ivaPercentage ?? null,
+        insuranceamount: request.insuranceAmount ?? null,
       })
       .select()
       .single<LoanEntity>();
@@ -88,6 +91,9 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
         description: request.description,
         loantypeid: request.loanTypeId,
         statusid: request.statusId,
+        administrativefees: request.administrativeFees ?? null,
+        ivapercentage: request.ivaPercentage ?? null,
+        insuranceamount: request.insuranceAmount ?? null,
         dateupdated: new Date().toISOString(),
       })
       .eq(DatabaseColumns.EntityId, request.id)
@@ -201,5 +207,8 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
       entity.expectedenddate ? new Date(entity.expectedenddate) : null,
       entity.completeddate ? new Date(entity.completeddate) : null,
       paidInstallmentsCount,
+      entity.administrativefees ?? null,
+      entity.ivapercentage ?? null,
+      entity.insuranceamount ?? null,
     );
 }

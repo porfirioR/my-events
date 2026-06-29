@@ -55,7 +55,7 @@ export class LoanCalculatorHelper {
       const principalPaid =
         i < numberOfInstallments ? Math.round(pmt) - interest : balance;
       const remaining = i < numberOfInstallments ? balance - principalPaid : 0;
-      const dueDate = SavingsCalculatorHelper.addMonths(startDate, i - 1);
+      const dueDate = SavingsCalculatorHelper.addMonths(startDate, i);
       schedule.push({
         installmentNumber: i,
         dueDate,
@@ -96,7 +96,7 @@ export class LoanCalculatorHelper {
       const principalPaid = i < numberOfInstallments ? principalPerInstallment : balance;
       const interest = interestPerInstallment;
       const remaining = i < numberOfInstallments ? balance - principalPaid : 0;
-      const dueDate = SavingsCalculatorHelper.addMonths(startDate, i - 1);
+      const dueDate = SavingsCalculatorHelper.addMonths(startDate, i);
       schedule.push({
         installmentNumber: i,
         dueDate,

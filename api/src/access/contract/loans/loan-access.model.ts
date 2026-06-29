@@ -24,5 +24,8 @@ export class LoanAccessModel {
     public readonly expectedEndDate: Date | null,
     public readonly completedDate: Date | null,
     public readonly paidInstallmentsCount: number = 0,
+    public readonly administrativeFees: number | null = null,
+    public readonly ivaPercentage: number | null = null,
+    public readonly insuranceAmount: number | null = null,
   ) {}
 }

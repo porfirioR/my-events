@@ -60,7 +60,7 @@ export class LoanManagerService {
     const actualInstallment = request.actualInstallmentAmount ?? calc.calculatedInstallmentAmount;
     const actualTotal = request.actualTotalAmount ?? calc.calculatedTotalAmount;
 
-    const expectedEndDate = SavingsCalculatorHelper.addMonths(request.startDate, request.numberOfInstallments - 1);
+    const expectedEndDate = SavingsCalculatorHelper.addMonths(request.startDate, request.numberOfInstallments);
 
     const accessRequest = new CreateLoanAccessRequest(
       request.userId,
@@ -82,6 +82,9 @@ export class LoanManagerService {
       request.amortizationType,
       request.startDate,
       expectedEndDate,
+      request.administrativeFees,
+      request.ivaPercentage,
+      request.insuranceAmount,
     );
 
     const loan = await this.loanAccessService.create(accessRequest);
@@ -120,6 +123,9 @@ export class LoanManagerService {
       request.description,
       request.loanTypeId,
       request.statusId,
+      request.administrativeFees,
+      request.ivaPercentage,
+      request.insuranceAmount,
     );
     const loan = await this.loanAccessService.update(accessRequest);
     return this.mapToModel(loan);
@@ -207,6 +213,9 @@ export class LoanManagerService {
       loan.expectedEndDate,
       loan.completedDate,
       loan.paidInstallmentsCount,
+      loan.administrativeFees,
+      loan.ivaPercentage,
+      loan.insuranceAmount,
     );
 
   private mapInstallmentToModel = (i: any): LoanInstallmentModel =>
