@@ -21,11 +21,12 @@ import {
   UpdateSavingsGoalRequest,
   PayInstallmentRequest,
   CreateFreeFormDepositRequest,
+  CreateMutualFundMovementRequest,
   AddInstallmentsRequest,
 } from '../models/savings';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
-import { ProgressionType } from 'src/utility/enums';
+import { ProgressionType, MovementType } from 'src/utility/enums';
 
 @Injectable()
 export class SavingsManagerService {
@@ -66,6 +67,12 @@ export class SavingsManagerService {
         throw new BadRequestException('FreeForm type should not have numberOfInstallments or baseAmount');
       }
       targetAmount = request.targetAmount;
+    } else if (request.progressionTypeId === ProgressionType.MutualFund) {
+      // MutualFund: no target, no installments — balance moves freely with deposits/withdrawals
+      if (request.numberOfInstallments || request.baseAmount || request.incrementAmount) {
+        throw new BadRequestException('MutualFund type should not have numberOfInstallments, baseAmount or incrementAmount');
+      }
+      targetAmount = 0;
     } else if (request.progressionTypeId === ProgressionType.FixedDeposit || request.progressionTypeId === ProgressionType.CDA) {
       // FixedDeposit / CDA: single lump-sum with simple interest (CDA has higher rates)
       if (!request.baseAmount || !request.numberOfInstallments || !request.annualRatePercentage) {
@@ -419,6 +426,10 @@ export class SavingsManagerService {
       throw new BadRequestException('Cannot add installments to FixedDeposit/CDA type');
     }
 
+    if (goal.progressionTypeId === ProgressionType.MutualFund) {
+      throw new BadRequestException('MutualFund type does not have installments');
+    }
+
     // 2. Get all current installments
     const currentInstallments = await this.savingsInstallmentAccessService.getBySavingsGoalId(request.savingsGoalId);
 
@@ -538,6 +549,61 @@ export class SavingsManagerService {
   };
 
   /**
+   * Create a deposit or withdrawal movement (MutualFund goals only)
+   * Flow:
+   * 1. Validate goal is MutualFund and active
+   * 2. If withdrawal, validate amount does not exceed current balance
+   * 3. Create deposit/withdrawal record
+   * 4. Update currentAmount (add or subtract depending on movement type)
+   * No target/completion check applies — MutualFund never auto-completes.
+   */
+  public createMutualFundMovement = async (request: CreateMutualFundMovementRequest): Promise<SavingsDepositModel> => {
+    // 1. Validate goal
+    const goal = await this.savingsGoalAccessService.getById(request.savingsGoalId, request.userId);
+
+    if (goal.progressionTypeId !== ProgressionType.MutualFund) {
+      throw new BadRequestException('This operation is only for MutualFund savings goals');
+    }
+
+    if (goal.statusId !== 1) { // Active
+      throw new BadRequestException('Cannot add movements to inactive goals');
+    }
+
+    // 2. Withdrawals cannot exceed the current balance plus the maximum accrued interest
+    //    (bounded by the goal's informative annual rate, prorated since the goal started)
+    if (request.movementType === MovementType.Withdrawal) {
+      const maxWithdrawal = SavingsCalculatorHelper.calculateMutualFundMaxWithdrawal(
+        goal.currentAmount,
+        goal.annualRatePercentage,
+        goal.startDate,
+      );
+      if (request.amount > maxWithdrawal) {
+        throw new BadRequestException(`Amount exceeds available balance plus maximum accrued interest (${maxWithdrawal})`);
+      }
+    }
+
+    // 3. Create movement
+    const depositAccessRequest = new CreateSavingsDepositAccessRequest(
+      request.savingsGoalId,
+      request.amount,
+      new Date(),
+      null,
+      request.description,
+      request.movementType,
+    );
+
+    const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
+
+    // 4. Update currentAmount
+    const newCurrentAmount = request.movementType === MovementType.Withdrawal
+      ? goal.currentAmount - request.amount
+      : goal.currentAmount + request.amount;
+    await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, newCurrentAmount);
+
+    return this.mapDepositAccessModelToModel(depositAccessModel);
+  };
+
+  /**
    * Get all deposits for a goal
    */
   public getDepositsByGoalId = async (savingsGoalId: number, userId: number): Promise<SavingsDepositModel[]> => {
@@ -564,8 +630,9 @@ export class SavingsManagerService {
     const deposit = await this.savingsDepositAccessService.getById(depositId);
     const goal = await this.savingsGoalAccessService.getById(deposit.savingsGoalId, userId);
 
-    // Update currentAmount
-    const newCurrentAmount = Math.max(0, goal.currentAmount - deposit.amount);
+    // Update currentAmount — reverse a withdrawal by adding it back, reverse a deposit by subtracting it
+    const delta = deposit.movementType === MovementType.Withdrawal ? deposit.amount : -deposit.amount;
+    const newCurrentAmount = Math.max(0, goal.currentAmount + delta);
     await this.savingsGoalAccessService.updateCurrentAmount(goal.id, userId, newCurrentAmount);
 
     // If goal was completed but no longer meets threshold, reactivate it
@@ -603,7 +670,7 @@ export class SavingsManagerService {
   };
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
-    const validTypes = [1, 2, 3, 4, 5, 6, 7, 8]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit, CDA
+    const validTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit, CDA, MutualFund
     if (!validTypes.includes(progressionTypeId)) {
       throw new BadRequestException(`Invalid progression type: ${progressionTypeId}`);
     }
@@ -657,6 +724,7 @@ export class SavingsManagerService {
       accessModel.depositDate,
       accessModel.installmentId,
       accessModel.description,
+      accessModel.movementType,
     );
   };
 }

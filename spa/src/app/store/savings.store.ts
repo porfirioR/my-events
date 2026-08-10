@@ -13,9 +13,10 @@ import {
   UpdateSavingsGoalApiRequest,
   PayInstallmentApiRequest,
   CreateFreeFormDepositApiRequest,
+  CreateMutualFundMovementApiRequest,
   AddInstallmentsApiRequest
 } from '../models/api/savings';
-import { GoalStatus, ProgressionType } from '../models/enums';
+import { GoalStatus, MovementType, ProgressionType } from '../models/enums';
 import { SavingsGoalApiService } from '../services';
 import { useLoadingStore } from './loading.store';
 
@@ -438,6 +439,38 @@ export const SavingsStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to create deposit' });
+          throw new Error(error);
+        })
+      );
+    },
+
+    createMutualFundMovement: (goalId: number, request: CreateMutualFundMovementApiRequest) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+
+      return savingsGoalApiService.createMutualFundMovement(goalId, request).pipe(
+        tap(deposit => {
+          const currentDeposits = store.deposits();
+          const currentGoal = store.selectedGoal();
+
+          if (currentGoal) {
+            const delta = request.movementType === MovementType.Withdrawal ? -request.amount : request.amount;
+            const updatedGoal = {
+              ...currentGoal,
+              currentAmount: currentGoal.currentAmount + delta
+            };
+            const updatedGoals = store.goals().map(g => g.id === currentGoal.id ? updatedGoal : g);
+
+            patchState(store, {
+              deposits: [...currentDeposits, deposit],
+              selectedGoal: updatedGoal,
+              goals: updatedGoals
+            });
+          }
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to create mutual fund movement' });
           throw new Error(error);
         })
       );

@@ -47,6 +47,11 @@ export class SavingsCalculatorHelper {
           'FreeForm type does not calculate target amount automatically'
         );
 
+      case ProgressionType.MutualFund: // MutualFund — no fixed target, balance moves freely with deposits/withdrawals
+        throw new Error(
+          'MutualFund type does not calculate target amount automatically'
+        );
+
       case ProgressionType.FixedDeposit: // FixedDeposit — target computed in manager using simple interest
       case ProgressionType.CDA: // CDA — same as FixedDeposit, higher rates
         return baseAmount;
@@ -105,6 +110,9 @@ export class SavingsCalculatorHelper {
 
       case ProgressionType.FreeForm: // FreeForm
         return []; // FreeForm no tiene cuotas predefinidas
+
+      case ProgressionType.MutualFund: // MutualFund — no tiene cuotas, solo depósitos/retiros libres
+        return [];
 
       case ProgressionType.FixedDeposit: // FixedDeposit — no installments, single auto-deposit on creation
       case ProgressionType.CDA: // CDA — same as FixedDeposit
@@ -181,6 +189,23 @@ export class SavingsCalculatorHelper {
     targetAmount: number
   ): number {
     return Math.max(targetAmount - currentAmount, 0);
+  }
+
+  /**
+   * MutualFund: monto máximo que se puede retirar (saldo + ganancia máxima permitida).
+   * La ganancia se acota con interés simple prorrateado desde el inicio del fondo usando
+   * la tasa anual informativa — evita retiros desproporcionados sin exigir un cálculo exacto
+   * por cada aporte/retiro individual.
+   */
+  static calculateMutualFundMaxWithdrawal(
+    currentAmount: number,
+    annualRatePercentage: number | null | undefined,
+    startDate: Date,
+  ): number {
+    if (!annualRatePercentage) return currentAmount;
+    const daysElapsed = Math.max(0, (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
+    const maxInterest = currentAmount * (annualRatePercentage / 100) * (daysElapsed / 365);
+    return Math.round(currentAmount + maxInterest);
   }
 
   /**

@@ -500,6 +500,7 @@
     "freeForm": "Forma Libre",
     "fixedDeposit": "Plazo Fijo",
     "cda": "CDA",
+    "mutualFund": "Fondo Mutuo",
     "newGoal": "Nueva Meta",
     "loadingGoals": "Cargando metas de ahorro...",
     "viewDetails": "Ver Detalles",
@@ -521,6 +522,16 @@
     "edit": "Editar",
     "addInstallments": "Agregar Cuotas",
     "addDeposit": "Agregar Depósito",
+    "contribute": "Aportar",
+    "withdraw": "Retirar",
+    "currentBalance": "Saldo Actual",
+    "contributeTitle": "Aportar al Fondo Mutuo",
+    "withdrawTitle": "Retirar del Fondo Mutuo",
+    "availableBalance": "Disponible para retirar (incluye ganancia estimada): {{amount}}",
+    "contributeButton": "Aportar",
+    "withdrawButton": "Retirar",
+    "withdrawalCreatedSuccess": "Retiro registrado exitosamente",
+    "withdrawalCreatedError": "Error al registrar el retiro",
     "progress": "Progreso",
     "current": "Actual:",
     "target": "Meta:",
@@ -661,7 +672,11 @@
     "cdaInfo": "El CDA vence automáticamente al cumplir el plazo seleccionado. La tasa de interés suele ser mayor que la de un plazo fijo tradicional.",
     "cdaYieldInfo": "Resumen del CDA",
     "cdaExpectedAmountLabel": "Monto esperado al vencimiento (CDA)",
-    "cdaExpectedAmountDescription": "Calculado automáticamente. Puede modificarlo si la entidad financiera indica un monto diferente."
+    "cdaExpectedAmountDescription": "Calculado automáticamente. Puede modificarlo si la entidad financiera indica un monto diferente.",
+    "mutualFundTitle": "Fondo Mutuo",
+    "mutualFundDescription": "Deposita y retira libremente cuando quieras. No hay monto ni plazo fijo.",
+    "mutualFundAnnualRateLabel": "Tasa anual (%) - informativa",
+    "mutualFundAnnualRateDescription": "Opcional. Es solo referencial, no se usa para calcular un monto final."
   },
   "savingsFrequency": {
     "monthly": "Mensual"

@@ -11,10 +11,11 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useSavingsStore } from '../../store/savings.store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { GoalStatus, ProgressionType } from '../../models/enums';
+import { GoalStatus, MovementType, ProgressionType } from '../../models/enums';
 import {
   PayInstallmentApiRequest,
   CreateFreeFormDepositApiRequest,
+  CreateMutualFundMovementApiRequest,
   AddInstallmentsApiRequest,
   SavingsInstallmentApiModel,
 } from '../../models/api/savings';
@@ -22,6 +23,7 @@ import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { ProgressionTypeFormGroup } from '../../models/forms';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
+import { SavingsCalculatorHelper } from '../../services/helpers/savings-calculator-helper.service';
 
 @Component({
   selector: 'app-savings-goal-detail',
@@ -99,6 +101,20 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected showFreeFormModal = signal(false);
   protected freeFormDepositForm: FormGroup<ProgressionTypeFormGroup>;
 
+  protected showMutualFundModal = signal(false);
+  protected mutualFundForm: FormGroup<ProgressionTypeFormGroup>;
+  protected selectedMovementType = signal<number>(MovementType.Deposit);
+
+  protected mutualFundMaxWithdrawal = computed(() => {
+    const goal = this.goal();
+    if (!goal) return 0;
+    return SavingsCalculatorHelper.calculateMutualFundMaxWithdrawal(
+      goal.currentAmount,
+      goal.annualRatePercentage,
+      goal.startDate
+    );
+  });
+
   protected showAddInstallmentsModal = signal(false);
   protected addInstallmentsForm: FormGroup;
   protected isSubmitting = signal<boolean>(false);
@@ -107,6 +123,8 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected activeTab = signal<'installments' | 'deposits'>('installments');
 
   protected isFreeForm = computed(() => this.goal()?.progressionTypeId === ProgressionType.FreeForm);
+  protected isMutualFund = computed(() => this.goal()?.progressionTypeId === ProgressionType.MutualFund);
+  protected MovementType = MovementType;
 
   protected canAddInstallments = computed(() => {
     const goal = this.goal();
@@ -117,6 +135,7 @@ export class SavingsGoalDetailComponent implements OnInit {
       goal.progressionTypeId !== ProgressionType.Scheduled &&
       goal.progressionTypeId !== ProgressionType.FixedDeposit &&
       goal.progressionTypeId !== ProgressionType.CDA &&
+      goal.progressionTypeId !== ProgressionType.MutualFund &&
       goal.statusId === GoalStatus.Active
     );
   });
@@ -132,6 +151,11 @@ export class SavingsGoalDetailComponent implements OnInit {
       description: new FormControl(''),
     });
 
+    this.mutualFundForm = new FormGroup<ProgressionTypeFormGroup>({
+      amount: new FormControl(null, [Validators.required, Validators.min(1)]),
+      description: new FormControl(''),
+    });
+
     this.addInstallmentsForm = new FormGroup({
       numberOfNewInstallments: new FormControl(null, [
         Validators.required,
@@ -140,7 +164,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     });
 
     effect(() => {
-      if ((this.isFreeForm() || this.isLumpSum()) && this.activeTab() === 'installments') {
+      if ((this.isFreeForm() || this.isLumpSum() || this.isMutualFund()) && this.activeTab() === 'installments') {
         this.setActiveTab('deposits');
       }
     });
@@ -258,6 +282,66 @@ export class SavingsGoalDetailComponent implements OnInit {
         this.isSubmitting.set(false);
         this.alertService.showError(
           this.translate.instant('savingsGoalDetail.depositCreatedError')
+        );
+        throw e;
+      },
+    });
+  }
+
+  // ==================== MUTUAL FUND MOVEMENT ====================
+
+  protected openMutualFundModal(movementType: number): void {
+    this.selectedMovementType.set(movementType);
+    this.mutualFundForm.reset();
+    this.mutualFundForm.patchValue({
+      amount: null,
+      description: '',
+    });
+    if (movementType === MovementType.Withdrawal) {
+      this.mutualFundForm.controls.amount.addValidators(Validators.max(this.mutualFundMaxWithdrawal()));
+    }
+    this.showMutualFundModal.set(true);
+  }
+
+  protected closeMutualFundModal(): void {
+    this.showMutualFundModal.set(false);
+    this.mutualFundForm.reset();
+  }
+
+  protected createMutualFundMovement(): void {
+    if (this.mutualFundForm.invalid) return;
+
+    const goalId = this.goal()!.id;
+    const values = this.mutualFundForm.value;
+
+    const request = new CreateMutualFundMovementApiRequest(
+      +values.amount!,
+      this.selectedMovementType(),
+      values.description || undefined
+    );
+    this.isSubmitting.set(true);
+
+    this.savingsStore.createMutualFundMovement(goalId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.alertService.showSuccess(
+          this.translate.instant(
+            this.selectedMovementType() === MovementType.Withdrawal
+              ? 'savingsGoalDetail.withdrawalCreatedSuccess'
+              : 'savingsGoalDetail.depositCreatedSuccess'
+          )
+        );
+        this.closeMutualFundModal();
+        this.reloadData();
+      },
+      error: (e) => {
+        this.isSubmitting.set(false);
+        this.alertService.showError(
+          this.translate.instant(
+            this.selectedMovementType() === MovementType.Withdrawal
+              ? 'savingsGoalDetail.withdrawalCreatedError'
+              : 'savingsGoalDetail.depositCreatedError'
+          )
         );
         throw e;
       },

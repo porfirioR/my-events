@@ -21,6 +21,7 @@ import {
   UpdateSavingsGoalRequest,
   PayInstallmentRequest,
   CreateFreeFormDepositRequest,
+  CreateMutualFundMovementRequest,
   AddInstallmentsRequest,
 } from '../../manager/models/savings';
 import {
@@ -28,6 +29,7 @@ import {
   UpdateSavingsGoalApiRequest,
   PayInstallmentApiRequest,
   CreateFreeFormDepositApiRequest,
+  CreateMutualFundMovementApiRequest,
   AddInstallmentsApiRequest,
 } from '../models/savings';
 import { SavingsProgrammedTermModel } from '../../manager/models/savings';
@@ -294,6 +296,28 @@ export class SavingsGoalsController {
     );
 
     return await this.savingsManagerService.createFreeFormDeposit(request);
+  }
+
+  /**
+   * Crear movimiento de fondo mutuo (depósito o retiro)
+   * POST /api/savings-goals/:goalId/deposits/mutualfund
+   */
+  @Post(':goalId/deposits/mutualfund')
+  async createMutualFundMovement(
+    @Param('goalId', ParseIntPipe) goalId: number,
+    @Body() apiRequest: CreateMutualFundMovementApiRequest,
+  ): Promise<SavingsDepositModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+
+    const request = new CreateMutualFundMovementRequest(
+      userId,
+      goalId,
+      apiRequest.amount,
+      apiRequest.movementType,
+      apiRequest.description,
+    );
+
+    return await this.savingsManagerService.createMutualFundMovement(request);
   }
 
   /**
