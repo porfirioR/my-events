@@ -7,5 +7,6 @@ export class SavingsDepositEntity {
     public depositdate: Date,
     public installmentid?: number | null,
     public description?: string | null,
+    public movementtype: number = 1,
   ) {}
 }

@@ -501,6 +501,7 @@
     "freeForm": "Free Form",
     "fixedDeposit": "Fixed Deposit",
     "cda": "CDA",
+    "mutualFund": "Mutual Fund",
     "newGoal": "New Goal",
     "loadingGoals": "Loading savings goals...",
     "viewDetails": "View Details",
@@ -522,6 +523,16 @@
     "edit": "Edit",
     "addInstallments": "Add Installments",
     "addDeposit": "Add Deposit",
+    "contribute": "Contribute",
+    "withdraw": "Withdraw",
+    "currentBalance": "Current Balance",
+    "contributeTitle": "Contribute to Mutual Fund",
+    "withdrawTitle": "Withdraw from Mutual Fund",
+    "availableBalance": "Available to withdraw (includes estimated gain): {{amount}}",
+    "contributeButton": "Contribute",
+    "withdrawButton": "Withdraw",
+    "withdrawalCreatedSuccess": "Withdrawal recorded successfully",
+    "withdrawalCreatedError": "Failed to record withdrawal",
     "progress": "Progress",
     "current": "Current:",
     "target": "Target:",
@@ -662,7 +673,11 @@
     "cdaInfo": "The CDA matures automatically at the end of the selected term. Interest rates are typically higher than a traditional fixed deposit.",
     "cdaYieldInfo": "CDA Summary",
     "cdaExpectedAmountLabel": "Expected amount at maturity (CDA)",
-    "cdaExpectedAmountDescription": "Auto-calculated. You can edit it if your financial institution quotes a different amount."
+    "cdaExpectedAmountDescription": "Auto-calculated. You can edit it if your financial institution quotes a different amount.",
+    "mutualFundTitle": "Mutual Fund",
+    "mutualFundDescription": "Deposit and withdraw freely whenever you want. No fixed amount or term.",
+    "mutualFundAnnualRateLabel": "Annual rate (%) - informational",
+    "mutualFundAnnualRateDescription": "Optional. For reference only — not used to calculate a final amount."
   },
   "savingsFrequency": {
     "monthly": "Monthly"

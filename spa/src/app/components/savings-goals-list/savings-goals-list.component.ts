@@ -110,12 +110,16 @@ export class SavingsGoalsListComponent implements OnInit {
     return goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA;
   }
 
-  protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null }): number {
+  protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null; currentAmount?: number }): number {
     if (this.isDepositType(goal)) {
       return goal.baseAmount ?? goal.targetAmount;
     }
     if (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments) {
       return goal.baseAmount * goal.numberOfInstallments;
+    }
+    if (goal.progressionTypeId === ProgressionType.MutualFund) {
+      // No fixed target — show the current balance as a full bar instead of dividing by zero
+      return goal.currentAmount || 1;
     }
     return goal.targetAmount;
   }

@@ -1,5 +1,6 @@
 export { AddInstallmentsApiRequest } from './add-installments-api-request';
 export { CreateFreeFormDepositApiRequest } from './create-freeform-deposit-api-request';
+export { CreateMutualFundMovementApiRequest } from './create-mutual-fund-movement-api-request';
 export { CreateSavingsGoalApiRequest } from './create-savings-goal-api-request';
 export { PayInstallmentApiRequest } from './pay-installment-api-request';
 export { SavingsDepositApiModel } from './savings-deposit-api.model';

@@ -126,6 +126,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
   protected isFixedDeposit!: ReturnType<typeof computed<boolean>>;
   protected isCDA!: ReturnType<typeof computed<boolean>>;
   protected isLumpSum!: ReturnType<typeof computed<boolean>>;
+  protected isMutualFund!: ReturnType<typeof computed<boolean>>;
 
   protected fixedDepositTermList: KeyValueViewModel[] = [];
   protected cdaTermList: KeyValueViewModel[] = [];
@@ -163,7 +164,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     // 3. TERCERO: Crear los computed signals
     this.showInstallmentFields = computed(() => {
       const typeId = this.progressionTypeIdSignal();
-      return typeId !== null && typeId !== ProgressionType.FreeForm;
+      return typeId !== null && typeId !== ProgressionType.FreeForm && typeId !== ProgressionType.MutualFund;
     });
 
     this.showIncrementField = computed(() => {
@@ -187,6 +188,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.isFixedDeposit = computed(() => this.progressionTypeIdSignal() === ProgressionType.FixedDeposit);
     this.isCDA = computed(() => this.progressionTypeIdSignal() === ProgressionType.CDA);
     this.isLumpSum = computed(() => this.isFixedDeposit() || this.isCDA());
+    this.isMutualFund = computed(() => this.progressionTypeIdSignal() === ProgressionType.MutualFund);
 
     const months = this.translate.instant('upsertSavingsGoal.months');
     this.fixedDepositTermList = [1, 2, 3, 6, 12, 15, 18].map(
@@ -320,6 +322,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
         this.translate.instant(ProgressionTypeLabels[ProgressionType.CDA]),
         this.translate.instant(ProgressionTypeDescriptions[ProgressionType.CDA])
       ),
+      new KeyValueViewModel(
+        ProgressionType.MutualFund,
+        this.translate.instant(ProgressionTypeLabels[ProgressionType.MutualFund]),
+        this.translate.instant(ProgressionTypeDescriptions[ProgressionType.MutualFund])
+      ),
     ];
   }
 
@@ -346,6 +353,9 @@ export class UpsertSavingsGoalComponent implements OnInit {
         this.formGroup.controls.annualRatePercentage.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
         this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
       }
+    } else if (typeId === ProgressionType.MutualFund) {
+      // No target, no installments — annual rate is optional and purely informational
+      this.formGroup.controls.annualRatePercentage.setValidators([Validators.min(0.01), Validators.max(100)]);
     } else if (typeId !== null) {
       this.formGroup.controls.numberOfInstallments.setValidators([Validators.required, Validators.min(1)]);
       this.formGroup.controls.incrementAmount.setValidators([Validators.required, Validators.min(1)]);
@@ -523,6 +533,9 @@ export class UpsertSavingsGoalComponent implements OnInit {
     } else if (typeId === ProgressionType.FixedDeposit || typeId === ProgressionType.CDA) {
       finalBaseAmount = values.baseAmount!;
       finalTargetAmount = values.targetAmount || this.calculatedTargetAmount() || 0;
+    } else if (typeId === ProgressionType.MutualFund) {
+      finalBaseAmount = undefined;
+      finalTargetAmount = 0;
     } else {
       finalBaseAmount = this.calculatedBaseAmount() || undefined;
       finalTargetAmount = this.calculatedTargetAmount() || 0;

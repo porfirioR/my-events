@@ -108,6 +108,7 @@ export class SavingsDepositAccessService
     new Date(entity.depositdate),
     entity.installmentid ?? null,
     entity.description ?? null,
+    entity.movementtype ?? 1,
   );
 
   private mapAccessRequestToEntity = (
@@ -118,5 +119,6 @@ export class SavingsDepositAccessService
     accessRequest.depositDate,
     accessRequest.installmentId,
     accessRequest.description,
+    accessRequest.movementType ?? 1,
   );
 }

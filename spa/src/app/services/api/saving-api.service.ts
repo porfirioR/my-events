@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { CreateSavingsGoalApiRequest, MessageModel, SavingsGoalApiModel, UpdateSavingsGoalApiRequest } from '../../models/api';
-import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel, SavingsProgrammedTermApiModel } from '../../models/api/savings';
+import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, CreateMutualFundMovementApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel, SavingsProgrammedTermApiModel } from '../../models/api/savings';
 
 @Injectable({
   providedIn: 'root'
@@ -82,6 +82,15 @@ export class SavingsGoalApiService {
   ): Observable<SavingsDepositApiModel> =>
     this.httpClient.post<SavingsDepositApiModel>(
       `${this.section}/${goalId}/deposits/freeform`,
+      request
+    );
+
+  public createMutualFundMovement = (
+    goalId: number,
+    request: CreateMutualFundMovementApiRequest
+  ): Observable<SavingsDepositApiModel> =>
+    this.httpClient.post<SavingsDepositApiModel>(
+      `${this.section}/${goalId}/deposits/mutualfund`,
       request
     );
 

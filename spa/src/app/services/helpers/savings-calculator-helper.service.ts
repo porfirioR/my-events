@@ -41,6 +41,9 @@ export class SavingsCalculatorHelper {
       case ProgressionType.FreeForm:
         throw new Error('FreeForm type does not calculate target amount automatically');
 
+      case ProgressionType.MutualFund:
+        throw new Error('MutualFund type does not calculate target amount automatically');
+
       case ProgressionType.FixedDeposit:
         return baseAmount;
 
@@ -65,6 +68,21 @@ export class SavingsCalculatorHelper {
   }
 
   /**
+   * MutualFund: monto máximo que se puede retirar (saldo + ganancia máxima permitida),
+   * acotada con interés simple prorrateado desde el inicio del fondo usando la tasa anual informativa.
+   */
+  static calculateMutualFundMaxWithdrawal(
+    currentAmount: number,
+    annualRatePercentage: number | null | undefined,
+    startDate: string | Date,
+  ): number {
+    if (!annualRatePercentage) return currentAmount;
+    const daysElapsed = Math.max(0, (Date.now() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
+    const maxInterest = currentAmount * (annualRatePercentage / 100) * (daysElapsed / 365);
+    return Math.round(currentAmount + maxInterest);
+  }
+
+  /**
    * Valida si un tipo de progresión requiere incrementAmount
    */
   static requiresIncrement(progressionTypeId: number): boolean {
@@ -76,7 +94,8 @@ export class SavingsCalculatorHelper {
    * Valida si un tipo de progresión requiere cuotas
    */
   static requiresInstallments(progressionTypeId: number): boolean {
-    return progressionTypeId !== ProgressionType.FreeForm;
+    return progressionTypeId !== ProgressionType.FreeForm &&
+      progressionTypeId !== ProgressionType.MutualFund;
   }
 
   /**
@@ -86,7 +105,8 @@ export class SavingsCalculatorHelper {
     return progressionTypeId !== ProgressionType.Descending &&
       progressionTypeId !== ProgressionType.FreeForm &&
       progressionTypeId !== ProgressionType.Scheduled &&
-      progressionTypeId !== ProgressionType.FixedDeposit;
+      progressionTypeId !== ProgressionType.FixedDeposit &&
+      progressionTypeId !== ProgressionType.MutualFund;
   }
 
   static calculateTimeElapsedProgress(startDate: string | Date, endDate: string | Date): number {

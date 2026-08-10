@@ -7,6 +7,7 @@ export enum ProgressionType {
   Scheduled = 6,
   FixedDeposit = 7,
   CDA = 8,
+  MutualFund = 9,
 }
 
 export const ProgressionTypeLabels: Record<ProgressionType, string> = {
@@ -18,6 +19,7 @@ export const ProgressionTypeLabels: Record<ProgressionType, string> = {
   [ProgressionType.Scheduled]: 'Scheduled Savings',
   [ProgressionType.FixedDeposit]: 'Fixed Deposit',
   [ProgressionType.CDA]: 'CDA',
+  [ProgressionType.MutualFund]: 'Mutual Fund',
 };
 
 export const ProgressionTypeDescriptions: Record<ProgressionType, string> = {
@@ -29,6 +31,7 @@ export const ProgressionTypeDescriptions: Record<ProgressionType, string> = {
   [ProgressionType.Scheduled]: 'Fixed monthly deposits with interest yield at maturity',
   [ProgressionType.FixedDeposit]: 'Single lump-sum deposit locked for a fixed term with simple interest',
   [ProgressionType.CDA]: 'Certificado de Depósito de Ahorro - single lump-sum with higher interest rate at maturity',
+  [ProgressionType.MutualFund]: 'Free deposits and withdrawals at any time, no fixed target or term',
 };
 
 export const ProgressionTypeIcons: Record<ProgressionType, string> = {
@@ -40,6 +43,7 @@ export const ProgressionTypeIcons: Record<ProgressionType, string> = {
   [ProgressionType.Scheduled]: 'fa-calendar-check',
   [ProgressionType.FixedDeposit]: 'fa-vault',
   [ProgressionType.CDA]: 'fa-certificate',
+  [ProgressionType.MutualFund]: 'fa-chart-line',
 };
 
 export const ProgressionTypeBadgeColors: Record<ProgressionType, string> = {
@@ -51,6 +55,7 @@ export const ProgressionTypeBadgeColors: Record<ProgressionType, string> = {
   [ProgressionType.Scheduled]: 'badge-info',
   [ProgressionType.FixedDeposit]: 'badge-warning',
   [ProgressionType.CDA]: 'badge-neutral',
+  [ProgressionType.MutualFund]: 'badge-success',
 };
 
 

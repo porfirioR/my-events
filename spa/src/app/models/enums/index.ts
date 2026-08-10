@@ -12,3 +12,4 @@ export { SavingsFrequency, SavingsFrequencyLabels } from './savings-frequency.en
 export { LoanType, LoanTypeLabels, LoanTypeBadgeColors } from './loan-type.enum';
 export { LoanEntity, LoanEntityLabels } from './loan-entity.enum';
 export { AmortizationType, AmortizationTypeLabels } from './amortization-type.enum';
+export { MovementType } from './movement-type.enum';

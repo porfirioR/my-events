@@ -6,5 +6,6 @@ export class SavingsDepositAccessModel {
     public readonly depositDate: Date,
     public readonly installmentId: number | null,
     public readonly description: string | null,
+    public readonly movementType: number = 1,
   ) {}
 }

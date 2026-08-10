@@ -5,4 +5,5 @@ export interface SavingsDepositApiModel {
   depositDate: Date;
   installmentId: number | null;
   description: string | null;
+  movementType: number;
 }

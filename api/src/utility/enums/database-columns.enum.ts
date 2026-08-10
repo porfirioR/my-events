@@ -50,6 +50,7 @@ export enum DatabaseColumns {
   InstallmentId = 'installmentid',
   Amount = 'amount',
   PaidDate = 'paiddate',
+  MovementType = 'movementtype',
   
   // ===== TRAVEL MODULE COLUMNS =====
   TravelId = 'travelid',

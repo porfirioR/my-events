@@ -958,4 +958,24 @@ CREATE INDEX idx_loans_user ON loans(userid);
 CREATE INDEX idx_loaninstallments_loan_status ON loaninstallments(loanid, statusid);
 CREATE INDEX idx_loaninstallments_loan_number ON loaninstallments(loanid, installmentnumber);
 CREATE INDEX idx_loanpayments_loan ON loanpayments(loanid);
+
+-- =====================================================
+-- PARTE 17: TIPO DE AHORRO "FONDO MUTUO" (aportes y retiros libres)
+-- =====================================================
+-- A diferencia de los demás tipos, permite retiros. movement_type distingue
+-- depósito (1, default) de retiro (2); el default preserva el comportamiento
+-- de todos los tipos existentes, que solo insertan depósitos.
+
+ALTER TABLE savingsdeposits ADD COLUMN IF NOT EXISTS movement_type SMALLINT NOT NULL DEFAULT 1 CHECK (movement_type IN (1, 2));
+
+INSERT INTO savingsprogressiontypes (id, name, description) VALUES
+(9, 'MutualFund', 'Fondo mutuo - aportes y retiros libres, tasa anual informativa, sin monto ni plazo fijo')
+ON CONFLICT (id) DO NOTHING;
+
+-- MutualFund (9) tampoco usa incrementamount, igual que Fixed/FreeForm/Scheduled/FixedDeposit/CDA
+ALTER TABLE savingsgoals DROP CONSTRAINT IF EXISTS check_increment_for_progression;
+ALTER TABLE savingsgoals ADD CONSTRAINT check_increment_for_progression CHECK (
+    (progressiontypeid IN (1, 5, 6, 7, 8, 9) AND incrementamount IS NULL) OR
+    (progressiontypeid IN (2, 3, 4) AND incrementamount IS NOT NULL AND incrementamount > 0)
+);
 CREATE INDEX idx_loanpayments_installment ON loanpayments(installmentid);
