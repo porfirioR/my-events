@@ -135,6 +135,23 @@
                           </button>
                         </li>
 
+                        <!-- ✅ Acciones rápidas para Fondo Mutuo -->
+                        @if (isMutualFund(goal) && goal.statusId === GoalStatus.Active) {
+                          <li>
+                            <button (click)="openMutualFundModal(goal, MovementType.Deposit)">
+                              <i class="fas fa-hand-holding-dollar text-success"></i>
+                              {{ 'savingsGoalDetail.contribute' | translate }}
+                            </button>
+                          </li>
+                          <li>
+                            <button (click)="openMutualFundModal(goal, MovementType.Withdrawal)">
+                              <i class="fas fa-money-bill-transfer text-warning"></i>
+                              {{ 'savingsGoalDetail.withdraw' | translate }}
+                            </button>
+                          </li>
+                          <li><hr class="my-1 border-base-300"></li>
+                        }
+
                         <!-- ✅ Solo mostrar Edit si NO está completed -->
                         @if (goal.statusId !== GoalStatus.Completed) {
                           <li>
@@ -252,7 +269,7 @@
                         {{ goal.paidInstallmentsCount }}/{{ goal.numberOfInstallments }} {{ 'savingsGoals.installments' | translate }}
                       </span>
                     }
-                    @if (isDepositType(goal) && goal.annualRatePercentage) {
+                    @if ((isDepositType(goal) || isMutualFund(goal)) && goal.annualRatePercentage) {
                       <span class="badge badge-sm badge-soft gap-1" [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'badge-info' : 'badge-warning'">
                         <i class="fas fa-percent"></i>
                         {{ goal.annualRatePercentage }}% TNA
@@ -294,3 +311,4 @@
   </article>
 </section>
 <app-confirm-dialog (confirmed)="onConfirmResult($event)" />
+<app-mutual-fund-movement-modal />

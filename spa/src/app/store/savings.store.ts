@@ -450,23 +450,20 @@ export const SavingsStore = signalStore(
 
       return savingsGoalApiService.createMutualFundMovement(goalId, request).pipe(
         tap(deposit => {
-          const currentDeposits = store.deposits();
           const currentGoal = store.selectedGoal();
+          const delta = request.movementType === MovementType.Withdrawal ? -request.amount : request.amount;
+          const updatedGoals = store.goals().map(g => g.id === goalId ? { ...g, currentAmount: g.currentAmount + delta } : g);
 
-          if (currentGoal) {
-            const delta = request.movementType === MovementType.Withdrawal ? -request.amount : request.amount;
-            const updatedGoal = {
-              ...currentGoal,
-              currentAmount: currentGoal.currentAmount + delta
-            };
-            const updatedGoals = store.goals().map(g => g.id === currentGoal.id ? updatedGoal : g);
-
-            patchState(store, {
-              deposits: [...currentDeposits, deposit],
-              selectedGoal: updatedGoal,
-              goals: updatedGoals
-            });
-          }
+          const isSelected = currentGoal?.id === goalId;
+          patchState(store, {
+            ...(isSelected
+              ? {
+                deposits: [...store.deposits(), deposit],
+                selectedGoal: { ...currentGoal, currentAmount: currentGoal.currentAmount + delta },
+              }
+              : {}),
+            goals: updatedGoals
+          });
           loadingStore.setLoadingSuccess();
         }),
         catchError(error => {

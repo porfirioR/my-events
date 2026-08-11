@@ -315,6 +315,7 @@ export class SavingsGoalsController {
       apiRequest.amount,
       apiRequest.movementType,
       apiRequest.description,
+      apiRequest.date ? new Date(apiRequest.date) : undefined,
     );
 
     return await this.savingsManagerService.createMutualFundMovement(request);

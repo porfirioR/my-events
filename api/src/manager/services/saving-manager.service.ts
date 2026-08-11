@@ -583,10 +583,15 @@ export class SavingsManagerService {
     }
 
     // 3. Create movement
+    const movementDate = request.date ?? new Date();
+    if (movementDate > new Date()) {
+      throw new BadRequestException('Movement date cannot be in the future');
+    }
+
     const depositAccessRequest = new CreateSavingsDepositAccessRequest(
       request.savingsGoalId,
       request.amount,
-      new Date(),
+      movementDate,
       null,
       request.description,
       request.movementType,
