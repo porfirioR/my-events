@@ -967,6 +967,9 @@ CREATE INDEX idx_loanpayments_loan ON loanpayments(loanid);
 -- de todos los tipos existentes, que solo insertan depósitos.
 
 ALTER TABLE savingsdeposits ADD COLUMN IF NOT EXISTS movement_type SMALLINT NOT NULL DEFAULT 1 CHECK (movement_type IN (1, 2));
+-- NOTA: la columna de arriba quedó con guión bajo por error; el resto del código
+-- (DatabaseColumns.MovementType, SavingsDepositEntity) sigue la convención sin
+-- guión bajo usada en el resto del schema. Ver fix más abajo (fin del archivo).
 
 INSERT INTO savingsprogressiontypes (id, name, description) VALUES
 (9, 'MutualFund', 'Fondo mutuo - aportes y retiros libres, tasa anual informativa, sin monto ni plazo fijo')
@@ -978,4 +981,48 @@ ALTER TABLE savingsgoals ADD CONSTRAINT check_increment_for_progression CHECK (
     (progressiontypeid IN (1, 5, 6, 7, 8, 9) AND incrementamount IS NULL) OR
     (progressiontypeid IN (2, 3, 4) AND incrementamount IS NOT NULL AND incrementamount > 0)
 );
+
+-- MutualFund (9) tampoco usa numberofinstallments ni baseamount, igual que FreeForm (5):
+-- balance libre movido por depósitos/retiros, sin cuota ni monto base fijo.
+ALTER TABLE savingsgoals DROP CONSTRAINT IF EXISTS check_freeform_nulls;
+ALTER TABLE savingsgoals ADD CONSTRAINT check_freeform_nulls CHECK (
+    (progressiontypeid IN (5, 9) AND numberofinstallments IS NULL AND baseamount IS NULL) OR
+    (progressiontypeid NOT IN (5, 9) AND numberofinstallments IS NOT NULL AND baseamount IS NOT NULL)
+);
+
+-- MutualFund (9) crea la meta con targetamount = 0 (sin monto objetivo fijo, ver
+-- saving-manager.service.ts createSavingsGoal), a diferencia de todos los demás tipos.
+ALTER TABLE savingsgoals DROP CONSTRAINT IF EXISTS check_target_positive;
+ALTER TABLE savingsgoals ADD CONSTRAINT check_target_positive CHECK (
+    targetamount > 0 OR progressiontypeid = 9
+);
+
+-- Fix: la columna se creó como movement_type (con guión bajo) en la Parte 17,
+-- pero DatabaseColumns.MovementType / SavingsDepositEntity esperan "movementtype"
+-- (sin guión bajo), igual que el resto de columnas del schema. Renombrar si quedó
+-- creada con el nombre viejo; crearla si por algún motivo nunca se aplicó.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'savingsdeposits' AND column_name = 'movement_type'
+    ) THEN
+        ALTER TABLE savingsdeposits RENAME COLUMN movement_type TO movementtype;
+    ELSIF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'savingsdeposits' AND column_name = 'movementtype'
+    ) THEN
+        ALTER TABLE savingsdeposits ADD COLUMN movementtype SMALLINT NOT NULL DEFAULT 1 CHECK (movementtype IN (1, 2));
+    END IF;
+END $$;
+
+-- Fix: MutualFund (9) se crea con targetamount = 0 y su currentamount crece libremente
+-- con cada aporte, sin techo — check_current_not_exceed_target nunca contempló esto,
+-- así que el UPDATE de currentamount fallaba después de insertar el depósito
+-- (el depósito quedaba guardado pero el saldo del goal no se actualizaba).
+ALTER TABLE savingsgoals DROP CONSTRAINT IF EXISTS check_current_not_exceed_target;
+ALTER TABLE savingsgoals ADD CONSTRAINT check_current_not_exceed_target CHECK (
+    currentamount <= targetamount OR progressiontypeid = 9
+);
+
 CREATE INDEX idx_loanpayments_installment ON loanpayments(installmentid);

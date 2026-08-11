@@ -5,5 +5,6 @@ export class CreateMutualFundMovementRequest {
     public readonly amount: number,
     public readonly movementType: number,
     public readonly description?: string | null,
+    public readonly date?: Date | null,
   ) {}
 }

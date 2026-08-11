@@ -4,18 +4,20 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useLoadingStore, useSavingsStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
+import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, MovementType, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
+import { MutualFundMovementModalComponent } from '../mutual-fund-movement-modal/mutual-fund-movement-modal.component';
 
 @Component({
   selector: 'app-savings-goals-list',
   templateUrl: './savings-goals-list.component.html',
   styleUrls: ['./savings-goals-list.component.css'],
-  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent, MutualFundMovementModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SavingsGoalsListComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @ViewChild(MutualFundMovementModalComponent) mutualFundModal!: MutualFundMovementModalComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   private router = inject(Router);
@@ -108,6 +110,23 @@ export class SavingsGoalsListComponent implements OnInit {
 
   protected isDepositType(goal: any): boolean {
     return goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA;
+  }
+
+  protected isMutualFund(goal: any): boolean {
+    return goal.progressionTypeId === ProgressionType.MutualFund;
+  }
+
+  protected MovementType = MovementType;
+
+  protected openMutualFundModal(goal: any, movementType: number): void {
+    this.mutualFundModal.open({
+      goalId: goal.id,
+      currencyId: goal.currencyId,
+      currentAmount: goal.currentAmount,
+      annualRatePercentage: goal.annualRatePercentage,
+      startDate: goal.startDate,
+      movementType,
+    });
   }
 
   protected getProgressTarget(goal: { progressionTypeId: number; targetAmount: number; baseAmount?: number | null; numberOfInstallments?: number | null; currentAmount?: number }): number {

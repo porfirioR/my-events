@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsPositive, IsString, MaxLength } from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsOptional, IsPositive, IsString, MaxLength } from 'class-validator';
 import { MovementType } from '../../../utility/enums';
 
 export class CreateMutualFundMovementApiRequest {
@@ -13,4 +13,8 @@ export class CreateMutualFundMovementApiRequest {
   @IsString()
   @MaxLength(255)
   description?: string;
+
+  @IsOptional()
+  @IsDateString()
+  date?: string;
 }

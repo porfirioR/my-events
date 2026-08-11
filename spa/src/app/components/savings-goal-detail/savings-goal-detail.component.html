@@ -603,57 +603,7 @@
 }
 
 <!-- Mutual Fund Movement Modal -->
-@if (showMutualFundModal()) {
-<dialog class="modal modal-open">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">
-      {{ (selectedMovementType() === MovementType.Withdrawal ? 'savingsGoalDetail.withdrawTitle' : 'savingsGoalDetail.contributeTitle') | translate }}
-    </h3>
-
-    <form [formGroup]="mutualFundForm" (submit)="createMutualFundMovement()">
-      <app-text
-        formControlName="amount"
-        type="number"
-        [label]="'savingsGoalDetail.amount' | translate"
-        id="amount"
-        name="Amount"
-        [description]="selectedMovementType() === MovementType.Withdrawal
-          ? ('savingsGoalDetail.availableBalance' | translate: { amount: formatCurrency(mutualFundMaxWithdrawal(), goal()?.currencyId) })
-          : ''"
-      />
-
-      <app-text-area-input
-        formControlName="description"
-        [label]="'savingsGoalDetail.descriptionOptional' | translate"
-        [placeholder]="'savingsGoalDetail.addNote' | translate"
-        id="description"
-        name="description"
-      />
-
-      <div class="modal-action">
-        <button type="button" class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105" (click)="closeMutualFundModal()">
-          {{ 'savingsGoalDetail.cancel' | translate }}
-        </button>
-
-        @if (isSubmitting()) {
-          <button type="button" class="btn btn-primary flex items-center gap-2 loading-btn">
-            <span class="loading loading-spinner loading-xs"></span>
-            {{ 'savingsGoalDetail.saving' | translate }}
-          </button>
-        } @else {
-          <button role="button" type="submit"
-            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
-            [disabled]="mutualFundForm.invalid || isSubmitting()" [class.btn-disabled]="mutualFundForm.invalid || isSubmitting()">
-            <i class="fas fa-hand-holding-dollar text-sm"></i>
-            {{ (selectedMovementType() === MovementType.Withdrawal ? 'savingsGoalDetail.withdrawButton' : 'savingsGoalDetail.contributeButton') | translate }}
-          </button>
-        }
-      </div>
-    </form>
-  </div>
-  <div class="modal-backdrop" (click)="closeMutualFundModal()"></div>
-</dialog>
-}
+<app-mutual-fund-movement-modal (completed)="onMutualFundMovementCompleted()" />
 
 <!-- Add Installments Modal -->
 @if (showAddInstallmentsModal()) {
