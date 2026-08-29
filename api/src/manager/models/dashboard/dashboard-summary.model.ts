@@ -1,16 +1,3 @@
-export class ActiveGoalSummary {
-  constructor(
-    public id: number,
-    public name: string,
-    public currentAmount: number,
-    public targetAmount: number,
-    public currencyId: number,
-    public progressionTypeId: number,
-    public baseAmount: number | null,
-    public numberOfInstallments: number | null,
-  ) {}
-}
-
 export class DashboardSummaryModel {
   constructor(
     public collaborators: {
@@ -27,7 +14,6 @@ export class DashboardSummaryModel {
       total: number;
       active: number;
       completed: number;
-      topActive: ActiveGoalSummary[];
     },
     public travels: {
       total: number;
