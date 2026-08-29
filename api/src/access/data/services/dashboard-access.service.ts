@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseAccessService, DbContextService } from '.';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
-import { ActiveGoalAccessModel, DashboardAccessModel, IDashboardAccessService } from '../../contract/dashboard';
+import { DashboardAccessModel, IDashboardAccessService } from '../../contract/dashboard';
 
 @Injectable()
 export class DashboardAccessService extends BaseAccessService implements IDashboardAccessService {
@@ -53,7 +53,7 @@ export class DashboardAccessService extends BaseAccessService implements IDashbo
   };
 
   private getSavingsStats = async (userId: number) => {
-    const [total, active, completed, topActiveResult] = await Promise.all([
+    const [total, active, completed] = await Promise.all([
       this.dbContext.from(TableEnum.SavingsGoals)
         .select(DatabaseColumns.EntityId, { count: 'exact', head: true })
         .eq(DatabaseColumns.UserId, userId),
@@ -65,22 +65,9 @@ export class DashboardAccessService extends BaseAccessService implements IDashbo
         .select(DatabaseColumns.EntityId, { count: 'exact', head: true })
         .eq(DatabaseColumns.UserId, userId)
         .eq(DatabaseColumns.StatusId, 2),
-      this.dbContext.from(TableEnum.SavingsGoals)
-        .select('id, name, currentamount, targetamount, currencyid, progressiontypeid, baseamount, numberofinstallments')
-        .eq(DatabaseColumns.UserId, userId)
-        .eq(DatabaseColumns.StatusId, 1)
-        .order('dateupdated', { ascending: false })
-        .limit(3),
     ]);
 
-    const topActive: ActiveGoalAccessModel[] = (topActiveResult.data ?? []).map((g: any) =>
-      new ActiveGoalAccessModel(
-        g.id, g.name, g.currentamount, g.targetamount,
-        g.currencyid, g.progressiontypeid, g.baseamount, g.numberofinstallments,
-      )
-    );
-
-    return { total: total.count ?? 0, active: active.count ?? 0, completed: completed.count ?? 0, topActive };
+    return { total: total.count ?? 0, active: active.count ?? 0, completed: completed.count ?? 0 };
   };
 
   private getTravelStats = async (userId: number) => {

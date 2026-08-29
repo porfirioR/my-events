@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { EventViewModel } from '../../models/view/event-view-model';
-import { useAuthStore, useDashboardStore, useLoadingStore } from '../../store';
+import { useAuthStore, useCurrencyStore, useDashboardStore, useLoadingStore } from '../../store';
 import { NotificationService } from '../../services';
 
 @Component({
@@ -21,6 +21,7 @@ export class HomeComponent {
   private authStore = useAuthStore();
   private loadingStore = useLoadingStore();
   private dashboardStore = useDashboardStore();
+  private currencyStore = useCurrencyStore();
   protected eventFollows: EventViewModel[] = [];
   protected isLoading = this.loadingStore.isLoading;
   protected currentUser = this.authStore.currentUser;
@@ -29,5 +30,9 @@ export class HomeComponent {
 
   constructor() {
     this.dashboardStore.loadSummary();
+    // Currencies son necesarias para formatear los montos del dashboard;
+    // el resto de los datos (travels, transactions, savings, collaborators)
+    // se cargan de forma perezosa dentro de cada categoría, no acá.
+    this.currencyStore.loadCurrencies();
   }
 }

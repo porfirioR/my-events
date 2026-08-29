@@ -2,9 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { useDashboardStore } from '../../store';
-import { ActiveGoalSummaryApiModel } from '../../models/api/dashboard/dashboard-summary-api.model';
 import { FormatterHelperService } from '../../services';
-import { ProgressionType } from '../../models/enums';
 
 @Component({
   selector: 'app-dashboard',
@@ -48,19 +46,6 @@ export class DashboardComponent {
     active: this.summary()?.loans.active ?? 0,
     completed: this.summary()?.loans.completed ?? 0,
   }));
-
-  protected activeGoals = computed(() => this.summary()?.savingsGoals.topActive ?? []);
-
-  protected calculateProgress(goal: ActiveGoalSummaryApiModel): number {
-    const isLumpSum = goal.progressionTypeId === ProgressionType.FixedDeposit || goal.progressionTypeId === ProgressionType.CDA;
-    const base = isLumpSum
-      ? (goal.baseAmount ?? goal.targetAmount)
-      : goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments
-        ? goal.baseAmount * goal.numberOfInstallments
-        : goal.targetAmount;
-    if (base === 0) return 0;
-    return Math.min(Math.round((goal.currentAmount / base) * 100), 100);
-  }
 
   protected formatCurrency = this.formatterService.formatCurrency;
 }

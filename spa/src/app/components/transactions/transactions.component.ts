@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TransactionViewApiModel } from '../../models/api/transactions';
-import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
+import { useCollaboratorStore, useCurrencyStore, useLoadingStore, useTransactionStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-reimbursement-modal.component';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -29,6 +29,7 @@ export class TransactionsComponent implements OnInit {
 
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
+  private readonly currencyStore = useCurrencyStore();
   private readonly loadingStore = useLoadingStore();
   private readonly alertService = inject(AlertService);
   private readonly translate = inject(TranslateService);
@@ -64,11 +65,14 @@ export class TransactionsComponent implements OnInit {
   private loadData(): void {
     // Cargar transacciones
     this.transactionStore.loadTransactions();
-    
+
     // Cargar colaboradores si no están cargados
     if (this.collaboratorStore.totalCount() === 0) {
       this.collaboratorStore.loadCollaborators();
     }
+
+    // Necesarias para formatCurrency
+    this.currencyStore.loadCurrencies();
   }
 
   // ========== Filters ==========

@@ -169,7 +169,8 @@ export const SavingsStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load savings goals' });
-              throw new Error(error);
+              loadingStore.setLoadingFailed();
+              return of(null);
             })
           );
         })
@@ -192,7 +193,8 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to reload savings goals' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -212,7 +214,8 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load savings goal' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -277,7 +280,8 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete savings goal' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -301,7 +305,8 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load installments' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -363,7 +368,8 @@ export const SavingsStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to skip installment' });
-              throw new Error(error);
+              loadingStore.setLoadingFailed();
+              return of(null);
             })
           )
         )
@@ -407,7 +413,8 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load deposits' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -487,7 +494,8 @@ export const SavingsStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete deposit' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )

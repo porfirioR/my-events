@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useSavingsStore } from '../../store/savings.store';
+import { useCurrencyStore } from '../../store/currency.store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, MovementType, ProgressionType } from '../../models/enums';
 import {
@@ -52,6 +53,7 @@ export class SavingsGoalDetailComponent implements OnInit {
   private formatterService = inject(FormatterHelperService);
   private translate = inject(TranslateService);
   private savingsStore = useSavingsStore();
+  private currencyStore = useCurrencyStore();
 
   protected goal = this.savingsStore.selectedGoal;
   protected installments = this.savingsStore.installments;
@@ -159,6 +161,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadInstallments(id);
     this.savingsStore.loadDeposits(id);
     this.savingsStore.loadProgrammedTerms();
+    this.currencyStore.loadCurrencies();
   }
 
   protected setActiveTab(tab: 'installments' | 'deposits'): void {

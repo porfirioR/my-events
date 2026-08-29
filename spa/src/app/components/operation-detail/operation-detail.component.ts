@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, inje
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useTravelStore, useLoadingStore, useAuthStore } from '../../store';
+import { useTravelStore, useLoadingStore, useAuthStore, useCurrencyStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
@@ -37,6 +37,7 @@ export class OperationDetailComponent implements OnInit {
   private travelStore = useTravelStore();
   private loadingStore = useLoadingStore();
   private authStore = useAuthStore();
+  private currencyStore = useCurrencyStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected travel = this.travelStore.selectedTravel;
@@ -53,6 +54,7 @@ export class OperationDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.travelStore.loadCategories()
+    this.currencyStore.loadCurrencies();
     const travelId = this.activatedRoute.snapshot.params['travelId'];
     const operationId = this.activatedRoute.snapshot.params['operationId'];
 

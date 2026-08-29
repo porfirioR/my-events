@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useTransactionStore, useLoadingStore } from '../../store';
+import { useTransactionStore, useLoadingStore, useCurrencyStore } from '../../store';
 import { FormatterHelperService, AlertService } from '../../services';
 import { AddReimbursementModalComponent } from "../add-reimbursement-modal/add-reimbursement-modal.component";
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -34,6 +34,7 @@ export class TransactionDetailsComponent implements OnInit {
 
   private readonly transactionStore = useTransactionStore();
   private readonly loadingStore = useLoadingStore();
+  private readonly currencyStore = useCurrencyStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected transactionDetails = this.transactionStore.selectedTransactionDetails;
@@ -47,6 +48,7 @@ export class TransactionDetailsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currencyStore.loadCurrencies();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.transactionId = parseInt(id);

@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useAuthStore, useLoadingStore, useTravelStore } from '../../store';
+import { useAuthStore, useCurrencyStore, useLoadingStore, useTravelStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelApiModel } from '../../models/api/travels';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -29,6 +29,7 @@ export class TravelsListComponent implements OnInit {
   private travelStore = useTravelStore();
   private loadingStore = useLoadingStore();
   private authStore = useAuthStore();
+  private currencyStore = useCurrencyStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected filterStatus = signal<string | null>('Active');
@@ -51,6 +52,7 @@ export class TravelsListComponent implements OnInit {
 
   ngOnInit(): void {
     this.travelStore.loadTravels();
+    this.currencyStore.loadCurrencies();
   }
 
   protected setStatusFilter(status: string | null): void {

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useLoansStore, useLoadingStore } from '../../store';
+import { useCurrencyStore, useLoansStore, useLoadingStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, LoanTypeBadgeColors } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -25,6 +25,7 @@ export class LoansListComponent implements OnInit {
 
   private loansStore = useLoansStore();
   protected loadingStore = useLoadingStore();
+  private currencyStore = useCurrencyStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected filterStatus = signal<number | null>(1);
@@ -47,6 +48,7 @@ export class LoansListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loansStore.reloadLoans();
+    this.currencyStore.loadCurrencies();
   }
 
   protected setStatusFilter(statusId: number | null): void {

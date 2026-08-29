@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useLoadingStore, useSavingsStore } from '../../store';
+import { useCurrencyStore, useLoadingStore, useSavingsStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, MovementType, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -27,6 +27,7 @@ export class SavingsGoalsListComponent implements OnInit {
 
   private savingsStore = useSavingsStore();
   private loadingStore = useLoadingStore();
+  private currencyStore = useCurrencyStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected filterStatus = signal<number | null>(GoalStatus.Active);
@@ -58,6 +59,7 @@ export class SavingsGoalsListComponent implements OnInit {
 
   ngOnInit(): void {
     this.savingsStore.reloadGoals();
+    this.currencyStore.loadCurrencies();
   }
 
   protected setStatusFilter(statusId: number | null): void {
