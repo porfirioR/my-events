@@ -192,7 +192,8 @@ export const TravelStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load payment methods' });
-              throw new Error(error);
+              loadingStore.setLoadingFailed();
+              return of(null);
             })
           );
         })
@@ -224,7 +225,8 @@ export const TravelStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load travels' });
-              throw new Error(error);
+              loadingStore.setLoadingFailed();
+              return of(null);
             })
           );
         })
@@ -247,7 +249,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to reload travels' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -266,7 +269,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load travel' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -396,7 +400,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load members' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -435,7 +440,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to remove member' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -459,7 +465,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load operations' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -532,7 +539,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to delete operation' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -554,7 +562,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to approve operation' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -597,7 +606,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load balances' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -626,7 +636,8 @@ export const TravelStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load categories' });
-              throw new Error(error);
+              loadingStore.setLoadingFailed();
+              return of(null);
             })
           );
         })
@@ -649,7 +660,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load category summary' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )
@@ -676,7 +688,8 @@ export const TravelStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load attachments' });
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           })
         ))
       )

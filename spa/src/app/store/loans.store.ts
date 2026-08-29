@@ -97,8 +97,8 @@ export const LoansStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load loans' });
-            loadingStore.setLoadingSuccess();
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           }),
         ))
       )
@@ -118,8 +118,8 @@ export const LoansStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load loan' });
-            loadingStore.setLoadingSuccess();
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           }),
         ))
       )
@@ -138,8 +138,8 @@ export const LoansStore = signalStore(
           }),
           catchError(error => {
             patchState(store, { error: 'Failed to load installments' });
-            loadingStore.setLoadingSuccess();
-            throw new Error(error);
+            loadingStore.setLoadingFailed();
+            return of(null);
           }),
         ))
       )
@@ -201,7 +201,7 @@ export const LoansStore = signalStore(
             patchState(store, { loans: store.loans().filter(l => l.id !== id), selectedLoan: undefined });
             loadingStore.setLoadingSuccess();
           }),
-          catchError(error => { loadingStore.setLoadingSuccess(); throw new Error(error); }),
+          catchError(error => { patchState(store, { error: 'Failed to delete loan' }); loadingStore.setLoadingFailed(); return of(null); }),
         ))
       )
     ),

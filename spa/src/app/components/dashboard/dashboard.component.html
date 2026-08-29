@@ -1,9 +1,18 @@
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-base-100 transition-colors duration-300">
   <!-- add min-h-screen when have more module min-h-screen-->
-  <!-- Dashboard Metrics Section -->
-  <section aria-labelledby="metrics-heading" class="mb-8 mt-6">
-    <h2 id="metrics-heading" class="sr-only">{{ 'dashboard.metricsHeading' | translate }}</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+  <!-- Content Grid: cards a la izquierda, Quick Actions a la derecha -->
+  <article class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+
+    <!-- Dashboard Metrics Section -->
+    <section aria-labelledby="metrics-heading" class="lg:col-span-2">
+      <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
+        <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+          <h2 id="metrics-heading" class="text-lg font-semibold text-base-content">{{ 'dashboard.modulesHeading' | translate }}</h2>
+        </header>
+
+        <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
       <!-- Collaborators Card -->
       <article [routerLink]="['collaborators']" class="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
@@ -131,112 +140,7 @@
           <span class="text-yellow-100 dark:text-yellow-50 text-xs">↗ +8% this quarter</span>
         </footer>
       </article>
-    </div>
-  </section>
-
-  <!-- Content Grid -->
-  <article class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Savings Goals Detail Section -->
-    <section aria-labelledby="savings-heading" class="lg:col-span-2">
-      <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
-        <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center">
-                <i class="fas fa-piggy-bank text-lg text-success" aria-hidden="true"></i>
-              </div>
-              <h2 id="savings-heading" class="text-xl font-semibold text-base-content">{{ 'dashboard.savingsGoals' | translate }}</h2>
-            </div>
-            <button [routerLink]="['savings']" class="text-primary hover:text-primary-focus text-sm font-medium px-3 py-1 rounded-md hover:bg-primary/10 transition-colors cursor-pointer">
-              {{ 'dashboard.viewAll' | translate }}
-            </button>
-          </div>
-        </header>
-
-        <div class="p-6">
-          @if (savingsStats(); as stats) {
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-              <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 text-center">
-                <div class="text-xs text-base-content/70 mb-1">{{ 'common.total' | translate }}</div>
-                <div class="text-2xl font-bold text-base-content">{{ stats.total }}</div>
-              </div>
-
-              <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 text-center">
-                <div class="text-xs text-success mb-1">{{ 'dashboard.active' | translate }}</div>
-                <div class="text-2xl font-bold text-success">{{ stats.active }}</div>
-              </div>
-
-              <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 text-center">
-                <div class="text-xs text-info mb-1">{{ 'dashboard.completed' | translate }}</div>
-                <div class="text-2xl font-bold text-info">{{ stats.completed }}</div>
-              </div>
-            </div>
-
-            <!-- Active Goals List -->
-            @if (activeGoals().length > 0) {
-              <div>
-                <h3 class="text-sm font-semibold text-base-content/70 mb-3">{{ 'dashboard.recentActiveGoals' | translate }}</h3>
-                <ul class="space-y-3" role="list">
-                  @for (goal of activeGoals(); track goal.id) {
-                    <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
-                        [routerLink]="['savings', goal.id]">
-                      <article>
-                        <header class="flex items-center justify-between mb-3">
-                          <h4 class="font-semibold text-base-content">{{ goal.name }}</h4>
-                          <span class="badge badge-soft badge-success">
-                            {{ calculateProgress(goal) }}%
-                          </span>
-                        </header>
-
-                        <div class="mb-2">
-                          <div class="w-full bg-base-300 dark:bg-base-100 rounded-full h-2">
-                            <div class="bg-gradient-to-r from-success to-success h-2 rounded-full transition-all duration-300"
-                              [style.width.%]="calculateProgress(goal)"
-                              role="progressbar"
-                              [attr.aria-valuenow]="calculateProgress(goal)"
-                              aria-valuemin="0"
-                              aria-valuemax="100">
-                            </div>
-                          </div>
-                        </div>
-
-                        <footer class="flex items-center justify-between text-xs text-base-content/60">
-                          <span>{{ formatCurrency(goal.currentAmount, goal.currencyId) }}</span>
-                          <span>{{ formatCurrency(goal.targetAmount, goal.currencyId) }}</span>
-                        </footer>
-                      </article>
-                    </li>
-                  }
-                </ul>
-
-                @if (savingsStats().active > 3) {
-                  <button
-                    type="button"
-                    [routerLink]="['savings']"
-                    class="w-full mt-4 py-2 text-sm text-primary hover:text-primary-focus hover:bg-primary/10 rounded-lg transition-colors duration-200">
-                    {{ 'dashboard.viewMoreActiveGoals' | translate:{ count: savingsStats().active - 3 } }}
-                  </button>
-                }
-              </div>
-            } @else {
-              <!-- Empty State -->
-              <div class="text-center py-12">
-                <figure class="mx-auto w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mb-4">
-                  <i class="fas fa-piggy-bank text-3xl text-success/50" aria-hidden="true"></i>
-                </figure>
-                <h3 class="text-lg font-medium text-base-content mb-2">{{ 'dashboard.noActiveGoalsYet' | translate }}</h3>
-                <p class="text-base-content/70 mb-4 text-sm">{{ 'dashboard.startSavingMessage' | translate }}</p>
-                <button
-                  type="button"
-                  [routerLink]="['savings/create']"
-                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors duration-200 cursor-pointer ">
-                  <i class="fas fa-plus mr-2" aria-hidden="true"></i>
-                  {{ 'dashboard.createYourFirstGoal' | translate }}
-                </button>
-              </div>
-            }
-          }
+      </div>
         </div>
       </article>
     </section>
@@ -271,27 +175,15 @@
                 </a>
               </li>
               <li>
-                <a [routerLink]="['travels/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-warning/10 hover:text-warning rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-suitcase-rolling mr-3 text-warning" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.newTravel' | translate }}</span>
-                </a>
-              </li>
-              <li>
                 <a [routerLink]="['loans/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-amber-500/10 hover:text-amber-600 rounded-lg transition-colors duration-200 cursor-pointer">
                   <i class="fas fa-hand-holding-dollar mr-3 text-amber-500" aria-hidden="true"></i>
                   <span>{{ 'dashboard.newLoan' | translate }}</span>
                 </a>
               </li>
               <li>
-                <a class="w-full flex items-center p-3 text-left text-base-content hover:bg-secondary/10 hover:text-secondary rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-project-diagram mr-3 text-secondary" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.newProject' | translate }}</span>
-                </a>
-              </li>
-              <li>
-                <a class="w-full flex items-center p-3 text-left text-base-content hover:bg-info/10 hover:text-info rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-plus mr-3 text-info" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.createEvent' | translate }}</span>
+                <a [routerLink]="['travels/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-warning/10 hover:text-warning rounded-lg transition-colors duration-200 cursor-pointer">
+                  <i class="fas fa-suitcase-rolling mr-3 text-warning" aria-hidden="true"></i>
+                  <span>{{ 'dashboard.newTravel' | translate }}</span>
                 </a>
               </li>
               <li>

@@ -43,8 +43,8 @@ export const DashboardStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to load dashboard summary' });
-              loadingStore.setLoadingSuccess();
-              throw new Error(error);
+              loadingStore.setLoadingFailed();
+              return of(null);
             })
           );
         })
@@ -65,8 +65,8 @@ export const DashboardStore = signalStore(
             }),
             catchError(error => {
               patchState(store, { error: 'Failed to reload dashboard summary' });
-              loadingStore.setLoadingSuccess();
-              throw new Error(error);
+              loadingStore.setLoadingFailed();
+              return of(null);
             })
           )
         )
