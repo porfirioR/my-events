@@ -71,11 +71,9 @@ export const AuthStore = signalStore(
         error: null
       });
 
-      currencyStore.loadCurrencies();
-      collaboratorStore.loadCollaborators();
-      transactionStore.loadTransactions();
-      savingsStore.loadGoals();
-      travelStore.loadTravels();
+      // Nota: no se precargan aquí travels/transactions/savings-goals/collaborators —
+      // cada página de categoría los carga (de forma perezosa y con guard contra recargas)
+      // cuando el usuario navega a ella. Ver home.component.ts para lo que sí se carga al inicio.
     },
 
     loginFailure: (error: string) => patchState(store, {
@@ -131,11 +129,7 @@ export const AuthStore = signalStore(
         collaboratorId
       });
 
-      currencyStore.loadCurrencies();
-      collaboratorStore.loadCollaborators();
-      transactionStore.loadTransactions();
-      savingsStore.loadGoals();
-      travelStore.loadTravels();
+      // Ver comentario en loginSuccess: la carga de datos por categoría es perezosa.
     },
 
     clearError: () => patchState(store, { error: null })

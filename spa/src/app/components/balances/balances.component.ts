@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { useLoadingStore, useTransactionStore } from '../../store';
+import { useCurrencyStore, useLoadingStore, useTransactionStore } from '../../store';
 import { FormatterHelperService } from '../../services';
 
 @Component({
@@ -21,6 +21,7 @@ import { FormatterHelperService } from '../../services';
 export class BalancesComponent implements OnInit {
   private readonly transactionStore = useTransactionStore();
   private readonly loadingStore = useLoadingStore();
+  private readonly currencyStore = useCurrencyStore();
   private readonly location = inject(Location);
   private formatterService = inject(FormatterHelperService);
 
@@ -45,6 +46,7 @@ export class BalancesComponent implements OnInit {
     // This ensures we reflect any new transactions, settlements, or payments
     this.transactionStore.reloadTransactions();
     this.transactionStore.reloadBalances();
+    this.currencyStore.loadCurrencies();
   }
 
   protected toggleBalanceDetails(collaboratorId: number): void {

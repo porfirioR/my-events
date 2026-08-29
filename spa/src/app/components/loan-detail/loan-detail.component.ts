@@ -8,7 +8,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService, FormatterHelperService } from '../../services';
-import { useLoansStore } from '../../store';
+import { useCurrencyStore, useLoansStore } from '../../store';
 import { PayLoanInstallmentApiRequest } from '../../models/api/loans';
 import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
 
@@ -27,6 +27,7 @@ export class LoanDetailComponent implements OnInit {
   private formatterService = inject(FormatterHelperService);
   private translate = inject(TranslateService);
   private loansStore = useLoansStore();
+  private currencyStore = useCurrencyStore();
 
   protected loan = this.loansStore.selectedLoan;
   protected installments = this.loansStore.installments;
@@ -72,6 +73,7 @@ export class LoanDetailComponent implements OnInit {
     this.loansStore.loadLoanById(+id);
     this.loansStore.loadInstallments(+id);
     this.loansStore.loadPayments(+id);
+    this.currencyStore.loadCurrencies();
   }
 
   protected setTab(tab: 'table' | 'payments'): void {

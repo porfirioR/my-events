@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, comp
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useLoadingStore, useTravelStore, useCollaboratorStore, useAuthStore } from '../../store';
+import { useLoadingStore, useTravelStore, useCollaboratorStore, useAuthStore, useCurrencyStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { ApprovalStatus } from '../../models/enums';
@@ -31,6 +31,7 @@ export class TravelDetailComponent implements OnInit {
   private collaboratorStore = useCollaboratorStore();
   private loadingStore = useLoadingStore();
   private authStore = useAuthStore();
+  private currencyStore = useCurrencyStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected travel = this.travelStore.selectedTravel;
@@ -66,6 +67,7 @@ export class TravelDetailComponent implements OnInit {
 
     // Cargar colaboradores para poder agregar miembros
     this.collaboratorStore.loadCollaborators();
+    this.currencyStore.loadCurrencies();
   }
 
   private loadTravelData(travelId: number): void {
