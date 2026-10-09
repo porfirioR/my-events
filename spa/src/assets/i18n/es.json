@@ -206,7 +206,9 @@
     "monthlySummary": "Resumen mensual",
     "recentMovements": "Movimientos pendientes recientes",
     "viewAllTransactions": "Ver todas",
-    "noPendingMovements": "Sin movimientos pendientes"
+    "noPendingMovements": "Sin movimientos pendientes",
+    "registerPayment": "Registrar pago",
+    "addExpense": "Agregar gasto"
   },
   "collaborators": {
     "title": "Colaboradores",
@@ -692,7 +694,7 @@
     "totalAmountDescription": "Monto total de la transacción en la factura",
     "description": "Descripción",
     "descriptionPlaceholder": "Descripción",
-    "transactionDate": "Fecha del Pago",
+    "transactionDate": "Fecha",
     "addReimbursement": "Agregar Reintegro",
     "reimbursementDetails": "Detalles del Reintegro",
     "amount": "Monto",
@@ -742,7 +744,41 @@
     "balanced": "Balanceado ({{amount}})",
     "debtAmountsError": "Los montos de deuda no suman al monto neto",
     "transactionCreatedSuccess": "Transacción creada exitosamente",
-    "transactionCreatedError": "Error al crear la transacción"
+    "transactionCreatedError": "Error al crear la transacción",
+    "entryTypeLabel": "¿Qué querés registrar?",
+    "modes": {
+      "expense": {
+        "title": "Gasto para {{name}}",
+        "hint": "Pagaste vos y le corresponde todo"
+      },
+      "payment": {
+        "title": "Pago",
+        "hint": "{{name}} te pagó o vos le pagaste"
+      },
+      "shared": {
+        "title": "Gasto compartido",
+        "hint": "Dividir el gasto entre los dos"
+      }
+    },
+    "paymentDirectionLabel": "¿Quién le pagó a quién?",
+    "theyPaidMe": "{{name}} me pagó",
+    "iPaidThem": "Le pagué a {{name}}",
+    "amountLabel": {
+      "expense": "Monto del gasto",
+      "payment": "Monto del pago",
+      "shared": "Monto total"
+    },
+    "noteOptional": "Nota (opcional)",
+    "paymentNotePlaceholder": "Ej: transferencia",
+    "paymentDefaultDescription": "Pago",
+    "summary": {
+      "expense": "{{name}} te va a deber {{amount}}",
+      "theyPaidMe": "Se descuentan {{amount}} de lo que {{name}} te debe",
+      "iPaidThem": "Se descuentan {{amount}} de lo que le debés a {{name}}"
+    },
+    "personPaid": "{{name}} pagó",
+    "otherPerson": "la otra persona",
+    "saveAndAddAnother": "Guardar y cargar otro"
   },
   "addReimbursementModal": {
     "title": "Agregar Reintegro",

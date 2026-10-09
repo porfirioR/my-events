@@ -206,7 +206,9 @@
     "monthlySummary": "Monthly summary",
     "recentMovements": "Recent pending movements",
     "viewAllTransactions": "View all",
-    "noPendingMovements": "No pending movements"
+    "noPendingMovements": "No pending movements",
+    "registerPayment": "Record payment",
+    "addExpense": "Add expense"
   },
   "collaborators": {
     "title": "Collaborators",
@@ -692,7 +694,7 @@
     "totalAmountDescription": "Total transaction amount on invoice",
     "description": "Description",
     "descriptionPlaceholder": "Description",
-    "transactionDate": "Payment Date",
+    "transactionDate": "Date",
     "addReimbursement": "Add Reimbursement",
     "reimbursementDetails": "Reimbursement Details",
     "amount": "Amount",
@@ -742,7 +744,41 @@
     "balanced": "Balanced ({{amount}})",
     "debtAmountsError": "The debt amounts do not add up to the net amount",
     "transactionCreatedSuccess": "Transaction created successfully",
-    "transactionCreatedError": "Failed to create transaction"
+    "transactionCreatedError": "Failed to create transaction",
+    "entryTypeLabel": "What do you want to record?",
+    "modes": {
+      "expense": {
+        "title": "Expense for {{name}}",
+        "hint": "You paid and it is all theirs"
+      },
+      "payment": {
+        "title": "Payment",
+        "hint": "{{name}} paid you or you paid them"
+      },
+      "shared": {
+        "title": "Shared expense",
+        "hint": "Split the expense between both"
+      }
+    },
+    "paymentDirectionLabel": "Who paid whom?",
+    "theyPaidMe": "{{name}} paid me",
+    "iPaidThem": "I paid {{name}}",
+    "amountLabel": {
+      "expense": "Expense amount",
+      "payment": "Payment amount",
+      "shared": "Total amount"
+    },
+    "noteOptional": "Note (optional)",
+    "paymentNotePlaceholder": "E.g. bank transfer",
+    "paymentDefaultDescription": "Payment",
+    "summary": {
+      "expense": "{{name}} will owe you {{amount}}",
+      "theyPaidMe": "{{amount}} will be deducted from what {{name}} owes you",
+      "iPaidThem": "{{amount}} will be deducted from what you owe {{name}}"
+    },
+    "personPaid": "{{name}} paid",
+    "otherPerson": "the other person",
+    "saveAndAddAnother": "Save and add another"
   },
   "addReimbursementModal": {
     "title": "Add Reimbursement",

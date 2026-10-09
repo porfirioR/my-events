@@ -1,21 +1,22 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, signal, computed, inject, Signal, effect } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useCollaboratorStore, useLoadingStore, useTransactionStore } from '../../store';
+import { useCollaboratorStore, useCurrencyStore, useLoadingStore, useTransactionStore } from '../../store';
 import { Configurations, ParticipantType, SplitType, WhoPaid } from '../../models/enums';
 import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionApiModel, TransactionSplitApiRequest, TransactionViewApiModel } from '../../models/api/transactions';
 import { ReimbursementFormGroup, TransactionFormGroup, TransactionSplitFormGroup } from '../../models/forms';
-import { AlertService, FormatterHelperService } from '../../services';
+import { AlertService, FormatterHelperService, LocalService } from '../../services';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
-import { KeyValueViewModel } from '../../models/view';
+import { KeyValueViewModel, TransactionEntryPreferencesViewModel, TransactionSplitPlanViewModel } from '../../models/view';
+import { PaymentDirectionType, TransactionEntryModes, TransactionEntryModeType } from '../../constants';
 import { TextComponent } from '../inputs/text/text.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
-import { debounceTime, tap } from 'rxjs';
+import { debounceTime, startWith, tap } from 'rxjs';
 
 @Component({
   selector: 'app-upsert-transaction',
@@ -42,9 +43,11 @@ export class UpsertTransactionComponent implements OnInit {
   private readonly alertService = inject(AlertService);
   private readonly translate = inject(TranslateService);
   private formatterService = inject(FormatterHelperService);
+  private readonly localService = inject(LocalService);
 
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
+  private readonly currencyStore = useCurrencyStore();
   private loadingStore = useLoadingStore();
   protected isLoading = this.loadingStore.isLoading;
   protected selectedTransaction = this.transactionStore.selectedTransaction;
@@ -55,6 +58,10 @@ export class UpsertTransactionComponent implements OnInit {
   protected errorMessage = signal<string | null>(null);
   protected customUserAmount = signal<number>(0);
   protected customCollaboratorAmount = signal<number>(0);
+  protected mode = signal<TransactionEntryModeType>('expense');
+  protected paymentDirection = signal<PaymentDirectionType>('theyPaidMe');
+  protected entryModes = TransactionEntryModes;
+  private preferredCollaboratorId: number | null = null;
 
   // Form
   public formGroup: FormGroup<TransactionFormGroup>
@@ -69,10 +76,15 @@ export class UpsertTransactionComponent implements OnInit {
   });
   protected splitType = SplitType
   protected whoPaid = WhoPaid
+  // Nombre de la persona elegida, para usar en textos ("Leti pagó")
+  protected collaboratorName: Signal<string>;
 
   private getTodayDateString(): string {
+    // Fecha local (toISOString usa UTC y de noche devolvía el día siguiente)
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${today.getFullYear()}-${month}-${day}`;
   }
 
   constructor() {
@@ -114,6 +126,25 @@ export class UpsertTransactionComponent implements OnInit {
     });
     this.formGroup.controls.hasReimbursement.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(x => this.onReimbursementToggle(x));
 
+    const collaboratorId = toSignal(
+      this.formGroup.controls.collaboratorId.valueChanges.pipe(startWith(this.formGroup.controls.collaboratorId.value)),
+    );
+    this.collaboratorName = computed(() => {
+      const id = Number(collaboratorId());
+      const collaborator = this.collaboratorStore.linkedCollaborators().find(x => x.id === id);
+      return collaborator?.name || this.translate.instant('upsertTransaction.otherPerson');
+    });
+
+    // Preseleccionar persona: query param > última usada > única disponible
+    effect(() => {
+      const collaborators = this.collaboratorStore.linkedCollaborators();
+      const control = this.formGroup.controls.collaboratorId;
+      if (this.isEditMode || control.value || collaborators.length === 0) return;
+      const preferred = collaborators.find(x => x.id === this.preferredCollaboratorId);
+      const selected = preferred ?? (collaborators.length === 1 ? collaborators[0] : undefined);
+      if (selected) control.setValue(selected.id);
+    });
+
     effect(() => {
       this.transaction = this.selectedTransaction();
       if (this.transaction && this.isEditMode) {
@@ -135,7 +166,48 @@ export class UpsertTransactionComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkEditMode();
+    this.initEntryMode();
     this.loadCollaborators();
+    this.currencyStore.loadCurrencies();
+  }
+
+  // ========== Entry Mode ==========
+  private initEntryMode(): void {
+    if (this.isEditMode) {
+      this.setMode('shared', false);
+      return;
+    }
+    const preferences = this.localService.getTransactionEntryPreferences();
+    const queryParams = this.route.snapshot.queryParamMap;
+    const queryMode = queryParams.get('mode') as TransactionEntryModeType | null;
+    const queryCollaboratorId = Number(queryParams.get('collaboratorId'));
+
+    this.preferredCollaboratorId = queryCollaboratorId || preferences?.collaboratorId || null;
+    const mode = queryMode && TransactionEntryModes.includes(queryMode) ? queryMode : preferences?.mode ?? 'expense';
+    this.setMode(mode, false);
+  }
+
+  protected setMode(mode: TransactionEntryModeType, persist = true): void {
+    this.mode.set(mode);
+    const description = this.formGroup.controls.description;
+    // En pagos la descripción es opcional (se usa "Pago" por defecto)
+    description.setValidators(mode === 'payment' ? [] : [Validators.required]);
+    description.updateValueAndValidity();
+
+    if (mode === 'payment' && this.formGroup.value.hasReimbursement) {
+      this.formGroup.controls.hasReimbursement.setValue(false);
+    }
+    if (persist) this.savePreferences();
+  }
+
+  protected setPaymentDirection(direction: PaymentDirectionType): void {
+    this.paymentDirection.set(direction);
+  }
+
+  private savePreferences(): void {
+    this.localService.setTransactionEntryPreferences(
+      new TransactionEntryPreferencesViewModel(this.mode(), this.formGroup.value.collaboratorId ?? null)
+    );
   }
 
   private checkEditMode(): void {
@@ -338,7 +410,35 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   // ========== Submit ==========
-  protected onSubmit(): void {
+  /**
+   * Arma quién pagó y cuánto le corresponde a cada uno según el modo.
+   * expense y payment usan Percentage 100/0, igual que las transacciones cargadas a mano.
+   */
+  private buildSplitPlan(): TransactionSplitPlanViewModel {
+    const netAmount = this.calculateNetAmount();
+    switch (this.mode()) {
+      case 'expense':
+        return new TransactionSplitPlanViewModel(WhoPaid.User, SplitType.Percentage, 0, netAmount, 0, 100);
+      case 'payment':
+        // Pago recibido = la otra persona "pagó" el 100% por mí → descuenta de su deuda
+        return this.paymentDirection() === 'theyPaidMe'
+          ? new TransactionSplitPlanViewModel(WhoPaid.Collaborator, SplitType.Percentage, netAmount, 0, 100, 0)
+          : new TransactionSplitPlanViewModel(WhoPaid.User, SplitType.Percentage, 0, netAmount, 0, 100);
+      default: {
+        const isPercentage = this.formGroup.value.splitType === SplitType.Percentage;
+        return new TransactionSplitPlanViewModel(
+          this.formGroup.value.whoPaid!,
+          this.formGroup.value.splitType!,
+          this.calculateMySplit(),
+          this.calculateTheirSplit(),
+          isPercentage ? this.customUserAmount() : undefined,
+          isPercentage ? this.customCollaboratorAmount() : undefined,
+        );
+      }
+    }
+  }
+
+  protected onSubmit(addAnother = false): void {
     if (this.formGroup.invalid) {
       this.formGroup.markAllAsTouched();
       return;
@@ -346,13 +446,9 @@ export class UpsertTransactionComponent implements OnInit {
 
     const formValue = this.formGroup.value;
     const netAmount = this.calculateNetAmount();
+    const plan = this.buildSplitPlan();
 
-    const mySplit = this.calculateMySplit();
-    const theirSplit = this.calculateTheirSplit();
-
-    const totalSplits = mySplit + theirSplit;
-
-    if (Math.abs(totalSplits - netAmount) > 0.01) {
+    if (Math.abs(plan.mySplit + plan.theirSplit - netAmount) > 0.01) {
       this.errorMessage.set(
         this.translate.instant('upsertTransaction.debtAmountsError')
       );
@@ -362,46 +458,40 @@ export class UpsertTransactionComponent implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-    // ✅ Determinar quién es el pagador (isPayer)
-    const userIsPayer = formValue.whoPaid === WhoPaid.User;
-    const collaboratorIsPayer = formValue.whoPaid === WhoPaid.Collaborator;
-
-    // ✅ Create splits con las PARTES correctas
-  const splits: TransactionSplitApiRequest[] = [
-    {
-      participantType: ParticipantType.User,
-      amount: mySplit,
-      isPayer: userIsPayer,
-      sharePercentage: this.formGroup.value.splitType === this.splitType.Percentage 
-        ? this.customUserAmount() 
-        : undefined
-    },
-    {
-      participantType: ParticipantType.Collaborator,
-      amount: theirSplit,
-      isPayer: collaboratorIsPayer,
-      sharePercentage: this.formGroup.value.splitType === this.splitType.Percentage 
-        ? this.customCollaboratorAmount() 
-        : undefined
-    }
-  ];
+    const splits: TransactionSplitApiRequest[] = [
+      {
+        participantType: ParticipantType.User,
+        amount: plan.mySplit,
+        isPayer: plan.whoPaid === WhoPaid.User,
+        sharePercentage: plan.myPercentage,
+      },
+      {
+        participantType: ParticipantType.Collaborator,
+        amount: plan.theirSplit,
+        isPayer: plan.whoPaid === WhoPaid.Collaborator,
+        sharePercentage: plan.theirPercentage,
+      }
+    ];
 
     // Create reimbursement if needed
     let reimbursement: ReimbursementApiRequest | null = null;
-    if (formValue.hasReimbursement && formValue.reimbursement?.amount! > 0) {
+    if (this.mode() !== 'payment' && formValue.hasReimbursement && formValue.reimbursement?.amount! > 0) {
       reimbursement = new ReimbursementApiRequest(
         +formValue.reimbursement?.amount!,
         formValue.reimbursement?.description
       );
     }
 
+    const description = formValue.description?.trim()
+      || (this.mode() === 'payment' ? this.translate.instant('upsertTransaction.paymentDefaultDescription') : '');
+
     // Create request
     const request = new CreateTransactionApiRequest(
       formValue.collaboratorId!,
       +formValue.totalAmount!,
-      formValue.description!,
-      formValue.splitType!,
-      formValue.whoPaid!,
+      description,
+      plan.splitType,
+      plan.whoPaid,
       splits,
       reimbursement,
       formValue.transactionDate ?? null,
@@ -414,6 +504,11 @@ export class UpsertTransactionComponent implements OnInit {
           this.translate.instant('upsertTransaction.transactionCreatedSuccess')
         );
         this.transactionStore.loadTransactions();
+        this.savePreferences();
+        if (addAnother) {
+          this.resetForNextEntry();
+          return;
+        }
         this.ignorePreventUnsavedChanges = true
         this.router.navigate(['/transactions']);
       },
@@ -424,6 +519,20 @@ export class UpsertTransactionComponent implements OnInit {
         this.isSubmitting.set(false);
       }
     });
+  }
+
+  // Mantiene persona, fecha y modo; limpia el resto para cargar la siguiente fila
+  private resetForNextEntry(): void {
+    this.formGroup.patchValue({
+      totalAmount: null,
+      description: null,
+      hasReimbursement: false,
+    });
+    this.formGroup.controls.reimbursement.reset();
+    this.formGroup.markAsPristine();
+    this.formGroup.markAsUntouched();
+    this.isSubmitting.set(false);
+    document.getElementById('totalAmount')?.focus();
   }
 
   // ========== Navigation ==========

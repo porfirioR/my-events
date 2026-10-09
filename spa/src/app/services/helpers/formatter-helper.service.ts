@@ -5,6 +5,7 @@ import { BaseConfigurationApiModel, CollaboratorApiModel, CurrencyApiModel, Peri
 import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, ProgressionType, ProgressionTypeBadgeColors, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { useCurrencyStore } from '../../store';
 import { PaymentMethodApiModel } from '../../models/api/travels';
+import { LanguageLocales } from '../../constants';
 
 @Injectable({
   providedIn: 'root'
@@ -52,15 +53,7 @@ export class FormatterHelperService {
 
   public getFormattedDate = (date: Date, shortDate = false, longDate = false): string => {
     const now = new Date();
-    const currentLang = this.translate.getCurrentLang() || this.translate.getFallbackLang() || 'en';
-    
-    // Mapeo de idioma a locale
-    const localeMap: { [key: string]: string } = {
-      'en': 'en-US',
-      'es': 'es-ES'
-    };
-
-    const locale = localeMap[currentLang] || 'en-US';
+    const locale = this.getCurrentLocale();
 
     if (longDate) {
       return new Date(date).toLocaleDateString(locale, {
@@ -100,16 +93,13 @@ export class FormatterHelperService {
     return `${years} ${this.translate.instant('common.yearsAgo')}`;
   }
 
-  public getFormattedDateCustom  = (date: Date): string => {
+  private getCurrentLocale = (): string => {
     const currentLang = this.translate.getCurrentLang() || this.translate.getFallbackLang() || 'en';
+    return LanguageLocales[currentLang] ?? 'en-US';
+  }
 
-    // Mapeo de idioma a locale
-    const localeMap: { [key: string]: string } = {
-      'en': 'en-US',
-      'es': 'es-ES'
-    };
-
-    const locale = localeMap[currentLang] || 'en-US';
+  public getFormattedDateCustom  = (date: Date): string => {
+    const locale = this.getCurrentLocale();
 
     return new Date(date).toLocaleDateString(locale, {
       day: '2-digit',
