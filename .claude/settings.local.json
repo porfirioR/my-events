@@ -4,7 +4,23 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(grep -E \"\\\\.\\(sql|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(sql|ts\\)$\")",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\porfi\\\\Documents\\\\GitHub\\\\my-events\" -Recurse -Directory | Where-Object {$_.Name -match \"savings|storage|deposit\"} | Select-Object -ExpandProperty FullName)",
+      "WebFetch(domain:www.itau.com.py)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\porfi\\\\Documents\\\\GitHub\\\\my-events\" -Directory)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\porfi\\\\Documents\\\\GitHub\\\\my-events\" -Recurse -Directory | Select-Object -First 30 | ForEach-Object { $_.FullName })",
+      "Bash(mkdir -p \"c:/Users/porfi/Documents/GitHub/my-events/spa/src/app/models/api/loans\" *)",
+      "Bash(grep -v \"paidInstallments\\\\|installmentCount\\\\|paidCount\\\\|Map\\\\|//\\\\|paidInstallmentsCount\")",
+      "PowerShell(cd \"c:\\\\Users\\\\porfi\\\\Documents\\\\GitHub\\\\my-events\\\\api\" && npx tsc --noEmit 2>&1 | Where-Object { $_ -notmatch \"^test/\" })",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"const d=require\\('/dev/stdin'\\); const k = Object.keys\\(d.loanDetail||{}\\); console.log\\('en loanDetail:', k.join\\(', '\\)\\); console.log\\('en routes:', Object.keys\\(d.routes||{}\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"const d=require\\('c:/Users/porfi/Documents/GitHub/my-events/spa/src/assets/i18n/en.json'\\); console.log\\('en loanDetail:', Object.keys\\(d.loanDetail||{}\\).join\\(', '\\)\\); console.log\\('en routes:', Object.keys\\(d.routes||{}\\).join\\(', '\\)\\);\")",
+      "Bash(node -e \"const d=require\\('c:/Users/porfi/Documents/GitHub/my-events/spa/src/assets/i18n/es.json'\\); console.log\\('validation:', JSON.stringify\\(d.validation, null, 2\\)\\);\")",
+      "Bash(node -e \"const d=require\\('c:/Users/porfi/Documents/GitHub/my-events/spa/src/assets/i18n/es.json'\\); console.log\\('upsertLoan:', JSON.stringify\\(d.upsertLoan, null, 2\\)\\);\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\porfi\\Documents\\GitHub\\my-events\\spa\\src\\app\\models\\api\\loans"
     ]
   }
 }

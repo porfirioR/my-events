@@ -39,6 +39,36 @@ export class TransactionSplitAccessService extends BaseAccessService implements 
     return data?.map(this.getAccessModel) || [];
   };
 
+  public getByTransactionIds = async (transactionIds: number[]): Promise<Map<number, TransactionSplitAccessModel[]>> => {
+    const result = new Map<number, TransactionSplitAccessModel[]>();
+    const uniqueIds = [...new Set(transactionIds)];
+    // Lotes para no exceder el largo de URL de PostgREST
+    const chunkSize = 200;
+    const chunks: number[][] = [];
+    for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+      chunks.push(uniqueIds.slice(i, i + chunkSize));
+    }
+
+    const responses = await Promise.all(chunks.map(ids => this.dbContext
+      .from(TableEnum.TransactionSplits)
+      .select(DatabaseColumns.All)
+      .in(DatabaseColumns.TransactionId, ids)
+    ));
+
+    for (const { data, error } of responses) {
+      if (error) {
+        throw new InternalServerErrorException(error.message);
+      }
+      for (const split of (data || []).map(this.getAccessModel)) {
+        const list = result.get(split.transactionId) ?? [];
+        list.push(split);
+        result.set(split.transactionId, list);
+      }
+    }
+
+    return result;
+  };
+
   public getByCollaborator = async (
     collaboratorId: number,
     isSettled?: boolean,

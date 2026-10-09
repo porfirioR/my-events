@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { LocalizedDatePipe } from '../../pipes';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '../../services/notification.service';
@@ -9,7 +9,7 @@ import { NotificationService } from '../../services/notification.service';
   templateUrl: './header-notification.component.html',
   styleUrls: ['./header-notification.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink, TranslateModule],
+  imports: [LocalizedDatePipe, RouterLink, TranslateModule],
 })
 export class HeaderNotificationComponent implements OnInit {
   private notificationService = inject(NotificationService);

@@ -196,7 +196,17 @@
     "youOweThem": "You owe them",
     "settled": "Settled",
     "createTransaction": "Create Transaction",
-    "close": "Close"
+    "close": "Close",
+    "inYourFavor": "In your favor",
+    "againstYou": "Against you",
+    "offset": "{{percentage}}% offset between both sides",
+    "pendingMovements": "Pending movements",
+    "lastMovement": "Last movement",
+    "pendingSince": "Pending since",
+    "monthlySummary": "Monthly summary",
+    "recentMovements": "Recent pending movements",
+    "viewAllTransactions": "View all",
+    "noPendingMovements": "No pending movements"
   },
   "collaborators": {
     "title": "Collaborators",
@@ -249,7 +259,6 @@
     "collaboratorAssociatedToTransactions": "The collaborator is associated with existing transactions and cannot be deleted. You can deactivate them instead.",
     "collaboratorAssociatedToTravels": "The collaborator is associated with one or more travels and cannot be deleted. You can deactivate them instead.",
     "collaboratorAssociatedToMatches": "The collaborator is linked to another user and cannot be deleted. You can deactivate them instead.",
-    "delete": "Delete",
     "deleteConfirmTitle": "Delete collaborator",
     "deleteConfirmMessage": "Are you sure you want to delete {{name}}? This action cannot be undone.",
     "deletedSuccess": "Collaborator deleted successfully",

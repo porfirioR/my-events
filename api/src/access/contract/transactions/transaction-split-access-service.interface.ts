@@ -16,6 +16,13 @@ export interface ITransactionSplitAccessService {
   getByTransaction(transactionId: number): Promise<TransactionSplitAccessModel[]>;
 
   /**
+   * Obtiene los splits de varias transacciones en una sola consulta
+   * @param transactionIds - IDs de las transacciones
+   * @returns Promise con mapa transactionId → splits
+   */
+  getByTransactionIds(transactionIds: number[]): Promise<Map<number, TransactionSplitAccessModel[]>>;
+
+  /**
    * Obtiene splits de un colaborador
    * @param collaboratorId - ID del colaborador
    * @param isSettled - Filtrar por estado de liquidación (opcional)
