@@ -196,7 +196,17 @@
     "youOweThem": "Les debes",
     "settled": "Liquidado",
     "createTransaction": "Crear Transacción",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "inYourFavor": "A tu favor",
+    "againstYou": "En tu contra",
+    "offset": "{{percentage}}% compensado entre ambos lados",
+    "pendingMovements": "Movimientos pendientes",
+    "lastMovement": "Último movimiento",
+    "pendingSince": "Pendiente desde",
+    "monthlySummary": "Resumen mensual",
+    "recentMovements": "Movimientos pendientes recientes",
+    "viewAllTransactions": "Ver todas",
+    "noPendingMovements": "Sin movimientos pendientes"
   },
   "collaborators": {
     "title": "Colaboradores",
@@ -442,7 +452,7 @@
     "payerNotParticipantWarning": "El pagador no está incluido como participante. Los demás le deberán el total, pero él no tiene parte en el gasto.",
     "splitTypes": {
       "Equal": "División equitativa",
-      "Custom": "Montos personalizados", 
+      "Custom": "Montos personalizados",
       "Percentage": "Por porcentajes"
     },
     "approved": "Aprobado",

@@ -1,10 +1,10 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionMatchModel, TransactionModel, TransactionReimbursementModel, TransactionSplitDetailModel, TransactionSplitRequest, TransactionViewModel } from '../models/transactions';
-import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest, TransactionAccessModel, TransactionReimbursementAccessModel } from '../../access/contract/transactions';
+import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest, TransactionAccessModel, TransactionReimbursementAccessModel, TransactionSplitAccessModel } from '../../access/contract/transactions';
 import { CollaboratorSummaryModel } from '../models/collaborators';
 import { COLLABORATOR_TOKENS, TRANSACTION_TOKENS } from '../../utility/constants';
 import { ParticipantType, WhoPaid } from '../../utility/enums';
-import { ICollaboratorAccessService } from '../../access/contract/collaborators';
+import { CollaboratorAccessModel, ICollaboratorAccessService } from '../../access/contract/collaborators';
 import { ICollaboratorMatchAccessService } from '../../access/contract/collaborator-match';
 
 
@@ -140,19 +140,15 @@ export class TransactionManagerService implements ITransactionManagerService {
   };
 
   public getMyTransactions = async (userId: number): Promise<TransactionViewModel[]> => {
-    // 1. Obtener transacciones creadas por mí
-    const myCreatedTransactions = await this.transactionAccessService.getByUserId(userId);
+    // 1. Obtener transacciones creadas por mí, mis colaboradores y mis matches
+    const [myCreatedTransactions, myCollaborators, matches] = await Promise.all([
+      this.transactionAccessService.getByUserId(userId),
+      this.collaboratorAccessService.getAll(userId),
+      this.matchAccessService.getMatchesByUserId(userId),
+    ]);
 
-    // 2. Obtener mis colaboradores externos (con email)
-    const myCollaborators = await this.collaboratorAccessService.getLinkedCollaborators(userId);
-
-    // 3. Obtener matches de mis colaboradores
-    const matches = await this.matchAccessService.getMatchesByUserId(userId);
-
-    // 4. Para cada match, obtener transacciones del otro usuario
-    const theirTransactions: TransactionMatchModel[] = [];
-
-    for (const match of matches) {
+    // 2. Para cada match, obtener transacciones del otro usuario
+    const theirTransactionsByMatch = await Promise.all(matches.map(async (match) => {
       const otherUserId = match.user1Id === userId ? match.user2Id : match.user1Id;
       const myCollaboratorId =
         match.user1Id === userId ? match.collaborator1Id : match.collaborator2Id;
@@ -164,22 +160,32 @@ export class TransactionManagerService implements ITransactionManagerService {
         theirCollaboratorId,
       );
 
-      theirTransactions.push(
-        ...transactions.map((x) => ({
-          ...x,
-          matchInfo: {
-            myCollaboratorId,
-            theirCollaboratorId,
-            otherUserId,
-          },
-        })),
-      );
-    }
+      return transactions.map((x): TransactionMatchModel => ({
+        ...x,
+        matchInfo: {
+          myCollaboratorId,
+          theirCollaboratorId,
+          otherUserId,
+        },
+      }));
+    }));
+    const theirTransactions = theirTransactionsByMatch.flat();
 
-    // 5. Mapear todas las transacciones a la vista del usuario
-    const myViews = await Promise.all(myCreatedTransactions.map(x => this.mapToMyView(x, userId, true)));
+    // 3. Obtener todos los splits en una sola consulta (por lotes)
+    const splitsByTransaction = await this.splitAccessService.getByTransactionIds([
+      ...myCreatedTransactions.map(x => x.id),
+      ...theirTransactions.map(x => x.id),
+    ]);
+    const collaboratorsById = new Map(myCollaborators.map(x => [x.id, x]));
 
-    const theirViews = await Promise.all(theirTransactions.map(x => this.mapToTheirView(x, userId, false)));
+    // 4. Mapear todas las transacciones a la vista del usuario
+    const myViews = myCreatedTransactions.map(x =>
+      this.mapToMyView(x, userId, true, splitsByTransaction.get(x.id) ?? [], collaboratorsById.get(x.collaboratorId)),
+    );
+
+    const theirViews = theirTransactions.map(x =>
+      this.mapToTheirView(x, false, splitsByTransaction.get(x.id) ?? [], collaboratorsById.get(x.matchInfo.myCollaboratorId)),
+    );
 
     // 6. Combinar y ordenar por fecha
     return [...myViews, ...theirViews].sort(
@@ -201,24 +207,24 @@ export class TransactionManagerService implements ITransactionManagerService {
     const otherCollaboratorId =
       match.collaborator1Id === collaboratorId ? match.collaborator2Id : match.collaborator1Id;
 
-    // 3. Obtener transacciones desde la perspectiva del usuario actual
-    const myTransactions = await this.transactionAccessService.getByUserAndCollaborator(
-      userId,
-      collaboratorId,
-    );
+    // 3. Obtener transacciones desde ambas perspectivas
+    const [myTransactions, theirTransactions] = await Promise.all([
+      this.transactionAccessService.getByUserAndCollaborator(userId, collaboratorId),
+      this.transactionAccessService.getByUserAndCollaborator(otherUserId, otherCollaboratorId),
+    ]);
 
-    // 4. Obtener transacciones desde la perspectiva del otro usuario
-    const theirTransactions = await this.transactionAccessService.getByUserAndCollaborator(
-      otherUserId,
-      otherCollaboratorId,
-    );
+    // 4. Obtener todos los splits en una sola consulta (por lotes)
+    const splitsByTransaction = await this.splitAccessService.getByTransactionIds([
+      ...myTransactions.map(x => x.id),
+      ...theirTransactions.map(x => x.id),
+    ]);
 
     let userOwes = 0;
     let collaboratorOwes = 0;
 
     // 5. Calcular deudas desde MIS transacciones
     for (const tx of myTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(tx.id);
+      const splits = splitsByTransaction.get(tx.id) ?? [];
 
       for (const split of splits) {
         // ✅ Solo considerar splits NO liquidados y NO pagadores
@@ -237,7 +243,7 @@ export class TransactionManagerService implements ITransactionManagerService {
 
     // 6. Calcular deudas desde SUS transacciones (invertido)
     for (const x of theirTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(x.id);
+      const splits = splitsByTransaction.get(x.id) ?? [];
 
       for (const split of splits) {
         // ✅ Solo considerar splits NO liquidados y NO pagadores
@@ -269,20 +275,16 @@ export class TransactionManagerService implements ITransactionManagerService {
 
   public getAllBalances = async (userId: number): Promise<BalanceModel[]> => {
     const collaborators = await this.collaboratorAccessService.getAll(userId);
-    const balances: BalanceModel[] = [];
+    const activeCollaborators = collaborators.filter(x => x.isActive);
 
-    for (const collaborator of collaborators) {
-      if (collaborator.isActive) {
-        const balance = await this.getBalanceWithCollaborator(userId, collaborator.id);
-        // Solo incluir si hay balance diferente de 0
-        if (balance.netBalance !== 0) {
-          balance.collaboratorInfo = collaborator
-          balances.push(balance);
-        }
-      }
-    }
+    const balances = await Promise.all(activeCollaborators.map(async (collaborator) => {
+      const balance = await this.getBalanceWithCollaborator(userId, collaborator.id);
+      balance.collaboratorInfo = collaborator;
+      return balance;
+    }));
 
-    return balances;
+    // Solo incluir si hay balance diferente de 0
+    return balances.filter(x => x.netBalance !== 0);
   };
 
   public deleteTransaction = async (id: number, userId: number): Promise<void> => {
@@ -513,11 +515,13 @@ export class TransactionManagerService implements ITransactionManagerService {
       collaboratorId,
     );
 
+    const splitsByTransaction = await this.splitAccessService.getByTransactionIds(myTransactions.map(x => x.id));
+
     let userOwes = 0;
     let collaboratorOwes = 0;
 
     for (const tx of myTransactions) {
-      const splits = await this.splitAccessService.getByTransaction(tx.id);
+      const splits = splitsByTransaction.get(tx.id) ?? [];
 
       for (const split of splits) {
         // ✅ Solo splits NO liquidados, NO pagadores, y con monto > 0
@@ -545,16 +549,14 @@ export class TransactionManagerService implements ITransactionManagerService {
   }
 
   // ========== Mappers ==========
-  private async mapToMyView(
-    transaction: TransactionMatchModel,
+  private mapToMyView(
+    transaction: TransactionAccessModel,
     userId: number,
     createdByMe: boolean,
-  ): Promise<TransactionViewModel> {
-    const splits = await this.splitAccessService.getByTransaction(transaction.id);
-    const collaborator = await this.collaboratorAccessService.getById(
-      transaction.collaboratorId,
-      userId,
-    );
+    splits: TransactionSplitAccessModel[],
+    collaborator: CollaboratorAccessModel | undefined,
+  ): TransactionViewModel {
+    if (!collaborator) throw new NotFoundException(`Collaborator ${transaction.collaboratorId} not found`);
 
     const mySplit = splits.find(x => x.userId === userId);
     const theirSplit = splits.find(x => x.collaboratorId === transaction.collaboratorId);
@@ -582,17 +584,13 @@ export class TransactionManagerService implements ITransactionManagerService {
     );
   }
 
-  private async mapToTheirView(
+  private mapToTheirView(
     transaction: TransactionMatchModel,
-    myUserId: number,
     createdByMe: boolean,
-  ): Promise<TransactionViewModel> {
-    const splits = await this.splitAccessService.getByTransaction(transaction.id);
-
-    const myCollaborator = await this.collaboratorAccessService.getById(
-      transaction.matchInfo.myCollaboratorId,
-      myUserId,
-    );
+    splits: TransactionSplitAccessModel[],
+    myCollaborator: CollaboratorAccessModel | undefined,
+  ): TransactionViewModel {
+    if (!myCollaborator) throw new NotFoundException(`Collaborator ${transaction.matchInfo.myCollaboratorId} not found`);
 
     const mySplit = splits.find(x => x.collaboratorId === transaction.matchInfo.theirCollaboratorId);
     const theirSplit = splits.find(x => x.userId === transaction.matchInfo.otherUserId);

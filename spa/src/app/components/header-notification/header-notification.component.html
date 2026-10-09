@@ -26,7 +26,7 @@
               {{ 'matchRequests.wantsToMatch' | translate }}
               <strong>{{ request.targetCollaboratorEmail }}</strong>
             </p>
-            <small>{{ request.requestedDate | date:'short' }}</small>
+            <small>{{ request.requestedDate | localizedDate:'short' }}</small>
           </div>
         }
       </div>

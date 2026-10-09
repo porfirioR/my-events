@@ -29,9 +29,6 @@ npm run start-pwa         # Production build + serve as PWA
 ```bash
 npm run start:dev         # Dev server with watch
 npm run build             # Compile NestJS
-npm run test              # Jest unit tests
-npm run test:e2e          # End-to-end tests
-npm run test:integration  # Integration tests
 npm run lint              # ESLint with auto-fix
 npm run format            # Prettier format
 npm run start:azure       # Build + Azure Functions local host
