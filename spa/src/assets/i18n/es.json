@@ -144,7 +144,14 @@
     "transactionDeleted": "Transacción eliminada exitosamente",
     "confirmSettle": "¿Marcar como Liquidada?",
     "confirmSettleDescription": "¿Confirmas que esta transacción ha sido liquidada? {{description}}, con monto: {{amount}}",
-    "transactionSettled": "La transacción ha sido marcada como liquidada"
+    "transactionSettled": "La transacción ha sido marcada como liquidada",
+    "expandAll": "Expandir todos",
+    "collapseAll": "Colapsar todos",
+    "monthCount": "{{count}} mov.",
+    "monthTheyOwe": "Te deben",
+    "monthIOwe": "Debés",
+    "monthReimbursements": "Reintegros",
+    "monthReceived": "Recibí"
   },
   "transactionDetails": {
     "title": "Detalles de la Transacción",
@@ -175,7 +182,8 @@
     "confirmSettle": "¿Marcar como Liquidada?",
     "confirmSettleMessage": "¿Marcar esta transacción como liquidada?\n{{description}}\nMonto: {{amount}}",
     "deleteTransaction": "¿Eliminar Transacción?",
-    "deleteTransactionMessage": "¿Eliminar esta transacción?\n{{description}}\nMonto: {{amount}}\n\nEsta acción no se puede deshacer."
+    "deleteTransactionMessage": "¿Eliminar esta transacción?\n{{description}}\nMonto: {{amount}}\n\nEsta acción no se puede deshacer.",
+    "edit": "Editar"
   },
   "balances": {
     "title": "Balances",
@@ -269,8 +277,8 @@
   "validation": {
     "required": "es requerido",
     "email": "Correo electrónico inválido",
-    "minLength": "La longitud mínima es {{value}}",
-    "maxLength": "La longitud máxima es {{value}}",
+    "minLength": "Debe tener al menos {{value}} caracteres (tiene {{actual}})",
+    "maxLength": "Debe tener como máximo {{value}} caracteres (tiene {{actual}})",
     "min": "El valor mínimo es {{value}}",
     "max": "El valor máximo es {{value}}",
     "passwordsDoNotMatch": "Las contraseñas no coinciden",
@@ -778,7 +786,11 @@
     },
     "personPaid": "{{name}} pagó",
     "otherPerson": "la otra persona",
-    "saveAndAddAnother": "Guardar y cargar otro"
+    "saveAndAddAnother": "Guardar y cargar otro",
+    "cannotEdit": "Solo quien creó la transacción puede editarla, y no puede estar liquidada",
+    "transactionUpdatedSuccess": "Transacción actualizada exitosamente",
+    "transactionUpdatedError": "No se pudo actualizar la transacción",
+    "multipleReimbursementsInfo": "Esta transacción tiene {{count}} reintegros (total {{amount}}). Se conservan y se gestionan desde el detalle."
   },
   "addReimbursementModal": {
     "title": "Agregar Reintegro",
@@ -824,7 +836,8 @@
     "Loans": "Préstamos",
     "New Loan": "Nuevo Préstamo",
     "Loan Detail": "Detalle del Préstamo",
-    "Edit Loan": "Editar Préstamo"
+    "Edit Loan": "Editar Préstamo",
+    "Edit Transaction": "Editar Transacción"
   },
   "travels": {
     "title": "Viajes",

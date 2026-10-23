@@ -6,6 +6,7 @@ import {
   TransactionViewApiModel,
   BalanceApiModel,
   CreateTransactionApiRequest,
+  UpdateTransactionApiRequest,
   AddReimbursementApiRequest,
   TransactionApiModel,
   TransactionDetailApiModel,
@@ -210,6 +211,29 @@ export const TransactionStore = signalStore(
           patchState(store, { error: 'Failed to create transaction' });
           loadingStore.setLoadingFailed();
           throw new Error(error);
+        })
+      );
+    },
+
+    // Actualizar transacción
+    updateTransaction: (id: number, request: UpdateTransactionApiRequest) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+      return transactionApiService.updateTransaction(id, request).pipe(
+        switchMap(() => transactionApiService.getMyTransactions().pipe(
+          tap(transactions => {
+            patchState(store, {
+              transactions,
+              isTransactionsLoaded: true,
+              selectedTransactionDetails: undefined
+            });
+            loadingStore.setLoadingSuccess();
+          })
+        )),
+        catchError(error => {
+          patchState(store, { error: 'Failed to update transaction' });
+          loadingStore.setLoadingFailed();
+          throw error;
         })
       );
     },

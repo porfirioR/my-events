@@ -4,3 +4,4 @@ export { TransactionEntryPreferencesViewModel } from './transaction-entry-prefer
 export { TransactionSplitPlanViewModel } from './transaction-split-plan-view-model';
 export { MonthlyBalanceSummaryViewModel } from './monthly-balance-summary-view-model';
 export { CollaboratorBalanceViewModel } from './collaborator-balance-view-model';
+export { TransactionMonthGroupViewModel } from './transaction-month-group-view-model';

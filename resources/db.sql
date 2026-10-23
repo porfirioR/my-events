@@ -1026,3 +1026,73 @@ ALTER TABLE savingsgoals ADD CONSTRAINT check_current_not_exceed_target CHECK (
 );
 
 CREATE INDEX idx_loanpayments_installment ON loanpayments(installmentid);
+
+-- =====================================================
+-- PARTE 18: EDICIÓN DE TRANSACCIONES (atómica)
+-- =====================================================
+-- Actualiza la transacción, reemplaza sus splits y (si corresponde) su reintegro
+-- en una sola transacción de base: si algo falla, no queda nada a medias.
+-- p_replace_reimbursement = false conserva los reintegros existentes (caso de
+-- transacciones con más de un reintegro, que se gestionan desde el detalle).
+-- Si la fecha no cambia se conserva la hora original; si cambia se guarda a las
+-- 12:00 para que la UI (que convierte a hora local) no muestre el día anterior.
+CREATE OR REPLACE FUNCTION update_transaction_with_splits(
+    p_transaction_id INTEGER,
+    p_collaborator_id INTEGER,
+    p_total_amount DECIMAL(10,2),
+    p_description VARCHAR(255),
+    p_split_type splittype,
+    p_who_paid VARCHAR(20),
+    p_transaction_date DATE,
+    p_replace_reimbursement BOOLEAN,
+    p_reimbursement_amount DECIMAL(10,2),
+    p_reimbursement_description VARCHAR(255),
+    p_splits JSONB
+)
+RETURNS SETOF transactions
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_total_reimbursement DECIMAL(10,2);
+BEGIN
+    IF p_replace_reimbursement THEN
+        DELETE FROM transactionreimbursements WHERE transactionid = p_transaction_id;
+        v_total_reimbursement := COALESCE(p_reimbursement_amount, 0);
+        IF v_total_reimbursement > 0 THEN
+            INSERT INTO transactionreimbursements (transactionid, amount, description)
+            VALUES (p_transaction_id, v_total_reimbursement, p_reimbursement_description);
+        END IF;
+    ELSE
+        SELECT COALESCE(SUM(amount), 0) INTO v_total_reimbursement
+        FROM transactionreimbursements
+        WHERE transactionid = p_transaction_id;
+    END IF;
+
+    UPDATE transactions SET
+        collaboratorid = p_collaborator_id,
+        totalamount = p_total_amount,
+        description = p_description,
+        splittype = p_split_type,
+        whopaid = p_who_paid,
+        totalreimbursement = v_total_reimbursement,
+        transactiondate = CASE
+            WHEN p_transaction_date IS NULL OR p_transaction_date = transactiondate::DATE THEN transactiondate
+            ELSE p_transaction_date + TIME '12:00'
+        END
+    WHERE id = p_transaction_id;
+
+    DELETE FROM transactionsplits WHERE transactionid = p_transaction_id;
+    INSERT INTO transactionsplits (transactionid, collaboratorid, userid, amount, sharepercentage, ispayer)
+    SELECT
+        p_transaction_id,
+        (s->>'collaboratorid')::INTEGER,
+        (s->>'userid')::INTEGER,
+        (s->>'amount')::DECIMAL(10,2),
+        (s->>'sharepercentage')::DECIMAL(5,2),
+        (s->>'ispayer')::BOOLEAN
+    FROM jsonb_array_elements(p_splits) AS s;
+
+    RETURN QUERY SELECT * FROM transactions WHERE id = p_transaction_id;
+END;
+$$;

@@ -9,6 +9,7 @@ import { AlertService, UserApiService } from '../../services'
 import { useAuthStore } from '../../store'
 import { TextComponent } from '../inputs/text/text.component'
 import { LanguageSelectorComponent } from "../language-selector/language-selector.component";
+import { PasswordRules } from '../../constants'
 
 @Component({
   selector: 'app-login',
@@ -39,7 +40,7 @@ export class LoginComponent {
   constructor() {
     this.formGroup = new FormGroup<LoginFormGroup>({
       email: new FormControl(null, [Validators.required, Validators.email]),
-      password: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)])
+      password: new FormControl(null, [Validators.required, Validators.minLength(PasswordRules.minLength), Validators.maxLength(PasswordRules.maxLength)])
     })
   }
 

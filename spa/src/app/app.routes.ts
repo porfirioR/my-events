@@ -158,6 +158,15 @@ export const routes: Routes = [
               ),
           },
           {
+            path: ':id/edit',
+            title: 'Edit Transaction',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () =>
+              import(
+                './components/upsert-transaction/upsert-transaction.component'
+              ).then((x) => x.UpsertTransactionComponent),
+          },
+          {
             path: ':id',
             title: 'Transaction Details',
             loadComponent: () =>

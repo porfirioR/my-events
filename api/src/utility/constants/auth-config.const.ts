@@ -9,6 +9,10 @@ export const AUTH_CONFIG = {
     EXPIRY_DAYS: 7,
     MAX_RESEND_PER_HOUR: 3,
   },
+  PASSWORD: {
+    MIN_LENGTH: 5,
+    MAX_LENGTH: 15,
+  },
   RATE_LIMIT: {
     RESET_PASSWORD_MAX_ATTEMPTS: 5,
   },

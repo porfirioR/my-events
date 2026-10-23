@@ -71,6 +71,10 @@ export class TransactionDetailsComponent implements OnInit {
     this.router.navigate(['/transactions']);
   }
 
+  protected editTransaction(): void {
+    this.router.navigate(['/transactions', this.transactionId, 'edit']);
+  }
+
   protected addReimbursement(): void {
     const details = this.transactionDetails();
     if (details) {

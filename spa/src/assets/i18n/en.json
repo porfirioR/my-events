@@ -144,7 +144,14 @@
     "transactionDeleted": "Transaction was deleted successfully",
     "confirmSettle": "Mark as Settled?",
     "confirmSettleDescription": "Confirm that this transaction has been settled? {{description}}, with amount: {{amount}}",
-    "transactionSettled": "Transaction has been marked as settled"
+    "transactionSettled": "Transaction has been marked as settled",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "monthCount": "{{count}} items",
+    "monthTheyOwe": "Owed to you",
+    "monthIOwe": "You owe",
+    "monthReimbursements": "Reimbursements",
+    "monthReceived": "Received"
   },
   "transactionDetails": {
     "title": "Transaction Details",
@@ -175,7 +182,8 @@
     "confirmSettle": "Mark as Settled?",
     "confirmSettleMessage": "Mark this transaction as settled?\n{{description}}\nAmount: {{amount}}",
     "deleteTransaction": "Delete Transaction?",
-    "deleteTransactionMessage": "Delete this transaction?\n{{description}}\nAmount: {{amount}}\n\nThis action cannot be undone."
+    "deleteTransactionMessage": "Delete this transaction?\n{{description}}\nAmount: {{amount}}\n\nThis action cannot be undone.",
+    "edit": "Edit"
   },
   "balances": {
     "title": "Balances",
@@ -269,8 +277,8 @@
   "validation": {
     "required": "is required",
     "email": "Invalid email",
-    "minLength": "Minimum length is {{value}}",
-    "maxLength": "Maximum length is {{value}}",
+    "minLength": "Must be at least {{value}} characters (has {{actual}})",
+    "maxLength": "Must be at most {{value}} characters (has {{actual}})",
     "min": "Minimum value is {{value}}",
     "max": "Maximum value is {{value}}",
     "passwordsDoNotMatch": "Passwords do not match",
@@ -778,7 +786,11 @@
     },
     "personPaid": "{{name}} paid",
     "otherPerson": "the other person",
-    "saveAndAddAnother": "Save and add another"
+    "saveAndAddAnother": "Save and add another",
+    "cannotEdit": "Only the creator can edit this transaction, and it cannot be settled",
+    "transactionUpdatedSuccess": "Transaction updated successfully",
+    "transactionUpdatedError": "Could not update the transaction",
+    "multipleReimbursementsInfo": "This transaction has {{count}} reimbursements (total {{amount}}). They are kept and managed from the details page."
   },
   "addReimbursementModal": {
     "title": "Add Reimbursement",
@@ -824,7 +836,8 @@
     "Loans": "Loans",
     "New Loan": "New Loan",
     "Loan Detail": "Loan Detail",
-    "Edit Loan": "Edit Loan"
+    "Edit Loan": "Edit Loan",
+    "Edit Transaction": "Edit Transaction"
   },
   "travels": {
     "title": "Travels",

@@ -52,8 +52,9 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   private readonly collaboratorStore = useCollaboratorStore();
   private formatterService = inject(FormatterHelperService);
   private externalCollaborators: CollaboratorApiModel[] = [];
-  protected receivedRequests: ReceivedMatchRequestModel[] = [];
-  protected sentRequests: CollaboratorMatchRequestModel[] = [];
+  // Signals: el componente es OnPush y zoneless, sin signals no se redibuja al llegar los datos
+  protected receivedRequests = signal<ReceivedMatchRequestModel[]>([]);
+  protected sentRequests = signal<CollaboratorMatchRequestModel[]>([]);
   protected activeTab: 'received' | 'sent' | 'create' = 'received';
 
   protected initialLoading = signal(true);
@@ -229,8 +230,8 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
       external: this.collaboratorApiService.getLinkedCollaborators()
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (results) => {
-        this.receivedRequests = results.received;
-        this.sentRequests = results.sent;
+        this.receivedRequests.set(results.received);
+        this.sentRequests.set(results.sent);
         this.externalCollaborators = results.external.filter(x => x.isActive);
 
         if (isInitial) {

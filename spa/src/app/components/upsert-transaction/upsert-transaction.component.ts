@@ -7,7 +7,7 @@ import { Location } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useCollaboratorStore, useCurrencyStore, useLoadingStore, useTransactionStore } from '../../store';
 import { Configurations, ParticipantType, SplitType, WhoPaid } from '../../models/enums';
-import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionApiModel, TransactionSplitApiRequest, TransactionViewApiModel } from '../../models/api/transactions';
+import { CreateTransactionApiRequest, ReimbursementApiRequest, TransactionDetailApiModel, TransactionSplitApiRequest, TransactionViewApiModel, UpdateTransactionApiRequest } from '../../models/api/transactions';
 import { ReimbursementFormGroup, TransactionFormGroup, TransactionSplitFormGroup } from '../../models/forms';
 import { AlertService, FormatterHelperService, LocalService } from '../../services';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
@@ -50,8 +50,7 @@ export class UpsertTransactionComponent implements OnInit {
   private readonly currencyStore = useCurrencyStore();
   private loadingStore = useLoadingStore();
   protected isLoading = this.loadingStore.isLoading;
-  protected selectedTransaction = this.transactionStore.selectedTransaction;
-  private transaction: TransactionApiModel | undefined;
+  protected selectedTransactionDetails = this.transactionStore.selectedTransactionDetails;
 
   // Signals
   protected isSubmitting = signal<boolean>(false);
@@ -62,6 +61,11 @@ export class UpsertTransactionComponent implements OnInit {
   protected paymentDirection = signal<PaymentDirectionType>('theyPaidMe');
   protected entryModes = TransactionEntryModes;
   private preferredCollaboratorId: number | null = null;
+  // Edición: con más de un reintegro no se editan acá (se conservan y se gestionan desde el detalle)
+  protected hasMultipleReimbursements = signal<boolean>(false);
+  protected existingReimbursementTotal = signal<number>(0);
+  protected existingReimbursementCount = signal<number>(0);
+  private isPrefilled = false;
 
   // Form
   public formGroup: FormGroup<TransactionFormGroup>
@@ -145,22 +149,19 @@ export class UpsertTransactionComponent implements OnInit {
       if (selected) control.setValue(selected.id);
     });
 
+    // Edición: precargar una sola vez cuando llegan los detalles de esta transacción
     effect(() => {
-      this.transaction = this.selectedTransaction();
-      if (this.transaction && this.isEditMode) {
-        const dateStr = this.transaction.transactionDate
-          ? new Date(this.transaction.transactionDate).toISOString().split('T')[0]
-          : this.getTodayDateString();
-        this.formGroup.patchValue({
-          collaboratorId: this.transaction.collaboratorId,
-          totalAmount: this.transaction.totalAmount,
-          description: this.transaction.description,
-          transactionDate: dateStr,
-          splitType: this.transaction.splitType,
-          whoPaid: this.transaction.whoPaid,
-          hasReimbursement: !!this.transaction.totalReimbursement,
-        });
+      const details = this.selectedTransactionDetails();
+      if (!this.isEditMode || this.isPrefilled || !details || details.id !== this.transactionId) return;
+      this.isPrefilled = true;
+
+      if (!details.createdByMe || details.isSettled) {
+        this.alertService.showError(this.translate.instant('upsertTransaction.cannotEdit'));
+        this.ignorePreventUnsavedChanges = true;
+        this.router.navigate(['/transactions', details.id]);
+        return;
       }
+      this.prefillForm(details);
     });
   }
 
@@ -173,10 +174,8 @@ export class UpsertTransactionComponent implements OnInit {
 
   // ========== Entry Mode ==========
   private initEntryMode(): void {
-    if (this.isEditMode) {
-      this.setMode('shared', false);
-      return;
-    }
+    // En edición el modo se deduce de la transacción (ver prefillForm)
+    if (this.isEditMode) return;
     const preferences = this.localService.getTransactionEntryPreferences();
     const queryParams = this.route.snapshot.queryParamMap;
     const queryMode = queryParams.get('mode') as TransactionEntryModeType | null;
@@ -205,6 +204,7 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   private savePreferences(): void {
+    if (this.isEditMode) return;
     this.localService.setTransactionEntryPreferences(
       new TransactionEntryPreferencesViewModel(this.mode(), this.formGroup.value.collaboratorId ?? null)
     );
@@ -215,7 +215,88 @@ export class UpsertTransactionComponent implements OnInit {
     if (id) {
       this.isEditMode = true;
       this.transactionId = parseInt(id);
-      this.transactionStore.loadTransactionById(this.transactionId)
+      // Detalles incluyen splits y reintegros, necesarios para precargar todo
+      this.transactionStore.clearSelectedTransactionDetails();
+      this.transactionStore.loadTransactionDetails(this.transactionId);
+    }
+  }
+
+  // ========== Edit ==========
+  private prefillForm(details: TransactionDetailApiModel): void {
+    const userSplit = details.splits.find(x => x.participantType === ParticipantType.User);
+    const collaboratorSplit = details.splits.find(x => x.participantType === ParticipantType.Collaborator);
+    const singleReimbursement = details.reimbursements.length === 1 ? details.reimbursements[0] : null;
+
+    this.hasMultipleReimbursements.set(details.reimbursements.length > 1);
+    this.existingReimbursementCount.set(details.reimbursements.length);
+    this.existingReimbursementTotal.set(details.totalReimbursement);
+
+    // Con emitEvent: false para que los listeners de monto/tipo no reseteen los splits precargados
+    this.formGroup.patchValue({
+      totalAmount: details.totalAmount,
+      description: details.description,
+      // Fecha tal como está en la base (la API la devuelve en UTC)
+      transactionDate: new Date(details.transactionDate).toISOString().split('T')[0],
+      splitType: details.splitType,
+      whoPaid: details.whoPaid,
+      hasReimbursement: !!singleReimbursement,
+      reimbursement: {
+        amount: singleReimbursement?.amount ?? null,
+        description: singleReimbursement?.description ?? null,
+      },
+    }, { emitEvent: false });
+    // Con emitEvent para que se actualice el nombre de la persona en los textos
+    this.formGroup.controls.collaboratorId.setValue(details.collaboratorId);
+
+    const reimbursementAmount = this.formGroup.controls.reimbursement.controls.amount;
+    reimbursementAmount.setValidators(singleReimbursement
+      ? [Validators.required, Validators.min(1), Validators.max(details.totalAmount)]
+      : []);
+    reimbursementAmount.updateValueAndValidity({ emitEvent: false });
+
+    const userAmount = userSplit?.amount ?? 0;
+    const collaboratorAmount = collaboratorSplit?.amount ?? 0;
+    const theyCarryAll = details.whoPaid === WhoPaid.User && userAmount === 0;
+    const iCarryAll = details.whoPaid === WhoPaid.Collaborator && collaboratorAmount === 0 && details.totalReimbursement === 0;
+
+    if (theyCarryAll) {
+      // "Le pagué a X" se guarda igual que un gasto para X: se abre como gasto
+      this.setMode('expense', false);
+    } else if (iCarryAll) {
+      this.paymentDirection.set('theyPaidMe');
+      this.setMode('payment', false);
+    } else {
+      this.setMode('shared', false);
+      this.prefillSharedSplits(details.splitType, userSplit?.sharePercentage ?? null, collaboratorSplit?.sharePercentage ?? null, userAmount, collaboratorAmount);
+    }
+
+    this.formGroup.markAsPristine();
+    this.formGroup.markAsUntouched();
+  }
+
+  private prefillSharedSplits(
+    splitType: SplitType,
+    userPercentage: number | null,
+    collaboratorPercentage: number | null,
+    userAmount: number,
+    collaboratorAmount: number,
+  ): void {
+    switch (splitType) {
+      case SplitType.Custom:
+        this.customUserAmount.set(userAmount);
+        this.customCollaboratorAmount.set(collaboratorAmount);
+        break;
+      case SplitType.Percentage: {
+        // Algunas transacciones viejas no guardaron el porcentaje: se deduce de los montos
+        const netAmount = userAmount + collaboratorAmount;
+        const userShare = userPercentage ?? (netAmount > 0 ? Math.round((userAmount / netAmount) * 100) : 50);
+        this.customUserAmount.set(userShare);
+        this.customCollaboratorAmount.set(collaboratorPercentage ?? 100 - userShare);
+        break;
+      }
+      default:
+        this.recalculateSplits(SplitType.Equal);
+        break;
     }
   }
 
@@ -296,6 +377,8 @@ export class UpsertTransactionComponent implements OnInit {
   // ========== Calculations ==========
   protected calculateNetAmount(): number {
     const totalAmount = this.formGroup.value.totalAmount || 0;
+    // Edición con varios reintegros: se conservan, así que se descuenta su total
+    if (this.hasMultipleReimbursements()) return totalAmount - this.existingReimbursementTotal();
     const hasReimbursement = this.formGroup.value.hasReimbursement;
     const reimbursementAmount = hasReimbursement ? (this.formGroup.controls.reimbursement.value.amount || 0) : 0;
     return totalAmount - reimbursementAmount;
@@ -497,6 +580,11 @@ export class UpsertTransactionComponent implements OnInit {
       formValue.transactionDate ?? null,
     );
 
+    if (this.isEditMode) {
+      this.submitUpdate(request);
+      return;
+    }
+
     // Submit
     this.transactionStore.createTransaction(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
@@ -515,6 +603,36 @@ export class UpsertTransactionComponent implements OnInit {
       error: (error) => {
         this.errorMessage.set(
           error.error?.message || this.translate.instant('upsertTransaction.transactionCreatedError')
+        );
+        this.isSubmitting.set(false);
+      }
+    });
+  }
+
+  private submitUpdate(request: CreateTransactionApiRequest): void {
+    const updateRequest = new UpdateTransactionApiRequest(
+      request.collaboratorId,
+      request.totalAmount,
+      request.description,
+      request.splitType,
+      request.whoPaid,
+      request.splits,
+      // Con varios reintegros no se envía: el backend conserva los existentes
+      this.hasMultipleReimbursements() ? null : request.reimbursement,
+      request.transactionDate,
+    );
+
+    this.transactionStore.updateTransaction(this.transactionId!, updateRequest).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.alertService.showSuccess(
+          this.translate.instant('upsertTransaction.transactionUpdatedSuccess')
+        );
+        this.ignorePreventUnsavedChanges = true;
+        this.router.navigate(['/transactions', this.transactionId]);
+      },
+      error: (error) => {
+        this.errorMessage.set(
+          error.error?.message || this.translate.instant('upsertTransaction.transactionUpdatedError')
         );
         this.isSubmitting.set(false);
       }

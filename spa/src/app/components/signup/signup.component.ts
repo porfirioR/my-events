@@ -10,6 +10,7 @@ import { AlertService, UserApiService } from '../../services'
 import { TextComponent } from '../inputs/text/text.component'
 import { useAuthStore } from '../../store'
 import { LanguageSelectorComponent } from "../language-selector/language-selector.component";
+import { PasswordRules } from '../../constants'
 
 @Component({
   selector: 'app-signup',
@@ -39,10 +40,10 @@ export class SignupComponent {
   constructor() {
     this.formGroup = new FormGroup<SignupFormGroup>({
       email: new FormControl(null, [Validators.required, Validators.email]),
-      password: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)]),
+      password: new FormControl(null, [Validators.required, Validators.minLength(PasswordRules.minLength), Validators.maxLength(PasswordRules.maxLength)]),
       name: new FormControl(null, [Validators.required, Validators.minLength(2), Validators.maxLength(25)]),
       surname: new FormControl(null, [Validators.required, Validators.minLength(2), Validators.maxLength(25)]),
-      repeatPassword: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10), this.checkRepeatPassword()])
+      repeatPassword: new FormControl(null, [Validators.required, Validators.minLength(PasswordRules.minLength), Validators.maxLength(PasswordRules.maxLength), this.checkRepeatPassword()])
     })
     this.formGroup.controls.password.valueChanges.pipe(
       debounceTime(100),

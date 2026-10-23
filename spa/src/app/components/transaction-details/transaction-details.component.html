@@ -307,6 +307,14 @@
               </button>
   
               @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                  (click)="editTransaction()"
+                >
+                  <i class="fas fa-pen text-info"></i>
+                  <span>{{ 'transactionDetails.edit' | translate }}</span>
+                </button>
                 @if (transactionDetails()!.netAmount > 0) {
                   <button
                     type="button"
@@ -394,6 +402,14 @@
               </button>
 
               @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
+                <button
+                  type="button"
+                  class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                  (click)="editTransaction()"
+                >
+                  <i class="fas fa-pen text-info"></i>
+                  <span>{{ 'transactionDetails.edit' | translate }}</span>
+                </button>
                 @if (transactionDetails()!.netAmount > 0) {
                   <button
                     type="button"
@@ -441,6 +457,14 @@
 
         @if (transactionDetails()!.createdByMe && !transactionDetails()!.isSettled) {
           <div class="flex gap-2">
+            <button
+              type="button"
+              class="btn btn-outline btn-info"
+              (click)="editTransaction()"
+            >
+              <i class="fas fa-pen mr-2"></i>
+              {{ 'transactionDetails.edit' | translate }}
+            </button>
             @if (transactionDetails()!.netAmount > 0) {
               <button
                 type="button"

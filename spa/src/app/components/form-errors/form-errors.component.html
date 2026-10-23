@@ -1,4 +1,4 @@
-@if (ngControl.control?.touched) {
+@if (ngControl.control?.touched || ngControl.control?.dirty) {
   <footer class="mt-2 mb-1">
     @if (ngControl.control?.errors; as error) {
       <span class="label-text-alt text-error text-sm flex items-center gap-1">
@@ -8,10 +8,10 @@
             {{ label }} {{ 'validation.required' | translate }}
           }
           @if (error['minlength']) {
-            {{ 'validation.minLength' | translate:{ value: error['minlength']?.requiredLength } }}
+            {{ 'validation.minLength' | translate:{ value: error['minlength']?.requiredLength, actual: error['minlength']?.actualLength } }}
           }
           @if (error['maxlength']) {
-            {{ 'validation.maxLength' | translate:{ value: error['maxlength']?.requiredLength } }}
+            {{ 'validation.maxLength' | translate:{ value: error['maxlength']?.requiredLength, actual: error['maxlength']?.actualLength } }}
           }
           @if (error['invalidRepeatPassword']) {
             {{ 'validation.passwordsDoNotMatch' | translate }}

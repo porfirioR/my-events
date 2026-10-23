@@ -4,7 +4,7 @@ import { CollaboratorApiModel } from '../../models/api';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useCollaboratorStore, useLoadingStore } from '../../store';
+import { useCollaboratorStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { CollaboratorApiService } from '../../services/api/collaborator-api.service';
 import { CollaboratorMatchRequestApiService } from '../../services/api/collaborator-match-request-api.service';
@@ -33,7 +33,6 @@ export class CollaboratorsComponent implements OnInit {
   private readonly collaboratorApiService = inject(CollaboratorApiService);
   private readonly matchRequestApiService = inject(CollaboratorMatchRequestApiService);
   private collaboratorStore = useCollaboratorStore();
-  private loadingStore = useLoadingStore();
   private formatterService = inject(FormatterHelperService);
   protected collaborators = computed(() => {
     switch (this.filterType()) {
@@ -45,7 +44,8 @@ export class CollaboratorsComponent implements OnInit {
         return this.collaboratorStore.allCollaborators();
     }
   })
-  protected isLoading = this.loadingStore.isLoading;
+  // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
+  protected isLoading = this.collaboratorStore.needsLoading;
   protected filterType = signal<'all' | 'unlinked' | 'linked'>('all');
   protected pendingRequestsCount = signal(0);
   protected getInitials = FormatterHelperService.getInitials
@@ -132,7 +132,6 @@ export class CollaboratorsComponent implements OnInit {
   }
 
   private loadCollaborators(): void {
-    this.loadingStore.setLoading();
     this.collaboratorStore.loadCollaborators();
   }
 

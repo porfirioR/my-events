@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionMatchModel, TransactionModel, TransactionReimbursementModel, TransactionSplitDetailModel, TransactionSplitRequest, TransactionViewModel } from '../models/transactions';
-import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest, TransactionAccessModel, TransactionReimbursementAccessModel, TransactionSplitAccessModel } from '../../access/contract/transactions';
+import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionMatchModel, TransactionModel, TransactionReimbursementModel, TransactionSplitDetailModel, TransactionSplitRequest, TransactionViewModel, UpdateTransactionRequest } from '../models/transactions';
+import { ITransactionAccessService, ITransactionSplitAccessService, ITransactionReimbursementAccessService, CreateTransactionAccessRequest, CreateTransactionReimbursementAccessRequest, UpdateTransactionReimbursementTotalAccessRequest, CreateTransactionSplitAccessRequest, TransactionAccessModel, TransactionReimbursementAccessModel, TransactionSplitAccessModel, UpdateTransactionAccessRequest } from '../../access/contract/transactions';
 import { CollaboratorSummaryModel } from '../models/collaborators';
 import { COLLABORATOR_TOKENS, TRANSACTION_TOKENS } from '../../utility/constants';
 import { ParticipantType, WhoPaid } from '../../utility/enums';
@@ -67,6 +67,73 @@ export class TransactionManagerService implements ITransactionManagerService {
     await this.createSplits(transaction.id, request.splits);
 
     return this.mapToModel(transaction);
+  };
+
+  public updateTransaction = async (request: UpdateTransactionRequest): Promise<TransactionModel> => {
+    // 1. Validar que exista y que la haya creado el usuario actual
+    const transaction = await this.transactionAccessService.getById(request.id);
+    if (!transaction) throw new NotFoundException('Transacción no encontrada');
+    if (transaction.userId !== request.userId) {
+      throw new ForbiddenException('Solo quien creó la transacción puede editarla');
+    }
+
+    // 2. No se pueden editar transacciones con splits liquidados
+    const [currentSplits, currentReimbursements] = await Promise.all([
+      this.splitAccessService.getByTransaction(request.id),
+      this.reimbursementAccessService.getByTransaction(request.id),
+    ]);
+    if (currentSplits.some(x => x.isSettled)) {
+      throw new BadRequestException('No se puede editar una transacción liquidada');
+    }
+
+    // 3. Validar que el colaborador sea del usuario (lanza NotFound si no)
+    await this.collaboratorAccessService.getById(request.collaboratorId, request.userId);
+
+    // 4. Reintegro: con uno o ninguno se reemplaza; con varios se conservan (se gestionan desde el detalle)
+    const replaceReimbursement = currentReimbursements.length <= 1;
+    let reimbursementAmount: number;
+    if (replaceReimbursement) {
+      this.validateReimbursement(request.totalAmount, request.reimbursement);
+      reimbursementAmount = request.reimbursement?.amount || 0;
+    } else {
+      reimbursementAmount = currentReimbursements.reduce((sum, x) => sum + x.amount, 0);
+      if (reimbursementAmount > request.totalAmount) {
+        throw new BadRequestException(
+          `Los reintegros existentes (${reimbursementAmount}) no pueden ser mayores al monto total (${request.totalAmount})`,
+        );
+      }
+    }
+
+    // 5. Mismas validaciones de splits que al crear
+    const amountToSplit = request.totalAmount - reimbursementAmount;
+    this.validateSplitsStructure(request.splits, request.userId, request.collaboratorId);
+    this.validatePayer(request.splits, request.whoPaid, request.userId, request.collaboratorId);
+    this.validateSplitsTotal(request.splits, amountToSplit);
+
+    // 6. Actualizar todo de forma atómica
+    const accessRequest = new UpdateTransactionAccessRequest(
+      request.id,
+      request.collaboratorId,
+      request.totalAmount,
+      request.description,
+      request.splitType,
+      request.whoPaid,
+      request.transactionDate,
+      replaceReimbursement,
+      replaceReimbursement ? reimbursementAmount : 0,
+      replaceReimbursement ? request.reimbursement?.description ?? null : null,
+      request.splits.map(split => new CreateTransactionSplitAccessRequest(
+        request.id,
+        split.participantType === ParticipantType.Collaborator ? split.collaboratorId : null,
+        split.participantType === ParticipantType.User ? split.userId : null,
+        split.amount,
+        split.sharePercentage,
+        split.isPayer,
+      )),
+    );
+
+    const updated = await this.transactionAccessService.update(accessRequest);
+    return this.mapToModel(updated);
   };
 
   public addReimbursement = async (request: AddReimbursementRequest): Promise<TransactionReimbursementModel> => {

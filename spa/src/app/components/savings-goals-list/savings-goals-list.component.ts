@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useCurrencyStore, useLoadingStore, useSavingsStore } from '../../store';
+import { useCurrencyStore, useSavingsStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, MovementType, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -26,10 +26,10 @@ export class SavingsGoalsListComponent implements OnInit {
   private translate = inject(TranslateService);
 
   private savingsStore = useSavingsStore();
-  private loadingStore = useLoadingStore();
   private currencyStore = useCurrencyStore();
 
-  protected isLoading = this.loadingStore.isLoading;
+  // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
+  protected isLoading = this.savingsStore.needsLoadingGoals;
   protected filterStatus = signal<number | null>(GoalStatus.Active);
   protected filterProgressionType = signal<number | null>(null);
 

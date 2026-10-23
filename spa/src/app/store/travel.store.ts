@@ -388,7 +388,7 @@ export const TravelStore = signalStore(
       pipe(
         tap(() => {
           loadingStore.setLoading();
-          patchState(store, { error: null });
+          patchState(store, { error: null, isMembersLoaded: false });
         }),
         switchMap((travelId) => travelApiService.getTravelMembers(travelId).pipe(
           tap(members => {
@@ -453,7 +453,7 @@ export const TravelStore = signalStore(
       pipe(
         tap(() => {
           loadingStore.setLoading();
-          patchState(store, { error: null });
+          patchState(store, { error: null, isOperationsLoaded: false });
         }),
         switchMap((travelId) => travelApiService.getTravelOperations(travelId).pipe(
           tap(operations => {
@@ -594,7 +594,7 @@ export const TravelStore = signalStore(
       pipe(
         tap(() => {
           loadingStore.setLoading();
-          patchState(store, { error: null });
+          patchState(store, { error: null, isBalancesLoaded: false });
         }),
         switchMap((travelId) => travelApiService.getTravelBalances(travelId).pipe(
           tap(balances => {

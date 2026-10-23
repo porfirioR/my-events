@@ -1,4 +1,4 @@
-import { CreateTransactionAccessRequest, TransactionAccessModel, UpdateTransactionReimbursementTotalAccessRequest } from ".";
+import { CreateTransactionAccessRequest, TransactionAccessModel, UpdateTransactionAccessRequest, UpdateTransactionReimbursementTotalAccessRequest } from ".";
 
 export interface ITransactionAccessService {
   /**
@@ -29,6 +29,13 @@ export interface ITransactionAccessService {
    * @returns Promise con lista de transacciones
    */
   getByUserAndCollaborator(userId: number, collaboratorId: number): Promise<TransactionAccessModel[]>;
+
+  /**
+   * Actualiza la transacción, reemplaza sus splits y su reintegro de forma atómica
+   * @param request - Datos completos de la transacción
+   * @returns Promise con la transacción actualizada
+   */
+  update(request: UpdateTransactionAccessRequest): Promise<TransactionAccessModel>;
 
   /**
    * Actualiza el total de reintegros de una transacción

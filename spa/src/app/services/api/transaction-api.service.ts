@@ -7,6 +7,7 @@ import {
   BalanceApiModel,
   TransactionReimbursementApiModel,
   CreateTransactionApiRequest,
+  UpdateTransactionApiRequest,
   AddReimbursementApiRequest,
 } from '../../models/api/transactions';
 import { MessageModel } from '../../models/api';
@@ -31,6 +32,10 @@ export class TransactionApiService {
   // Crear transacción
   public createTransaction = (request: CreateTransactionApiRequest): Observable<TransactionApiModel> =>
     this.httpClient.post<TransactionApiModel>(this.section, request);
+
+  // Actualizar transacción
+  public updateTransaction = (id: number, request: UpdateTransactionApiRequest): Observable<TransactionApiModel> =>
+    this.httpClient.put<TransactionApiModel>(`${this.section}/${id}`, request);
 
   // Agregar reintegro
   public addReimbursement = (transactionId: number, request: AddReimbursementApiRequest): Observable<TransactionReimbursementApiModel> =>
