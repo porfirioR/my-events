@@ -16,6 +16,7 @@ import { ResetPasswordFormGroup } from '../../models/forms';
 import { TextComponent } from '../inputs/text/text.component';
 import { useAuthStore } from '../../store';
 import { ResetPasswordApiRequest } from '../../models/api/auth';
+import { PasswordRules } from '../../constants';
 
 @Component({
   selector: 'app-reset-password',
@@ -40,7 +41,7 @@ export class ResetPasswordComponent {
 
     this.formGroup = new FormGroup<ResetPasswordFormGroup>({
       email: new FormControl(email ? email : null, [Validators.required, Validators.email]),
-      newPassword: new FormControl(null, [Validators.required, Validators.minLength(5), Validators.maxLength(10)]),
+      newPassword: new FormControl(null, [Validators.required, Validators.minLength(PasswordRules.minLength), Validators.maxLength(PasswordRules.maxLength)]),
       repeatPassword: new FormControl(null, [Validators.required, this.repeatPasswordValidator()]),
       token: new FormControl(token ? token : null, [Validators.required]),
     });

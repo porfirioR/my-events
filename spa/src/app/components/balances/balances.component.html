@@ -184,6 +184,22 @@
                     <dd class="font-semibold">{{ view.oldestPendingDate ? (view.oldestPendingDate | localizedDate:'mediumDate') : '—' }}</dd>
                   </div>
                 </dl>
+
+                <!-- Quick actions -->
+                <div class="mt-4 grid grid-cols-2 sm:flex sm:justify-end gap-2">
+                  <a class="btn btn-sm btn-outline btn-primary"
+                    [routerLink]="['/transactions/new']"
+                    [queryParams]="{ mode: 'expense', collaboratorId: balance.collaboratorId }">
+                    <i class="fas fa-receipt"></i>
+                    {{ 'balances.addExpense' | translate }}
+                  </a>
+                  <a class="btn btn-sm btn-primary"
+                    [routerLink]="['/transactions/new']"
+                    [queryParams]="{ mode: 'payment', collaboratorId: balance.collaboratorId }">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                    {{ 'balances.registerPayment' | translate }}
+                  </a>
+                </div>
               </article>
 
               <!-- Breakdown Details (Expandable) -->

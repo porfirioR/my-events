@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useCurrencyStore, useLoansStore, useLoadingStore } from '../../store';
+import { useCurrencyStore, useLoansStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, LoanTypeBadgeColors } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -24,10 +24,10 @@ export class LoansListComponent implements OnInit {
   private translate = inject(TranslateService);
 
   private loansStore = useLoansStore();
-  protected loadingStore = useLoadingStore();
   private currencyStore = useCurrencyStore();
 
-  protected isLoading = this.loadingStore.isLoading;
+  // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
+  protected isLoading = this.loansStore.needsLoadingLoans;
   protected filterStatus = signal<number | null>(1);
   protected filterLoanType = signal<number | null>(null);
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -39,12 +39,15 @@ export class CollaboratorInvitationsComponent implements OnInit {
   private formatterService = inject(FormatterHelperService);
   protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService)
 
-  invitationsSummary: CollaboratorInvitationModel[] = [];
-  selectedCollaboratorInvitations: ReceivedMatchRequestModel[] = [];
-  selectedCollaborator: CollaboratorApiModel | null = null;
+  // Signals: el componente es OnPush y zoneless, sin signals no se redibuja al llegar los datos
+  protected invitationsSummary = signal<CollaboratorInvitationModel[]>([]);
+  protected selectedCollaboratorInvitations = signal<ReceivedMatchRequestModel[]>([]);
+  protected selectedCollaborator = signal<CollaboratorApiModel | null>(null);
+  // Flags propios por lista y no el loading global (otros pedidos lo apagan antes de tiempo)
+  protected isSummaryLoading = signal<boolean>(false);
+  protected isInvitationsLoading = signal<boolean>(false);
   
   viewMode: 'summary' | 'details' = 'summary';
-  isLoading = this.loadingStore.isLoading;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   protected onConfirmResult(result: ConfirmDialogResult): void {
@@ -66,16 +69,16 @@ export class CollaboratorInvitationsComponent implements OnInit {
   }
 
   private loadInvitationsSummary(): void {
-    this.loadingStore.setLoading();
+    this.isSummaryLoading.set(true);
     this.invitationApiService.getInvitationsSummary().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (summary) => {
-        this.invitationsSummary = summary;
-        this.loadingStore.setLoadingSuccess();
+        this.invitationsSummary.set(summary);
+        this.isSummaryLoading.set(false);
       },
       error: (error) => {
         const errorMessage = this.messageTranslationService.translateErrorMessage(error);
         this.alertService.showError(errorMessage);
-        this.loadingStore.setLoadingFailed();
+        this.isSummaryLoading.set(false);
       }
     });
   }
@@ -83,7 +86,7 @@ export class CollaboratorInvitationsComponent implements OnInit {
   private loadCollaboratorDetails(collaboratorId: number): void {
     this.collaboratorApiService.getById(collaboratorId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (collaborator) => {
-        this.selectedCollaborator = collaborator;
+        this.selectedCollaborator.set(collaborator);
       },
       error: (error) => {
         const errorMessage = this.messageTranslationService.translateErrorMessage(error);
@@ -94,16 +97,16 @@ export class CollaboratorInvitationsComponent implements OnInit {
   }
 
   private loadCollaboratorInvitations(collaboratorId: number): void {
-    this.loadingStore.setLoading();
+    this.isInvitationsLoading.set(true);
     this.invitationApiService.getCollaboratorInvitations(collaboratorId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (invitations) => {
-        this.selectedCollaboratorInvitations = invitations;
-        this.loadingStore.setLoadingSuccess();
+        this.selectedCollaboratorInvitations.set(invitations);
+        this.isInvitationsLoading.set(false);
       },
       error: (error) => {
         const errorMessage = this.messageTranslationService.translateErrorMessage(error);
         this.alertService.showError(errorMessage);
-        this.loadingStore.setLoadingFailed();
+        this.isInvitationsLoading.set(false);
       }
     });
   }
@@ -123,8 +126,9 @@ export class CollaboratorInvitationsComponent implements OnInit {
             'matchRequests.requestAcceptedSuccess'
           );
           this.alertService.showSuccess(message);
-          if (this.selectedCollaborator) {
-            this.loadCollaboratorInvitations(this.selectedCollaborator.id);
+          const collaborator = this.selectedCollaborator();
+          if (collaborator) {
+            this.loadCollaboratorInvitations(collaborator.id);
           }
           this.loadingStore.setLoadingSuccess();
         },

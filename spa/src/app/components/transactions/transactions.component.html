@@ -77,232 +77,300 @@
           </p>
         </div>
       } @else {
-        <ul class="space-y-3" role="list">
-          @for (transaction of transactions(); track transaction.id) {
-            <li class="bg-base-100 dark:bg-neutral dark:hover:bg-neutral-focus/80 rounded-2xl hover:bg-base-200 transition-all duration-200 shadow-sm hover:shadow-md">
-              <article class="p-4 sm:p-5">
-                <div class="flex items-center gap-4">
-                  <!-- Icon Circle - Más prominente -->
-                  <figure class="flex-shrink-0">
-                    <div
-                      class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-white font-semibold shadow-lg"
-                      [ngClass]="{
-                        'bg-green-500 dark:bg-success': transaction.iPaid > 0,
-                        'bg-blue-500 dark:bg-info': transaction.theyPaid > 0
-                      }"
-                    >
-                      <i class="fas text-lg sm:text-xl"
-                        [ngClass]="{
-                          'fa-arrow-up': transaction.iPaid > 0,
-                          'fa-arrow-down': transaction.theyPaid > 0
-                        }"
-                        aria-hidden="true"
-                      ></i>
-                    </div>
-                  </figure>
+        @if (monthGroups().length > 1) {
+          <div class="flex justify-end mb-3">
+            <button type="button" class="btn btn-xs btn-ghost gap-1.5" (click)="toggleAllMonths()">
+              <i class="fas" [ngClass]="allExpanded() ? 'fa-compress-alt' : 'fa-expand-alt'" aria-hidden="true"></i>
+              {{ (allExpanded() ? 'transactions.collapseAll' : 'transactions.expandAll') | translate }}
+            </button>
+          </div>
+        }
+        <div class="space-y-4">
+          @for (group of monthGroups(); track group.key) {
+            @let expanded = isMonthExpanded(group.key);
+            <section class="rounded-2xl border border-base-300 dark:border-base-100 bg-base-100/60 dark:bg-base-200/40">
+              <!-- Encabezado del mes: resumen visible aunque esté colapsado -->
+              <button type="button"
+                class="w-full text-left px-4 py-3 sm:px-5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-2xl hover:bg-base-content/5 transition-colors"
+                [attr.aria-expanded]="expanded"
+                [attr.aria-controls]="'month-' + group.key"
+                (click)="toggleMonth(group.key)">
+                <span class="flex items-center gap-3 flex-1 min-w-0">
+                  <i class="fas fa-chevron-right text-xs text-base-content/50 transition-transform duration-200" [class.rotate-90]="expanded" aria-hidden="true"></i>
+                  <span class="font-semibold text-base-content capitalize">{{ group.date | localizedDate:'MMMM y' }}</span>
+                  <span class="badge badge-sm badge-ghost whitespace-nowrap">{{ 'transactions.monthCount' | translate: { count: group.transactions.length } }}</span>
+                </span>
+                <span class="flex flex-wrap items-center gap-1.5 sm:justify-end">
+                  @if (group.theyOwe > 0) {
+                    <span class="badge badge-sm badge-soft badge-success gap-1 whitespace-nowrap">
+                      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                      <span class="hidden sm:inline">{{ 'transactions.monthTheyOwe' | translate }}&nbsp;</span>
+                      {{ formatCurrency(group.theyOwe, 4) }}
+                    </span>
+                  }
+                  @if (group.received > 0) {
+                    <span class="badge badge-sm badge-soft badge-info gap-1 whitespace-nowrap">
+                      <i class="fas fa-hand-holding-usd" aria-hidden="true"></i>
+                      <span class="hidden sm:inline">{{ 'transactions.monthReceived' | translate }}&nbsp;</span>
+                      {{ formatCurrency(group.received, 4) }}
+                    </span>
+                  }
+                  @if (group.iOwe > 0) {
+                    <span class="badge badge-sm badge-soft badge-error gap-1 whitespace-nowrap">
+                      <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                      <span class="hidden sm:inline">{{ 'transactions.monthIOwe' | translate }}&nbsp;</span>
+                      {{ formatCurrency(group.iOwe, 4) }}
+                    </span>
+                  }
+                  @if (group.reimbursements > 0) {
+                    <span class="badge badge-sm badge-soft badge-warning gap-1 whitespace-nowrap">
+                      <i class="fas fa-undo" aria-hidden="true"></i>
+                      <span class="hidden sm:inline">{{ 'transactions.monthReimbursements' | translate }}&nbsp;</span>
+                      {{ formatCurrency(group.reimbursements, 4) }}
+                    </span>
+                  }
+                  <span class="font-bold tabular-nums whitespace-nowrap ml-auto sm:hidden"
+                    [ngClass]="{ 'text-success': group.net > 0, 'text-error': group.net < 0, 'text-base-content/50': group.net === 0 }">
+                    {{ group.net > 0 ? '+' : group.net < 0 ? '-' : '' }}{{ formatCurrency(math.abs(group.net), 4) }}
+                  </span>
+                </span>
+                <span class="font-bold tabular-nums whitespace-nowrap hidden sm:block sm:min-w-[7rem] sm:text-right"
+                  [ngClass]="{ 'text-success': group.net > 0, 'text-error': group.net < 0, 'text-base-content/50': group.net === 0 }">
+                  {{ group.net > 0 ? '+' : group.net < 0 ? '-' : '' }}{{ formatCurrency(math.abs(group.net), 4) }}
+                </span>
+              </button>
 
-                  <!-- Main Content -->
-                  <div class="flex-grow min-w-0">
-                    <!-- Header: Title and Amount -->
-                    <div class="flex items-start justify-between gap-3 mb-1.5">
-                      <div class="flex-grow min-w-0">
-                        <h3 class="font-semibold text-base sm:text-lg text-base-content truncate leading-tight">
-                          {{ transaction.description || ('transactions.noDescription' | translate) }}
-                        </h3>
-                        <p class="text-xs sm:text-sm text-base-content/60 truncate mt-0.5">
-                          {{ transaction.myCollaborator.name }} {{ transaction.myCollaborator.surname }}
-                        </p>
-                      </div>
+              @if (expanded) {
+                <ul [id]="'month-' + group.key" class="space-y-3 px-2 pb-3 sm:px-4 sm:pb-4" role="list">
+                  @for (transaction of group.transactions; track transaction.id) {
+                    <li class="bg-base-100 dark:bg-neutral dark:hover:bg-neutral-focus/80 rounded-2xl hover:bg-base-200 transition-all duration-200 shadow-sm hover:shadow-md">
+                      <article class="p-4 sm:p-5">
+                        <div class="flex items-center gap-4">
+                          <!-- Icon Circle - Más prominente -->
+                          <figure class="flex-shrink-0">
+                            <div
+                              class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-white font-semibold shadow-lg"
+                              [ngClass]="{
+                                'bg-green-500 dark:bg-success': transaction.iPaid > 0,
+                                'bg-blue-500 dark:bg-info': transaction.theyPaid > 0
+                              }"
+                            >
+                              <i class="fas text-lg sm:text-xl"
+                                [ngClass]="{
+                                  'fa-arrow-up': transaction.iPaid > 0,
+                                  'fa-arrow-down': transaction.theyPaid > 0
+                                }"
+                                aria-hidden="true"
+                              ></i>
+                            </div>
+                          </figure>
 
-                      <!-- Amount - Más grande y prominente -->
-                      <div class="text-right flex-shrink-0">
-                        <p class="text-lg sm:text-xl font-bold text-base-content whitespace-nowrap">
-                          {{ formatCurrency(transaction.netAmount, 4) }}
-                        </p>
-                        @if (transaction.totalReimbursement > 0) {
-                          <p class="text-xs text-base-content/50 whitespace-nowrap mt-0.5">
-                            <i class="fas fa-undo mr-1"></i>{{ formatCurrency(transaction.totalReimbursement, 4) }}
-                          </p>
-                        }
-                      </div>
-                    </div>
+                          <!-- Main Content -->
+                          <div class="flex-grow min-w-0">
+                            <!-- Header: Title and Amount -->
+                            <div class="flex items-start justify-between gap-3 mb-1.5">
+                              <div class="flex-grow min-w-0">
+                                <h3 class="font-semibold text-base sm:text-lg text-base-content truncate leading-tight">
+                                  {{ transaction.description || ('transactions.noDescription' | translate) }}
+                                </h3>
+                                <p class="text-xs sm:text-sm text-base-content/60 truncate mt-0.5">
+                                  {{ transaction.myCollaborator.name }} {{ transaction.myCollaborator.surname }}
+                                </p>
+                              </div>
 
-                    <!-- Date and Status in one line -->
-                    <div class="flex items-center gap-2 mb-2">
-                      <time [attr.datetime]="transaction.transactionDate" class="text-xs text-base-content/50">
-                        {{ getFormattedDate(transaction.transactionDate, true) }}
-                      </time>
-                      <span class="text-base-content/30">•</span>
-                      <!-- Settled Status Badge -->
-                      <span class="badge badge-sm badge-soft gap-1"
-                        [ngClass]="{
-                          'badge-success': transaction.isSettled,
-                          'badge-warning': !transaction.isSettled
-                        }"
-                      >
-                        <i class="fas"
-                          [ngClass]="{
-                            'fa-check-circle': transaction.isSettled,
-                            'fa-clock': !transaction.isSettled
-                          }"
-                          aria-hidden="true"
-                        ></i>
-                        {{ transaction.isSettled ? ('transactions.settled' | translate) : ('transactions.pending' | translate) }}
-                      </span>
-                    </div>
+                              <!-- Amount - Más grande y prominente -->
+                              <div class="text-right flex-shrink-0">
+                                <p class="text-lg sm:text-xl font-bold text-base-content whitespace-nowrap">
+                                  {{ formatCurrency(transaction.netAmount, 4) }}
+                                </p>
+                                @if (transaction.totalReimbursement > 0) {
+                                  <p class="text-xs text-base-content/50 whitespace-nowrap mt-0.5">
+                                    <i class="fas fa-undo mr-1"></i>{{ formatCurrency(transaction.totalReimbursement, 4) }}
+                                  </p>
+                                }
+                              </div>
+                            </div>
 
-                    <!-- Badges compactos en una línea -->
-                    <div class="flex flex-wrap gap-1.5 items-center">
-                      <!-- Who Paid Badge -->
-                      <span class="badge badge-sm badge-soft gap-1 whitespace-nowrap"
-                        [ngClass]="{
-                          'badge-accent': transaction.iPaid > 0,
-                          'badge-info': transaction.theyPaid > 0
-                        }"
-                      >
-                        <i class="fas"
-                          [ngClass]="{
-                            'fa-wallet': transaction.iPaid > 0,
-                            'fa-hand-holding-usd': transaction.theyPaid > 0
-                          }"
-                        ></i>
-                        @if (transaction.iPaid > 0) {
-                          <span class="hidden sm:inline">{{ 'transactions.paid' | translate }}&nbsp;</span>
-                          {{ formatCurrency(transaction.iPaid, 4) }}
-                        } @else {
-                          <span class="hidden sm:inline">{{ 'transactions.received' | translate }}&nbsp;</span>
-                          {{ formatCurrency(transaction.theyPaid, 4) }}
-                        }
-                      </span>
-
-                      <!-- I Owe Badge -->
-                      @if (transaction.iOwe > 0) {
-                        <span class="badge badge-sm badge-soft badge-error gap-1 whitespace-nowrap">
-                          <i class="fas fa-arrow-down"></i>
-                          <span class="hidden sm:inline">{{ 'transactions.owe' | translate }}&nbsp;</span>
-                          {{ formatCurrency(transaction.iOwe, 4) }}
-                        </span>
-                      }
-
-                      <!-- They Owe Badge -->
-                      @if (transaction.theyOwe > 0) {
-                        <span class="badge badge-sm badge-soft badge-success gap-1 whitespace-nowrap">
-                          <i class="fas fa-arrow-up"></i>
-                          <span class="hidden sm:inline">{{ 'transactions.owed' | translate }}&nbsp;</span>
-                          {{ formatCurrency(transaction.theyOwe, 4) }}
-                        </span>
-                      }
-
-                      <!-- Created By Badge -->
-                      @if (transaction.createdByMe) {
-                        <span class="badge badge-sm badge-soft badge-primary gap-1">
-                          <i class="fas fa-user-check"></i>
-                          <span class="hidden sm:inline">{{ 'transactions.mine' | translate }}</span>
-                        </span>
-                      }
-                    </div>
-                  </div>
-
-                  <!-- Actions Menu (Desktop) - Más discreto -->
-                  <aside class="flex-shrink-0 hidden sm:block">
-                    <div class="dropdown dropdown-end">
-                      <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-base-content/10 cursor-pointer">
-                        <i class="fas fa-ellipsis-v text-base-content/50" aria-hidden="true"></i>
-                      </label>
-                      <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-xl bg-base-100 dark:bg-neutral rounded-2xl w-56 border border-base-300 dark:border-neutral-focus">
-                        <!-- View Details -->
-                        <li>
-                          <button type="button" [routerLink]="['/transactions', transaction.id]"
-                            class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-info/10 hover:text-info transition-colors">
-                            <i class="fas fa-eye w-4 text-info" aria-hidden="true"></i>
-                            <span>
-                              {{ 'transactions.viewDetails' | translate }}
-                            </span>
-                          </button>
-                        </li>
-                        @if (transaction.createdByMe) {
-                          @if (!transaction.isSettled) {
-                            @if (transaction.netAmount != 0) {
-                              <li>
-                                <button type="button" (click)="addReimbursement(transaction)"
-                                  class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-warning/10 hover:text-warning transition-colors">
-                                  <i class="fas fa-undo w-4 text-warning" aria-hidden="true"></i>
-                                  <span>{{ 'transactions.addReimbursement' | translate }}</span>
-                                </button>
-                              </li>
-                            }
-                            <!-- Mark as Settled -->
-                            <li>
-                              <button type="button" (click)="settleTransaction(transaction)"
-                                class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-success/10 hover:text-success transition-colors">
-                                <i class="fas fa-check-double w-4 text-success" aria-hidden="true"></i>
-                                <span>{{ 'transactions.markAsSettled' | translate }}</span>
-                              </button>
-                            </li>
-                          }
-                          <!-- Delete -->
-                          <li>
-                            <button type="button" (click)="deleteTransaction(transaction)"
-                              class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-error/10 hover:text-error transition-colors">
-                              <i class="fas fa-trash w-4 text-error" aria-hidden="true"></i>
-                              <span>
-                                {{ 'common.delete' | translate }}
+                            <!-- Date and Status in one line -->
+                            <div class="flex items-center gap-2 mb-2">
+                              <time [attr.datetime]="transaction.transactionDate" class="text-xs text-base-content/50">
+                                {{ getFormattedDate(transaction.transactionDate, true) }}
+                              </time>
+                              <span class="text-base-content/30">•</span>
+                              <!-- Settled Status Badge -->
+                              <span class="badge badge-sm badge-soft gap-1"
+                                [ngClass]="{
+                                  'badge-success': transaction.isSettled,
+                                  'badge-warning': !transaction.isSettled
+                                }"
+                              >
+                                <i class="fas"
+                                  [ngClass]="{
+                                    'fa-check-circle': transaction.isSettled,
+                                    'fa-clock': !transaction.isSettled
+                                  }"
+                                  aria-hidden="true"
+                                ></i>
+                                {{ transaction.isSettled ? ('transactions.settled' | translate) : ('transactions.pending' | translate) }}
                               </span>
-                            </button>
-                          </li>
-                        }
-                      </ul>
-                    </div>
-                  </aside>
-                </div>
+                            </div>
 
-                <!-- Mobile Actions - Mejorado -->
-                <div class="mt-3 pt-3 border-t border-base-content/10 sm:hidden">
-                  <div class="flex gap-2">
-                    <button
-                      type="button"
-                      class="btn btn-xs btn-ghost gap-1.5 flex-1"
-                      [routerLink]="['/transactions', transaction.id]"
-                    >
-                      <i class="fas fa-eye text-info"></i>
-                      <span>{{ 'transactions.view' | translate }}</span>
-                    </button>
-                    
-                    @if (transaction.createdByMe && !transaction.isSettled) {
-                      @if (transaction.netAmount != 0) {
-                        <button
-                          type="button"
-                          class="btn btn-xs btn-ghost gap-1.5 flex-1"
-                          (click)="addReimbursement(transaction)"
-                        >
-                          <i class="fas fa-undo text-warning"></i>
-                          <span>{{ 'transactions.reimbursement' | translate }}</span>
-                        </button>
-                      }
-                      <button
-                        type="button"
-                        class="btn btn-xs btn-ghost gap-1.5 flex-1"
-                        (click)="settleTransaction(transaction)"
-                      >
-                        <i class="fas fa-check text-success"></i>
-                        <span>{{ 'transactions.settled' | translate }}</span>
-                      </button>
-                    }
-                    @if (transaction.createdByMe) {
-                      <button
-                        type="button"
-                        class="btn btn-xs btn-ghost gap-1.5"
-                        (click)="deleteTransaction(transaction)"
-                      >
-                        <i class="fas fa-trash text-error"></i>
-                      </button>
-                    }
-                  </div>
-                </div>
-              </article>
-            </li>
+                            <!-- Badges compactos en una línea -->
+                            <div class="flex flex-wrap gap-1.5 items-center">
+                              <!-- Who Paid Badge -->
+                              <span class="badge badge-sm badge-soft gap-1 whitespace-nowrap"
+                                [ngClass]="{
+                                  'badge-accent': transaction.iPaid > 0,
+                                  'badge-info': transaction.theyPaid > 0
+                                }"
+                              >
+                                <i class="fas"
+                                  [ngClass]="{
+                                    'fa-wallet': transaction.iPaid > 0,
+                                    'fa-hand-holding-usd': transaction.theyPaid > 0
+                                  }"
+                                ></i>
+                                @if (transaction.iPaid > 0) {
+                                  <span class="hidden sm:inline">{{ 'transactions.paid' | translate }}&nbsp;</span>
+                                  {{ formatCurrency(transaction.iPaid, 4) }}
+                                } @else {
+                                  <span class="hidden sm:inline">{{ 'transactions.received' | translate }}&nbsp;</span>
+                                  {{ formatCurrency(transaction.theyPaid, 4) }}
+                                }
+                              </span>
+
+                              <!-- I Owe Badge: en un pago es la misma plata que "Recibí" -->
+                              @if (transaction.iOwe > 0 && !isReceived(transaction)) {
+                                <span class="badge badge-sm badge-soft badge-error gap-1 whitespace-nowrap">
+                                  <i class="fas fa-arrow-down"></i>
+                                  <span class="hidden sm:inline">{{ 'transactions.owe' | translate }}&nbsp;</span>
+                                  {{ formatCurrency(transaction.iOwe, 4) }}
+                                </span>
+                              }
+
+                              <!-- They Owe Badge -->
+                              @if (transaction.theyOwe > 0) {
+                                <span class="badge badge-sm badge-soft badge-success gap-1 whitespace-nowrap">
+                                  <i class="fas fa-arrow-up"></i>
+                                  <span class="hidden sm:inline">{{ 'transactions.owed' | translate }}&nbsp;</span>
+                                  {{ formatCurrency(transaction.theyOwe, 4) }}
+                                </span>
+                              }
+
+                              <!-- Created By Badge -->
+                              @if (transaction.createdByMe) {
+                                <span class="badge badge-sm badge-soft badge-primary gap-1">
+                                  <i class="fas fa-user-check"></i>
+                                  <span class="hidden sm:inline">{{ 'transactions.mine' | translate }}</span>
+                                </span>
+                              }
+                            </div>
+                          </div>
+
+                          <!-- Actions Menu (Desktop) - Más discreto -->
+                          <aside class="flex-shrink-0 hidden sm:block">
+                            <div class="dropdown dropdown-end">
+                              <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-base-content/10 cursor-pointer">
+                                <i class="fas fa-ellipsis-v text-base-content/50" aria-hidden="true"></i>
+                              </label>
+                              <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-xl bg-base-100 dark:bg-neutral rounded-2xl w-56 border border-base-300 dark:border-neutral-focus">
+                                <!-- View Details -->
+                                <li>
+                                  <button type="button" [routerLink]="['/transactions', transaction.id]"
+                                    class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-info/10 hover:text-info transition-colors">
+                                    <i class="fas fa-eye w-4 text-info" aria-hidden="true"></i>
+                                    <span>
+                                      {{ 'transactions.viewDetails' | translate }}
+                                    </span>
+                                  </button>
+                                </li>
+                                @if (transaction.createdByMe) {
+                                  @if (!transaction.isSettled) {
+                                    @if (transaction.netAmount != 0) {
+                                      <li>
+                                        <button type="button" (click)="addReimbursement(transaction)"
+                                          class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-warning/10 hover:text-warning transition-colors">
+                                          <i class="fas fa-undo w-4 text-warning" aria-hidden="true"></i>
+                                          <span>{{ 'transactions.addReimbursement' | translate }}</span>
+                                        </button>
+                                      </li>
+                                    }
+                                    <!-- Mark as Settled -->
+                                    <li>
+                                      <button type="button" (click)="settleTransaction(transaction)"
+                                        class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-success/10 hover:text-success transition-colors">
+                                        <i class="fas fa-check-double w-4 text-success" aria-hidden="true"></i>
+                                        <span>{{ 'transactions.markAsSettled' | translate }}</span>
+                                      </button>
+                                    </li>
+                                  }
+                                  <!-- Delete -->
+                                  <li>
+                                    <button type="button" (click)="deleteTransaction(transaction)"
+                                      class="flex items-center gap-3 px-4 py-3 text-sm rounded-xl hover:bg-error/10 hover:text-error transition-colors">
+                                      <i class="fas fa-trash w-4 text-error" aria-hidden="true"></i>
+                                      <span>
+                                        {{ 'common.delete' | translate }}
+                                      </span>
+                                    </button>
+                                  </li>
+                                }
+                              </ul>
+                            </div>
+                          </aside>
+                        </div>
+
+                        <!-- Mobile Actions - Mejorado -->
+                        <div class="mt-3 pt-3 border-t border-base-content/10 sm:hidden">
+                          <div class="flex gap-2">
+                            <button
+                              type="button"
+                              class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                              [routerLink]="['/transactions', transaction.id]"
+                            >
+                              <i class="fas fa-eye text-info"></i>
+                              <span>{{ 'transactions.view' | translate }}</span>
+                            </button>
+                            
+                            @if (transaction.createdByMe && !transaction.isSettled) {
+                              @if (transaction.netAmount != 0) {
+                                <button
+                                  type="button"
+                                  class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                                  (click)="addReimbursement(transaction)"
+                                >
+                                  <i class="fas fa-undo text-warning"></i>
+                                  <span>{{ 'transactions.reimbursement' | translate }}</span>
+                                </button>
+                              }
+                              <button
+                                type="button"
+                                class="btn btn-xs btn-ghost gap-1.5 flex-1"
+                                (click)="settleTransaction(transaction)"
+                              >
+                                <i class="fas fa-check text-success"></i>
+                                <span>{{ 'transactions.settled' | translate }}</span>
+                              </button>
+                            }
+                            @if (transaction.createdByMe) {
+                              <button
+                                type="button"
+                                class="btn btn-xs btn-ghost gap-1.5"
+                                (click)="deleteTransaction(transaction)"
+                              >
+                                <i class="fas fa-trash text-error"></i>
+                              </button>
+                            }
+                          </div>
+                        </div>
+                      </article>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
           } @empty {
-            <li class="text-center py-16">
+            <div class="text-center py-16">
               <figure class="mx-auto w-20 h-20 bg-base-200 dark:bg-neutral rounded-3xl flex items-center justify-center mb-4">
                 <i class="fas fa-receipt text-3xl text-base-content/30" aria-hidden="true"></i>
               </figure>
@@ -314,9 +382,9 @@
                 <i class="fas fa-plus" aria-hidden="true"></i>
                 {{ 'transactions.newTransaction' | translate }}
               </button>
-            </li>
+            </div>
           }
-        </ul>
+        </div>
       }
     </div>
   </article>

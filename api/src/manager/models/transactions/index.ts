@@ -12,3 +12,4 @@ export { TransactionMatchModel } from './transaction-match-model';
 export { TransactionMatchInfoModel } from './transaction-match-info-model';
 export { TransactionSplitDetailModel } from './transaction-split-detail-model';
 export { TransactionDetailModel } from './transaction-detail-model';
+export { UpdateTransactionRequest } from './update-transaction-manager.request';

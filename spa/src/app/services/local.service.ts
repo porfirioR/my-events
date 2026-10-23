@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core'
+import { TransactionEntryPreferencesViewModel } from '../models/view'
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ export class LocalService {
   private readonly collaboratorKey = 'collaborator'
   private readonly jwtToken = 'jwt'
   private readonly isEmailVerified = 'isEmailVerified'
+  private readonly transactionEntryPreferencesKey = 'transaction-entry-preferences'
 
   public getEmail = (): string | null => localStorage.getItem(this.emailKey) ?? ''
   public setEmail = (email: string): void => localStorage.setItem(this.emailKey, email)
@@ -36,4 +38,12 @@ export class LocalService {
     const value = localStorage.getItem(this.isEmailVerified);
     return value ? JSON.parse(value) : false;
   };
+
+  public getTransactionEntryPreferences = (): TransactionEntryPreferencesViewModel | null => {
+    const value = localStorage.getItem(this.transactionEntryPreferencesKey);
+    return value ? JSON.parse(value) : null;
+  };
+
+  public setTransactionEntryPreferences = (preferences: TransactionEntryPreferencesViewModel): void =>
+    localStorage.setItem(this.transactionEntryPreferencesKey, JSON.stringify(preferences));
 }

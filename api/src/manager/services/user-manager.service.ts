@@ -18,6 +18,7 @@ import {
   WebPushModel,
 } from '../models/users';
 import { TokenGenerator } from '../../utility/helpers/token-generator.helper';
+import { PasswordValidator } from '../../utility/helpers/password-validator.helper';
 import { AUTH_CONFIG, COLLABORATOR_TOKENS } from '../../utility/constants';
 
 @Injectable()
@@ -45,6 +46,8 @@ export class UserManagerService {
    * Registra un nuevo usuario y envía email de verificación
    */
   public registerUser = async (request: UserRequest): Promise<{ user: SignModel; verificationToken: string }> => {
+    PasswordValidator.validate(request.password);
+
     // Hashear contraseña
     const password = await this.authService.getHash(request.password);
 
@@ -281,6 +284,8 @@ export class UserManagerService {
    * Resetea la contraseña usando el token
    */
   public resetUserPassword = async (request: ResetUserPasswordRequest): Promise<SignModel> => {
+    PasswordValidator.validate(request.password);
+
     // Validar token
     const tokenModel = await this.passwordResetTokenAccessService.getValidToken(
       request.token

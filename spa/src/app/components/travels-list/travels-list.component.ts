@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useAuthStore, useCurrencyStore, useLoadingStore, useTravelStore } from '../../store';
+import { useAuthStore, useCurrencyStore, useTravelStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelApiModel } from '../../models/api/travels';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -27,11 +27,11 @@ export class TravelsListComponent implements OnInit {
   private translate = inject(TranslateService);
 
   private travelStore = useTravelStore();
-  private loadingStore = useLoadingStore();
   private authStore = useAuthStore();
   private currencyStore = useCurrencyStore();
 
-  protected isLoading = this.loadingStore.isLoading;
+  // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
+  protected isLoading = this.travelStore.needsLoadingTravels;
   protected filterStatus = signal<string | null>('Active');
 
   protected travels = computed(() => {

@@ -1,4 +1,4 @@
-import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, TransactionDetailModel, TransactionModel, TransactionReimbursementModel, TransactionViewModel } from ".";
+import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, TransactionDetailModel, TransactionModel, TransactionReimbursementModel, TransactionViewModel, UpdateTransactionRequest } from ".";
 
 export interface ITransactionManagerService {
   /**
@@ -8,6 +8,17 @@ export interface ITransactionManagerService {
    * @throws ValidationError si los datos no son válidos
    */
   createTransaction(request: CreateTransactionRequest): Promise<TransactionModel>;
+
+  /**
+   * Actualiza una transacción con sus splits y reintegro
+   * Solo puede editarla quien la creó y si no tiene splits liquidados
+   * @param request - Datos completos de la transacción
+   * @returns Promise con la transacción actualizada
+   * @throws NotFoundException si la transacción no existe
+   * @throws ForbiddenException si el usuario no la creó
+   * @throws BadRequestException si está liquidada o los datos no son válidos
+   */
+  updateTransaction(request: UpdateTransactionRequest): Promise<TransactionModel>;
 
   /**
    * Agrega un reintegro a una transacción existente

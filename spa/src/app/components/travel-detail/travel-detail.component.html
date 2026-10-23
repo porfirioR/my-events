@@ -123,7 +123,7 @@
               }
             </div>
 
-            @if (isLoading()) {
+            @if (isOperationsLoading()) {
               <div class="flex justify-center items-center py-12">
                 <span class="loading loading-spinner loading-lg"></span>
               </div>
@@ -399,7 +399,7 @@
               }
             </div>
 
-            @if (isLoading()) {
+            @if (isMembersLoading()) {
               <div class="flex justify-center items-center py-12">
                 <span class="loading loading-spinner loading-lg"></span>
               </div>
@@ -460,7 +460,7 @@
               {{ 'travels.balances' | translate }}
             </h2>
 
-            @if (isLoading()) {
+            @if (isBalancesLoading()) {
               <div class="flex justify-center items-center py-12">
                 <span class="loading loading-spinner loading-lg"></span>
               </div>

@@ -9,3 +9,4 @@ export { ITransactionAccessService } from './transaction-access-service.interfac
 export { ITransactionSplitAccessService } from './transaction-split-access-service.interface';
 export { ITransactionReimbursementAccessService } from './transaction-reimbursement-access-service.interface';
 
+export { UpdateTransactionAccessRequest } from './update-transaction-access-request';

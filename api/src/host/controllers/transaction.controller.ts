@@ -15,9 +15,10 @@ import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
 import {
   CreateTransactionApiRequest,
   AddReimbursementApiRequest,
+  UpdateTransactionApiRequest,
 } from '../models/transactions';
 import { MessageModel } from '../models/message.model';
-import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel } from '../../manager/models/transactions';
+import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel, UpdateTransactionRequest } from '../../manager/models/transactions';
 import { ParticipantType, WhoPaid } from '../../utility/enums';
 import { TRANSACTION_TOKENS } from 'src/utility/constants';
 
@@ -37,26 +38,8 @@ export class TransactionController {
   @Post()
   async createTransaction(@Body() apiRequest: CreateTransactionApiRequest): Promise<TransactionModel> {
     const userId = await this.currentUserService.getCurrentUserId();
-
-    // Mapear splits del API request al manager request
-    const splits = apiRequest.splits.map((split) => {
-      return new TransactionSplitRequest(
-        split.participantType,
-        split.participantType === ParticipantType.User ? userId : null,
-        split.participantType === ParticipantType.Collaborator ? apiRequest.collaboratorId : null,
-        split.amount,
-        split.sharePercentage || null,
-        split.isPayer
-      );
-    });
-
-    // Mapear reintegro si existe
-    const reimbursement = apiRequest.reimbursement
-      ? new ReimbursementRequest(
-          apiRequest.reimbursement.amount,
-          apiRequest.reimbursement.description || null,
-        )
-      : null;
+    const splits = this.mapSplits(apiRequest, userId);
+    const reimbursement = this.mapReimbursement(apiRequest);
 
     // Crear el manager request
     const request = new CreateTransactionRequest(
@@ -72,6 +55,32 @@ export class TransactionController {
     );
 
     return await this.transactionManagerService.createTransaction(request);
+  }
+
+  /**
+   * Actualiza una transacción (solo quien la creó y si no está liquidada)
+   * PUT /api/transactions/:id
+   */
+  @Put(':id')
+  async updateTransaction(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() apiRequest: UpdateTransactionApiRequest,
+  ): Promise<TransactionModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    const request = new UpdateTransactionRequest(
+      id,
+      userId,
+      apiRequest.collaboratorId,
+      apiRequest.totalAmount,
+      apiRequest.description || null,
+      apiRequest.splitType,
+      apiRequest.whoPaid,
+      this.mapSplits(apiRequest, userId),
+      this.mapReimbursement(apiRequest),
+      apiRequest.transactionDate ? apiRequest.transactionDate.split('T')[0] : null,
+    );
+
+    return await this.transactionManagerService.updateTransaction(request);
   }
 
   /**
@@ -163,5 +172,27 @@ export class TransactionController {
   async getTransactionDetails(@Param('id', ParseIntPipe) id: number): Promise<TransactionDetailModel> {
     const userId = await this.currentUserService.getCurrentUserId();
     return await this.transactionManagerService.getTransactionDetail(id, userId);
+  }
+
+  // Mapear splits del API request al manager request
+  private mapSplits(apiRequest: CreateTransactionApiRequest, userId: number): TransactionSplitRequest[] {
+    return apiRequest.splits.map((split) => new TransactionSplitRequest(
+      split.participantType,
+      split.participantType === ParticipantType.User ? userId : null,
+      split.participantType === ParticipantType.Collaborator ? apiRequest.collaboratorId : null,
+      split.amount,
+      split.sharePercentage || null,
+      split.isPayer
+    ));
+  }
+
+  // Mapear reintegro si existe
+  private mapReimbursement(apiRequest: CreateTransactionApiRequest): ReimbursementRequest | null {
+    return apiRequest.reimbursement
+      ? new ReimbursementRequest(
+          apiRequest.reimbursement.amount,
+          apiRequest.reimbursement.description || null,
+        )
+      : null;
   }
 }

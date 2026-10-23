@@ -7,29 +7,8 @@ import { useCurrencyStore, useTransactionStore } from '../../store';
 import { FormatterHelperService } from '../../services';
 import { LocalizedDatePipe } from '../../pipes';
 import { BalanceApiModel, TransactionViewApiModel } from '../../models/api/transactions';
+import { CollaboratorBalanceViewModel, MonthlyBalanceSummaryViewModel } from '../../models/view';
 
-interface MonthlySummary {
-  key: string;
-  date: Date;
-  theyOwe: number;
-  iOwe: number;
-  net: number;
-}
-
-interface CollaboratorBalanceView {
-  balance: BalanceApiModel;
-  pendingCount: number;
-  lastMovementDate: Date | null;
-  oldestPendingDate: Date | null;
-  // Porcentaje de la deuda mayor que ya está compensada por la menor
-  offsetPercentage: number;
-  theyOweShare: number;
-  months: MonthlySummary[];
-  recent: TransactionViewApiModel[];
-}
-
-const RECENT_LIMIT = 8;
-const MONTHS_LIMIT = 12;
 
 @Component({
   selector: 'app-balances',
@@ -49,6 +28,8 @@ export class BalancesComponent implements OnInit {
   private readonly currencyStore = useCurrencyStore();
   private readonly location = inject(Location);
   private formatterService = inject(FormatterHelperService);
+  private readonly recentLimit = 8;
+  private readonly monthsLimit = 12;
 
   // Signals
   protected isBalancesLoaded = this.transactionStore.isBalancesLoaded;
@@ -61,7 +42,7 @@ export class BalancesComponent implements OnInit {
   protected totalTheyOwe = computed(() => this.transactionStore.totalTheyOwe());
   protected totalIOwe = computed(() => this.transactionStore.totalIOwe());
 
-  protected balanceViews = computed<CollaboratorBalanceView[]>(() => {
+  protected balanceViews = computed<CollaboratorBalanceViewModel[]>(() => {
     const pendingByCollaborator = new Map<number, TransactionViewApiModel[]>();
     for (const transaction of this.transactionStore.transactions()) {
       if (transaction.isSettled) continue;
@@ -106,17 +87,16 @@ export class BalancesComponent implements OnInit {
     return transaction.theyOwe - transaction.iOwe;
   }
 
-  private buildView(balance: BalanceApiModel, pending: TransactionViewApiModel[]): CollaboratorBalanceView {
+  private buildView(balance: BalanceApiModel, pending: TransactionViewApiModel[]): CollaboratorBalanceViewModel {
     const sorted = [...pending].sort((a, b) => this.toTime(b.transactionDate) - this.toTime(a.transactionDate));
 
-    const monthsMap = new Map<string, MonthlySummary>();
+    const monthsMap = new Map<string, MonthlyBalanceSummaryViewModel>();
     for (const transaction of sorted) {
       const date = new Date(transaction.transactionDate);
       const key = `${date.getFullYear()}-${date.getMonth()}`;
-      const month = monthsMap.get(key) ?? { key, date: new Date(date.getFullYear(), date.getMonth(), 1), theyOwe: 0, iOwe: 0, net: 0 };
+      const month = monthsMap.get(key) ?? new MonthlyBalanceSummaryViewModel(key, new Date(date.getFullYear(), date.getMonth(), 1));
       month.theyOwe += transaction.theyOwe;
       month.iOwe += transaction.iOwe;
-      month.net = month.theyOwe - month.iOwe;
       monthsMap.set(key, month);
     }
 
@@ -124,16 +104,16 @@ export class BalancesComponent implements OnInit {
     const larger = Math.max(balance.collaboratorOwes, balance.userOwes);
     const smaller = Math.min(balance.collaboratorOwes, balance.userOwes);
 
-    return {
+    return new CollaboratorBalanceViewModel(
       balance,
-      pendingCount: sorted.length,
-      lastMovementDate: sorted.length ? new Date(sorted[0].transactionDate) : null,
-      oldestPendingDate: sorted.length ? new Date(sorted[sorted.length - 1].transactionDate) : null,
-      offsetPercentage: larger > 0 ? Math.round((smaller / larger) * 100) : 0,
-      theyOweShare: total > 0 ? (balance.collaboratorOwes / total) * 100 : 0,
-      months: [...monthsMap.values()].slice(0, MONTHS_LIMIT),
-      recent: sorted.slice(0, RECENT_LIMIT),
-    };
+      sorted.length,
+      sorted.length ? new Date(sorted[0].transactionDate) : null,
+      sorted.length ? new Date(sorted[sorted.length - 1].transactionDate) : null,
+      larger > 0 ? Math.round((smaller / larger) * 100) : 0,
+      total > 0 ? (balance.collaboratorOwes / total) * 100 : 0,
+      [...monthsMap.values()].slice(0, this.monthsLimit),
+      sorted.slice(0, this.recentLimit),
+    );
   }
 
   private toTime(date: Date | string): number {

@@ -39,6 +39,12 @@ export const LoansStore = signalStore(
   withState(initialState),
 
   withComputed((store) => ({
+    // Verificar si hay error
+    hasError: computed(() => !!store.error()),
+
+    // Verificar si necesita cargar
+    needsLoadingLoans: computed(() => !store.isLoansLoaded() && !store.error()),
+
     activeLoans: computed(() => store.loans().filter(l => l.statusId === 1)),
     completedLoans: computed(() => store.loans().filter(l => l.statusId === 2)),
     sortedLoans: computed(() =>

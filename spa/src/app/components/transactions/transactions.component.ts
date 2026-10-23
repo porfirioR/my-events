@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TransactionViewApiModel } from '../../models/api/transactions';
-import { useCollaboratorStore, useCurrencyStore, useLoadingStore, useTransactionStore } from '../../store';
+import { useCollaboratorStore, useCurrencyStore, useTransactionStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { AddReimbursementModalComponent } from '../add-reimbursement-modal/add-reimbursement-modal.component';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
+import { TransactionMonthGroupViewModel } from '../../models/view';
+import { LocalizedDatePipe } from '../../pipes';
 
 @Component({
   selector: 'app-transactions',
@@ -16,7 +18,8 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
     TranslateModule,
     AddReimbursementModalComponent,
     RouterLink,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    LocalizedDatePipe
   ],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css'],
@@ -30,16 +33,18 @@ export class TransactionsComponent implements OnInit {
   private readonly transactionStore = useTransactionStore();
   private readonly collaboratorStore = useCollaboratorStore();
   private readonly currencyStore = useCurrencyStore();
-  private readonly loadingStore = useLoadingStore();
   private readonly alertService = inject(AlertService);
   private readonly translate = inject(TranslateService);
   private formatterService = inject(FormatterHelperService);
 
   // Signals
-  protected isLoading = this.loadingStore.isLoading;
+  // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
+  protected isLoading = this.transactionStore.needsLoadingTransactions;
   protected filterType = signal<'all' | 'my-created' | 'their-created' | 'unsettled'>('all');
 
   protected formatCurrency = this.formatterService.formatCurrency
+  protected math = Math;
+  protected isReceived = TransactionMonthGroupViewModel.isReceived;
   protected getFormattedDate = this.formatterService.getFormattedDate.bind(this.formatterService);
 
   protected transactions = computed(() => {
@@ -58,8 +63,50 @@ export class TransactionsComponent implements OnInit {
     }
   });
 
+  // Agrupadas por mes (más reciente primero) y dentro de cada mes de la más nueva a la más vieja
+  protected monthGroups = computed<TransactionMonthGroupViewModel[]>(() => {
+    const groups = new Map<string, TransactionMonthGroupViewModel>();
+    const sorted = [...this.transactions()].sort((a, b) => this.toTime(b.transactionDate) - this.toTime(a.transactionDate));
+    for (const transaction of sorted) {
+      const date = new Date(transaction.transactionDate);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const group = groups.get(key) ?? new TransactionMonthGroupViewModel(key, new Date(date.getFullYear(), date.getMonth(), 1));
+      group.transactions.push(transaction);
+      groups.set(key, group);
+    }
+    return [...groups.values()];
+  });
+
+  // null = el usuario todavía no tocó nada: solo el mes más reciente queda abierto
+  private expandedMonthKeys = signal<Set<string> | null>(null);
+  protected allExpanded = computed(() => {
+    const groups = this.monthGroups();
+    return groups.length > 0 && groups.every(x => this.isMonthExpanded(x.key));
+  });
+
   ngOnInit(): void {
     this.loadData();
+  }
+
+  // ========== Month accordion ==========
+  protected isMonthExpanded(key: string): boolean {
+    const expanded = this.expandedMonthKeys();
+    return expanded === null ? this.monthGroups()[0]?.key === key : expanded.has(key);
+  }
+
+  protected toggleMonth(key: string): void {
+    const expanded = new Set(this.monthGroups().filter(x => this.isMonthExpanded(x.key)).map(x => x.key));
+    if (expanded.has(key)) expanded.delete(key);
+    else expanded.add(key);
+    this.expandedMonthKeys.set(expanded);
+  }
+
+  protected toggleAllMonths(): void {
+    this.expandedMonthKeys.set(this.allExpanded() ? new Set() : new Set(this.monthGroups().map(x => x.key)));
+  }
+
+  private toTime(date: Date | string): number {
+    return new Date(date).getTime();
   }
 
   private loadData(): void {

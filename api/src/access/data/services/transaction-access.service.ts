@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { TableEnum, DatabaseColumns } from '../../../utility/enums';
 import { BaseAccessService, DbContextService } from '.';
 import { TransactionEntity } from '../entities';
-import { CreateTransactionAccessRequest, ITransactionAccessService, TransactionAccessModel, UpdateTransactionReimbursementTotalAccessRequest } from '../../../access/contract/transactions';
+import { CreateTransactionAccessRequest, ITransactionAccessService, TransactionAccessModel, UpdateTransactionAccessRequest, UpdateTransactionReimbursementTotalAccessRequest } from '../../../access/contract/transactions';
 
 @Injectable()
 export class TransactionAccessService extends BaseAccessService implements ITransactionAccessService {
@@ -71,6 +71,37 @@ export class TransactionAccessService extends BaseAccessService implements ITran
     }
 
     return data?.map(this.getAccessModel) || [];
+  };
+
+  public update = async (request: UpdateTransactionAccessRequest): Promise<TransactionAccessModel> => {
+    // Función de Postgres: todo se aplica en una sola transacción de base (ver db.sql, Parte 18)
+    const { data, error } = await this.dbContext
+      .rpc('update_transaction_with_splits', {
+        p_transaction_id: request.id,
+        p_collaborator_id: request.collaboratorId,
+        p_total_amount: request.totalAmount,
+        p_description: request.description,
+        p_split_type: request.splitType,
+        p_who_paid: request.whoPaid,
+        p_transaction_date: request.transactionDate,
+        p_replace_reimbursement: request.replaceReimbursement,
+        p_reimbursement_amount: request.reimbursementAmount,
+        p_reimbursement_description: request.reimbursementDescription,
+        p_splits: request.splits.map(x => ({
+          collaboratorid: x.collaboratorId,
+          userid: x.userId,
+          amount: x.amount,
+          sharepercentage: x.sharePercentage,
+          ispayer: x.isPayer,
+        })),
+      })
+      .single<TransactionEntity>();
+
+    if (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+
+    return this.getAccessModel(data);
   };
 
   public updateReimbursementTotal = async (

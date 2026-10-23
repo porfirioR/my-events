@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, comp
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useLoadingStore, useTravelStore, useCollaboratorStore, useAuthStore, useCurrencyStore } from '../../store';
+import { useTravelStore, useCollaboratorStore, useAuthStore, useCurrencyStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { ApprovalStatus } from '../../models/enums';
@@ -29,11 +29,13 @@ export class TravelDetailComponent implements OnInit {
 
   private travelStore = useTravelStore();
   private collaboratorStore = useCollaboratorStore();
-  private loadingStore = useLoadingStore();
   private authStore = useAuthStore();
   private currencyStore = useCurrencyStore();
 
-  protected isLoading = this.loadingStore.isLoading;
+  // Flags del store por sección y no el loading global (otros pedidos lo apagan antes de tiempo)
+  protected isOperationsLoading = this.travelStore.needsLoadingOperations;
+  protected isMembersLoading = this.travelStore.needsLoadingMembers;
+  protected isBalancesLoading = this.travelStore.needsLoadingBalances;
   protected travel = this.travelStore.selectedTravel;
   protected members = this.travelStore.members;
   protected operations = this.travelStore.sortedOperations;
