@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { LOAN_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import {
   ILoanAccessService,
   ILoanInstallmentAccessService,
@@ -37,6 +38,9 @@ export class LoanManagerService {
 
     @Inject(LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE)
     private readonly loanEntityTermAccessService: ILoanEntityTermAccessService,
+
+    @Inject(FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE)
+    private readonly financialInstitutionAccessService: IFinancialInstitutionAccessService,
   ) {}
 
   // ==================== ENTITY TERMS ====================
@@ -49,6 +53,9 @@ export class LoanManagerService {
   // ==================== LOANS ====================
 
   public createLoan = async (request: CreateLoanRequest): Promise<LoanModel> => {
+    // La entidad tiene que ser del sistema o propia del usuario (NotFound si no)
+    await this.financialInstitutionAccessService.getById(request.loanEntityId, request.userId);
+
     const calc = LoanCalculatorHelper.calculate(
       request.principalAmount,
       request.annualRatePercentage,

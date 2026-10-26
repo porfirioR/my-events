@@ -10,7 +10,7 @@ import { CollaboratorAccessService } from './services/collaborator-access.servic
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
 import { UserAccessService } from './services/user-access.service';
-import { DASHBOARD_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { SavingsInstallmentAccessService } from './services/savings-installment-access.service';
 import { SavingsDepositAccessService } from './services/savings-deposit-access.service';
 import { LoanAccessService } from './services/loan-access.service';
@@ -18,6 +18,7 @@ import { LoanInstallmentAccessService } from './services/loan-installment-access
 import { LoanPaymentAccessService } from './services/loan-payment-access.service';
 import { LoanEntityTermAccessService } from './services/loan-entity-term-access.service';
 import { DashboardAccessService } from './services/dashboard-access.service';
+import { FinancialInstitutionAccessService } from './services/financial-institution-access.service';
 
 @Module({
   imports: [
@@ -57,6 +58,11 @@ import { DashboardAccessService } from './services/dashboard-access.service';
     LoanPaymentAccessService,
     LoanEntityTermAccessService,
     DashboardAccessService,
+    FinancialInstitutionAccessService,
+    {
+      provide: FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE,
+      useExisting: FinancialInstitutionAccessService,
+    },
     {
       provide: DASHBOARD_TOKENS.ACCESS_SERVICE,
       useExisting: DashboardAccessService,
@@ -185,6 +191,7 @@ import { DashboardAccessService } from './services/dashboard-access.service';
     LOAN_TOKENS.PAYMENT_ACCESS_SERVICE,
     LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE,
     DASHBOARD_TOKENS.ACCESS_SERVICE,
+    FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE,
   ],
 })
 export class DataModule {}

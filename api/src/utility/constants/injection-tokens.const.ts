@@ -45,3 +45,8 @@ export const TRAVEL_TOKENS = {
   PAYMENT_METHOD_ACCESS_SERVICE: Symbol('IPaymentMethodAccessService'),
   MANAGER_SERVICE: Symbol('ITravelManagerService')
 } as const;
+
+export const FINANCIAL_INSTITUTION_TOKENS = {
+  ACCESS_SERVICE: Symbol('IFinancialInstitutionAccessService'),
+  MANAGER_SERVICE: Symbol('IFinancialInstitutionManagerService'),
+} as const;

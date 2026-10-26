@@ -7,3 +7,4 @@ export { TravelsController } from './travels.controller';
 export { LoansController } from './loans.controller';
 export { DashboardController } from './dashboard.controller';
 
+export { FinancialInstitutionsController } from './financial-institutions.controller';

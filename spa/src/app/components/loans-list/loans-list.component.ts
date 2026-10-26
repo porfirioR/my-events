@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useCurrencyStore, useLoansStore } from '../../store';
+import { useCurrencyStore, useFinancialInstitutionsStore, useLoansStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, LoanTypeBadgeColors } from '../../models/enums';
+import { LoanType, LoanTypeLabels, LoanTypeBadgeColors } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -25,14 +25,13 @@ export class LoansListComponent implements OnInit {
 
   private loansStore = useLoansStore();
   private currencyStore = useCurrencyStore();
+  private financialInstitutionsStore = useFinancialInstitutionsStore();
 
   // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
   protected isLoading = this.loansStore.needsLoadingLoans;
   protected filterStatus = signal<number | null>(1);
   protected filterLoanType = signal<number | null>(null);
 
-  protected LoanEntity = LoanEntity;
-  protected LoanEntityLabels = LoanEntityLabels;
   protected LoanType = LoanType;
   protected LoanTypeLabels = LoanTypeLabels;
   protected LoanTypeBadgeColors = LoanTypeBadgeColors;
@@ -49,6 +48,7 @@ export class LoansListComponent implements OnInit {
   ngOnInit(): void {
     this.loansStore.reloadLoans();
     this.currencyStore.loadCurrencies();
+    this.financialInstitutionsStore.loadFinancialInstitutions();
   }
 
   protected setStatusFilter(statusId: number | null): void {
@@ -96,10 +96,9 @@ export class LoansListComponent implements OnInit {
   }
 
   protected getEntityLabel(loan: any): string {
-    if (loan.loanEntityId === LoanEntity.Otros && loan.lenderCustomName) {
-      return loan.lenderCustomName;
-    }
-    return LoanEntityLabels[loan.loanEntityId as LoanEntity] ?? '';
+    const financialInstitution = this.financialInstitutionsStore.financialInstitutionsById().get(loan.loanEntityId);
+    if (!financialInstitution?.isOther) return financialInstitution?.name ?? '';
+    return loan.lenderCustomName || this.translate.instant('loans.entityOtros');
   }
 
   protected getStatusColor(statusId: number): string {

@@ -8,9 +8,9 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService, FormatterHelperService } from '../../services';
-import { useCurrencyStore, useLoansStore } from '../../store';
+import { useCurrencyStore, useFinancialInstitutionsStore, useLoansStore } from '../../store';
 import { PayLoanInstallmentApiRequest } from '../../models/api/loans';
-import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
+import { LoanType, LoanTypeLabels, InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
 
 @Component({
   selector: 'app-loan-detail',
@@ -28,6 +28,7 @@ export class LoanDetailComponent implements OnInit {
   private translate = inject(TranslateService);
   private loansStore = useLoansStore();
   private currencyStore = useCurrencyStore();
+  private financialInstitutionsStore = useFinancialInstitutionsStore();
 
   protected loan = this.loansStore.selectedLoan;
   protected installments = this.loansStore.installments;
@@ -36,8 +37,6 @@ export class LoanDetailComponent implements OnInit {
   protected progress = this.loansStore.selectedLoanProgress;
   protected remaining = this.loansStore.selectedLoanRemaining;
 
-  protected LoanEntity = LoanEntity;
-  protected LoanEntityLabels = LoanEntityLabels;
   protected LoanType = LoanType;
   protected LoanTypeLabels = LoanTypeLabels;
   protected InstallmentStatus = InstallmentStatus;
@@ -62,8 +61,9 @@ export class LoanDetailComponent implements OnInit {
   protected entityLabel = computed(() => {
     const l = this.loan();
     if (!l) return '';
-    if (l.loanEntityId === LoanEntity.Otros && l.lenderCustomName) return l.lenderCustomName;
-    return LoanEntityLabels[l.loanEntityId as LoanEntity] ?? '';
+    const financialInstitution = this.financialInstitutionsStore.financialInstitutionsById().get(l.loanEntityId);
+    if (!financialInstitution?.isOther) return financialInstitution?.name ?? '';
+    return l.lenderCustomName || this.translate.instant('loans.entityOtros');
   });
 
   ngOnInit(): void {
@@ -74,6 +74,7 @@ export class LoanDetailComponent implements OnInit {
     this.loansStore.loadInstallments(+id);
     this.loansStore.loadPayments(+id);
     this.currencyStore.loadCurrencies();
+    this.financialInstitutionsStore.loadFinancialInstitutions();
   }
 
   protected setTab(tab: 'table' | 'payments'): void {
@@ -104,7 +105,7 @@ export class LoanDetailComponent implements OnInit {
 
     this.isSaving.set(true);
     const vals = this.payForm.getRawValue();
-    const request = new PayLoanInstallmentApiRequest(vals.amount!, vals.description ?? null, vals.paymentDate!);
+    const request = new PayLoanInstallmentApiRequest(+vals.amount!,vals.description ?? null, vals.paymentDate!);
 
     this.loansStore.payInstallment(loanId, installmentId, request)
       .pipe(takeUntilDestroyed(this.destroyRef))
