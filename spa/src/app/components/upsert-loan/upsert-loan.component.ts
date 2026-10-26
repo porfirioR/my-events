@@ -327,10 +327,10 @@ export class UpsertLoanComponent implements OnInit {
     if (this.isEditMode) {
       const request = new UpdateLoanApiRequest(
         values.name!, values.description ?? null,
-        values.loanTypeId!, values.statusId ?? 1,
-        values.administrativeFees ?? null,
-        values.ivaPercentage ?? null,
-        values.insuranceAmount ?? null,
+        +values.loanTypeId!, +(values.statusId ?? 1),
+        this.toNumberOrNull(values.administrativeFees),
+        this.toNumberOrNull(values.ivaPercentage),
+        this.toNumberOrNull(values.insuranceAmount),
       );
       this.loansStore.updateLoan(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
@@ -346,15 +346,16 @@ export class UpsertLoanComponent implements OnInit {
         },
       });
     } else {
+      // Los inputs de app-text devuelven string: convertir antes de enviar
       const request = new CreateLoanApiRequest(
-        values.currencyId!, values.loanTypeId!, values.loanEntityId!,
+        +values.currencyId!, +values.loanTypeId!, +values.loanEntityId!,
         values.lenderCustomName ?? null, values.name!, values.description ?? null,
-        values.principalAmount!, values.annualRatePercentage!, values.numberOfInstallments!,
-        values.actualInstallmentAmount ?? null, values.actualTotalAmount ?? null,
+        +values.principalAmount!, +values.annualRatePercentage!, +values.numberOfInstallments!,
+        this.toNumberOrNull(values.actualInstallmentAmount), this.toNumberOrNull(values.actualTotalAmount),
         values.amortizationType!, values.startDate!,
-        values.administrativeFees ?? null,
-        values.ivaPercentage ?? null,
-        values.insuranceAmount ?? null,
+        this.toNumberOrNull(values.administrativeFees),
+        this.toNumberOrNull(values.ivaPercentage),
+        this.toNumberOrNull(values.insuranceAmount),
       );
       this.loansStore.createLoan(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
@@ -370,6 +371,9 @@ export class UpsertLoanComponent implements OnInit {
       });
     }
   };
+
+  private toNumberOrNull = (value: number | string | null | undefined): number | null =>
+    value === null || value === undefined || value === '' ? null : +value;
 
   protected cancel = (): void => { this.exit(); };
   protected exit = (): void => { this.router.navigate(['/loans']); };

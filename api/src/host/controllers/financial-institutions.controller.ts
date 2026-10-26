@@ -49,7 +49,7 @@ export class FinancialInstitutionsController {
     const request = new CreateFinancialInstitutionRequest(
       userId,
       apiRequest.name,
-      apiRequest.type,
+      +apiRequest.type,
     );
     return await this.financialInstitutionManagerService.createFinancialInstitution(request);
   }
@@ -64,7 +64,7 @@ export class FinancialInstitutionsController {
       id,
       userId,
       apiRequest.name,
-      apiRequest.type,
+      +apiRequest.type,
     );
     return await this.financialInstitutionManagerService.updateFinancialInstitution(request);
   }

@@ -105,7 +105,7 @@ export class LoanDetailComponent implements OnInit {
 
     this.isSaving.set(true);
     const vals = this.payForm.getRawValue();
-    const request = new PayLoanInstallmentApiRequest(vals.amount!, vals.description ?? null, vals.paymentDate!);
+    const request = new PayLoanInstallmentApiRequest(+vals.amount!,vals.description ?? null, vals.paymentDate!);
 
     this.loansStore.payInstallment(loanId, installmentId, request)
       .pipe(takeUntilDestroyed(this.destroyRef))

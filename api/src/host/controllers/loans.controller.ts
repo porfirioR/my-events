@@ -71,22 +71,22 @@ export class LoansController {
 
     const request = new CreateLoanRequest(
       userId,
-      apiRequest.currencyId,
-      apiRequest.loanTypeId,
-      apiRequest.loanEntityId,
+      +apiRequest.currencyId,
+      +apiRequest.loanTypeId,
+      +apiRequest.loanEntityId,
       apiRequest.lenderCustomName ?? null,
       apiRequest.name,
       apiRequest.description ?? null,
-      apiRequest.principalAmount,
-      apiRequest.annualRatePercentage,
-      apiRequest.numberOfInstallments,
-      apiRequest.actualInstallmentAmount ?? null,
-      apiRequest.actualTotalAmount ?? null,
+      +apiRequest.principalAmount,
+      +apiRequest.annualRatePercentage,
+      +apiRequest.numberOfInstallments,
+      this.toNumberOrNull(apiRequest.actualInstallmentAmount),
+      this.toNumberOrNull(apiRequest.actualTotalAmount),
       amortType,
       new Date(apiRequest.startDate),
-      apiRequest.administrativeFees ?? null,
-      apiRequest.ivaPercentage ?? null,
-      apiRequest.insuranceAmount ?? null,
+      this.toNumberOrNull(apiRequest.administrativeFees),
+      this.toNumberOrNull(apiRequest.ivaPercentage),
+      this.toNumberOrNull(apiRequest.insuranceAmount),
     );
 
     return await this.loanManagerService.createLoan(request);
@@ -103,11 +103,11 @@ export class LoansController {
       userId,
       apiRequest.name,
       apiRequest.description ?? null,
-      apiRequest.loanTypeId,
-      apiRequest.statusId,
-      apiRequest.administrativeFees ?? null,
-      apiRequest.ivaPercentage ?? null,
-      apiRequest.insuranceAmount ?? null,
+      +apiRequest.loanTypeId,
+      +apiRequest.statusId,
+      this.toNumberOrNull(apiRequest.administrativeFees),
+      this.toNumberOrNull(apiRequest.ivaPercentage),
+      this.toNumberOrNull(apiRequest.insuranceAmount),
     );
     return await this.loanManagerService.updateLoan(request);
   }
@@ -140,7 +140,7 @@ export class LoansController {
       userId,
       loanId,
       installmentId,
-      apiRequest.amount,
+      +apiRequest.amount,
       apiRequest.description ?? null,
       apiRequest.paymentDate ? new Date(apiRequest.paymentDate) : null,
     );
@@ -165,4 +165,8 @@ export class LoansController {
     const userId = await this.currentUserService.getCurrentUserId();
     return await this.loanManagerService.getPaymentsByLoanId(loanId, userId);
   }
+
+  // Sin ValidationPipe global los números pueden llegar como string ("3" → 9 + "3" = "93" meses)
+  private toNumberOrNull = (value: number | string | null | undefined): number | null =>
+    value === null || value === undefined || value === '' ? null : +value;
 }
