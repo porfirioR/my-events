@@ -8,3 +8,5 @@ export { useTravelStore } from './travel.store';
 export { useLoansStore } from './loans.store';
 export { useDashboardStore } from './dashboard.store';
 
+
+export { useFinancialInstitutionsStore } from './financial-institutions.store';

@@ -15,8 +15,10 @@ import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-inpu
 import { AlertService, FormatterHelperService } from '../../services';
 import { useCurrencyStore } from '../../store/currency.store';
 import { useLoansStore } from '../../store/loans.store';
+import { useFinancialInstitutionsStore } from '../../store/financial-institutions.store';
+import { InstitutionSelectorComponent } from '../institution-selector/institution-selector.component';
 import { KeyValueViewModel } from '../../models/view/key-value-view-model';
-import { LoanEntity, LoanEntityLabels, LoanType, LoanTypeLabels, AmortizationType, AmortizationTypeLabels, Configurations } from '../../models/enums';
+import { LoanType, LoanTypeLabels, AmortizationType, AmortizationTypeLabels, Configurations } from '../../models/enums';
 import { CreateLoanApiRequest, UpdateLoanApiRequest } from '../../models/api/loans';
 
 interface LoanFormGroup {
@@ -47,7 +49,7 @@ interface LoanFormGroup {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule, RouterModule, ReactiveFormsModule, TranslateModule,
-    TextComponent, SelectInputComponent, DateInputComponent, TextAreaInputComponent,
+    TextComponent, SelectInputComponent, DateInputComponent, TextAreaInputComponent, InstitutionSelectorComponent,
   ],
 })
 export class UpsertLoanComponent implements OnInit {
@@ -59,33 +61,39 @@ export class UpsertLoanComponent implements OnInit {
   private translate = inject(TranslateService);
   private loansStore = useLoansStore();
   private currencyStore = useCurrencyStore();
+  private financialInstitutionsStore = useFinancialInstitutionsStore();
 
   protected isEditMode = false;
   protected saving = signal(false);
   public ignorePreventUnsavedChanges = false;
 
-  protected LoanEntity = LoanEntity;
   protected currencyList: KeyValueViewModel[] = [];
 
-  protected loanTypeList: KeyValueViewModel[] = [
-    new KeyValueViewModel(LoanType.Personal, this.translate.instant(LoanTypeLabels[LoanType.Personal]), ''),
-    new KeyValueViewModel(LoanType.Hipoteca, this.translate.instant(LoanTypeLabels[LoanType.Hipoteca]), ''),
-    new KeyValueViewModel(LoanType.Auto, this.translate.instant(LoanTypeLabels[LoanType.Auto]), ''),
-    new KeyValueViewModel(LoanType.Tarjeta, this.translate.instant(LoanTypeLabels[LoanType.Tarjeta]), ''),
-    new KeyValueViewModel(LoanType.Informal, this.translate.instant(LoanTypeLabels[LoanType.Informal]), ''),
-  ];
+  // stream (no instant): si las traducciones todavía no cargaron, instant devuelve la clave
+  private translations = toSignal(
+    this.translate.stream([
+      ...Object.values(LoanTypeLabels),
+      ...Object.values(AmortizationTypeLabels),
+      'upsertLoan.amortFrenchDesc',
+      'upsertLoan.amortSimpleDesc',
+    ]),
+    { initialValue: {} as Record<string, string> }
+  );
 
-  protected loanEntityList: KeyValueViewModel[] = [
-    new KeyValueViewModel(LoanEntity.Ueno, LoanEntityLabels[LoanEntity.Ueno], ''),
-    new KeyValueViewModel(LoanEntity.Itau, LoanEntityLabels[LoanEntity.Itau], ''),
-    new KeyValueViewModel(LoanEntity.Personal, LoanEntityLabels[LoanEntity.Personal], ''),
-    new KeyValueViewModel(LoanEntity.Otros, this.translate.instant(LoanEntityLabels[LoanEntity.Otros]), ''),
-  ];
+  protected loanTypeList = computed(() => {
+    const t = this.translations();
+    return [LoanType.Personal, LoanType.Hipoteca, LoanType.Auto, LoanType.Tarjeta, LoanType.Informal].map(type =>
+      new KeyValueViewModel(type, t[LoanTypeLabels[type]] ?? LoanTypeLabels[type], '')
+    );
+  });
 
-  protected amortizationTypeList: KeyValueViewModel[] = [
-    new KeyValueViewModel(AmortizationType.French, this.translate.instant(AmortizationTypeLabels[AmortizationType.French]), this.translate.instant('upsertLoan.amortFrenchDesc')),
-    new KeyValueViewModel(AmortizationType.Simple, this.translate.instant(AmortizationTypeLabels[AmortizationType.Simple]), this.translate.instant('upsertLoan.amortSimpleDesc')),
-  ];
+  protected amortizationTypeList = computed(() => {
+    const t = this.translations();
+    return [
+      new KeyValueViewModel(AmortizationType.French, t[AmortizationTypeLabels[AmortizationType.French]] ?? '', t['upsertLoan.amortFrenchDesc'] ?? ''),
+      new KeyValueViewModel(AmortizationType.Simple, t[AmortizationTypeLabels[AmortizationType.Simple]] ?? '', t['upsertLoan.amortSimpleDesc'] ?? ''),
+    ];
+  });
 
   protected termList: KeyValueViewModel[] = [];
 
@@ -94,6 +102,7 @@ export class UpsertLoanComponent implements OnInit {
   protected calculatedInterest = signal<number | null>(null);
   protected yieldInfo = signal<{
     installment: number;
+    lastInstallment: number;
     totalInterest: number;
     totalAmount: number;
     ivaAmount: number;
@@ -137,7 +146,10 @@ export class UpsertLoanComponent implements OnInit {
       { initialValue: this.formGroup.controls.loanEntityId.value }
     );
 
-    this.isOtherEntity = computed(() => this.entityIdSignal() === LoanEntity.Otros);
+    this.isOtherEntity = computed(() => {
+      const entityId = this.entityIdSignal();
+      return !!entityId && !!this.financialInstitutionsStore.financialInstitutionsById().get(entityId)?.isOther;
+    });
 
     effect(() => {
       const currencies = this.currencyStore.getAllCurrencies();
@@ -163,7 +175,7 @@ export class UpsertLoanComponent implements OnInit {
         new KeyValueViewModel(t.termMonths, `${t.termMonths} ${months}`, `${this.translate.instant('upsertLoan.suggestedRate')}: ${t.annualRatePercentage}%`)
       );
       this.formGroup.controls.lenderCustomName.setValidators(
-        entityId === LoanEntity.Otros ? [Validators.required, Validators.maxLength(200)] : []
+        this.isOtherEntity() ? [Validators.required, Validators.maxLength(200)] : []
       );
       this.formGroup.controls.lenderCustomName.updateValueAndValidity();
     });
@@ -223,19 +235,35 @@ export class UpsertLoanComponent implements OnInit {
     let installment: number;
     let totalInterest: number;
     let totalAmount: number;
+    // La última cuota absorbe el redondeo (ej. 1.000.000 en 3 → 333.333, 333.333, 333.334)
+    let lastInstallment: number;
 
     if (amortType === AmortizationType.Simple) {
       totalInterest = Math.round(+principal * (rate / 100) * (n / 12));
       totalAmount = +principal + totalInterest;
-      installment = Math.round(totalAmount / n);
+      // Igual que LoanCalculatorHelper.calculateSimple (api): redondeo hacia abajo
+      const principalPerInstallment = Math.floor(+principal / n);
+      const interestPerInstallment = Math.floor(totalInterest / n);
+      installment = principalPerInstallment + interestPerInstallment;
+      lastInstallment = totalAmount - installment * (n - 1);
     } else {
+      // Igual que LoanCalculatorHelper.calculateFrench (api): la última cuota absorbe
+      // el redondeo, así el total no queda corto (ej. 1.000.000 en 3 cuotas al 0%)
       const r = rate / 100 / 12;
-      if (r === 0) {
-        installment = Math.round(+principal / n);
-      } else {
-        installment = Math.round((+principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+      const pmt = r === 0
+        ? +principal / n
+        : (+principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+      installment = Math.floor(pmt);
+      let balance = +principal;
+      totalAmount = 0;
+      lastInstallment = installment;
+      for (let i = 1; i <= n; i++) {
+        const interest = Math.round(balance * r);
+        const principalPaid = i < n ? installment - interest : balance;
+        totalAmount += principalPaid + interest;
+        balance -= principalPaid;
+        if (i === n) lastInstallment = principalPaid + interest;
       }
-      totalAmount = installment * n;
       totalInterest = totalAmount - +principal;
     }
 
@@ -245,12 +273,12 @@ export class UpsertLoanComponent implements OnInit {
     const ivaAmount = Math.round(totalInterest * (ivaPct / 100));
     const extraCosts = adminFees + ivaAmount + insurance;
     const totalWithExtras = totalAmount + extraCosts;
-    const installmentWithExtras = Math.round(totalWithExtras / n);
+    const installmentWithExtras = Math.floor(totalWithExtras / n);
 
     this.calculatedInstallment.set(installment);
     this.calculatedTotal.set(totalAmount);
     this.calculatedInterest.set(totalInterest);
-    this.yieldInfo.set({ installment, totalInterest, totalAmount, ivaAmount, extraCosts, totalWithExtras, installmentWithExtras });
+    this.yieldInfo.set({ installment, lastInstallment, totalInterest, totalAmount, ivaAmount, extraCosts, totalWithExtras, installmentWithExtras });
 
     this.formGroup.controls.actualInstallmentAmount.setValue(installmentWithExtras, { emitEvent: false });
     this.formGroup.controls.actualTotalAmount.setValue(totalWithExtras, { emitEvent: false });

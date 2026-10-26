@@ -29,3 +29,4 @@ export { TravelOperationParticipantEntity } from './travel-operation-participant
 export { TravelOperationApprovalEntity } from './travel-operation-approval.entity';
 export { OperationAttachmentEntity } from './operation-attachment.entity';
 export { OperationCategoryEntity } from './operation-category.entity';
+export { FinancialInstitutionEntity } from './financial-institution.entity';

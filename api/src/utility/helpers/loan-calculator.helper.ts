@@ -46,14 +46,16 @@ export class LoanCalculatorHelper {
         (principal * (monthlyRate * Math.pow(1 + monthlyRate, numberOfInstallments))) /
         (Math.pow(1 + monthlyRate, numberOfInstallments) - 1);
     }
-    const installmentAmount = Math.round(pmt);
+    // Redondeo hacia abajo: la última cuota absorbe la diferencia hacia arriba
+    // (ej. 1.000.000 en 3 al 0% → 333.333, 333.333, 333.334)
+    const installmentAmount = Math.floor(pmt);
     const schedule: LoanInstallmentSchedule[] = [];
     let balance = principal;
 
     for (let i = 1; i <= numberOfInstallments; i++) {
       const interest = Math.round(balance * monthlyRate);
       const principalPaid =
-        i < numberOfInstallments ? Math.round(pmt) - interest : balance;
+        i < numberOfInstallments ? installmentAmount - interest : balance;
       const remaining = i < numberOfInstallments ? balance - principalPaid : 0;
       const dueDate = SavingsCalculatorHelper.addMonths(startDate, i);
       schedule.push({
@@ -86,15 +88,19 @@ export class LoanCalculatorHelper {
       principal * (annualRatePercentage / 100) * (numberOfInstallments / 12),
     );
     const totalAmount = principal + totalInterest;
-    const installmentAmount = Math.round(totalAmount / numberOfInstallments);
-    const principalPerInstallment = Math.round(principal / numberOfInstallments);
-    const interestPerInstallment = Math.round(totalInterest / numberOfInstallments);
+    // Redondeo hacia abajo: la última cuota absorbe la diferencia de capital e interés
+    // (ej. 1.100.000 en 3 → 366.666, 366.666, 366.668)
+    const principalPerInstallment = Math.floor(principal / numberOfInstallments);
+    const interestPerInstallment = Math.floor(totalInterest / numberOfInstallments);
+    const installmentAmount = principalPerInstallment + interestPerInstallment;
     const schedule: LoanInstallmentSchedule[] = [];
     let balance = principal;
 
     for (let i = 1; i <= numberOfInstallments; i++) {
       const principalPaid = i < numberOfInstallments ? principalPerInstallment : balance;
-      const interest = interestPerInstallment;
+      const interest = i < numberOfInstallments
+        ? interestPerInstallment
+        : totalInterest - interestPerInstallment * (numberOfInstallments - 1);
       const remaining = i < numberOfInstallments ? balance - principalPaid : 0;
       const dueDate = SavingsCalculatorHelper.addMonths(startDate, i);
       schedule.push({

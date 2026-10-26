@@ -1096,3 +1096,51 @@ BEGIN
     RETURN QUERY SELECT * FROM transactions WHERE id = p_transaction_id;
 END;
 $$;
+
+-- =====================================================
+-- PARTE 19: ENTIDADES FINANCIERAS (generaliza loanentities) - issue #216
+-- =====================================================
+-- Un único catálogo de entidades para préstamos, ahorros y cuentas.
+-- Se renombra la tabla (conserva ids 1-4 y las FKs de loans/loanentityterms);
+-- las columnas loanentityid NO se renombran para no romper el código existente.
+-- userid NULL = entidad del sistema (visible para todos, solo lectura);
+-- userid con valor = entidad creada por ese usuario.
+-- type: 1 Bank, 2 Cooperative, 3 Cash, 4 Person, 5 Other
+
+ALTER TABLE loanentities RENAME TO financialinstitutions;
+
+ALTER TABLE financialinstitutions ADD COLUMN IF NOT EXISTS type SMALLINT NOT NULL DEFAULT 5 CHECK (type BETWEEN 1 AND 5);
+ALTER TABLE financialinstitutions ADD COLUMN IF NOT EXISTS userid INT NULL REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE financialinstitutions ADD COLUMN IF NOT EXISTS datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+UPDATE financialinstitutions SET type = 1 WHERE id IN (1, 2); -- Ueno, Itaú
+UPDATE financialinstitutions SET type = 4 WHERE id = 3;       -- Personal
+UPDATE financialinstitutions SET type = 5 WHERE id = 4;       -- Otros
+
+INSERT INTO financialinstitutions (id, name, isother, type) VALUES
+(5, 'Cooperativa Universitaria', false, 2),
+(6, 'Efectivo', false, 3)
+ON CONFLICT (id) DO NOTHING;
+
+-- Los ids se insertaron a mano: mover la secuencia para que las entidades de usuario no colisionen
+SELECT setval(pg_get_serial_sequence('financialinstitutions', 'id'), (SELECT MAX(id) FROM financialinstitutions));
+
+-- El nombre no se repite entre las del sistema ni dentro de las de un mismo usuario
+CREATE UNIQUE INDEX IF NOT EXISTS ux_financialinstitutions_user_name
+    ON financialinstitutions (COALESCE(userid, 0), lower(name));
+CREATE INDEX IF NOT EXISTS idx_financialinstitutions_user ON financialinstitutions(userid);
+
+-- =====================================================
+-- PARTE 19.1: DESACTIVAR RLS EN EL MÓDULO DE PRÉSTAMOS
+-- =====================================================
+-- Estas tablas se crearon con Row Level Security activado y sin políticas: la API
+-- (que usa la key anon desde el servidor) no veía ninguna fila ni podía insertar.
+-- El resto del schema funciona sin RLS; se igualan para que la API pueda leerlas.
+
+ALTER TABLE financialinstitutions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE loanentityterms DISABLE ROW LEVEL SECURITY;
+ALTER TABLE loantypes DISABLE ROW LEVEL SECURITY;
+ALTER TABLE loanstatus DISABLE ROW LEVEL SECURITY;
+ALTER TABLE loans DISABLE ROW LEVEL SECURITY;
+ALTER TABLE loaninstallments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE loanpayments DISABLE ROW LEVEL SECURITY;

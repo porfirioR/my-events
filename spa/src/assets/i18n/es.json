@@ -1010,6 +1010,22 @@
     "paid": "Pagada",
     "skipped": "Omitida"
   },
+  "financialInstitutions": {
+    "typeBank": "Banco",
+    "typeCooperative": "Cooperativa",
+    "typeCash": "Efectivo",
+    "typePerson": "Persona",
+    "typeOther": "Otro",
+    "addNew": "Agregar entidad",
+    "newTitle": "Nueva entidad",
+    "name": "Nombre de la entidad",
+    "namePlaceholder": "Ej: Cooperativa Medalla Milagrosa",
+    "type": "Tipo de entidad",
+    "add": "Agregar",
+    "createdSuccess": "Entidad agregada correctamente",
+    "createdError": "No se pudo agregar la entidad",
+    "alreadyExists": "Ya existe una entidad con ese nombre"
+  },
   "loans": {
     "title": "Préstamos",
     "newLoan": "Nuevo Préstamo",
@@ -1110,6 +1126,7 @@
     "startDate": "Fecha de inicio",
     "calculatedPreview": "Cálculo estimado",
     "calculatedInstallment": "Cuota calculada",
+    "lastInstallment": "Última cuota",
     "calculatedInterest": "Total intereses",
     "calculatedTotal": "Total a pagar",
     "actualAmounts": "Montos reales del banco",

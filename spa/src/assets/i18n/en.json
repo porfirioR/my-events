@@ -1010,6 +1010,22 @@
     "paid": "Paid",
     "skipped": "Skipped"
   },
+  "financialInstitutions": {
+    "typeBank": "Bank",
+    "typeCooperative": "Cooperative",
+    "typeCash": "Cash",
+    "typePerson": "Person",
+    "typeOther": "Other",
+    "addNew": "Add institution",
+    "newTitle": "New institution",
+    "name": "Institution name",
+    "namePlaceholder": "E.g.: Medalla Milagrosa Cooperative",
+    "type": "Institution type",
+    "add": "Add",
+    "createdSuccess": "Institution added successfully",
+    "createdError": "Could not add the institution",
+    "alreadyExists": "An institution with that name already exists"
+  },
   "loans": {
     "title": "Loans",
     "newLoan": "New Loan",
@@ -1110,6 +1126,7 @@
     "startDate": "Start date",
     "calculatedPreview": "Estimated calculation",
     "calculatedInstallment": "Calculated installment",
+    "lastInstallment": "Last installment",
     "calculatedInterest": "Total interest",
     "calculatedTotal": "Total to pay",
     "actualAmounts": "Actual bank amounts",

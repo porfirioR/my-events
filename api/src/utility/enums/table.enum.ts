@@ -39,5 +39,5 @@ export enum TableEnum {
   LoanInstallments = 'loaninstallments',
   LoanPayments = 'loanpayments',
   LoanEntityTerms = 'loanentityterms',
-  LoanEntities = 'loanentities',
+  FinancialInstitutions = 'financialinstitutions',
 }

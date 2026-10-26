@@ -49,13 +49,11 @@
         />
 
         <!-- Entidad prestamista -->
-        <app-select-input
+        <app-institution-selector
           formControlName="loanEntityId"
           id="loanEntityId"
           [label]="'upsertLoan.lenderEntity' | translate"
           name="loanEntityId"
-          [list]="loanEntityList"
-          [disabled]="saving()"
         />
 
         <!-- Nombre personalizado (Otros) -->
@@ -77,7 +75,7 @@
           id="loanTypeId"
           [label]="'upsertLoan.loanType' | translate"
           name="loanTypeId"
-          [list]="loanTypeList"
+          [list]="loanTypeList()"
           [disabled]="saving()"
         />
 
@@ -87,7 +85,7 @@
           id="amortizationType"
           [label]="'upsertLoan.amortizationType' | translate"
           name="amortizationType"
-          [list]="amortizationTypeList"
+          [list]="amortizationTypeList()"
           [disabled]="saving()"
         />
 
@@ -208,6 +206,9 @@
             <div>
               <p class="text-xs text-base-content/60">{{ 'upsertLoan.calculatedInstallment' | translate }}</p>
               <p class="text-lg font-bold text-warning">{{ formatCurrency(info.installment, formGroup.controls.currencyId.value ?? 1) }}</p>
+              @if (info.lastInstallment !== info.installment) {
+                <p class="text-xs text-base-content/60">{{ 'upsertLoan.lastInstallment' | translate }}: {{ formatCurrency(info.lastInstallment, formGroup.controls.currencyId.value ?? 1) }}</p>
+              }
             </div>
             <div>
               <p class="text-xs text-base-content/60">{{ 'upsertLoan.calculatedInterest' | translate }}</p>
@@ -285,7 +286,7 @@
           id="loanTypeId"
           [label]="'upsertLoan.loanType' | translate"
           name="loanTypeId"
-          [list]="loanTypeList"
+          [list]="loanTypeList()"
           [disabled]="saving()"
         />
       }
