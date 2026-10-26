@@ -20,5 +20,6 @@ export class SavingsGoalEntity {
     public frequencyid?: number | null,
     public annual_rate_percentage?: number | null,
     public payment_period?: number | null,
+    public institutionid?: number | null,
   ) {}
 }

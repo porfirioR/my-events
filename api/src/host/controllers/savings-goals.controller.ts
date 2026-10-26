@@ -126,6 +126,7 @@ export class SavingsGoalsController {
       apiRequest.frequencyId ?? null,
       apiRequest.annualRatePercentage ?? null,
       apiRequest.paymentPeriod ?? null,
+      apiRequest.institutionId ? +apiRequest.institutionId : null,
     );
 
     return await this.savingsManagerService.createSavingsGoal(request);
@@ -159,6 +160,7 @@ export class SavingsGoalsController {
       apiRequest.frequencyId ?? null,
       apiRequest.annualRatePercentage ?? null,
       apiRequest.paymentPeriod ?? null,
+      apiRequest.institutionId ? +apiRequest.institutionId : null,
     );
 
     return await this.savingsManagerService.updateSavingsGoal(request);

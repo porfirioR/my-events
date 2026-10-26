@@ -487,7 +487,7 @@
     "difference": "Diferencia"
   },
   "inputs": {
-    "selectOption": "Selecciona un {{label}}",
+    "selectOption": "Seleccionar {{label}}",
     "yes": "Si",
     "no": "No",
     "currency": "Símbolo: {{symbol}} - País: {{country}}"
@@ -624,6 +624,10 @@
     "currency": "Moneda",
     "progressionType": "Tipo de Progresión",
     "selectHowToSave": "Selecciona cómo quieres ahorrar",
+    "institution": "Entidad",
+    "institutionOptional": "Entidad (opcional)",
+    "institutionDesc": "Banco o cooperativa donde está este ahorro",
+    "institutionOptionalDesc": "Si indicás dónde está la plata, este ahorro suma a tu patrimonio. Sin entidad se toma como una meta y no suma.",
     "freeFormTitle": "Ahorro de Forma Libre",
     "freeFormDescription": "Establece tu monto objetivo y deposita libremente cuando quieras.",
     "targetAmount": "Monto Objetivo",

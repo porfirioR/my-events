@@ -25,7 +25,8 @@ import {
   AddInstallmentsRequest,
 } from '../models/savings';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
-import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { FINANCIAL_INSTITUTION_TOKENS, SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import { ProgressionType, MovementType } from 'src/utility/enums';
 
 @Injectable()
@@ -42,6 +43,9 @@ export class SavingsManagerService {
 
     @Inject(SAVINGS_TOKENS.PROGRAMMED_TERM_ACCESS_SERVICE)
     private readonly savingsProgrammedTermAccessService: ISavingsProgrammedTermAccessService,
+
+    @Inject(FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE)
+    private readonly financialInstitutionAccessService: IFinancialInstitutionAccessService,
   ) {}
 
   // ==================== SAVINGS GOALS ====================
@@ -54,6 +58,7 @@ export class SavingsManagerService {
   public createSavingsGoal = async (request: CreateSavingsGoalRequest): Promise<SavingsGoalModel> => {
     // Validar tipo de progresión
     await this.validateProgressionType(request.progressionTypeId);
+    await this.validateInstitution(request.progressionTypeId, request.institutionId ?? null, request.userId);
 
     let targetAmount: number;
     let installmentAmounts: number[] = [];
@@ -168,6 +173,7 @@ export class SavingsManagerService {
       request.frequencyId,
       request.annualRatePercentage,
       request.paymentPeriod,
+      request.institutionId,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -253,6 +259,7 @@ export class SavingsManagerService {
   public updateSavingsGoal = async (request: UpdateSavingsGoalRequest): Promise<SavingsGoalModel> => {
     // Obtener el objetivo actual
     const currentGoal = await this.savingsGoalAccessService.getById(request.id, request.userId);
+    await this.validateInstitution(request.progressionTypeId, request.institutionId, request.userId);
 
     // Crear access request con todos los campos del modelo actual
     const accessRequest = new UpdateSavingsGoalAccessRequest(
@@ -276,6 +283,7 @@ export class SavingsManagerService {
       request.frequencyId,
       request.annualRatePercentage,
       request.paymentPeriod,
+      request.institutionId,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -487,6 +495,7 @@ export class SavingsManagerService {
       goal.frequencyId,
       goal.annualRatePercentage,
       goal.paymentPeriod,
+      goal.institutionId,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -681,6 +690,29 @@ export class SavingsManagerService {
     }
   };
 
+  /**
+   * Productos financieros (Scheduled, FixedDeposit, CDA, MutualFund) requieren entidad.
+   * Para las metas "sobre" (1-5) es opcional: con entidad suman al patrimonio, sin entidad no.
+   * Si viene, tiene que ser del sistema o propia del usuario (NotFound si no).
+   */
+  private validateInstitution = async (progressionTypeId: number, institutionId: number | null, userId: number): Promise<void> => {
+    const requiresInstitution = [
+      ProgressionType.Scheduled,
+      ProgressionType.FixedDeposit,
+      ProgressionType.CDA,
+      ProgressionType.MutualFund,
+    ].includes(progressionTypeId);
+
+    if (!institutionId) {
+      if (requiresInstitution) {
+        throw new BadRequestException('institutionId is required for Scheduled, FixedDeposit, CDA and MutualFund types');
+      }
+      return;
+    }
+
+    await this.financialInstitutionAccessService.getById(institutionId, userId);
+  };
+
   // Mappers
   private mapGoalAccessModelToModel = (accessModel: SavingsGoalAccessModel): SavingsGoalModel => {
     return new SavingsGoalModel(
@@ -704,6 +736,7 @@ export class SavingsManagerService {
       accessModel.frequencyId,
       accessModel.annualRatePercentage,
       accessModel.paymentPeriod,
+      accessModel.institutionId,
       accessModel.paidInstallmentsCount,
     );
   };

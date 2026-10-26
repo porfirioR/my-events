@@ -487,7 +487,7 @@
     "difference": "Difference"
   },
   "inputs": {
-    "selectOption": "Select on {{label}}",
+    "selectOption": "Select {{label}}",
     "yes": "Yes",
     "no": "No",
     "currency": "Symbol: {{symbol}} - Country: {{country}}"
@@ -624,6 +624,10 @@
     "currency": "Currency",
     "progressionType": "Progression Type",
     "selectHowToSave": "Select how you want to save",
+    "institution": "Institution",
+    "institutionOptional": "Institution (optional)",
+    "institutionDesc": "Bank or cooperative where this saving is held",
+    "institutionOptionalDesc": "If you set where the money is, this saving counts toward your net worth. Without an institution it is treated as a goal and does not count.",
     "freeFormTitle": "Free Form Savings",
     "freeFormDescription": "Set your target amount and deposit freely whenever you want.",
     "targetAmount": "Target Amount",

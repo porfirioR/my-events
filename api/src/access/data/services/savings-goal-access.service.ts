@@ -240,6 +240,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       entity.frequencyid ?? null,
       entity.annual_rate_percentage ?? null,
       entity.payment_period ?? null,
+      entity.institutionid ?? null,
       paidInstallmentsCount,
     );
   };
@@ -263,6 +264,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     entity.frequencyid = accessRequest.frequencyId ?? null;
     entity.annual_rate_percentage = accessRequest.annualRatePercentage ?? null;
     entity.payment_period = accessRequest.paymentPeriod ?? null;
+    entity.institutionid = accessRequest.institutionId ?? null;
     return entity;
   };
 
@@ -289,6 +291,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     entity.frequencyid = accessRequest.frequencyId ?? null;
     entity.annual_rate_percentage = accessRequest.annualRatePercentage ?? null;
     entity.payment_period = accessRequest.paymentPeriod ?? null;
+    entity.institutionid = accessRequest.institutionId ?? null;
     return entity;
   };
 }

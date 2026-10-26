@@ -11,6 +11,7 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useSavingsStore } from '../../store/savings.store';
 import { useCurrencyStore } from '../../store/currency.store';
+import { useFinancialInstitutionsStore } from '../../store/financial-institutions.store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, MovementType, ProgressionType } from '../../models/enums';
 import {
@@ -54,8 +55,14 @@ export class SavingsGoalDetailComponent implements OnInit {
   private translate = inject(TranslateService);
   private savingsStore = useSavingsStore();
   private currencyStore = useCurrencyStore();
+  private financialInstitutionsStore = useFinancialInstitutionsStore();
 
   protected goal = this.savingsStore.selectedGoal;
+  protected financialInstitutionName = computed(() => {
+    const institutionId = this.goal()?.institutionId;
+    if (!institutionId) return '';
+    return this.financialInstitutionsStore.financialInstitutionsById().get(institutionId)?.name ?? '';
+  });
   protected installments = this.savingsStore.installments;
   protected deposits = this.savingsStore.sortedDeposits;
   protected progress = this.savingsStore.selectedGoalProgress;
@@ -162,6 +169,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadDeposits(id);
     this.savingsStore.loadProgrammedTerms();
     this.currencyStore.loadCurrencies();
+    this.financialInstitutionsStore.loadFinancialInstitutions();
   }
 
   protected setActiveTab(tab: 'installments' | 'deposits'): void {

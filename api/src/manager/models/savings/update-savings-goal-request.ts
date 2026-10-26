@@ -16,5 +16,6 @@ export class UpdateSavingsGoalRequest {
     public readonly frequencyId: number | null,
     public readonly annualRatePercentage: number | null,
     public readonly paymentPeriod: number | null,
+    public readonly institutionId: number | null,
   ) {}
 }

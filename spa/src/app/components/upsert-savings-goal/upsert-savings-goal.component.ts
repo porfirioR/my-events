@@ -22,6 +22,7 @@ import { TextComponent } from '../inputs/text/text.component';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
+import { InstitutionSelectorComponent } from '../institution-selector/institution-selector.component';
 import {
   CreateSavingsGoalApiRequest,
   UpdateSavingsGoalApiRequest,
@@ -59,6 +60,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
     SelectInputComponent,
     DateInputComponent,
     TextAreaInputComponent,
+    InstitutionSelectorComponent,
   ],
 })
 export class UpsertSavingsGoalComponent implements OnInit {
@@ -127,6 +129,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
   protected isCDA!: ReturnType<typeof computed<boolean>>;
   protected isLumpSum!: ReturnType<typeof computed<boolean>>;
   protected isMutualFund!: ReturnType<typeof computed<boolean>>;
+  protected requiresInstitution!: ReturnType<typeof computed<boolean>>;
 
   protected fixedDepositTermList: KeyValueViewModel[] = [];
   protected cdaTermList: KeyValueViewModel[] = [];
@@ -151,6 +154,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       frequencyId: new FormControl<number | null>(SavingsFrequency.Monthly),
       annualRatePercentage: new FormControl<number | null>(null),
       paymentPeriod: new FormControl<number | null>(null),
+      institutionId: new FormControl<number | null>(null),
     });
 
     // 2. SEGUNDO: Crear los signals desde los FormControls
@@ -189,6 +193,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.isCDA = computed(() => this.progressionTypeIdSignal() === ProgressionType.CDA);
     this.isLumpSum = computed(() => this.isFixedDeposit() || this.isCDA());
     this.isMutualFund = computed(() => this.progressionTypeIdSignal() === ProgressionType.MutualFund);
+    // Productos financieros: la entidad es obligatoria (para el resto es opcional y decide si suma al patrimonio)
+    this.requiresInstitution = computed(() => this.isProgrammedSavings() || this.isLumpSum() || this.isMutualFund());
 
     const months = this.translate.instant('upsertSavingsGoal.months');
     this.fixedDepositTermList = [1, 2, 3, 6, 12, 15, 18].map(
@@ -264,6 +270,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       frequencyId: goal.frequencyId ?? null,
       annualRatePercentage: goal.annualRatePercentage ?? null,
       paymentPeriod: goal.paymentPeriod ?? null,
+      institutionId: goal.institutionId ?? null,
     });
 
     this.formGroup.controls.numberOfInstallments.disable()
@@ -339,6 +346,11 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.baseAmount.clearValidators();
     this.formGroup.controls.incrementAmount.clearValidators();
     this.formGroup.controls.annualRatePercentage.clearValidators();
+    this.formGroup.controls.institutionId.clearValidators();
+
+    if (typeId === ProgressionType.Scheduled || typeId === ProgressionType.FixedDeposit || typeId === ProgressionType.CDA || typeId === ProgressionType.MutualFund) {
+      this.formGroup.controls.institutionId.setValidators([Validators.required]);
+    }
 
     if (typeId === ProgressionType.FreeForm) {
       this.formGroup.controls.targetAmount.setValidators([Validators.required, Validators.min(1)]);
@@ -367,6 +379,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.incrementAmount.updateValueAndValidity();
     this.formGroup.controls.annualRatePercentage.updateValueAndValidity();
     this.formGroup.controls.paymentPeriod.updateValueAndValidity();
+    this.formGroup.controls.institutionId.updateValueAndValidity();
   }
 
   private calculateBaseAndTarget(): void {
@@ -561,6 +574,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.frequencyId ?? undefined,
         values.annualRatePercentage ?? undefined,
         values.paymentPeriod ?? undefined,
+        values.institutionId ? +values.institutionId : undefined,
       );
 
       this.savingsStore.updateGoal(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -592,6 +606,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.frequencyId ?? undefined,
         values.annualRatePercentage ?? undefined,
         values.paymentPeriod ?? undefined,
+        values.institutionId ? +values.institutionId : undefined,
       );
 
       this.savingsStore.createGoal(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

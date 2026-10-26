@@ -1144,3 +1144,14 @@ ALTER TABLE loanstatus DISABLE ROW LEVEL SECURITY;
 ALTER TABLE loans DISABLE ROW LEVEL SECURITY;
 ALTER TABLE loaninstallments DISABLE ROW LEVEL SECURITY;
 ALTER TABLE loanpayments DISABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PARTE 20: AHORROS VINCULADOS A UNA ENTIDAD FINANCIERA - issue #217
+-- =====================================================
+-- En qué entidad está cada ahorro. NULL permitido: metas antiguas y metas "sobre"
+-- (tipos 1-5 sin entidad, que no suman al patrimonio). Para los tipos 6-9
+-- (Scheduled, FixedDeposit, CDA, MutualFund) la entidad la exige el backend.
+-- ON DELETE RESTRICT (default): no se puede borrar una entidad con ahorros vinculados.
+
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS institutionid INT NULL REFERENCES financialinstitutions(id);
+CREATE INDEX IF NOT EXISTS idx_savingsgoals_institution ON savingsgoals(institutionid);

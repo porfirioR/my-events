@@ -68,4 +68,9 @@ export class UpdateSavingsGoalApiRequest {
   @Min(1)
   @Max(3)
   paymentPeriod?: number;
+
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  institutionId?: number;
 }

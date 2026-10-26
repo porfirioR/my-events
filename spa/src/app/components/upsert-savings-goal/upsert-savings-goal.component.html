@@ -70,6 +70,17 @@
         [disabled]="saving"
       />
 
+      <!-- Entidad: obligatoria para productos financieros; opcional para metas (con entidad suman al patrimonio) -->
+      @if (progressionTypeIdSignal() !== null) {
+        <app-institution-selector
+          formControlName="institutionId"
+          id="institutionId"
+          [label]="(requiresInstitution() ? 'upsertSavingsGoal.institution' : 'upsertSavingsGoal.institutionOptional') | translate"
+          name="institutionId"
+          [description]="(requiresInstitution() ? 'upsertSavingsGoal.institutionDesc' : 'upsertSavingsGoal.institutionOptionalDesc') | translate"
+        />
+      }
+
       <!-- FreeForm: Target Amount manual -->
       @if (showTargetAmountInput()) {
       <div class="mt-4 p-4 bg-info/10 border border-info rounded-lg">

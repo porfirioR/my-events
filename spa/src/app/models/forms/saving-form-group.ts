@@ -16,4 +16,5 @@ export interface SavingsGoalFormGroup {
   frequencyId: FormControl<number | null>;
   annualRatePercentage: FormControl<number | null>;
   paymentPeriod: FormControl<number | null>;
+  institutionId: FormControl<number | null>;
 }
