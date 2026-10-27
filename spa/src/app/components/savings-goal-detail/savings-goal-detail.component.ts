@@ -19,8 +19,10 @@ import {
   CreateFreeFormDepositApiRequest,
   AddInstallmentsApiRequest,
   SavingsInstallmentApiModel,
+  WithdrawSavingsGoalApiRequest,
 } from '../../models/api/savings';
 import { TextComponent } from '../inputs/text/text.component';
+import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { ProgressionTypeFormGroup } from '../../models/forms';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -38,6 +40,7 @@ import { MutualFundMovementModalComponent } from '../mutual-fund-movement-modal/
     TranslateModule,
     TextComponent,
     TextAreaInputComponent,
+    DateInputComponent,
     ConfirmDialogComponent,
     MutualFundMovementModalComponent,
   ],
@@ -120,7 +123,19 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   protected isFreeForm = computed(() => this.goal()?.progressionTypeId === ProgressionType.FreeForm);
   protected isMutualFund = computed(() => this.goal()?.progressionTypeId === ProgressionType.MutualFund);
+  protected isRotating = computed(() => this.goal()?.progressionTypeId === ProgressionType.Rotating);
   protected MovementType = MovementType;
+
+  // Registrar cobro: el ahorro pasa a Withdrawn y deja de sumar al patrimonio
+  protected canWithdraw = computed(() => {
+    const statusId = this.goal()?.statusId;
+    return !!statusId && statusId !== GoalStatus.Cancelled && statusId !== GoalStatus.Withdrawn;
+  });
+  protected showWithdrawModal = signal(false);
+  protected withdrawForm = new FormGroup({
+    payoutAmount: new FormControl<number | null>(null, [Validators.min(1)]),
+    payoutDate: new FormControl<string | null>(null, [Validators.required]),
+  });
 
   protected canAddInstallments = computed(() => {
     const goal = this.goal();
@@ -276,6 +291,48 @@ export class SavingsGoalDetailComponent implements OnInit {
         this.alertService.showError(
           this.translate.instant('savingsGoalDetail.depositCreatedError')
         );
+        throw e;
+      },
+    });
+  }
+
+  // ==================== WITHDRAW (REGISTRAR COBRO) ====================
+
+  protected openWithdrawModal(): void {
+    const goal = this.goal();
+    if (!goal) return;
+    this.withdrawForm.reset({
+      payoutAmount: goal.currentAmount || null,
+      payoutDate: new Date().toISOString().substring(0, 10),
+    });
+    this.showWithdrawModal.set(true);
+  }
+
+  protected closeWithdrawModal(): void {
+    this.showWithdrawModal.set(false);
+    this.withdrawForm.reset();
+  }
+
+  protected withdrawGoal(): void {
+    if (this.withdrawForm.invalid) return;
+
+    const goalId = this.goal()!.id;
+    const values = this.withdrawForm.value;
+    const request = new WithdrawSavingsGoalApiRequest(
+      values.payoutDate!,
+      values.payoutAmount ? +values.payoutAmount : undefined,
+    );
+    this.isSubmitting.set(true);
+
+    this.savingsStore.withdrawGoal(goalId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.alertService.showSuccess(this.translate.instant('savingsGoalDetail.withdrawnSuccess'));
+        this.closeWithdrawModal();
+      },
+      error: (e) => {
+        this.isSubmitting.set(false);
+        this.alertService.showError(this.translate.instant('savingsGoalDetail.withdrawnError'));
         throw e;
       },
     });

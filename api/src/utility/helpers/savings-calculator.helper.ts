@@ -40,6 +40,7 @@ export class SavingsCalculatorHelper {
         // Fórmula: n + (n × (n-1) × incremento / 2)
         return ((n*(n+1))/2)*+incrementAmount;
       case ProgressionType.Scheduled: // Scheduled (same as Fixed, interest calculated separately)
+      case ProgressionType.Rotating: // Rotating (rueda) — sin interés: se devuelve lo aportado
         return n * baseAmount;
 
       case ProgressionType.FreeForm: // FreeForm
@@ -106,6 +107,7 @@ export class SavingsCalculatorHelper {
         );
 
       case ProgressionType.Scheduled: // Scheduled — fixed monthly deposits
+      case ProgressionType.Rotating: // Rotating (rueda) — cuota fija mensual
         return this.calculateFixed(baseAmount, numberOfInstallments);
 
       case ProgressionType.FreeForm: // FreeForm

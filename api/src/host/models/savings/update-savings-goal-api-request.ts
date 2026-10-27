@@ -73,4 +73,8 @@ export class UpdateSavingsGoalApiRequest {
   @IsInt()
   @IsPositive()
   institutionId?: number;
+
+  @IsOptional()
+  @IsDateString()
+  payoutDate?: string;
 }

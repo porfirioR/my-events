@@ -66,4 +66,13 @@ export class CreateSavingsGoalApiRequest {
   @IsInt()
   @IsPositive()
   institutionId?: number;
+
+  @IsOptional()
+  @IsDateString()
+  payoutDate?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  initialPaidInstallments?: number;
 }

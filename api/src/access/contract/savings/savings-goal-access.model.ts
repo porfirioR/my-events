@@ -21,6 +21,8 @@ export class SavingsGoalAccessModel {
     public readonly annualRatePercentage: number | null,
     public readonly paymentPeriod: number | null,
     public readonly institutionId: number | null,
+    public readonly payoutDate: Date | null,
+    public readonly payoutAmount: number | null,
     public readonly paidInstallmentsCount: number = 0,
   ) {}
 }

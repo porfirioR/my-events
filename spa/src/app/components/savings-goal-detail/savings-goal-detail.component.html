@@ -24,8 +24,8 @@
 
       <!-- Actions -->
       <div class="flex gap-2">
-        <!-- ✅ Solo mostrar Edit si NO está completed -->
-        @if (g.statusId !== GoalStatus.Completed) {
+        <!-- ✅ Solo mostrar Edit si NO está completed ni cobrado -->
+        @if (g.statusId !== GoalStatus.Completed && g.statusId !== GoalStatus.Withdrawn) {
           <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="editGoal()">
             <i class="fas fa-edit"></i>
             {{ 'savingsGoalDetail.edit' | translate }}
@@ -56,6 +56,13 @@
             {{ 'savingsGoalDetail.withdraw' | translate }}
           </button>
         }
+
+        @if (canWithdraw()) {
+          <button type="button" class="btn btn-sm btn-outline btn-success" (click)="openWithdrawModal()">
+            <i class="fas fa-hand-holding-dollar"></i>
+            {{ 'savingsGoalDetail.registerPayout' | translate }}
+          </button>
+        }
       </div>
     </header>
 
@@ -66,7 +73,8 @@
           'badge-success': g.statusId === GoalStatus.Active,
           'badge-info': g.statusId === GoalStatus.Completed,
           'badge-warning': g.statusId === GoalStatus.Paused,
-          'badge-error': g.statusId === GoalStatus.Cancelled
+          'badge-error': g.statusId === GoalStatus.Cancelled,
+          'badge-neutral': g.statusId === GoalStatus.Withdrawn
         }"
       >
         <i [class]="'fas ' + getGoalStatusIcon(g.statusId)"></i>
@@ -90,6 +98,27 @@
       </span>
       }
     </div>
+
+    <!-- Cobro: devolución estimada (rueda) o cobro registrado (cualquier tipo) -->
+    @if (g.statusId === GoalStatus.Withdrawn) {
+      <div class="alert alert-soft mb-4">
+        <i class="fas fa-hand-holding-dollar"></i>
+        <span class="text-sm">
+          {{ 'savingsGoalDetail.withdrawnOn' | translate }} {{ getFormattedDate(g.payoutDate!) }}
+          @if (g.payoutAmount) {
+            · {{ formatCurrency(g.payoutAmount, g.currencyId) }}
+            @if (g.payoutAmount > g.currentAmount) {
+              <span class="text-success">(+{{ formatCurrency(g.payoutAmount - g.currentAmount, g.currencyId) }})</span>
+            }
+          }
+        </span>
+      </div>
+    } @else if (isRotating() && g.payoutDate) {
+      <div class="alert alert-info alert-soft mb-4">
+        <i class="fas fa-rotate"></i>
+        <span class="text-sm">{{ 'savingsGoalDetail.estimatedPayout' | translate }} {{ getFormattedDate(g.payoutDate) }}</span>
+      </div>
+    }
 
     <!-- Mutual Fund: solo saldo actual (sin meta ni progreso) -->
     @if (isMutualFund()) {
@@ -605,6 +634,55 @@
     </form>
   </div>
   <div class="modal-backdrop" (click)="closeFreeFormModal()"></div>
+</dialog>
+}
+
+<!-- Withdraw (Registrar cobro) Modal -->
+@if (showWithdrawModal()) {
+<dialog class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-2">{{ 'savingsGoalDetail.registerPayoutTitle' | translate }}</h3>
+    <p class="text-sm text-base-content/70 mb-4">{{ 'savingsGoalDetail.registerPayoutDesc' | translate }}</p>
+
+    <form [formGroup]="withdrawForm" (submit)="withdrawGoal()">
+      <app-text
+        formControlName="payoutAmount"
+        type="number"
+        [label]="'savingsGoalDetail.payoutAmount' | translate"
+        id="payoutAmount"
+        name="payoutAmount"
+        [description]="'savingsGoalDetail.payoutAmountDesc' | translate"
+      />
+
+      <app-date-input
+        formControlName="payoutDate"
+        [label]="'savingsGoalDetail.payoutDate' | translate"
+        id="payoutDate"
+        name="payoutDate"
+      />
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105" (click)="closeWithdrawModal()">
+          {{ 'savingsGoalDetail.cancel' | translate }}
+        </button>
+
+        @if (isSubmitting()) {
+          <button type="button" class="btn btn-primary flex items-center gap-2 loading-btn">
+            <span class="loading loading-spinner loading-xs"></span>
+            {{ 'savingsGoalDetail.saving' | translate }}
+          </button>
+        } @else {
+          <button role="button" type="submit"
+            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="withdrawForm.invalid || isSubmitting()" [class.btn-disabled]="withdrawForm.invalid || isSubmitting()">
+            <i class="fas fa-hand-holding-dollar text-sm"></i>
+            {{ 'savingsGoalDetail.registerPayout' | translate }}
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+  <div class="modal-backdrop" (click)="closeWithdrawModal()"></div>
 </dialog>
 }
 

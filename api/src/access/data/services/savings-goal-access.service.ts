@@ -150,6 +150,29 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     return this.updateStatus(id, userId, 2); // 2 = Completed
   };
 
+  public markAsWithdrawn = async (
+    id: number,
+    userId: number,
+    payoutAmount: number | null,
+    payoutDate: Date,
+  ): Promise<SavingsGoalAccessModel> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.SavingsGoals)
+      .update({
+        statusid: 5, // 5 = Withdrawn
+        payoutamount: payoutAmount,
+        payoutdate: payoutDate.toISOString().split('T')[0],
+        dateupdated: new Date().toISOString(),
+      })
+      .eq(DatabaseColumns.EntityId, id)
+      .eq(DatabaseColumns.UserId, userId)
+      .select()
+      .single<SavingsGoalEntity>();
+
+    if (error) throw new InternalServerErrorException(error.message);
+    return this.mapEntityToAccessModel(data);
+  };
+
   public delete = async (id: number, userId: number): Promise<void> => {
     const { error } = await this.dbContext
       .from(TableEnum.SavingsGoals)
@@ -241,6 +264,8 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       entity.annual_rate_percentage ?? null,
       entity.payment_period ?? null,
       entity.institutionid ?? null,
+      entity.payoutdate ? new Date(entity.payoutdate) : null,
+      entity.payoutamount ?? null,
       paidInstallmentsCount,
     );
   };
@@ -265,6 +290,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     entity.annual_rate_percentage = accessRequest.annualRatePercentage ?? null;
     entity.payment_period = accessRequest.paymentPeriod ?? null;
     entity.institutionid = accessRequest.institutionId ?? null;
+    entity.payoutdate = accessRequest.payoutDate ?? null;
     return entity;
   };
 
@@ -292,6 +318,8 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     entity.annual_rate_percentage = accessRequest.annualRatePercentage ?? null;
     entity.payment_period = accessRequest.paymentPeriod ?? null;
     entity.institutionid = accessRequest.institutionId ?? null;
+    entity.payoutdate = accessRequest.payoutDate ?? null;
+    entity.payoutamount = accessRequest.payoutAmount ?? null;
     return entity;
   };
 }

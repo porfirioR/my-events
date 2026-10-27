@@ -15,5 +15,7 @@ export class CreateSavingsGoalRequest {
     public readonly annualRatePercentage?: number | null,
     public readonly paymentPeriod?: number | null,
     public readonly institutionId?: number | null,
+    public readonly payoutDate?: Date | null,
+    public readonly initialPaidInstallments?: number | null, // Cuotas ya pagadas al cargar un ahorro en curso (ej. rueda 57/60)
   ) {}
 }

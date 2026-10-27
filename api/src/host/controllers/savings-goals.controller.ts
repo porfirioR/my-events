@@ -23,6 +23,7 @@ import {
   CreateFreeFormDepositRequest,
   CreateMutualFundMovementRequest,
   AddInstallmentsRequest,
+  WithdrawSavingsGoalRequest,
 } from '../../manager/models/savings';
 import {
   CreateSavingsGoalApiRequest,
@@ -31,6 +32,7 @@ import {
   CreateFreeFormDepositApiRequest,
   CreateMutualFundMovementApiRequest,
   AddInstallmentsApiRequest,
+  WithdrawSavingsGoalApiRequest,
 } from '../models/savings';
 import { SavingsProgrammedTermModel } from '../../manager/models/savings';
 import { MessageModel } from '../models/message.model';
@@ -127,6 +129,8 @@ export class SavingsGoalsController {
       apiRequest.annualRatePercentage ?? null,
       apiRequest.paymentPeriod ?? null,
       apiRequest.institutionId ? +apiRequest.institutionId : null,
+      apiRequest.payoutDate ? new Date(apiRequest.payoutDate) : null,
+      apiRequest.initialPaidInstallments ? +apiRequest.initialPaidInstallments : null,
     );
 
     return await this.savingsManagerService.createSavingsGoal(request);
@@ -161,6 +165,7 @@ export class SavingsGoalsController {
       apiRequest.annualRatePercentage ?? null,
       apiRequest.paymentPeriod ?? null,
       apiRequest.institutionId ? +apiRequest.institutionId : null,
+      apiRequest.payoutDate ? new Date(apiRequest.payoutDate) : null,
     );
 
     return await this.savingsManagerService.updateSavingsGoal(request);
@@ -177,6 +182,27 @@ export class SavingsGoalsController {
     const userId = await this.currentUserService.getCurrentUserId();
     await this.savingsManagerService.deleteSavingsGoal(id, userId);
     return new MessageModel('Savings goal deleted successfully');
+  }
+
+  /**
+   * Registrar cobro/retiro del ahorro (pasa a Withdrawn)
+   * POST /api/savings-goals/:id/withdraw
+   */
+  @Post(':id/withdraw')
+  async withdrawSavingsGoal(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() apiRequest: WithdrawSavingsGoalApiRequest,
+  ): Promise<SavingsGoalModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+
+    const request = new WithdrawSavingsGoalRequest(
+      userId,
+      id,
+      apiRequest.payoutAmount ? +apiRequest.payoutAmount : null,
+      new Date(apiRequest.payoutDate),
+    );
+
+    return await this.savingsManagerService.withdrawSavingsGoal(request);
   }
 
   // ==================== INSTALLMENTS ====================

@@ -36,6 +36,15 @@
               <i class="fas fa-circle-check mr-1"></i>
               {{ 'savingsGoals.completed' | translate }}
             </button>
+            <button
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === GoalStatus.Withdrawn}"
+              (click)="setStatusFilter(GoalStatus.Withdrawn)"
+            >
+              <i class="fas fa-hand-holding-dollar mr-1"></i>
+              {{ 'Withdrawn' | translate }}
+            </button>
           </div>
 
           <!-- Filtro por Tipo -->
@@ -104,7 +113,8 @@
                       'bg-success': goal.statusId === GoalStatus.Active,
                       'bg-info': goal.statusId === GoalStatus.Completed,
                       'bg-warning': goal.statusId === GoalStatus.Paused,
-                      'bg-error': goal.statusId === GoalStatus.Cancelled
+                      'bg-error': goal.statusId === GoalStatus.Cancelled,
+                      'bg-neutral': goal.statusId === GoalStatus.Withdrawn
                     }">
                     <i [class]="'fas ' + getGoalStatusIcon(goal.statusId)"></i>
                   </div>
@@ -158,7 +168,7 @@
                         }
 
                         <!-- ✅ Solo mostrar Edit si NO está completed -->
-                        @if (goal.statusId !== GoalStatus.Completed) {
+                        @if (goal.statusId !== GoalStatus.Completed && goal.statusId !== GoalStatus.Withdrawn) {
                           <li>
                             <button (click)="editGoal(goal)">
                               <i class="fas fa-edit text-primary"></i>
@@ -240,7 +250,8 @@
                           'progress-success': goal.statusId === GoalStatus.Active,
                           'progress-info': goal.statusId === GoalStatus.Completed,
                           'progress-warning': goal.statusId === GoalStatus.Paused,
-                          'progress-error': goal.statusId === GoalStatus.Cancelled
+                          'progress-error': goal.statusId === GoalStatus.Cancelled,
+                          'progress-neutral': goal.statusId === GoalStatus.Withdrawn
                         }"
                         [value]="goal.currentAmount"
                         [max]="getProgressTarget(goal) || 1">
@@ -256,7 +267,8 @@
                         'badge-success': goal.statusId === GoalStatus.Active,
                         'badge-info': goal.statusId === GoalStatus.Completed,
                         'badge-warning': goal.statusId === GoalStatus.Paused,
-                        'badge-error': goal.statusId === GoalStatus.Cancelled
+                        'badge-error': goal.statusId === GoalStatus.Cancelled,
+                        'badge-neutral': goal.statusId === GoalStatus.Withdrawn
                       }">
                       <i [class]="'fas ' + getGoalStatusIcon(goal.statusId)"></i>
                       {{ getGoalStatusLabel(goal.statusId) | translate }}
