@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useCurrencyStore, useSavingsStore } from '../../store';
+import { useCurrencyStore, useFinancialInstitutionsStore, useSavingsStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, MovementType, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -27,6 +27,7 @@ export class SavingsGoalsListComponent implements OnInit {
 
   private savingsStore = useSavingsStore();
   private currencyStore = useCurrencyStore();
+  private financialInstitutionsStore = useFinancialInstitutionsStore();
 
   // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
   protected isLoading = this.savingsStore.needsLoadingGoals;
@@ -60,6 +61,12 @@ export class SavingsGoalsListComponent implements OnInit {
   ngOnInit(): void {
     this.savingsStore.reloadGoals();
     this.currencyStore.loadCurrencies();
+    this.financialInstitutionsStore.loadFinancialInstitutions();
+  }
+
+  protected getFinancialInstitutionName(institutionId: number | null): string {
+    if (!institutionId) return '';
+    return this.financialInstitutionsStore.financialInstitutionsById().get(institutionId)?.name ?? '';
   }
 
   protected setStatusFilter(statusId: number | null): void {
@@ -171,10 +178,12 @@ export class SavingsGoalsListComponent implements OnInit {
     return Math.min(Math.round((elapsed / total) * 100), 100);
   }
 
-  protected getMonthsElapsed(dateStr: any): number {
+  // Topeado en el plazo: un depósito vencido muestra "1 / 1 mes" y no "4 / 1 mes"
+  protected getMonthsElapsed(dateStr: any, termMonths: number): number {
     const start = new Date(this.normalizeDate(String(dateStr)));
     const now = new Date();
-    return Math.max(0, (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()));
+    const elapsed = Math.max(0, (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()));
+    return Math.min(elapsed, termMonths);
   }
 
   private normalizeDate(s: string): string {

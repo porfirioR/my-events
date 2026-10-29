@@ -8,4 +8,5 @@ export { SavingsGoalApiModel } from './savings-goal-api.model';
 export { SavingsGoalStatsApiModel } from './savings-goal-stats-api.model';
 export { SavingsInstallmentApiModel } from './savings-installment-api.model';
 export { UpdateSavingsGoalApiRequest } from './update-savings-goal-api-request';
+export { WithdrawSavingsGoalApiRequest } from './withdraw-savings-goal-api-request';
 export { SavingsProgrammedTermApiModel } from './savings-programmed-term-api.model';

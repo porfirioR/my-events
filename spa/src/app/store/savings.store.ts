@@ -14,7 +14,8 @@ import {
   PayInstallmentApiRequest,
   CreateFreeFormDepositApiRequest,
   CreateMutualFundMovementApiRequest,
-  AddInstallmentsApiRequest
+  AddInstallmentsApiRequest,
+  WithdrawSavingsGoalApiRequest
 } from '../models/api/savings';
 import { GoalStatus, MovementType, ProgressionType } from '../models/enums';
 import { SavingsGoalApiService } from '../services';
@@ -95,6 +96,10 @@ export const SavingsStore = signalStore(
     // Cuotas pagadas del objetivo seleccionado
     paidInstallments: computed(() =>
       store.installments().filter(i => i.statusId === 2) // Paid
+    ),
+
+    skippedInstallments: computed(() =>
+      store.installments().filter(i => i.statusId === 3) // Skipped
     ),
 
     // Progreso del objetivo seleccionado (porcentaje)
@@ -258,6 +263,27 @@ export const SavingsStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to update savings goal' });
+          throw new Error(error);
+        })
+      );
+    },
+
+    withdrawGoal: (id: number, request: WithdrawSavingsGoalApiRequest) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+
+      return savingsGoalApiService.withdraw(id, request).pipe(
+        tap(withdrawnGoal => {
+          patchState(store, {
+            goals: store.goals().map(g => g.id === id ? withdrawnGoal : g),
+            selectedGoal: withdrawnGoal,
+            // Las cuotas pendientes pasan a Skipped (ej. rueda que ganó el sorteo)
+            installments: store.installments().map(i => i.statusId === 1 ? { ...i, statusId: 3 } : i),
+          });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to withdraw savings goal' });
           throw new Error(error);
         })
       );

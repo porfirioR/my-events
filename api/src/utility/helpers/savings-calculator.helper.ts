@@ -40,6 +40,7 @@ export class SavingsCalculatorHelper {
         // Fórmula: n + (n × (n-1) × incremento / 2)
         return ((n*(n+1))/2)*+incrementAmount;
       case ProgressionType.Scheduled: // Scheduled (same as Fixed, interest calculated separately)
+      case ProgressionType.Rotating: // Rotating (rueda) — sin interés: se devuelve lo aportado
         return n * baseAmount;
 
       case ProgressionType.FreeForm: // FreeForm
@@ -106,6 +107,7 @@ export class SavingsCalculatorHelper {
         );
 
       case ProgressionType.Scheduled: // Scheduled — fixed monthly deposits
+      case ProgressionType.Rotating: // Rotating (rueda) — cuota fija mensual
         return this.calculateFixed(baseAmount, numberOfInstallments);
 
       case ProgressionType.FreeForm: // FreeForm
@@ -234,12 +236,14 @@ export class SavingsCalculatorHelper {
     // First installment: start date as-is (auto-paid on creation)
     dates.push(new Date(startDate));
 
-    // Remaining installments: payment day of each subsequent month
+    // Remaining installments: payment day of each subsequent month.
+    // UTC: startDate llega como medianoche UTC ('YYYY-MM-DD'); con métodos locales, en un
+    // servidor UTC-3 la fecha retrocede al día anterior y las cuotas quedan corridas
     for (let i = 1; i < numberOfInstallments; i++) {
       const d = new Date(startDate);
-      d.setDate(1); // avoid month overflow before adding months
-      d.setMonth(d.getMonth() + i);
-      d.setDate(paymentDay);
+      d.setUTCDate(1); // avoid month overflow before adding months
+      d.setUTCMonth(d.getUTCMonth() + i);
+      d.setUTCDate(paymentDay);
       dates.push(d);
     }
 

@@ -13,5 +13,8 @@ export class CreateSavingsGoalApiRequest {
     public frequencyId?: number,
     public annualRatePercentage?: number,
     public paymentPeriod?: number,
+    public institutionId?: number,
+    public payoutDate?: string,
+    public initialPaidInstallments?: number,
   ) {}
 }

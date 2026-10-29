@@ -8,4 +8,5 @@ export enum ProgressionType {
   FixedDeposit = 7,
   CDA = 8,
   MutualFund = 9,
+  Rotating = 10,
 }

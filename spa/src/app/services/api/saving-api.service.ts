@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { CreateSavingsGoalApiRequest, MessageModel, SavingsGoalApiModel, UpdateSavingsGoalApiRequest } from '../../models/api';
-import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, CreateMutualFundMovementApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel, SavingsProgrammedTermApiModel } from '../../models/api/savings';
+import { AddInstallmentsApiRequest, CreateFreeFormDepositApiRequest, CreateMutualFundMovementApiRequest, PayInstallmentApiRequest, SavingsDepositApiModel, SavingsGoalStatsApiModel, SavingsInstallmentApiModel, SavingsProgrammedTermApiModel, WithdrawSavingsGoalApiRequest } from '../../models/api/savings';
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +37,9 @@ export class SavingsGoalApiService {
 
   public delete = (id: number): Observable<MessageModel> =>
     this.httpClient.delete<MessageModel>(`${this.section}/${id}`);
+
+  public withdraw = (id: number, request: WithdrawSavingsGoalApiRequest): Observable<SavingsGoalApiModel> =>
+    this.httpClient.post<SavingsGoalApiModel>(`${this.section}/${id}/withdraw`, request);
 
   // ==================== INSTALLMENTS ====================
 

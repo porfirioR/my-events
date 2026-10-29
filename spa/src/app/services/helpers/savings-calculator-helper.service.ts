@@ -36,6 +36,7 @@ export class SavingsCalculatorHelper {
         return n * baseAmount;
 
       case ProgressionType.Scheduled:
+      case ProgressionType.Rotating: // Rueda: sin interés, se devuelve lo aportado
         return n * baseAmount;
 
       case ProgressionType.FreeForm:
@@ -106,7 +107,8 @@ export class SavingsCalculatorHelper {
       progressionTypeId !== ProgressionType.FreeForm &&
       progressionTypeId !== ProgressionType.Scheduled &&
       progressionTypeId !== ProgressionType.FixedDeposit &&
-      progressionTypeId !== ProgressionType.MutualFund;
+      progressionTypeId !== ProgressionType.MutualFund &&
+      progressionTypeId !== ProgressionType.Rotating;
   }
 
   static calculateTimeElapsedProgress(startDate: string | Date, endDate: string | Date): number {

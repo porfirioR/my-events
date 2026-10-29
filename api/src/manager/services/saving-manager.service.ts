@@ -23,9 +23,11 @@ import {
   CreateFreeFormDepositRequest,
   CreateMutualFundMovementRequest,
   AddInstallmentsRequest,
+  WithdrawSavingsGoalRequest,
 } from '../models/savings';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
-import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { FINANCIAL_INSTITUTION_TOKENS, SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import { ProgressionType, MovementType } from 'src/utility/enums';
 
 @Injectable()
@@ -42,6 +44,9 @@ export class SavingsManagerService {
 
     @Inject(SAVINGS_TOKENS.PROGRAMMED_TERM_ACCESS_SERVICE)
     private readonly savingsProgrammedTermAccessService: ISavingsProgrammedTermAccessService,
+
+    @Inject(FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE)
+    private readonly financialInstitutionAccessService: IFinancialInstitutionAccessService,
   ) {}
 
   // ==================== SAVINGS GOALS ====================
@@ -54,6 +59,7 @@ export class SavingsManagerService {
   public createSavingsGoal = async (request: CreateSavingsGoalRequest): Promise<SavingsGoalModel> => {
     // Validar tipo de progresión
     await this.validateProgressionType(request.progressionTypeId);
+    await this.validateInstitution(request.progressionTypeId, request.institutionId ?? null, request.userId);
 
     let targetAmount: number;
     let installmentAmounts: number[] = [];
@@ -95,6 +101,11 @@ export class SavingsManagerService {
       // Validar incrementAmount para Ascending/Descending
       if ((request.progressionTypeId === ProgressionType.Ascending || request.progressionTypeId === ProgressionType.Descending) && !request.incrementAmount) {
         throw new BadRequestException('incrementAmount is required for Ascending/Descending types');
+      }
+
+      // Rotating (rueda): sin interés — se devuelve lo aportado
+      if (request.progressionTypeId === ProgressionType.Rotating && request.annualRatePercentage) {
+        throw new BadRequestException('Rotating type does not have an interest rate');
       }
 
       if (request.progressionTypeId === ProgressionType.Scheduled) {
@@ -142,7 +153,7 @@ export class SavingsManagerService {
 
     if ((request.progressionTypeId === ProgressionType.FixedDeposit || request.progressionTypeId === ProgressionType.CDA) && request.numberOfInstallments) {
       computedExpectedEndDate = SavingsCalculatorHelper.addMonths(request.startDate, +request.numberOfInstallments);
-    } else if (request.frequencyId && request.numberOfInstallments) {
+    } else if ((request.frequencyId || request.progressionTypeId === ProgressionType.Rotating) && request.numberOfInstallments) {
       const paymentDay = SavingsCalculatorHelper.getPaymentDayFromPeriod(request.paymentPeriod ?? 1);
       dueDates = SavingsCalculatorHelper.calculateMonthlyDueDates(
         request.startDate,
@@ -150,6 +161,18 @@ export class SavingsManagerService {
         paymentDay,
       );
       computedExpectedEndDate = dueDates[dueDates.length - 1];
+    }
+
+    // Rueda: la devolución es posterior a la última cuota; por defecto última cuota + 6 meses
+    let payoutDate = request.payoutDate ?? null;
+    if (request.progressionTypeId === ProgressionType.Rotating && !payoutDate) {
+      const lastInstallmentDate = computedExpectedEndDate ?? SavingsCalculatorHelper.addMonths(request.startDate, +request.numberOfInstallments);
+      payoutDate = SavingsCalculatorHelper.addMonths(lastInstallmentDate, 6);
+    }
+
+    const initialPaidInstallments = request.initialPaidInstallments ? +request.initialPaidInstallments : 0;
+    if (initialPaidInstallments < 0 || initialPaidInstallments > installmentAmounts.length) {
+      throw new BadRequestException(`initialPaidInstallments must be between 0 and ${installmentAmounts.length}`);
     }
 
     // Crear el objetivo de ahorro
@@ -168,6 +191,8 @@ export class SavingsManagerService {
       request.frequencyId,
       request.annualRatePercentage,
       request.paymentPeriod,
+      request.institutionId,
+      payoutDate,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -185,6 +210,33 @@ export class SavingsManagerService {
       );
 
       const createdInstallments = await this.savingsInstallmentAccessService.createMany(installmentRequests);
+
+      // Ahorro en curso (ej. rueda 57/60): marcar como pagadas las primeras cuotas, con un depósito
+      // en su fecha de vencimiento, para que el saldo refleje lo ya aportado
+      if (initialPaidInstallments > 0) {
+        const paidInstallments = [...createdInstallments]
+          .sort((a, b) => a.installmentNumber - b.installmentNumber)
+          .slice(0, initialPaidInstallments);
+        let paidAmount = 0;
+        for (const installment of paidInstallments) {
+          const paidDate = installment.dueDate ? new Date(installment.dueDate) : request.startDate;
+          await this.savingsDepositAccessService.create(new CreateSavingsDepositAccessRequest(
+            goalAccessModel.id,
+            installment.amount,
+            paidDate,
+            installment.id,
+            null,
+          ));
+          await this.savingsInstallmentAccessService.markAsPaid(installment.id, paidDate);
+          paidAmount += installment.amount;
+        }
+        await this.savingsGoalAccessService.updateCurrentAmount(goalAccessModel.id, request.userId, paidAmount);
+        if (initialPaidInstallments === installmentAmounts.length) {
+          await this.savingsGoalAccessService.markAsCompleted(goalAccessModel.id, request.userId);
+        }
+        const refreshed = await this.savingsGoalAccessService.getById(goalAccessModel.id, request.userId);
+        return this.mapGoalAccessModelToModel(refreshed);
+      }
 
       // Scheduled savings: auto-pay the first installment using the goal start date
       if (request.progressionTypeId === ProgressionType.Scheduled && createdInstallments.length > 0) {
@@ -253,6 +305,7 @@ export class SavingsManagerService {
   public updateSavingsGoal = async (request: UpdateSavingsGoalRequest): Promise<SavingsGoalModel> => {
     // Obtener el objetivo actual
     const currentGoal = await this.savingsGoalAccessService.getById(request.id, request.userId);
+    await this.validateInstitution(request.progressionTypeId, request.institutionId, request.userId);
 
     // Crear access request con todos los campos del modelo actual
     const accessRequest = new UpdateSavingsGoalAccessRequest(
@@ -276,6 +329,9 @@ export class SavingsManagerService {
       request.frequencyId,
       request.annualRatePercentage,
       request.paymentPeriod,
+      request.institutionId,
+      request.payoutDate ?? currentGoal.payoutDate,
+      currentGoal.payoutAmount,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -287,6 +343,36 @@ export class SavingsManagerService {
    */
   public deleteSavingsGoal = async (id: number, userId: number): Promise<void> => {
     await this.savingsGoalAccessService.delete(id, userId);
+  };
+
+  /**
+   * Registrar cobro/retiro: el ahorro pasa a Withdrawn y deja de sumar al patrimonio.
+   * - Rueda que gana el sorteo: las cuotas pendientes pasan a Skipped (no queda deuda)
+   * - payoutAmount: monto real cobrado (puede ser mayor a lo aportado); null si no se informa
+   */
+  public withdrawSavingsGoal = async (request: WithdrawSavingsGoalRequest): Promise<SavingsGoalModel> => {
+    const goal = await this.savingsGoalAccessService.getById(request.savingsGoalId, request.userId);
+
+    if (goal.statusId === 4 || goal.statusId === 5) { // Cancelled / Withdrawn
+      throw new BadRequestException('Cannot withdraw a cancelled or already withdrawn goal');
+    }
+
+    if (request.payoutDate > new Date()) {
+      throw new BadRequestException('Payout date cannot be in the future');
+    }
+
+    const pendingInstallments = await this.savingsInstallmentAccessService.getPendingInstallments(goal.id);
+    for (const installment of pendingInstallments) {
+      await this.savingsInstallmentAccessService.markAsSkipped(installment.id);
+    }
+
+    const accessModel = await this.savingsGoalAccessService.markAsWithdrawn(
+      goal.id,
+      request.userId,
+      request.payoutAmount,
+      request.payoutDate,
+    );
+    return this.mapGoalAccessModelToModel(accessModel);
   };
 
   /**
@@ -426,6 +512,10 @@ export class SavingsManagerService {
       throw new BadRequestException('Cannot add installments to FixedDeposit/CDA type');
     }
 
+    if (goal.progressionTypeId === 10) { // Rotating — plan de cuotas fijo de la cooperativa
+      throw new BadRequestException('Cannot add installments to Rotating type');
+    }
+
     if (goal.progressionTypeId === ProgressionType.MutualFund) {
       throw new BadRequestException('MutualFund type does not have installments');
     }
@@ -487,6 +577,9 @@ export class SavingsManagerService {
       goal.frequencyId,
       goal.annualRatePercentage,
       goal.paymentPeriod,
+      goal.institutionId,
+      goal.payoutDate,
+      goal.payoutAmount,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -675,10 +768,34 @@ export class SavingsManagerService {
   };
 
   private validateProgressionType = async (progressionTypeId: number): Promise<void> => {
-    const validTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit, CDA, MutualFund
+    const validTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Fixed, Ascending, Descending, Random, FreeForm, Scheduled, FixedDeposit, CDA, MutualFund, Rotating
     if (!validTypes.includes(progressionTypeId)) {
       throw new BadRequestException(`Invalid progression type: ${progressionTypeId}`);
     }
+  };
+
+  /**
+   * Productos financieros (Scheduled, FixedDeposit, CDA, MutualFund, Rotating) requieren entidad.
+   * Para las metas "sobre" (1-5) es opcional: con entidad suman al patrimonio, sin entidad no.
+   * Si viene, tiene que ser del sistema o propia del usuario (NotFound si no).
+   */
+  private validateInstitution = async (progressionTypeId: number, institutionId: number | null, userId: number): Promise<void> => {
+    const requiresInstitution = [
+      ProgressionType.Scheduled,
+      ProgressionType.FixedDeposit,
+      ProgressionType.CDA,
+      ProgressionType.MutualFund,
+      ProgressionType.Rotating,
+    ].includes(progressionTypeId);
+
+    if (!institutionId) {
+      if (requiresInstitution) {
+        throw new BadRequestException('institutionId is required for Scheduled, FixedDeposit, CDA, MutualFund and Rotating types');
+      }
+      return;
+    }
+
+    await this.financialInstitutionAccessService.getById(institutionId, userId);
   };
 
   // Mappers
@@ -704,6 +821,9 @@ export class SavingsManagerService {
       accessModel.frequencyId,
       accessModel.annualRatePercentage,
       accessModel.paymentPeriod,
+      accessModel.institutionId,
+      accessModel.payoutDate,
+      accessModel.payoutAmount,
       accessModel.paidInstallmentsCount,
     );
   };

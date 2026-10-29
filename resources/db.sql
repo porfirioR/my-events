@@ -1144,3 +1144,54 @@ ALTER TABLE loanstatus DISABLE ROW LEVEL SECURITY;
 ALTER TABLE loans DISABLE ROW LEVEL SECURITY;
 ALTER TABLE loaninstallments DISABLE ROW LEVEL SECURITY;
 ALTER TABLE loanpayments DISABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PARTE 20: AHORROS VINCULADOS A UNA ENTIDAD FINANCIERA - issue #217
+-- =====================================================
+-- En qué entidad está cada ahorro. NULL permitido: metas antiguas y metas "sobre"
+-- (tipos 1-5 sin entidad, que no suman al patrimonio). Para los tipos 6-9
+-- (Scheduled, FixedDeposit, CDA, MutualFund) la entidad la exige el backend.
+-- ON DELETE RESTRICT (default): no se puede borrar una entidad con ahorros vinculados.
+
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS institutionid INT NULL REFERENCES financialinstitutions(id);
+CREATE INDEX IF NOT EXISTS idx_savingsgoals_institution ON savingsgoals(institutionid);
+
+-- =====================================================
+-- PARTE 21: RUEDA (Rotating), LIQUIDEZ POR TIPO Y ESTADO WITHDRAWN - issue #218
+-- =====================================================
+
+-- Liquidez de cada tipo de ahorro (para el patrimonio):
+-- 1 Immediate, 2 Days, 3 Locked, NULL = depende de la meta (tipos 1-5: con entidad
+-- es inmediata, sin entidad es un "sobre" y no suma). Ver resources/net-worth-model.md
+ALTER TABLE savingsprogressiontypes ADD COLUMN IF NOT EXISTS liquidity SMALLINT NULL CHECK (liquidity IN (1, 2, 3));
+
+-- Rueda: cuota fija mensual, sin interés, se devuelve en una fecha posterior a la
+-- última cuota (o antes si se gana el sorteo). No se puede retirar antes.
+INSERT INTO savingsprogressiontypes (id, name, description) VALUES
+(10, 'Rotating', 'Rotating savings (rueda) - fixed monthly installments without interest, paid out after the last installment or when winning the draw')
+ON CONFLICT (id) DO NOTHING;
+
+UPDATE savingsprogressiontypes SET liquidity = 2 WHERE id = 9;              -- MutualFund
+UPDATE savingsprogressiontypes SET liquidity = 3 WHERE id IN (6, 7, 8, 10); -- Scheduled, FixedDeposit, CDA, Rotating
+
+-- Rotating (10) no usa incrementAmount; usa numberofinstallments y baseamount (queda en el
+-- grupo NOT IN (5, 9) de check_freeform_nulls, que no cambia)
+ALTER TABLE savingsgoals DROP CONSTRAINT IF EXISTS check_increment_for_progression;
+ALTER TABLE savingsgoals ADD CONSTRAINT check_increment_for_progression CHECK (
+    (progressiontypeid IN (1, 5, 6, 7, 8, 9, 10) AND incrementamount IS NULL) OR
+    (progressiontypeid IN (2, 3, 4) AND incrementamount IS NOT NULL AND incrementamount > 0)
+);
+
+-- Cobro: payoutdate = fecha estimada mientras no se cobra (obligatoria en la rueda) y
+-- fecha real al cobrar; payoutamount = monto efectivamente cobrado (al pasar a Withdrawn)
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS payoutdate DATE NULL;
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS payoutamount BIGINT NULL CHECK (payoutamount IS NULL OR payoutamount > 0);
+ALTER TABLE savingsgoals ADD CONSTRAINT check_rotating_payout CHECK (
+    progressiontypeid <> 10 OR (payoutdate IS NOT NULL AND annual_rate_percentage IS NULL)
+);
+
+-- Withdrawn: la plata ya se cobró/retiró. Completed sigue sumando al patrimonio (ej. un
+-- ahorro programado pagado pero no vencido); Withdrawn y Cancelled no suman.
+INSERT INTO savingsstatus (id, name, description) VALUES
+(5, 'Withdrawn', 'Savings goal has been paid out or withdrawn - no longer counts toward net worth')
+ON CONFLICT (id) DO NOTHING;

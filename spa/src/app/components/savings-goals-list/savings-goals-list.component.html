@@ -1,4 +1,4 @@
-<section aria-labelledby="savings-goals-heading" class="mb-8">
+<section aria-labelledby="savings-goals-heading" class="min-h-[calc(100vh-4rem)] bg-base-200 dark:bg-base-300">
   <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
@@ -35,6 +35,15 @@
             >
               <i class="fas fa-circle-check mr-1"></i>
               {{ 'savingsGoals.completed' | translate }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="{'btn-active': filterStatus() === GoalStatus.Withdrawn}"
+              (click)="setStatusFilter(GoalStatus.Withdrawn)"
+            >
+              <i class="fas fa-hand-holding-dollar mr-1"></i>
+              {{ 'Withdrawn' | translate }}
             </button>
           </div>
 
@@ -103,6 +112,7 @@
                     [ngClass]="{
                       'bg-success': goal.statusId === GoalStatus.Active,
                       'bg-info': goal.statusId === GoalStatus.Completed,
+                      'bg-primary': goal.statusId === GoalStatus.Withdrawn,
                       'bg-warning': goal.statusId === GoalStatus.Paused,
                       'bg-error': goal.statusId === GoalStatus.Cancelled
                     }">
@@ -117,6 +127,11 @@
                       <h3 class="font-semibold text-base-content text-lg">
                         {{ goal.name }}
                       </h3>
+                      @if (getFinancialInstitutionName(goal.institutionId); as institutionName) {
+                        <p class="text-sm text-base-content/60">
+                          <i class="fas fa-building-columns mr-1"></i>{{ institutionName }}
+                        </p>
+                      }
                       @if (goal.description) {
                         <p class="text-sm text-base-content/70 mt-1">{{ goal.description }}</p>
                       }
@@ -153,7 +168,7 @@
                         }
 
                         <!-- ✅ Solo mostrar Edit si NO está completed -->
-                        @if (goal.statusId !== GoalStatus.Completed) {
+                        @if (goal.statusId !== GoalStatus.Completed && goal.statusId !== GoalStatus.Withdrawn) {
                           <li>
                             <button (click)="editGoal(goal)">
                               <i class="fas fa-edit text-primary"></i>
@@ -205,14 +220,18 @@
                       <div class="mt-2">
                         <div class="flex items-center justify-between text-xs mb-1">
                           <span class="text-base-content/60">
-                            {{ getMonthsElapsed(goal.startDate) }} / {{ goal.numberOfInstallments }}
+                            {{ getMonthsElapsed(goal.startDate, goal.numberOfInstallments) }} / {{ goal.numberOfInstallments }}
                             {{ (goal.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
                           </span>
                           <span class="font-medium">{{ getDepositTimeProgress(goal) }}%</span>
                         </div>
                         <progress
                           class="progress w-full"
-                          [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'progress-success' : 'progress-warning'"
+                          [ngClass]="goal.statusId === GoalStatus.Withdrawn
+                            ? 'progress-primary'
+                            : goal.statusId === GoalStatus.Completed
+                              ? 'progress-info'
+                              : (goal.progressionTypeId === ProgressionType.CDA ? 'progress-success' : 'progress-warning')"
                           [value]="getDepositTimeProgress(goal)"
                           [max]="100">
                         </progress>
@@ -234,6 +253,7 @@
                         [ngClass]="{
                           'progress-success': goal.statusId === GoalStatus.Active,
                           'progress-info': goal.statusId === GoalStatus.Completed,
+                          'progress-primary': goal.statusId === GoalStatus.Withdrawn,
                           'progress-warning': goal.statusId === GoalStatus.Paused,
                           'progress-error': goal.statusId === GoalStatus.Cancelled
                         }"
@@ -251,7 +271,8 @@
                         'badge-success': goal.statusId === GoalStatus.Active,
                         'badge-info': goal.statusId === GoalStatus.Completed,
                         'badge-warning': goal.statusId === GoalStatus.Paused,
-                        'badge-error': goal.statusId === GoalStatus.Cancelled
+                        'badge-error': goal.statusId === GoalStatus.Cancelled,
+                        'badge-primary': goal.statusId === GoalStatus.Withdrawn
                       }">
                       <i [class]="'fas ' + getGoalStatusIcon(goal.statusId)"></i>
                       {{ getGoalStatusLabel(goal.statusId) | translate }}

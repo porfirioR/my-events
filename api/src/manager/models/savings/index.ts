@@ -8,3 +8,4 @@ export { CreateFreeFormDepositRequest } from './create-freeform-deposit-request'
 export { CreateMutualFundMovementRequest } from './create-mutual-fund-movement-request';
 export { AddInstallmentsRequest } from './add-installments-request';
 export { SavingsProgrammedTermModel } from './savings-programmed-term.model';
+export { WithdrawSavingsGoalRequest } from './withdraw-savings-goal-request';

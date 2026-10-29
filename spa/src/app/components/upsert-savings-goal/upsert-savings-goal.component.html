@@ -70,6 +70,17 @@
         [disabled]="saving"
       />
 
+      <!-- Entidad: obligatoria para productos financieros; opcional para metas (con entidad suman al patrimonio) -->
+      @if (progressionTypeIdSignal() !== null) {
+        <app-institution-selector
+          formControlName="institutionId"
+          id="institutionId"
+          [label]="(requiresInstitution() ? 'upsertSavingsGoal.institution' : 'upsertSavingsGoal.institutionOptional') | translate"
+          name="institutionId"
+          [description]="(requiresInstitution() ? 'upsertSavingsGoal.institutionDesc' : 'upsertSavingsGoal.institutionOptionalDesc') | translate"
+        />
+      }
+
       <!-- FreeForm: Target Amount manual -->
       @if (showTargetAmountInput()) {
       <div class="mt-4 p-4 bg-info/10 border border-info rounded-lg">
@@ -284,6 +295,35 @@
               [description]="(isCDA() ? 'upsertSavingsGoal.cdaExpectedAmountDescription' : 'upsertSavingsGoal.fixedDepositExpectedAmountDescription') | translate"
               [disabled]="saving"
             />
+          }
+
+          <!-- Rueda: fecha de devolución y cuotas ya pagadas (para cargar una rueda en curso) -->
+          @if (isRotating()) {
+            <app-date-input
+              formControlName="payoutDate"
+              [label]="'upsertSavingsGoal.payoutDate' | translate"
+              id="payoutDate"
+              name="payoutDate"
+              [disabled]="saving"
+            />
+            <p class="text-xs text-base-content/60 -mt-4 mb-4">{{ 'upsertSavingsGoal.payoutDateDesc' | translate }}</p>
+
+            @if (!isEditMode) {
+              <app-text
+                formControlName="initialPaidInstallments"
+                type="number"
+                [label]="'upsertSavingsGoal.initialPaidInstallments' | translate"
+                id="initialPaidInstallments"
+                name="initialPaidInstallments"
+                [description]="'upsertSavingsGoal.initialPaidInstallmentsDesc' | translate"
+                [disabled]="saving"
+              />
+            }
+
+            <div class="alert alert-info alert-soft">
+              <i class="fas fa-rotate"></i>
+              <span class="text-sm">{{ 'upsertSavingsGoal.rotatingInfo' | translate }}</span>
+            </div>
           }
 
           <!-- Ascending/Descending/Random: Mostrar Increment Amount -->
