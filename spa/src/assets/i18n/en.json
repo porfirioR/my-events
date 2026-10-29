@@ -532,6 +532,7 @@
   },
   "savingsGoalDetail": {
     "registerPayout": "Register payout",
+    "skippedInstallments": "Skipped installments",
     "registerPayoutTitle": "Register payout",
     "registerPayoutDesc": "The saving becomes Withdrawn and no longer counts toward your net worth. Any pending installments (e.g. you won the rotating savings draw) are cancelled.",
     "payoutAmount": "Amount received (optional)",

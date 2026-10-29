@@ -1,4 +1,4 @@
-<section aria-labelledby="savings-goals-heading" class="mb-8">
+<section aria-labelledby="savings-goals-heading" class="min-h-[calc(100vh-4rem)] bg-base-200 dark:bg-base-300">
   <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
     <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
@@ -112,9 +112,9 @@
                     [ngClass]="{
                       'bg-success': goal.statusId === GoalStatus.Active,
                       'bg-info': goal.statusId === GoalStatus.Completed,
+                      'bg-primary': goal.statusId === GoalStatus.Withdrawn,
                       'bg-warning': goal.statusId === GoalStatus.Paused,
-                      'bg-error': goal.statusId === GoalStatus.Cancelled,
-                      'bg-neutral': goal.statusId === GoalStatus.Withdrawn
+                      'bg-error': goal.statusId === GoalStatus.Cancelled
                     }">
                     <i [class]="'fas ' + getGoalStatusIcon(goal.statusId)"></i>
                   </div>
@@ -220,14 +220,18 @@
                       <div class="mt-2">
                         <div class="flex items-center justify-between text-xs mb-1">
                           <span class="text-base-content/60">
-                            {{ getMonthsElapsed(goal.startDate) }} / {{ goal.numberOfInstallments }}
+                            {{ getMonthsElapsed(goal.startDate, goal.numberOfInstallments) }} / {{ goal.numberOfInstallments }}
                             {{ (goal.numberOfInstallments === 1 ? 'savingsGoalDetail.month' : 'savingsGoalDetail.months') | translate }}
                           </span>
                           <span class="font-medium">{{ getDepositTimeProgress(goal) }}%</span>
                         </div>
                         <progress
                           class="progress w-full"
-                          [ngClass]="goal.progressionTypeId === ProgressionType.CDA ? 'progress-success' : 'progress-warning'"
+                          [ngClass]="goal.statusId === GoalStatus.Withdrawn
+                            ? 'progress-primary'
+                            : goal.statusId === GoalStatus.Completed
+                              ? 'progress-info'
+                              : (goal.progressionTypeId === ProgressionType.CDA ? 'progress-success' : 'progress-warning')"
                           [value]="getDepositTimeProgress(goal)"
                           [max]="100">
                         </progress>
@@ -249,9 +253,9 @@
                         [ngClass]="{
                           'progress-success': goal.statusId === GoalStatus.Active,
                           'progress-info': goal.statusId === GoalStatus.Completed,
+                          'progress-primary': goal.statusId === GoalStatus.Withdrawn,
                           'progress-warning': goal.statusId === GoalStatus.Paused,
-                          'progress-error': goal.statusId === GoalStatus.Cancelled,
-                          'progress-neutral': goal.statusId === GoalStatus.Withdrawn
+                          'progress-error': goal.statusId === GoalStatus.Cancelled
                         }"
                         [value]="goal.currentAmount"
                         [max]="getProgressTarget(goal) || 1">
@@ -268,7 +272,7 @@
                         'badge-info': goal.statusId === GoalStatus.Completed,
                         'badge-warning': goal.statusId === GoalStatus.Paused,
                         'badge-error': goal.statusId === GoalStatus.Cancelled,
-                        'badge-neutral': goal.statusId === GoalStatus.Withdrawn
+                        'badge-primary': goal.statusId === GoalStatus.Withdrawn
                       }">
                       <i [class]="'fas ' + getGoalStatusIcon(goal.statusId)"></i>
                       {{ getGoalStatusLabel(goal.statusId) | translate }}

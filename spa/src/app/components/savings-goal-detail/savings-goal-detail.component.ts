@@ -72,6 +72,7 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected remaining = this.savingsStore.selectedGoalRemaining;
   protected pendingInstallments = this.savingsStore.pendingInstallments;
   protected paidInstallments = this.savingsStore.paidInstallments;
+  protected skippedInstallments = this.savingsStore.skippedInstallments;
 
   // Programmed savings
   protected isProgrammedSavings = computed(() => this.goal()?.progressionTypeId === ProgressionType.Scheduled);
@@ -147,6 +148,7 @@ export class SavingsGoalDetailComponent implements OnInit {
       goal.progressionTypeId !== ProgressionType.FixedDeposit &&
       goal.progressionTypeId !== ProgressionType.CDA &&
       goal.progressionTypeId !== ProgressionType.MutualFund &&
+      goal.progressionTypeId !== ProgressionType.Rotating &&
       goal.statusId === GoalStatus.Active
     );
   });
@@ -301,8 +303,11 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected openWithdrawModal(): void {
     const goal = this.goal();
     if (!goal) return;
+    // Productos con vencimiento: se cobra el monto al vencimiento (con interés / pozo de la rueda);
+    // fondo mutuo y metas: lo aportado
+    const hasMaturityAmount = this.isProgrammedSavings() || this.isLumpSum() || this.isRotating();
     this.withdrawForm.reset({
-      payoutAmount: goal.currentAmount || null,
+      payoutAmount: (hasMaturityAmount ? goal.targetAmount : goal.currentAmount) || null,
       payoutDate: new Date().toISOString().substring(0, 10),
     });
     this.showWithdrawModal.set(true);

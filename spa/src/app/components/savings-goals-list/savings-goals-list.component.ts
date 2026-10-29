@@ -178,10 +178,12 @@ export class SavingsGoalsListComponent implements OnInit {
     return Math.min(Math.round((elapsed / total) * 100), 100);
   }
 
-  protected getMonthsElapsed(dateStr: any): number {
+  // Topeado en el plazo: un depósito vencido muestra "1 / 1 mes" y no "4 / 1 mes"
+  protected getMonthsElapsed(dateStr: any, termMonths: number): number {
     const start = new Date(this.normalizeDate(String(dateStr)));
     const now = new Date();
-    return Math.max(0, (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()));
+    const elapsed = Math.max(0, (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()));
+    return Math.min(elapsed, termMonths);
   }
 
   private normalizeDate(s: string): string {

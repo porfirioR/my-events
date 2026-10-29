@@ -532,6 +532,7 @@
   },
   "savingsGoalDetail": {
     "registerPayout": "Registrar cobro",
+    "skippedInstallments": "Cuotas omitidas",
     "registerPayoutTitle": "Registrar cobro",
     "registerPayoutDesc": "El ahorro pasa a Cobrado y deja de sumar a tu patrimonio. Si quedan cuotas pendientes (ej. ganaste el sorteo de la rueda) se cancelan.",
     "payoutAmount": "Monto cobrado (opcional)",

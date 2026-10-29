@@ -512,6 +512,10 @@ export class SavingsManagerService {
       throw new BadRequestException('Cannot add installments to FixedDeposit/CDA type');
     }
 
+    if (goal.progressionTypeId === 10) { // Rotating — plan de cuotas fijo de la cooperativa
+      throw new BadRequestException('Cannot add installments to Rotating type');
+    }
+
     if (goal.progressionTypeId === ProgressionType.MutualFund) {
       throw new BadRequestException('MutualFund type does not have installments');
     }

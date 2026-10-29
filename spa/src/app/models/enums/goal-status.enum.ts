@@ -27,5 +27,5 @@ export const GoalStatusColors: Record<GoalStatus, string> = {
   [GoalStatus.Completed]: 'text-info',
   [GoalStatus.Paused]: 'text-warning',
   [GoalStatus.Cancelled]: 'text-error',
-  [GoalStatus.Withdrawn]: 'text-base-content/60'
+  [GoalStatus.Withdrawn]: 'text-primary'
 };

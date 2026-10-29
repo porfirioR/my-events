@@ -98,6 +98,10 @@ export const SavingsStore = signalStore(
       store.installments().filter(i => i.statusId === 2) // Paid
     ),
 
+    skippedInstallments: computed(() =>
+      store.installments().filter(i => i.statusId === 3) // Skipped
+    ),
+
     // Progreso del objetivo seleccionado (porcentaje)
     selectedGoalProgress: computed(() => {
       const goal = store.selectedGoal();

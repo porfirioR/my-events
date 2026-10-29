@@ -74,7 +74,7 @@
           'badge-info': g.statusId === GoalStatus.Completed,
           'badge-warning': g.statusId === GoalStatus.Paused,
           'badge-error': g.statusId === GoalStatus.Cancelled,
-          'badge-neutral': g.statusId === GoalStatus.Withdrawn
+          'badge-primary': g.statusId === GoalStatus.Withdrawn
         }"
       >
         <i [class]="'fas ' + getGoalStatusIcon(g.statusId)"></i>
@@ -101,7 +101,7 @@
 
     <!-- Cobro: devolución estimada (rueda) o cobro registrado (cualquier tipo) -->
     @if (g.statusId === GoalStatus.Withdrawn) {
-      <div class="alert alert-soft mb-4">
+      <div class="alert alert-primary alert-soft mb-4">
         <i class="fas fa-hand-holding-dollar"></i>
         <span class="text-sm">
           {{ 'savingsGoalDetail.withdrawnOn' | translate }} {{ getFormattedDate(g.payoutDate!) }}
@@ -149,6 +149,7 @@
       <progress class="progress w-full h-4" [ngClass]="{
             'progress-success': g.statusId === GoalStatus.Active,
             'progress-info': g.statusId === GoalStatus.Completed,
+            'progress-primary': g.statusId === GoalStatus.Withdrawn,
             'progress-warning': g.statusId === GoalStatus.Paused,
             'progress-error': g.statusId === GoalStatus.Cancelled
           }"
@@ -165,10 +166,12 @@
           <span class="text-base-content/70">{{ 'savingsGoalDetail.target' | translate }}</span>
           <span class="font-semibold text-base-content ml-1">{{ formatCurrency(isLumpSum() ? (g.baseAmount ?? g.targetAmount) : isProgrammedSavings() && g.baseAmount && g.numberOfInstallments ? g.baseAmount * g.numberOfInstallments : g.targetAmount, g.currencyId) }}</span>
         </div>
+        @if (g.statusId !== GoalStatus.Withdrawn) {
         <div>
           <span class="text-base-content/70">{{ 'savingsGoalDetail.remaining' | translate }}</span>
           <span class="font-semibold text-warning ml-1">{{ formatCurrency(remaining(), g.currencyId) }}</span>
         </div>
+        }
       </div>
     </div>
     }
@@ -431,6 +434,38 @@
                 </div>
               </div>
               <i class="fas fa-check-circle text-success text-xl"></i>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- Skipped Installments (omitidas a mano o canceladas al registrar el cobro) -->
+        @if (skippedInstallments().length > 0) {
+        <div class="mt-6">
+          <h3 class="text-lg font-semibold text-base-content mb-3 flex items-center gap-2">
+            <i class="fas fa-forward text-base-content/50"></i>
+            {{ 'savingsGoalDetail.skippedInstallments' | translate }}
+          </h3>
+          <div class="space-y-2">
+            @for (installment of skippedInstallments(); track installment.id) {
+            <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4 flex items-center justify-between opacity-50">
+              <div class="flex items-center gap-4">
+                <div class="badge badge-soft badge-neutral">
+                  #{{ installment.installmentNumber }}
+                </div>
+                <div>
+                  <p class="font-semibold text-base-content line-through">
+                    {{ formatCurrency(installment.amount, g.currencyId) }}
+                  </p>
+                  @if (installment.dueDate) {
+                  <p class="text-xs text-base-content/60">
+                    {{ 'savingsGoalDetail.dueOn' | translate }} {{ getFormattedDate(installment.dueDate) }}
+                  </p>
+                  }
+                </div>
+              </div>
+              <i class="fas fa-forward text-base-content/40 text-xl"></i>
             </div>
             }
           </div>
