@@ -38,6 +38,26 @@
       />
 
       @if (!isEditMode) {
+        <!-- Dirección: me prestan / yo presto -->
+        <div>
+          <p class="text-sm font-medium text-base-content mb-2">{{ 'upsertLoan.direction' | translate }}</p>
+          <div class="join w-full">
+            <button type="button" class="btn btn-sm join-item flex-1"
+              [ngClass]="isLent() ? 'btn-outline' : 'btn-error'"
+              (click)="setDirection(LoanDirection.Borrowed)" [disabled]="saving()">
+              <i class="fas fa-arrow-down mr-1"></i>{{ 'loans.directionBorrowed' | translate }}
+            </button>
+            <button type="button" class="btn btn-sm join-item flex-1"
+              [ngClass]="isLent() ? 'btn-success' : 'btn-outline'"
+              (click)="setDirection(LoanDirection.Lent)" [disabled]="saving()">
+              <i class="fas fa-arrow-up mr-1"></i>{{ 'loans.directionLent' | translate }}
+            </button>
+          </div>
+          <p class="text-xs text-base-content/60 mt-1">
+            {{ (isLent() ? 'upsertLoan.directionLentDesc' : 'upsertLoan.directionBorrowedDesc') | translate }}
+          </p>
+        </div>
+
         <!-- Moneda -->
         <app-select-input
           formControlName="currencyId"
@@ -52,19 +72,19 @@
         <app-institution-selector
           formControlName="loanEntityId"
           id="loanEntityId"
-          [label]="'upsertLoan.lenderEntity' | translate"
+          [label]="(isLent() ? 'upsertLoan.lentEntity' : 'upsertLoan.lenderEntity') | translate"
           name="loanEntityId"
         />
 
-        <!-- Nombre personalizado (Otros) -->
-        @if (isOtherEntity()) {
+        <!-- Nombre personalizado (Otros) o deudor (préstamo otorgado) -->
+        @if (isOtherEntity() || isLent()) {
           <app-text
             formControlName="lenderCustomName"
             type="text"
-            [label]="'upsertLoan.lenderCustomName' | translate"
+            [label]="(isLent() ? 'upsertLoan.debtorName' : 'upsertLoan.lenderCustomName') | translate"
             id="lenderCustomName"
             name="lenderCustomName"
-            [description]="'upsertLoan.lenderCustomNameExample' | translate"
+            [description]="(isLent() ? 'upsertLoan.debtorNameExample' : 'upsertLoan.lenderCustomNameExample') | translate"
             [disabled]="saving()"
           />
         }
@@ -96,7 +116,7 @@
           [label]="'upsertLoan.principalAmount' | translate"
           id="principalAmount"
           name="principalAmount"
-          [description]="'upsertLoan.principalAmountDesc' | translate"
+          [description]="(isLent() ? 'upsertLoan.principalAmountLentDesc' : 'upsertLoan.principalAmountDesc') | translate"
           [disabled]="saving()"
         />
 
@@ -136,16 +156,29 @@
           [disabled]="saving()"
         />
 
-        <!-- Tasa anual -->
-        <app-text
-          formControlName="annualRatePercentage"
-          type="number"
-          [label]="'upsertLoan.annualRate' | translate"
-          id="annualRatePercentage"
-          name="annualRatePercentage"
-          [description]="'upsertLoan.annualRateDesc' | translate"
-          [disabled]="saving()"
-        />
+        @if (isFlat()) {
+          <!-- Tasa total sobre el capital -->
+          <app-text
+            formControlName="totalRatePercentage"
+            type="number"
+            [label]="'upsertLoan.totalRate' | translate"
+            id="totalRatePercentage"
+            name="totalRatePercentage"
+            [description]="'upsertLoan.totalRateDesc' | translate"
+            [disabled]="saving()"
+          />
+        } @else {
+          <!-- Tasa anual -->
+          <app-text
+            formControlName="annualRatePercentage"
+            type="number"
+            [label]="'upsertLoan.annualRate' | translate"
+            id="annualRatePercentage"
+            name="annualRatePercentage"
+            [description]="'upsertLoan.annualRateDesc' | translate"
+            [disabled]="saving()"
+          />
+        }
       }
 
       <!-- Fecha de inicio -->
@@ -157,7 +190,8 @@
         [disabled]="saving() || isEditMode"
       />
 
-      <!-- Costos adicionales opcionales -->
+      <!-- Costos adicionales opcionales (no aplican a préstamos otorgados) -->
+      @if (!isLent()) {
       <div class="p-4 bg-base-100 border border-base-300 rounded-lg">
         <div class="flex items-start gap-2 mb-3">
           <i class="fas fa-receipt text-base-content/60 mt-1"></i>
@@ -194,6 +228,7 @@
           />
         </div>
       </div>
+      }
 
       <!-- Preview calculado -->
       @if (yieldInfo(); as info) {
@@ -211,11 +246,11 @@
               }
             </div>
             <div>
-              <p class="text-xs text-base-content/60">{{ 'upsertLoan.calculatedInterest' | translate }}</p>
-              <p class="text-lg font-bold text-error">{{ formatCurrency(info.totalInterest, formGroup.controls.currencyId.value ?? 1) }}</p>
+              <p class="text-xs text-base-content/60">{{ (isLent() ? 'upsertLoan.calculatedProfit' : 'upsertLoan.calculatedInterest') | translate }}</p>
+              <p class="text-lg font-bold" [ngClass]="isLent() ? 'text-success' : 'text-error'">{{ formatCurrency(info.totalInterest, formGroup.controls.currencyId.value ?? 1) }}</p>
             </div>
             <div>
-              <p class="text-xs text-base-content/60">{{ 'upsertLoan.calculatedTotal' | translate }}</p>
+              <p class="text-xs text-base-content/60">{{ (isLent() ? 'upsertLoan.calculatedTotalToCollect' : 'upsertLoan.calculatedTotal') | translate }}</p>
               <p class="text-lg font-bold text-base-content">{{ formatCurrency(info.totalAmount, formGroup.controls.currencyId.value ?? 1) }}</p>
             </div>
           </div>
@@ -247,7 +282,11 @@
           }
         </div>
 
-        @if (!isEditMode) {
+        @if (isFlat()) {
+          <p class="text-xs text-base-content/60 mt-2">{{ 'upsertLoan.flatRoundingNote' | translate }}</p>
+        }
+
+        @if (!isEditMode && !isLent()) {
           <!-- Cuota real (si el banco cobra diferente) -->
           <div class="p-4 bg-base-100 border border-base-300 rounded-lg">
             <div class="flex items-start gap-2 mb-3">

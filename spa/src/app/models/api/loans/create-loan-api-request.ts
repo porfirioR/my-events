@@ -16,5 +16,7 @@ export class CreateLoanApiRequest {
     public administrativeFees: number | null = null,
     public ivaPercentage: number | null = null,
     public insuranceAmount: number | null = null,
+    public direction: number = 1,
+    public totalRatePercentage: number | null = null,
   ) {}
 }

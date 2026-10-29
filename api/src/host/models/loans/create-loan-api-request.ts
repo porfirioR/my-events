@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, MinLength, ValidateIf } from 'class-validator';
 
 
 export class CreateLoanApiRequest {
@@ -28,10 +28,23 @@ export class CreateLoanApiRequest {
   @Min(1)
   principalAmount: number;
 
+  // En 'flat' se usa totalRatePercentage y la tasa anual la calcula el backend
+  @ValidateIf(o => o.amortizationType !== 'flat')
   @IsNumber()
   @Min(0)
   @Max(999)
   annualRatePercentage: number;
+
+  @ValidateIf(o => o.amortizationType === 'flat')
+  @IsNumber()
+  @Min(0)
+  @Max(999)
+  totalRatePercentage?: number;
+
+  // 1 Borrowed (me prestan), 2 Lent (yo presto). Default: Borrowed
+  @IsOptional()
+  @IsIn([1, 2])
+  direction?: number;
 
   @IsInt()
   @Min(1)

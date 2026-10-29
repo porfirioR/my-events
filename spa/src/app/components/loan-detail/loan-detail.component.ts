@@ -10,7 +10,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService, FormatterHelperService } from '../../services';
 import { useCurrencyStore, useFinancialInstitutionsStore, useLoansStore } from '../../store';
 import { PayLoanInstallmentApiRequest } from '../../models/api/loans';
-import { LoanType, LoanTypeLabels, InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
+import { LoanType, LoanTypeLabels, LoanDirection, LoanDirectionLabels, LoanDirectionBadgeColors, LoanDirectionIcons, AmortizationType, InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
+
+// Textos que cambian en un préstamo otorgado: los pagos son cobros (loanDetail.lent.*)
+const LENT_KEYS = new Set([
+  'remaining', 'totalPaid', 'totalInterest', 'totalAmount', 'pay', 'paymentHistory', 'noPayments',
+  'payInstallment', 'payAmount', 'paymentDate', 'confirmPay', 'paidSuccess', 'paidError',
+]);
 
 @Component({
   selector: 'app-loan-detail',
@@ -39,6 +45,7 @@ export class LoanDetailComponent implements OnInit {
 
   protected LoanType = LoanType;
   protected LoanTypeLabels = LoanTypeLabels;
+  protected AmortizationType = AmortizationType;
   protected InstallmentStatus = InstallmentStatus;
   protected InstallmentStatusBadgeColors = InstallmentStatusBadgeColors;
   protected InstallmentStatusColors = InstallmentStatusColors;
@@ -58,9 +65,16 @@ export class LoanDetailComponent implements OnInit {
     ),
   });
 
+  protected isLent = computed(() => this.loan()?.direction === LoanDirection.Lent);
+
+  protected key = (key: string): string =>
+    this.isLent() && LENT_KEYS.has(key) ? `loanDetail.lent.${key}` : `loanDetail.${key}`;
+
   protected entityLabel = computed(() => {
     const l = this.loan();
     if (!l) return '';
+    // En un préstamo otorgado lendercustomname es el deudor
+    if (this.isLent()) return l.lenderCustomName ?? '';
     const financialInstitution = this.financialInstitutionsStore.financialInstitutionsById().get(l.loanEntityId);
     if (!financialInstitution?.isOther) return financialInstitution?.name ?? '';
     return l.lenderCustomName || this.translate.instant('loans.entityOtros');
@@ -112,12 +126,12 @@ export class LoanDetailComponent implements OnInit {
       .subscribe({
         next: () => {
           this.isSaving.set(false);
-          this.alertService.showSuccess(this.translate.instant('loanDetail.paidSuccess'));
+          this.alertService.showSuccess(this.translate.instant(this.key('paidSuccess')));
           this.closePayModal();
         },
         error: (e) => {
           this.isSaving.set(false);
-          this.alertService.showError(this.translate.instant('loanDetail.paidError'));
+          this.alertService.showError(this.translate.instant(this.key('paidError')));
           throw e;
         },
       });
@@ -172,4 +186,10 @@ export class LoanDetailComponent implements OnInit {
     InstallmentStatusLabels[statusId as InstallmentStatus] ?? '';
   protected loanTypeLabel = (typeId: number): string =>
     LoanTypeLabels[typeId as LoanType] ?? '';
+  protected directionLabel = (direction: number): string =>
+    LoanDirectionLabels[(direction ?? LoanDirection.Borrowed) as LoanDirection] ?? '';
+  protected directionBadgeColor = (direction: number): string =>
+    LoanDirectionBadgeColors[(direction ?? LoanDirection.Borrowed) as LoanDirection] ?? '';
+  protected directionIcon = (direction: number): string =>
+    LoanDirectionIcons[(direction ?? LoanDirection.Borrowed) as LoanDirection] ?? '';
 }

@@ -21,6 +21,19 @@
             </button>
           </div>
 
+          <!-- Filtro por Dirección -->
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterDirection() === null}" (click)="setDirectionFilter(null)">
+              {{ 'loans.allDirections' | translate }}
+            </button>
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterDirection() === LoanDirection.Borrowed}" (click)="setDirectionFilter(LoanDirection.Borrowed)">
+              <i class="fas fa-arrow-down mr-1 text-error"></i>{{ 'loans.directionBorrowed' | translate }}
+            </button>
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterDirection() === LoanDirection.Lent}" (click)="setDirectionFilter(LoanDirection.Lent)">
+              <i class="fas fa-arrow-up mr-1 text-success"></i>{{ 'loans.directionLent' | translate }}
+            </button>
+          </div>
+
           <!-- Filtro por Tipo -->
           <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-sm btn-outline">
@@ -74,7 +87,7 @@
                     <div class="flex-grow">
                       <h3 class="font-semibold text-base-content text-lg">{{ loan.name }}</h3>
                       <p class="text-sm text-base-content/70">
-                        <i class="fas fa-building-columns mr-1"></i>{{ getEntityLabel(loan) }}
+                        <i class="fas mr-1" [ngClass]="loan.direction === LoanDirection.Lent ? 'fa-user' : 'fa-building-columns'"></i>{{ getEntityLabel(loan) }}
                         @if (loan.description) {
                           · {{ loan.description }}
                         }
@@ -140,6 +153,12 @@
                     <span class="badge badge-sm badge-soft gap-1" [ngClass]="getStatusColor(loan.statusId)">
                       <i [class]="'fas ' + getStatusIcon(loan.statusId)"></i>
                       {{ getStatusLabel(loan.statusId) | translate }}
+                    </span>
+
+                    <!-- Dirección -->
+                    <span class="badge badge-sm badge-soft gap-1" [ngClass]="getDirectionBadgeColor(loan.direction)">
+                      <i [class]="'fas ' + getDirectionIcon(loan.direction)"></i>
+                      {{ getDirectionLabel(loan.direction) | translate }}
                     </span>
 
                     <!-- Tipo -->

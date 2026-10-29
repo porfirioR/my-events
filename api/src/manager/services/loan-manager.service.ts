@@ -23,6 +23,8 @@ import {
 } from '../models/loans';
 import { LoanCalculatorHelper } from '../../utility/helpers/loan-calculator.helper';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
+import { AmortizationType } from '../../utility/enums/amortization-type.enum';
+import { LoanDirection } from '../../utility/enums';
 
 @Injectable()
 export class LoanManagerService {
@@ -56,12 +58,28 @@ export class LoanManagerService {
     // La entidad tiene que ser del sistema o propia del usuario (NotFound si no)
     await this.financialInstitutionAccessService.getById(request.loanEntityId, request.userId);
 
+    if (request.direction === LoanDirection.Lent && !request.lenderCustomName?.trim()) {
+      throw new BadRequestException('Debtor name is required for a lent loan');
+    }
+
+    const isFlat = request.amortizationType === AmortizationType.Flat;
+    if (isFlat && (request.totalRatePercentage === null || request.totalRatePercentage < 0)) {
+      throw new BadRequestException('Total rate percentage is required for flat amortization');
+    }
+    // En 'flat' la tasa anual es la equivalente de la total (columna DECIMAL(5,2): tope 999,99)
+    const annualRatePercentage = isFlat
+      ? Math.min(LoanCalculatorHelper.toEquivalentAnnualRate(request.totalRatePercentage!, request.numberOfInstallments), 999.99)
+      : request.annualRatePercentage;
+    const totalRatePercentage = isFlat ? request.totalRatePercentage : null;
+
     const calc = LoanCalculatorHelper.calculate(
       request.principalAmount,
-      request.annualRatePercentage,
+      annualRatePercentage,
       request.numberOfInstallments,
       request.amortizationType,
       request.startDate,
+      totalRatePercentage,
+      request.currencyId,
     );
 
     const actualInstallment = request.actualInstallmentAmount ?? calc.calculatedInstallmentAmount;
@@ -78,7 +96,7 @@ export class LoanManagerService {
       request.name,
       request.description,
       request.principalAmount,
-      request.annualRatePercentage,
+      annualRatePercentage,
       request.numberOfInstallments,
       calc.calculatedInstallmentAmount,
       calc.calculatedTotalInterest,
@@ -92,6 +110,8 @@ export class LoanManagerService {
       request.administrativeFees,
       request.ivaPercentage,
       request.insuranceAmount,
+      request.direction,
+      totalRatePercentage,
     );
 
     const loan = await this.loanAccessService.create(accessRequest);
@@ -223,6 +243,8 @@ export class LoanManagerService {
       loan.administrativeFees,
       loan.ivaPercentage,
       loan.insuranceAmount,
+      loan.direction,
+      loan.totalRatePercentage,
     );
 
   private mapInstallmentToModel = (i: any): LoanInstallmentModel =>

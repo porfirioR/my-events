@@ -25,6 +25,8 @@ export interface LoanEntity {
   administrativefees: number | null;
   ivapercentage: number | null;
   insuranceamount: number | null;
+  direction: number;
+  totalratepercentage: number | null;
   datecreated: string;
   dateupdated: string;
 }

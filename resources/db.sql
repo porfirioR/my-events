@@ -1195,3 +1195,21 @@ ALTER TABLE savingsgoals ADD CONSTRAINT check_rotating_payout CHECK (
 INSERT INTO savingsstatus (id, name, description) VALUES
 (5, 'Withdrawn', 'Savings goal has been paid out or withdrawn - no longer counts toward net worth')
 ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- PARTE 22: PRÉSTAMOS OTORGADOS (direction) Y AMORTIZACIÓN 'flat' - issue #219
+-- =====================================================
+-- direction: 1 Borrowed (me prestan, resta al patrimonio), 2 Lent (yo presto, suma).
+-- En un préstamo Lent, lendercustomname es el deudor y los pagos son cobros.
+ALTER TABLE loans ADD COLUMN IF NOT EXISTS direction SMALLINT NOT NULL DEFAULT 1 CHECK (direction IN (1, 2));
+ALTER TABLE loans ADD CONSTRAINT check_loan_lent_debtor CHECK (direction = 1 OR lendercustomname IS NOT NULL);
+
+-- 'flat': tasa total sobre el capital (ej. 10% en 4 meses), no anual.
+-- interés = capital × totalratepercentage / 100, repartido en cuotas iguales; la cuota se
+-- redondea hacia arriba (a 1.000 en guaraníes). annualratepercentage guarda la tasa anual
+-- equivalente (total × 12 / cuotas), solo informativa: convertir y volver pierde precisión.
+ALTER TABLE loans ADD COLUMN IF NOT EXISTS totalratepercentage DECIMAL(5,2) NULL CHECK (totalratepercentage IS NULL OR totalratepercentage >= 0);
+ALTER TABLE loans ADD CONSTRAINT check_loan_amortization_type CHECK (amortizationtype IN ('french', 'simple', 'flat'));
+ALTER TABLE loans ADD CONSTRAINT check_loan_flat_total_rate CHECK (amortizationtype <> 'flat' OR totalratepercentage IS NOT NULL);
+
+CREATE INDEX IF NOT EXISTS idx_loans_user_direction_status ON loans(userid, direction, statusid);

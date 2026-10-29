@@ -10,6 +10,7 @@ export { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels } from 
 export { InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from './installment-status.enum';
 export { SavingsFrequency, SavingsFrequencyLabels } from './savings-frequency.enum';
 export { LoanType, LoanTypeLabels, LoanTypeBadgeColors } from './loan-type.enum';
+export { LoanDirection, LoanDirectionLabels, LoanDirectionBadgeColors, LoanDirectionIcons } from './loan-direction.enum';
 export { FinancialInstitutionType, FinancialInstitutionTypeLabels, FinancialInstitutionTypeIcons } from './financial-institution-type.enum';
 export { AmortizationType, AmortizationTypeLabels } from './amortization-type.enum';
 export { MovementType } from './movement-type.enum';

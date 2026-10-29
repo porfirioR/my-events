@@ -9,8 +9,11 @@
       <div class="grow">
         <h1 class="text-2xl font-bold text-base-content">{{ l.name }}</h1>
         <p class="text-base-content/70 text-sm">
-          <i class="fas fa-building-columns mr-1"></i>{{ entityLabel() }}
+          <i class="fas mr-1" [ngClass]="isLent() ? 'fa-user' : 'fa-building-columns'"></i>{{ entityLabel() }}
           · {{ loanTypeLabel(l.loanTypeId) | translate }}
+          <span class="badge badge-sm badge-soft gap-1 ml-1" [ngClass]="directionBadgeColor(l.direction)">
+            <i [class]="'fas ' + directionIcon(l.direction)"></i>{{ directionLabel(l.direction) | translate }}
+          </span>
         </p>
       </div>
       @if (l.statusId !== 2) {
@@ -27,11 +30,11 @@
         <div class="stat-value text-lg text-base-content">{{ formatCurrency(l.principalAmount, l.currencyId) }}</div>
       </div>
       <div class="stat bg-base-200 rounded-xl p-4">
-        <div class="stat-title text-xs">{{ 'loanDetail.remaining' | translate }}</div>
+        <div class="stat-title text-xs">{{ key('remaining') | translate }}</div>
         <div class="stat-value text-lg text-warning">{{ formatCurrency(remaining(), l.currencyId) }}</div>
       </div>
       <div class="stat bg-base-200 rounded-xl p-4">
-        <div class="stat-title text-xs">{{ 'loanDetail.totalPaid' | translate }}</div>
+        <div class="stat-title text-xs">{{ key('totalPaid') | translate }}</div>
         <div class="stat-value text-lg text-success">{{ formatCurrency(l.totalPaid, l.currencyId) }}</div>
       </div>
       <div class="stat bg-base-200 rounded-xl p-4">
@@ -51,7 +54,11 @@
         [value]="l.totalPaid" [max]="l.actualTotalAmount || 1"></progress>
       <div class="flex justify-between text-xs text-base-content/60 mt-1">
         <span>{{ l.paidInstallmentsCount }}/{{ l.numberOfInstallments }} {{ 'loans.installments' | translate }}</span>
-        <span>{{ 'loanDetail.rate' | translate }}: {{ l.annualRatePercentage }}%</span>
+        @if (l.amortizationType === AmortizationType.Flat && l.totalRatePercentage !== null) {
+          <span>{{ 'loanDetail.totalRate' | translate }}: {{ l.totalRatePercentage }}% ({{ 'loanDetail.rate' | translate }} {{ l.annualRatePercentage }}%)</span>
+        } @else {
+          <span>{{ 'loanDetail.rate' | translate }}: {{ l.annualRatePercentage }}%</span>
+        }
       </div>
     </div>
 
@@ -62,11 +69,11 @@
         <p class="font-semibold">{{ formatCurrency(l.calculatedInstallmentAmount, l.currencyId) }}</p>
       </div>
       <div>
-        <p class="text-base-content/60">{{ 'loanDetail.totalInterest' | translate }}</p>
-        <p class="font-semibold text-error">{{ formatCurrency(l.calculatedTotalInterest, l.currencyId) }}</p>
+        <p class="text-base-content/60">{{ key('totalInterest') | translate }}</p>
+        <p class="font-semibold" [ngClass]="isLent() ? 'text-success' : 'text-error'">{{ formatCurrency(l.calculatedTotalInterest, l.currencyId) }}</p>
       </div>
       <div>
-        <p class="text-base-content/60">{{ 'loanDetail.totalAmount' | translate }}</p>
+        <p class="text-base-content/60">{{ key('totalAmount') | translate }}</p>
         <p class="font-semibold">{{ formatCurrency(l.actualTotalAmount, l.currencyId) }}</p>
       </div>
       <div>
@@ -117,7 +124,7 @@
           </p>
         </div>
         <button type="button" class="btn btn-sm btn-primary" (click)="openPayModal(next.id)">
-          <i class="fas fa-credit-card mr-1"></i>{{ 'loanDetail.pay' | translate }}
+          <i class="fas fa-credit-card mr-1"></i>{{ key('pay') | translate }}
         </button>
       </div>
     }
@@ -128,7 +135,7 @@
         <i class="fas fa-table mr-1"></i>{{ 'loanDetail.amortizationTable' | translate }}
       </button>
       <button class="tab" [ngClass]="{'tab-active': activeTab() === 'payments'}" (click)="setTab('payments')">
-        <i class="fas fa-receipt mr-1"></i>{{ 'loanDetail.paymentHistory' | translate }}
+        <i class="fas fa-receipt mr-1"></i>{{ key('paymentHistory') | translate }}
       </button>
     </div>
 
@@ -216,7 +223,7 @@
         } @empty {
           <div class="text-center py-12 text-base-content/50">
             <i class="fas fa-receipt text-3xl mb-3 block"></i>
-            <p>{{ 'loanDetail.noPayments' | translate }}</p>
+            <p>{{ key('noPayments') | translate }}</p>
           </div>
         }
       </div>
@@ -233,29 +240,29 @@
 <dialog id="pay-modal" class="modal" (close)="closePayModal()">
   <div class="modal-box">
     <h3 class="font-bold text-lg mb-4">
-      <i class="fas fa-credit-card mr-2 text-warning"></i>{{ 'loanDetail.payInstallment' | translate }}
+      <i class="fas fa-credit-card mr-2 text-warning"></i>{{ key('payInstallment') | translate }}
     </h3>
     <form [formGroup]="payForm" class="space-y-4">
       <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ 'loanDetail.payAmount' | translate }}</span></div>
+        <div class="label"><span class="label-text">{{ key('payAmount') | translate }}</span></div>
         <input type="number" formControlName="amount"
           class="input input-bordered w-full"
           [ngClass]="{'input-error': payForm.controls.amount.invalid && payForm.controls.amount.touched}"
           min="1" />
         @if (payForm.controls.amount.touched && payForm.controls.amount.hasError('required')) {
-          <p class="text-error text-xs mt-1">{{ 'loanDetail.payAmount' | translate }} {{ 'validation.required' | translate }}</p>
+          <p class="text-error text-xs mt-1">{{ key('payAmount') | translate }} {{ 'validation.required' | translate }}</p>
         }
         @if (payForm.controls.amount.touched && payForm.controls.amount.hasError('min')) {
           <p class="text-error text-xs mt-1">{{ 'validation.min' | translate: { value: 1 } }}</p>
         }
       </label>
       <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ 'loanDetail.paymentDate' | translate }}</span></div>
+        <div class="label"><span class="label-text">{{ key('paymentDate') | translate }}</span></div>
         <input type="date" formControlName="paymentDate"
           class="input input-bordered w-full"
           [ngClass]="{'input-error': payForm.controls.paymentDate.invalid && payForm.controls.paymentDate.touched}" />
         @if (payForm.controls.paymentDate.touched && payForm.controls.paymentDate.hasError('required')) {
-          <p class="text-error text-xs mt-1">{{ 'loanDetail.paymentDate' | translate }} {{ 'validation.required' | translate }}</p>
+          <p class="text-error text-xs mt-1">{{ key('paymentDate') | translate }} {{ 'validation.required' | translate }}</p>
         }
       </label>
       <label class="form-control w-full">
@@ -269,7 +276,7 @@
       </button>
       <button type="button" class="btn btn-primary" (click)="confirmPay()" [disabled]="isSaving() || payForm.invalid">
         @if (isSaving()) { <span class="loading loading-spinner loading-sm"></span> }
-        {{ 'loanDetail.confirmPay' | translate }}
+        {{ key('confirmPay') | translate }}
       </button>
     </div>
   </div>

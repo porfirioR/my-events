@@ -1079,7 +1079,11 @@
     "deleteMessage": "Are you sure you want to delete the loan \"{{name}}\"?",
     "deletedSuccess": "Loan deleted successfully",
     "loanCompleted": "Loan paid off",
-    "entityOtros": "Other"
+    "entityOtros": "Other",
+    "amortFlat": "Total rate (flat interest on principal)",
+    "directionBorrowed": "Borrowed",
+    "directionLent": "Lent",
+    "allDirections": "All"
   },
   "loanDetail": {
     "principal": "Principal",
@@ -1119,7 +1123,23 @@
     "skippedError": "Error skipping installment",
     "administrativeFees": "Administrative fees",
     "ivaOnInterest": "VAT on interest",
-    "insurance": "Insurance"
+    "insurance": "Insurance",
+    "totalRate": "Total rate",
+    "lent": {
+      "remaining": "Remaining to collect",
+      "totalPaid": "Total collected",
+      "totalInterest": "Profit",
+      "totalAmount": "Total to collect",
+      "pay": "Collect",
+      "paymentHistory": "Collection history",
+      "noPayments": "No collections recorded",
+      "payInstallment": "Record installment collection",
+      "payAmount": "Amount collected",
+      "paymentDate": "Collection date",
+      "confirmPay": "Confirm collection",
+      "paidSuccess": "Installment recorded as collected",
+      "paidError": "Error recording the collection"
+    }
   },
   "upsertLoan": {
     "newTitle": "New Loan",
@@ -1166,6 +1186,19 @@
     "createdSuccess": "Loan created successfully",
     "createdError": "Error creating loan",
     "updatedSuccess": "Loan updated successfully",
-    "updatedError": "Error updating loan"
+    "updatedError": "Error updating loan",
+    "direction": "Who lends?",
+    "directionBorrowedDesc": "You borrowed money: payments come out of your pocket",
+    "directionLentDesc": "You lent money to someone: payments are collections",
+    "lentEntity": "Institution / channel",
+    "debtorName": "Debtor name",
+    "debtorNameExample": "E.g.: John Doe",
+    "principalAmountLentDesc": "Amount you lend (without interest)",
+    "amortFlatDesc": "Total interest on the principal for the whole term, in equal installments",
+    "totalRate": "Total rate (%)",
+    "totalRateDesc": "Interest for the whole term, not annual. E.g.: 10 = 10% of the principal",
+    "calculatedProfit": "Profit",
+    "calculatedTotalToCollect": "Total to collect",
+    "flatRoundingNote": "The installment is rounded up (to 1,000 in guaraníes); the difference counts as interest."
   }
 }
