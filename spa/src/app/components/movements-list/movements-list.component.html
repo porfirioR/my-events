@@ -1,0 +1,31 @@
+@if (items().length === 0) {
+  <div class="text-center py-12 text-base-content/50">
+    <i class="fas fa-receipt text-3xl mb-3 block" aria-hidden="true"></i>
+    <p>{{ emptyLabel() | translate }}</p>
+  </div>
+} @else {
+  <ul class="space-y-2" role="list">
+    @for (item of items(); track item.id) {
+      <li class="flex items-center gap-4 rounded-xl border border-base-300/60 bg-base-100 p-4">
+        <span class="w-10 h-10 shrink-0 rounded-full grid place-items-center"
+          [ngClass]="item.isOutflow ? 'bg-warning/15' : 'bg-success/15'">
+          <i class="fas" [ngClass]="item.isOutflow ? 'fa-arrow-up text-warning' : 'fa-check text-success'" aria-hidden="true"></i>
+        </span>
+        <div class="grow min-w-0">
+          <p class="font-semibold" [class.text-warning]="item.isOutflow" [class.text-base-content]="!item.isOutflow">
+            @if (showSign()) { {{ item.isOutflow ? '-' : '+' }} }{{ formatCurrency(item.amount) }}
+          </p>
+          @if (item.description) {
+            <p class="text-sm text-base-content/70 truncate">{{ item.description }}</p>
+          }
+          @if (item.installmentNumber !== null) {
+            <p class="text-xs text-info">
+              <i class="fas fa-link mr-1" aria-hidden="true"></i>{{ 'paymentSchedule.linkedToInstallment' | translate: { number: item.installmentNumber } }}
+            </p>
+          }
+        </div>
+        <time class="text-xs text-base-content/60 whitespace-nowrap">{{ formatDate(item.date) }}</time>
+      </li>
+    }
+  </ul>
+}

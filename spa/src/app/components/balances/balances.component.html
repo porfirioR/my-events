@@ -1,4 +1,4 @@
-<section class="container mx-auto px-4 py-6 md:py-8">
+<section>
   <article class="max-w-6xl mx-auto">
     <!-- Header -->
     <header class="mb-6 flex items-start justify-between gap-4">
@@ -23,7 +23,7 @@
         }
       } @else {
         <!-- Net Balance -->
-        <article class="col-span-2 lg:col-span-1 lg:order-last rounded-box bg-base-200 dark:bg-base-300 shadow-sm p-4 md:p-5 min-w-0">
+        <article class="col-span-2 lg:col-span-1 lg:order-last rounded-box bg-base-100 shadow-sm p-4 md:p-5 min-w-0">
           <div class="flex items-center justify-between gap-2">
             <p class="text-sm text-base-content/70">{{ 'balances.netBalance' | translate }}</p>
             <i class="fas fa-balance-scale text-xl"
@@ -48,7 +48,7 @@
         </article>
 
         <!-- They Owe Me -->
-        <article class="rounded-box bg-base-200 dark:bg-base-300 shadow-sm p-4 md:p-5 min-w-0">
+        <article class="rounded-box bg-base-100 shadow-sm p-4 md:p-5 min-w-0">
           <div class="flex items-center justify-between gap-2">
             <p class="text-sm text-base-content/70">{{ 'balances.theyOweMe' | translate }}</p>
             <i class="fas fa-arrow-up text-success"></i>
@@ -62,7 +62,7 @@
         </article>
 
         <!-- I Owe Them -->
-        <article class="rounded-box bg-base-200 dark:bg-base-300 shadow-sm p-4 md:p-5 min-w-0">
+        <article class="rounded-box bg-base-100 shadow-sm p-4 md:p-5 min-w-0">
           <div class="flex items-center justify-between gap-2">
             <p class="text-sm text-base-content/70">{{ 'balances.iOweThem' | translate }}</p>
             <i class="fas fa-arrow-down text-error"></i>
@@ -90,7 +90,7 @@
           @for (view of balanceViews(); track view.balance.collaboratorId) {
             @let balance = view.balance;
             @let expanded = expandedBalanceId() === balance.collaboratorId;
-            <li class="rounded-box bg-base-200 dark:bg-base-300 shadow-sm overflow-hidden">
+            <li class="rounded-box bg-base-100 shadow-sm overflow-hidden">
               <article class="p-4 md:p-5">
                 <!-- Collaborator + net -->
                 <div class="flex items-center gap-3 md:gap-4">
@@ -169,17 +169,17 @@
 
                 <!-- Quick facts -->
                 <dl class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                  <div class="rounded-lg bg-base-100 dark:bg-base-200 px-3 py-2">
+                  <div class="rounded-lg bg-base-200 dark:bg-base-300 px-3 py-2">
                     <dt class="text-xs text-base-content/60">{{ 'balances.pendingMovements' | translate }}</dt>
                     <dd class="font-semibold tabular-nums">
                       @if (isTransactionsLoaded()) { {{ view.pendingCount }} } @else { <span class="loading loading-dots loading-xs"></span> }
                     </dd>
                   </div>
-                  <div class="rounded-lg bg-base-100 dark:bg-base-200 px-3 py-2">
+                  <div class="rounded-lg bg-base-200 dark:bg-base-300 px-3 py-2">
                     <dt class="text-xs text-base-content/60">{{ 'balances.lastMovement' | translate }}</dt>
                     <dd class="font-semibold">{{ view.lastMovementDate ? (view.lastMovementDate | localizedDate:'mediumDate') : '—' }}</dd>
                   </div>
-                  <div class="rounded-lg bg-base-100 dark:bg-base-200 px-3 py-2 col-span-2 sm:col-span-1">
+                  <div class="rounded-lg bg-base-200 dark:bg-base-300 px-3 py-2 col-span-2 sm:col-span-1">
                     <dt class="text-xs text-base-content/60">{{ 'balances.pendingSince' | translate }}</dt>
                     <dd class="font-semibold">{{ view.oldestPendingDate ? (view.oldestPendingDate | localizedDate:'mediumDate') : '—' }}</dd>
                   </div>
@@ -287,7 +287,7 @@
 
           <!-- Empty State -->
           @if (balanceViews().length === 0) {
-            <li class="rounded-box bg-base-200 dark:bg-base-300 text-center py-12 px-4">
+            <li class="rounded-box bg-base-100 text-center py-12 px-4">
               <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
                 <i class="fas fa-balance-scale text-2xl text-base-content/50"></i>
               </figure>

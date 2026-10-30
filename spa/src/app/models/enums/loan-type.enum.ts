@@ -19,5 +19,5 @@ export const LoanTypeBadgeColors: Record<LoanType, string> = {
   [LoanType.Hipoteca]: 'badge-secondary',
   [LoanType.Auto]: 'badge-accent',
   [LoanType.Tarjeta]: 'badge-warning',
-  [LoanType.Informal]: 'badge-neutral',
+  [LoanType.Informal]: 'badge-ghost',
 };

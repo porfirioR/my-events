@@ -58,7 +58,7 @@ export const ProgressionTypeBadgeColors: Record<ProgressionType, string> = {
   [ProgressionType.FreeForm]: 'badge-accent',
   [ProgressionType.Scheduled]: 'badge-info',
   [ProgressionType.FixedDeposit]: 'badge-warning',
-  [ProgressionType.CDA]: 'badge-neutral',
+  [ProgressionType.CDA]: 'badge-ghost',
   [ProgressionType.MutualFund]: 'badge-success',
   [ProgressionType.Rotating]: 'badge-secondary',
 };

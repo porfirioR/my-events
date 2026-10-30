@@ -4,6 +4,7 @@ import {
   inject, effect, computed, signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { startWith } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -18,7 +19,7 @@ import { useLoansStore } from '../../store/loans.store';
 import { useFinancialInstitutionsStore } from '../../store/financial-institutions.store';
 import { InstitutionSelectorComponent } from '../institution-selector/institution-selector.component';
 import { KeyValueViewModel } from '../../models/view/key-value-view-model';
-import { LoanType, LoanTypeLabels, AmortizationType, AmortizationTypeLabels, Configurations } from '../../models/enums';
+import { LoanType, LoanTypeLabels, AmortizationType, AmortizationTypeLabels, Configurations, LoanDirection, FinancialInstitutionType } from '../../models/enums';
 import { CreateLoanApiRequest, UpdateLoanApiRequest } from '../../models/api/loans';
 
 interface LoanFormGroup {
@@ -40,7 +41,13 @@ interface LoanFormGroup {
   administrativeFees: FormControl<number | null>;
   ivaPercentage: FormControl<number | null>;
   insuranceAmount: FormControl<number | null>;
+  direction: FormControl<number>;
+  totalRatePercentage: FormControl<number | null>;
 }
+
+// Guaraní: la cuota 'flat' se redondea hacia arriba a múltiplos de 1.000 (igual que la api)
+const GUARANI_CURRENCY_ID = 4;
+const GUARANI_ROUNDING_STEP = 1000;
 
 @Component({
   selector: 'app-upsert-loan',
@@ -76,6 +83,7 @@ export class UpsertLoanComponent implements OnInit {
       ...Object.values(AmortizationTypeLabels),
       'upsertLoan.amortFrenchDesc',
       'upsertLoan.amortSimpleDesc',
+      'upsertLoan.amortFlatDesc',
     ]),
     { initialValue: {} as Record<string, string> }
   );
@@ -92,6 +100,7 @@ export class UpsertLoanComponent implements OnInit {
     return [
       new KeyValueViewModel(AmortizationType.French, t[AmortizationTypeLabels[AmortizationType.French]] ?? '', t['upsertLoan.amortFrenchDesc'] ?? ''),
       new KeyValueViewModel(AmortizationType.Simple, t[AmortizationTypeLabels[AmortizationType.Simple]] ?? '', t['upsertLoan.amortSimpleDesc'] ?? ''),
+      new KeyValueViewModel(AmortizationType.Flat, t[AmortizationTypeLabels[AmortizationType.Flat]] ?? '', t['upsertLoan.amortFlatDesc'] ?? ''),
     ];
   });
 
@@ -114,8 +123,12 @@ export class UpsertLoanComponent implements OnInit {
   public formGroup: FormGroup<LoanFormGroup>;
   protected entityIdSignal!: ReturnType<typeof toSignal<number | null>>;
   protected isOtherEntity!: ReturnType<typeof computed<boolean>>;
+  protected isLent!: ReturnType<typeof computed<boolean>>;
+  protected isFlat!: ReturnType<typeof computed<boolean>>;
+  protected LoanDirection = LoanDirection;
 
   constructor() {
+    preventUnsavedUnload(this);
     const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd') as string;
 
     this.formGroup = new FormGroup<LoanFormGroup>({
@@ -137,6 +150,8 @@ export class UpsertLoanComponent implements OnInit {
       administrativeFees: new FormControl<number | null>(null),
       ivaPercentage: new FormControl<number | null>(null, [Validators.min(0), Validators.max(100)]),
       insuranceAmount: new FormControl<number | null>(null),
+      direction: new FormControl<number>(LoanDirection.Borrowed, { nonNullable: true }),
+      totalRatePercentage: new FormControl<number | null>(null),
     });
 
     this.entityIdSignal = toSignal(
@@ -150,6 +165,11 @@ export class UpsertLoanComponent implements OnInit {
       const entityId = this.entityIdSignal();
       return !!entityId && !!this.financialInstitutionsStore.financialInstitutionsById().get(entityId)?.isOther;
     });
+
+    const directionSignal = toSignal(this.formGroup.controls.direction.valueChanges, { initialValue: this.formGroup.controls.direction.value });
+    this.isLent = computed(() => +directionSignal() === LoanDirection.Lent);
+    const amortizationSignal = toSignal(this.formGroup.controls.amortizationType.valueChanges, { initialValue: this.formGroup.controls.amortizationType.value });
+    this.isFlat = computed(() => amortizationSignal() === AmortizationType.Flat);
 
     effect(() => {
       const currencies = this.currencyStore.getAllCurrencies();
@@ -174,10 +194,23 @@ export class UpsertLoanComponent implements OnInit {
       this.termList = terms.map(t =>
         new KeyValueViewModel(t.termMonths, `${t.termMonths} ${months}`, `${this.translate.instant('upsertLoan.suggestedRate')}: ${t.annualRatePercentage}%`)
       );
+    });
+
+    // Prestamista (Otros) o deudor (préstamo otorgado): nombre obligatorio
+    effect(() => {
       this.formGroup.controls.lenderCustomName.setValidators(
-        this.isOtherEntity() ? [Validators.required, Validators.maxLength(200)] : []
+        this.isOtherEntity() || this.isLent() ? [Validators.required, Validators.maxLength(200)] : []
       );
       this.formGroup.controls.lenderCustomName.updateValueAndValidity();
+    });
+
+    // 'flat' usa tasa total sobre el capital; las demás, tasa anual
+    effect(() => {
+      const flat = this.isFlat();
+      this.formGroup.controls.annualRatePercentage.setValidators(flat ? [] : [Validators.required, Validators.min(0), Validators.max(999)]);
+      this.formGroup.controls.totalRatePercentage.setValidators(flat ? [Validators.required, Validators.min(0), Validators.max(999)] : []);
+      this.formGroup.controls.annualRatePercentage.updateValueAndValidity({ emitEvent: false });
+      this.formGroup.controls.totalRatePercentage.updateValueAndValidity({ emitEvent: false });
     });
 
     const recalc = () => this.recalculate();
@@ -191,6 +224,38 @@ export class UpsertLoanComponent implements OnInit {
     this.formGroup.controls.administrativeFees.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
     this.formGroup.controls.ivaPercentage.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
     this.formGroup.controls.insuranceAmount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
+    this.formGroup.controls.totalRatePercentage.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
+    this.formGroup.controls.currencyId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(recalc);
+    this.formGroup.controls.direction.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(direction => this.onDirectionChange(+direction));
+  }
+
+  protected setDirection(direction: LoanDirection): void {
+    this.formGroup.controls.direction.setValue(direction);
+  }
+
+  // Un préstamo otorgado suele ser entre personas: tasa total ('flat'), tipo Informal,
+  // entidad de tipo Persona y sin costos de banco
+  private onDirectionChange(direction: number): void {
+    if (this.isEditMode) return;
+    const lent = direction === LoanDirection.Lent;
+    this.formGroup.controls.loanTypeId.setValue(lent ? LoanType.Informal : LoanType.Personal);
+    this.formGroup.controls.amortizationType.setValue(lent ? AmortizationType.Flat : AmortizationType.French);
+    const person = this.financialInstitutionsStore.financialInstitutions().find(f => f.type === FinancialInstitutionType.Person);
+    if (lent) {
+      this.formGroup.patchValue({ administrativeFees: null, ivaPercentage: null, insuranceAmount: null });
+      if (person && !this.formGroup.controls.loanEntityId.value) {
+        this.formGroup.controls.loanEntityId.setValue(person.id);
+      }
+    } else {
+      // Volver a "Recibido": quitar la entidad Persona que se puso sola y el nombre del deudor,
+      // que quedaría oculto y se guardaría como lendercustomname (salvo entidad "Otros", que lo usa)
+      if (person && this.formGroup.controls.loanEntityId.value === person.id) {
+        this.formGroup.controls.loanEntityId.setValue(null);
+      }
+      if (!this.isOtherEntity()) {
+        this.formGroup.controls.lenderCustomName.setValue(null);
+      }
+    }
   }
 
   ngOnInit(): void {
@@ -220,9 +285,11 @@ export class UpsertLoanComponent implements OnInit {
 
   private recalculate(): void {
     const principal = this.formGroup.controls.principalAmount.value;
-    const rate = this.formGroup.controls.annualRatePercentage.value;
-    const n = this.formGroup.controls.numberOfInstallments.value;
     const amortType = this.formGroup.controls.amortizationType.value;
+    const rate = amortType === AmortizationType.Flat
+      ? this.formGroup.controls.totalRatePercentage.value
+      : this.formGroup.controls.annualRatePercentage.value;
+    const n = this.formGroup.controls.numberOfInstallments.value;
 
     if (!principal || rate === null || rate === undefined || !n) {
       this.calculatedInstallment.set(null);
@@ -238,7 +305,15 @@ export class UpsertLoanComponent implements OnInit {
     // La última cuota absorbe el redondeo (ej. 1.000.000 en 3 → 333.333, 333.333, 333.334)
     let lastInstallment: number;
 
-    if (amortType === AmortizationType.Simple) {
+    if (amortType === AmortizationType.Flat) {
+      // Igual que LoanCalculatorHelper.calculateFlat (api): la cuota redondeada hacia arriba es la real
+      const step = +(this.formGroup.controls.currencyId.value ?? 0) === GUARANI_CURRENCY_ID ? GUARANI_ROUNDING_STEP : 1;
+      const interest = Math.round(+principal * (+rate / 100));
+      installment = Math.ceil((+principal + interest) / n / step) * step;
+      totalAmount = installment * n;
+      totalInterest = totalAmount - +principal;
+      lastInstallment = installment;
+    } else if (amortType === AmortizationType.Simple) {
       totalInterest = Math.round(+principal * (rate / 100) * (n / 12));
       totalAmount = +principal + totalInterest;
       // Igual que LoanCalculatorHelper.calculateSimple (api): redondeo hacia abajo
@@ -304,13 +379,19 @@ export class UpsertLoanComponent implements OnInit {
       administrativeFees: loan.administrativeFees ?? null,
       ivaPercentage: loan.ivaPercentage ?? null,
       insuranceAmount: loan.insuranceAmount ?? null,
+      totalRatePercentage: loan.totalRatePercentage ?? null,
     }, { emitEvent: false });
+    // Con evento para que isLent/isFlat se actualicen (onDirectionChange no actúa en edición)
+    this.formGroup.controls.direction.setValue(loan.direction ?? LoanDirection.Borrowed);
+    this.formGroup.controls.amortizationType.setValue(loan.amortizationType, { emitEvent: true });
     // Set loanEntityId with event so entityIdSignal receives the value before the control is disabled
     this.formGroup.controls.loanEntityId.setValue(loan.loanEntityId);
     this.formGroup.controls.principalAmount.disable();
     this.formGroup.controls.annualRatePercentage.disable();
     this.formGroup.controls.numberOfInstallments.disable();
     this.formGroup.controls.amortizationType.disable();
+    this.formGroup.controls.totalRatePercentage.disable();
+    this.formGroup.controls.direction.disable({ emitEvent: false });
     this.formGroup.controls.loanEntityId.disable({ emitEvent: false });
     this.recalculate();
     this.formGroup.controls.actualInstallmentAmount.setValue(loan.actualInstallmentAmount, { emitEvent: false });
@@ -350,12 +431,14 @@ export class UpsertLoanComponent implements OnInit {
       const request = new CreateLoanApiRequest(
         +values.currencyId!, +values.loanTypeId!, +values.loanEntityId!,
         values.lenderCustomName ?? null, values.name!, values.description ?? null,
-        +values.principalAmount!, +values.annualRatePercentage!, +values.numberOfInstallments!,
+        +values.principalAmount!, this.toNumberOrNull(values.annualRatePercentage) ?? 0, +values.numberOfInstallments!,
         this.toNumberOrNull(values.actualInstallmentAmount), this.toNumberOrNull(values.actualTotalAmount),
         values.amortizationType!, values.startDate!,
         this.toNumberOrNull(values.administrativeFees),
         this.toNumberOrNull(values.ivaPercentage),
         this.toNumberOrNull(values.insuranceAmount),
+        +values.direction,
+        values.amortizationType === AmortizationType.Flat ? this.toNumberOrNull(values.totalRatePercentage) : null,
       );
       this.loansStore.createLoan(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {

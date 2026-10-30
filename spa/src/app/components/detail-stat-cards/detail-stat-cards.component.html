@@ -1,0 +1,13 @@
+<div class="grid grid-cols-2 gap-4" [ngClass]="gridClass()">
+  @for (card of cards(); track card.label) {
+    <div class="bg-base-100 rounded-xl border border-base-300/60 shadow-sm p-4">
+      <p class="text-xs text-base-content/60">{{ card.label | translate }}</p>
+      <p class="text-lg font-bold mt-1" [ngClass]="card.valueClass || 'text-base-content'">
+        {{ card.value }} @if (card.valueSuffix) { {{ card.valueSuffix | translate }} }
+      </p>
+      @if (card.description) {
+        <p class="text-xs text-base-content/50">{{ card.description | translate }}</p>
+      }
+    </div>
+  }
+</div>

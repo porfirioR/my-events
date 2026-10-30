@@ -27,5 +27,7 @@ export class LoanModel {
     public readonly administrativeFees: number | null = null,
     public readonly ivaPercentage: number | null = null,
     public readonly insuranceAmount: number | null = null,
+    public readonly direction: number = 1,
+    public readonly totalRatePercentage: number | null = null,
   ) {}
 }

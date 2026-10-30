@@ -1,7 +1,12 @@
 @if (authStore.isLoggedIn() && !authStore.needsEmailVerification()) {
   <app-header/>
-  <main class="pt-16">
-    <router-outlet></router-outlet>
+  <app-sidebar/>
+  <!-- Layout común: mismo fondo, ancho y márgenes en todas las páginas -->
+  <main class="pt-16 min-h-screen bg-base-200 dark:bg-base-300 transition-[padding] duration-300" [class.lg:pl-64]="!isSidebarCollapsed()" [class.lg:pl-20]="isSidebarCollapsed()">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <app-breadcrumb/>
+      <router-outlet></router-outlet>
+    </div>
   </main>
 } @else {
   <router-outlet></router-outlet>

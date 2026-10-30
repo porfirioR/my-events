@@ -30,6 +30,7 @@ import {
 } from '../models/loans';
 import { MessageModel } from '../models/message.model';
 import { AmortizationType } from '../../utility/enums/amortization-type.enum';
+import { LoanDirection } from '../../utility/enums';
 
 @Controller('loans')
 @UseGuards(PrivateEndpointGuard)
@@ -65,9 +66,10 @@ export class LoansController {
   @Post()
   async createLoan(@Body() apiRequest: CreateLoanApiRequest): Promise<LoanModel> {
     const userId = await this.currentUserService.getCurrentUserId();
-    const amortType = apiRequest.amortizationType === AmortizationType.Simple
-      ? AmortizationType.Simple
+    const amortType = [AmortizationType.Simple, AmortizationType.Flat].includes(apiRequest.amortizationType as AmortizationType)
+      ? apiRequest.amortizationType
       : AmortizationType.French;
+    const direction = +apiRequest.direction === LoanDirection.Lent ? LoanDirection.Lent : LoanDirection.Borrowed;
 
     const request = new CreateLoanRequest(
       userId,
@@ -78,7 +80,7 @@ export class LoansController {
       apiRequest.name,
       apiRequest.description ?? null,
       +apiRequest.principalAmount,
-      +apiRequest.annualRatePercentage,
+      this.toNumberOrNull(apiRequest.annualRatePercentage) ?? 0,
       +apiRequest.numberOfInstallments,
       this.toNumberOrNull(apiRequest.actualInstallmentAmount),
       this.toNumberOrNull(apiRequest.actualTotalAmount),
@@ -87,6 +89,8 @@ export class LoansController {
       this.toNumberOrNull(apiRequest.administrativeFees),
       this.toNumberOrNull(apiRequest.ivaPercentage),
       this.toNumberOrNull(apiRequest.insuranceAmount),
+      direction,
+      this.toNumberOrNull(apiRequest.totalRatePercentage),
     );
 
     return await this.loanManagerService.createLoan(request);

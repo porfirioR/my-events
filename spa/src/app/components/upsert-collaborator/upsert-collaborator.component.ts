@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TextComponent } from '../inputs/text/text.component';
@@ -43,6 +44,7 @@ export class UpsertCollaboratorComponent implements OnInit {
   protected collaborator?: CollaboratorApiModel
 
   constructor() {
+    preventUnsavedUnload(this);
     this.formGroup = new FormGroup<CollaboratorFormGroup>({
       name: new FormControl('', [Validators.required, Validators.minLength(2)]),
       surname: new FormControl('', [Validators.required, Validators.minLength(2)]),

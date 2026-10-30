@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, signal, compute
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
+import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -92,6 +93,7 @@ export class UpsertTransactionComponent implements OnInit {
   }
 
   constructor() {
+    preventUnsavedUnload(this);
     const reimbursement = new FormGroup<ReimbursementFormGroup>({
       amount: new FormControl(null),
       description: new FormControl(null)

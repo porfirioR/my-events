@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, ViewChild } from '@angular/core'
 import { Router, RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
-import { AlertService, LocalService } from '../../services'
+import { AlertService, LayoutService, LocalService } from '../../services'
 import { ThemeService } from '../../services/theme.service'
 import { ModeType } from '../../constants'
 import { useAuthStore, useCollaboratorStore, useTransactionStore } from '../../store'
@@ -29,6 +29,8 @@ export class HeaderComponent {
   private localService = inject(LocalService)
   private alertService = inject(AlertService)
   protected themeService = inject(ThemeService)
+  protected layoutService = inject(LayoutService)
+  protected isSidebarCollapsed = this.layoutService.isSidebarCollapsed
   protected currentUserName = this.authStore.currentUserName
   protected isAuthenticated = this.authStore.isAuthenticated
 
@@ -63,9 +65,5 @@ export class HeaderComponent {
     // Mantener compatibilidad con DaisyUI data-theme
     html.setAttribute('data-theme', newTheme)
     localStorage.setItem('theme', newTheme)
-  }
-
-  protected closeDropdown = (event: Event): void => {
-    (document.activeElement as HTMLElement)?.blur()
   }
 }

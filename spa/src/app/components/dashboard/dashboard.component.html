@@ -1,253 +1,80 @@
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-base-100 transition-colors duration-300">
-  <!-- add min-h-screen when have more module min-h-screen-->
+<section>
+  <div class="space-y-6">
 
-  <!-- Content Grid: cards a la izquierda, Quick Actions a la derecha -->
-  <article class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+    <header>
+      <h1 class="text-2xl font-bold text-base-content">{{ 'dashboard.title' | translate }}</h1>
+      <p class="text-sm text-base-content/60 mt-1">{{ 'dashboard.subtitle' | translate }}</p>
+    </header>
 
-    <!-- Dashboard Metrics Section -->
-    <section aria-labelledby="metrics-heading" class="lg:col-span-2">
-      <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
-        <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-          <h2 id="metrics-heading" class="text-lg font-semibold text-base-content">{{ 'dashboard.modulesHeading' | translate }}</h2>
-        </header>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div class="p-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <!-- Módulos -->
+      <section aria-labelledby="metrics-heading" class="lg:col-span-2">
+        <h2 id="metrics-heading" class="sr-only">{{ 'dashboard.modulesHeading' | translate }}</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          @for (module of modules(); track module.route) {
+            <a [routerLink]="[module.route]"
+              class="group block bg-base-100 rounded-2xl border border-base-300/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="text-sm font-medium text-base-content/60">{{ module.title | translate }}</h3>
+                  @if (isLoaded()) {
+                    <data [value]="module.total" class="block text-3xl font-bold text-base-content mt-1">{{ module.total }}</data>
+                  } @else {
+                    <span class="skeleton block h-9 w-14 mt-1"></span>
+                  }
+                </div>
+                <span class="w-11 h-11 shrink-0 rounded-xl grid place-items-center {{ module.iconClass }}">
+                  <i class="fas {{ module.icon }} text-lg" aria-hidden="true"></i>
+                </span>
+              </div>
 
-      <!-- Collaborators Card -->
-      <article [routerLink]="['collaborators']" class="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
-        <header role="button" class="flex items-center justify-between">
-          <div>
-            <h3 class="text-blue-100 dark:text-blue-50 text-sm font-medium">{{ 'dashboard.collaborators' | translate }}</h3>
-            <data [value]="totalCollaborators()" class="text-3xl font-bold mt-1 text-white">{{totalCollaborators()}}</data>
-          </div>
-          <figure class="bg-blue-400 bg-opacity-30 dark:bg-blue-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-users text-xl text-white" aria-hidden="true"></i>
-          </figure>
-        </header>
-        <footer class="mt-4">
-          <span class="text-blue-100 dark:text-blue-50 text-xs">
-            {{activeCollaborators()}} {{ 'collaborators.active' | translate }},
-            {{inactiveCollaborators()}} {{ 'collaborators.inactive' | translate }}
-          </span>
-        </footer>
-      </article>
+              <!-- Barra apilada: primario + secundario sobre el total -->
+              <div class="flex h-1.5 w-full rounded-full overflow-hidden bg-base-200 dark:bg-base-300 mt-5">
+                <div class="h-full transition-all duration-500 {{ module.primaryBarClass }}" [style.width.%]="getShare(module.primary.value, module.total)"></div>
+                <div class="h-full transition-all duration-500 {{ module.secondaryBarClass }}" [style.width.%]="getShare(module.secondary.value, module.total)"></div>
+              </div>
 
-      <!-- Transactions Card -->
-      <article [routerLink]="['transactions']" class="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
-        <header class="flex items-center justify-between">
-          <div>
-            <h3 class="text-green-100 dark:text-green-50 text-sm font-medium">{{ 'dashboard.transactions' | translate }}</h3>
-            <data [value]="totalTransactions()" class="text-3xl font-bold mt-1 text-white">{{totalTransactions()}}</data>
-          </div>
-          <figure class="bg-green-400 bg-opacity-30 dark:bg-green-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-dollar-sign text-xl text-white" aria-hidden="true"></i>
-          </figure>
-        </header>
-        <footer class="mt-4">
-          <span class="text-green-100 dark:text-green-50 text-xs">
-            {{unsettledTransactions()}} {{ 'dashboard.unsettled' | translate }},
-            {{settledTransactions()}} {{ 'dashboard.settled' | translate }}
-          </span>
-        </footer>
-      </article>
-
-      <!-- Savings Goals Card -->
-      <article [routerLink]="['savings']" class="cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
-        <header class="flex items-center justify-between">
-          <div>
-            <h3 class="text-emerald-100 dark:text-emerald-50 text-sm font-medium">{{ 'dashboard.savingsGoals' | translate }}</h3>
-            <data [value]="savingsStats().total" class="text-3xl font-bold mt-1 text-white">{{savingsStats().total}}</data>
-          </div>
-          <figure class="bg-emerald-400 bg-opacity-30 dark:bg-emerald-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-piggy-bank text-xl text-white" aria-hidden="true"></i>
-          </figure>
-        </header>
-        <footer class="mt-4">
-          <span class="text-emerald-100 dark:text-emerald-50 text-xs">
-            {{savingsStats().active}} {{ 'dashboard.active' | translate }},
-            {{savingsStats().completed}} {{ 'dashboard.completed' | translate }}
-          </span>
-        </footer>
-      </article>
-
-      <!-- Loans Card -->
-      <article [routerLink]="['loans']" class="cursor-pointer bg-gradient-to-r from-amber-500 to-yellow-600 dark:from-amber-600 dark:to-yellow-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
-        <header class="flex items-center justify-between">
-          <div>
-            <h3 class="text-amber-100 dark:text-amber-50 text-sm font-medium">{{ 'dashboard.loans' | translate }}</h3>
-            <data [value]="loansStats().total" class="text-3xl font-bold mt-1 text-white">{{loansStats().total}}</data>
-          </div>
-          <figure class="bg-amber-400 bg-opacity-30 dark:bg-amber-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-hand-holding-dollar text-xl text-white" aria-hidden="true"></i>
-          </figure>
-        </header>
-        <footer class="mt-4">
-          <span class="text-amber-100 dark:text-amber-50 text-xs">
-            {{loansStats().active}} {{ 'dashboard.active' | translate }},
-            {{loansStats().completed}} {{ 'loans.statusCompleted' | translate }}
-          </span>
-        </footer>
-      </article>
-
-      <!-- Travels Card -->
-      <article [routerLink]="['travels']" class="cursor-pointer bg-gradient-to-r from-orange-500 to-red-500 dark:from-orange-600 dark:to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
-        <header class="flex items-center justify-between">
-          <div>
-            <h3 class="text-orange-100 dark:text-orange-50 text-sm font-medium">{{ 'dashboard.travels' | translate }}</h3>
-            <data [value]="travelStats().total" class="text-3xl font-bold mt-1 text-white">{{travelStats().total}}</data>
-          </div>
-          <figure class="bg-orange-400 bg-opacity-30 dark:bg-orange-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-suitcase-rolling text-xl text-white" aria-hidden="true"></i>
-          </figure>
-        </header>
-        <footer class="mt-4">
-          <span class="text-orange-100 dark:text-orange-50 text-xs">
-            {{travelStats().active}} {{ 'dashboard.active' | translate }},
-            {{travelStats().finalized}} {{ 'dashboard.finalized' | translate }}
-          </span>
-        </footer>
-      </article>
-
-      <!-- Projects Card (hidden for now) -->
-      <article class="cursor-pointer bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300 hidden">
-        <header class="flex items-center justify-between">
-          <div>
-            <h3 class="text-purple-100 dark:text-purple-50 text-sm font-medium">{{ 'dashboard.projects' | translate }}</h3>
-            <data value="3" class="text-3xl font-bold mt-1 text-white">3</data>
-          </div>
-          <figure class="bg-purple-400 bg-opacity-30 dark:bg-purple-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-project-diagram text-xl text-white" aria-hidden="true"></i>
-          </figure>
-        </header>
-        <footer class="mt-4">
-          <span class="text-purple-100 dark:text-purple-50 text-xs">2 {{ 'dashboard.active' | translate }}, 1 planning</span>
-        </footer>
-      </article>
-
-      <!-- Revenue Card (hidden for now) -->
-      <article class="cursor-pointer bg-gradient-to-r from-yellow-500 to-orange-500 dark:from-yellow-600 dark:to-orange-600 text-white rounded-xl shadow-lg hover:shadow-xl p-6 transform hover:scale-105 transition-all duration-300 hidden">
-        <header class="flex items-center justify-between">
-          <div>
-            <h3 class="text-yellow-100 dark:text-yellow-50 text-sm font-medium">{{ 'dashboard.revenue' | translate }}</h3>
-            <data value="24000" class="text-3xl font-bold mt-1 text-white">$24K</data>
-          </div>
-          <figure class="bg-yellow-400 bg-opacity-30 dark:bg-yellow-300 dark:bg-opacity-20 rounded-full p-3 flex w-12 justify-center">
-            <i class="fas fa-dollar-sign text-xl text-white" aria-hidden="true"></i>
-          </figure>
-        </header>
-        <footer class="mt-4">
-          <span class="text-yellow-100 dark:text-yellow-50 text-xs">↗ +8% this quarter</span>
-        </footer>
-      </article>
-      </div>
+              <div class="flex items-center justify-between mt-3 text-xs text-base-content/70">
+                <div class="flex items-center gap-4">
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full {{ module.primaryBarClass }}"></span>
+                    <strong class="text-base-content">{{ module.primary.value }}</strong> {{ module.primary.label | translate }}
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full {{ module.secondaryBarClass }}"></span>
+                    <strong class="text-base-content">{{ module.secondary.value }}</strong> {{ module.secondary.label | translate }}
+                  </span>
+                </div>
+                <i class="fas fa-arrow-right text-base-content/30 group-hover:text-base-content/70 group-hover:translate-x-0.5 transition-all" aria-hidden="true"></i>
+              </div>
+            </a>
+          }
         </div>
-      </article>
-    </section>
+      </section>
 
-    <!-- Sidebar: Quick Actions & Budget -->
-    <aside class="space-y-6">
-      <!-- Quick Actions Section -->
-      <section aria-labelledby="actions-heading">
-        <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
-          <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-            <h2 id="actions-heading" class="text-lg font-semibold text-base-content">{{ 'dashboard.quickActions' | translate }}</h2>
-          </header>
-
-          <nav class="p-6">
-            <ul class="space-y-3" role="list">
-              <li>
-                <a [routerLink]="['collaborators/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-user-plus mr-3 text-blue-600 dark:text-blue-400" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.addCollaborator' | translate }}</span>
-                </a>
-              </li>
-              <li>
-                <a [routerLink]="['transactions/new']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-green-500/10 hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-dollar-sign mr-3 text-green-600 dark:text-green-400" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.addTransaction' | translate }}</span>
-                </a>
-              </li>
-              <li>
-                <a [routerLink]="['savings/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-piggy-bank mr-3 text-emerald-600 dark:text-emerald-400" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.newSavingsGoal' | translate }}</span>
-                </a>
-              </li>
-              <li>
-                <a [routerLink]="['loans/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-hand-holding-dollar mr-3 text-amber-600 dark:text-amber-400" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.newLoan' | translate }}</span>
-                </a>
-              </li>
-              <li>
-                <a [routerLink]="['travels/create']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-suitcase-rolling mr-3 text-orange-600 dark:text-orange-400" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.newTravel' | translate }}</span>
-                </a>
-              </li>
-              <li>
-                <a [routerLink]="['transactions/balances']" class="w-full flex items-center p-3 text-left text-base-content hover:bg-accent/10 hover:text-accent rounded-lg transition-colors duration-200 cursor-pointer">
-                  <i class="fas fa-balance-scale mr-3 text-accent" aria-hidden="true"></i>
-                  <span>{{ 'dashboard.balances' | translate }}</span>
-                </a>
-              </li>
+      <!-- Acciones rápidas -->
+      <aside aria-labelledby="actions-heading">
+        <div class="bg-base-100 rounded-2xl border border-base-300/60 shadow-sm p-5">
+          <h2 id="actions-heading" class="text-base font-semibold text-base-content mb-4">{{ 'dashboard.quickActions' | translate }}</h2>
+          <nav>
+            <ul class="grid grid-cols-2 gap-3" role="list">
+              @for (action of quickActions; track action.route) {
+                <li>
+                  <a [routerLink]="[action.route]"
+                    class="h-full flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-base-300/60 text-center text-sm text-base-content hover:bg-base-200 dark:hover:bg-base-300 hover:border-base-300 transition-colors duration-200">
+                    <span class="w-10 h-10 rounded-xl grid place-items-center {{ action.iconClass }}">
+                      <i class="fas {{ action.icon }}" aria-hidden="true"></i>
+                    </span>
+                    <span class="leading-tight">{{ action.label | translate }}</span>
+                  </a>
+                </li>
+              }
             </ul>
           </nav>
-        </article>
-      </section>
+        </div>
+      </aside>
 
-      <!-- Budget Status Section (hidden for now) -->
-      <section aria-labelledby="budget-heading" class="hidden">
-        <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
-          <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
-            <h2 id="budget-heading" class="text-lg font-semibold text-base-content">{{ 'dashboard.budgetStatus' | translate }}</h2>
-          </header>
-
-          <div class="p-6">
-            <dl class="space-y-4">
-              <div class="flex justify-between items-center">
-                <dt class="text-sm text-base-content/70">{{ 'dashboard.totalBudget' | translate }}</dt>
-                <dd class="font-bold text-base-content">
-                  <data value="50000">$50,000</data>
-                </dd>
-              </div>
-
-              <div>
-                <div class="flex justify-between items-center mb-2">
-                  <dt class="text-sm text-base-content/70">{{ 'dashboard.progress' | translate }}</dt>
-                  <dd class="text-sm font-medium text-base-content">65%</dd>
-                </div>
-
-                <div class="w-full bg-base-300 dark:bg-base-100 rounded-full h-2">
-                  <div class="bg-gradient-to-r from-primary to-primary-focus h-2 rounded-full transition-all duration-300"
-                    style="width: 65%"
-                    role="progressbar"
-                    aria-valuenow="65"
-                    aria-valuemin="0"
-                    aria-valuemax="100">
-                  </div>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4 pt-2">
-                <div class="text-center">
-                  <dt class="text-xs text-base-content/70">{{ 'dashboard.used' | translate }}</dt>
-                  <dd class="font-semibold text-error">
-                    <data value="32400">$32,400</data>
-                  </dd>
-                </div>
-                <div class="text-center">
-                  <dt class="text-xs text-base-content/70">{{ 'dashboard.left' | translate }}</dt>
-                  <dd class="font-semibold text-success">
-                    <data value="17600">$17,600</data>
-                  </dd>
-                </div>
-              </div>
-            </dl>
-          </div>
-        </article>
-      </section>
-    </aside>
-  </article>
-</main>
+    </div>
+  </div>
+</section>

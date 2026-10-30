@@ -1,0 +1,22 @@
+@if (items().length > 0) {
+  <nav class="breadcrumbs text-sm text-base-content/60 py-0 mb-4" [attr.aria-label]="'common.breadcrumb' | translate">
+    <ul>
+      <li>
+        <a routerLink="/" class="hover:text-primary">
+          <i class="fas fa-house mr-1" aria-hidden="true"></i>{{ 'common.dashboard' | translate }}
+        </a>
+      </li>
+      @for (item of items(); track $index) {
+        <li>
+          @if (item.url) {
+            <a [routerLink]="item.url" class="hover:text-primary">{{ item.translate ? (item.label | translate) : item.label }}</a>
+          } @else {
+            <span class="text-base-content font-medium" [attr.aria-current]="$last ? 'page' : null">
+              {{ item.translate ? (item.label | translate) : item.label }}
+            </span>
+          }
+        </li>
+      }
+    </ul>
+  </nav>
+}

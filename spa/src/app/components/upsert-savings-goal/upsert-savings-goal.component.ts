@@ -9,6 +9,7 @@ import {
   computed,
   signal,
 } from '@angular/core';
+import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import {
   FormControl,
   FormGroup,
@@ -136,6 +137,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
   protected cdaTermList: KeyValueViewModel[] = [];
 
   constructor() {
+    preventUnsavedUnload(this);
     const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd', 'UTC') as string;
 
     // 1. PRIMERO: Crear el FormGroup

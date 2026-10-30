@@ -1,8 +1,8 @@
-<section class="container mx-auto px-4 py-8">
+<section>
   @if (travel(); as travelData) {
     <article class="max-w-5xl mx-auto">
       <!-- Header -->
-      <header class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6 mb-6">
+      <header class="bg-base-100 rounded-xl shadow-lg p-6 mb-6">
         <div class="flex items-start justify-between gap-4">
           <button
             type="button"
@@ -66,7 +66,7 @@
       </header>
 
       <!-- Tabs -->
-      <div role="tablist" class="tabs tabs-boxed bg-base-200 dark:bg-base-300 p-1 mb-6">
+      <div role="tablist" class="tabs tabs-boxed bg-base-100 p-1 mb-6">
         <button
           role="tab"
           class="tab"
@@ -103,7 +103,7 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg p-6">
+      <div class="bg-base-100 rounded-xl shadow-lg p-6">
         <!-- OPERATIONS TAB -->
         @if (activeTab() === 'operations') {
           <div>
@@ -130,7 +130,7 @@
             } @else {
               <ul class="space-y-4">
                 @for (operation of operations(); track operation.id) {
-                  <li class="bg-base-100 dark:bg-base-200 rounded-lg p-6 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-all duration-200 shadow-sm relative">
+                  <li class="bg-base-200 dark:bg-base-300 rounded-lg p-6 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-all duration-200 shadow-sm relative">
                     <article class="space-y-4">
 
                       <!-- Header: Título, monto y status -->
@@ -187,7 +187,7 @@
                             </label>
                             <ul
                               tabindex="0"
-                              class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300"
+                              class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 dark:bg-base-300 rounded-lg w-48 border border-base-300"
                             >
                               <li>
                                 <button (click)="viewOperationDetail(operation)">
@@ -381,7 +381,7 @@
                     <i class="fas fa-user-plus mr-1"></i>
                     {{ 'travels.addMember' | translate }}
                   </label>
-                  <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-64 border border-base-300 max-h-64 overflow-y-auto">
+                  <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 dark:bg-base-300 rounded-lg w-64 border border-base-300 max-h-64 overflow-y-auto">
                     @for (collaborator of availableCollaborators(); track collaborator.id) {
                       <li>
                         <button (click)="addMember(collaborator.id)">
@@ -406,7 +406,7 @@
             } @else {
               <ul class="space-y-3">
                 @for (member of members(); track member.id) {
-                  <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
+                  <li class="bg-base-200 dark:bg-base-300 rounded-lg p-4">
                     <article class="flex items-center gap-4">
                       <!-- Avatar -->
                       <figure class="flex-shrink-0">
@@ -468,7 +468,7 @@
               @if (balances().length > 0) {
                 <div class="space-y-6">
                   @for (currencyBalance of balances(); track currencyBalance.currencyId) {
-                    <div class="bg-base-100 dark:bg-base-200 rounded-lg p-4">
+                    <div class="bg-base-200 dark:bg-base-300 rounded-lg p-4">
                       <h3 class="font-semibold text-base-content mb-4 flex items-center gap-2">
                         <i class="fas fa-coins text-warning"></i>
                         {{ currencyBalance.currencyName }} ({{ currencyBalance.currencySymbol }})

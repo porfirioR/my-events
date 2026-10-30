@@ -42,6 +42,8 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
         administrativefees: request.administrativeFees ?? null,
         ivapercentage: request.ivaPercentage ?? null,
         insuranceamount: request.insuranceAmount ?? null,
+        direction: request.direction,
+        totalratepercentage: request.totalRatePercentage,
       })
       .select()
       .single<LoanEntity>();
@@ -210,5 +212,7 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
       entity.administrativefees ?? null,
       entity.ivapercentage ?? null,
       entity.insuranceamount ?? null,
+      entity.direction,
+      entity.totalratepercentage,
     );
 }

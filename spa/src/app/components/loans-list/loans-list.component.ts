@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useCurrencyStore, useFinancialInstitutionsStore, useLoansStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
-import { LoanType, LoanTypeLabels, LoanTypeBadgeColors } from '../../models/enums';
+import { LoanType, LoanTypeLabels, LoanTypeBadgeColors, LoanDirection, LoanDirectionLabels, LoanDirectionBadgeColors, LoanDirectionIcons } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -31,10 +31,12 @@ export class LoansListComponent implements OnInit {
   protected isLoading = this.loansStore.needsLoadingLoans;
   protected filterStatus = signal<number | null>(1);
   protected filterLoanType = signal<number | null>(null);
+  protected filterDirection = signal<number | null>(null);
 
   protected LoanType = LoanType;
   protected LoanTypeLabels = LoanTypeLabels;
   protected LoanTypeBadgeColors = LoanTypeBadgeColors;
+  protected LoanDirection = LoanDirection;
 
   protected loans = computed(() => {
     let filtered = this.loansStore.sortedLoans();
@@ -42,6 +44,8 @@ export class LoansListComponent implements OnInit {
     if (status !== null) filtered = filtered.filter(l => l.statusId === status);
     const type = this.filterLoanType();
     if (type !== null) filtered = filtered.filter(l => l.loanTypeId === type);
+    const direction = this.filterDirection();
+    if (direction !== null) filtered = filtered.filter(l => (l.direction ?? LoanDirection.Borrowed) === direction);
     return filtered;
   });
 
@@ -57,6 +61,10 @@ export class LoansListComponent implements OnInit {
 
   protected setTypeFilter(typeId: number | null): void {
     this.filterLoanType.set(typeId);
+  }
+
+  protected setDirectionFilter(direction: number | null): void {
+    this.filterDirection.set(direction);
   }
 
   protected create(): void {
@@ -96,13 +104,15 @@ export class LoansListComponent implements OnInit {
   }
 
   protected getEntityLabel(loan: any): string {
+    // En un préstamo otorgado lendercustomname es el deudor
+    if (loan.direction === LoanDirection.Lent) return loan.lenderCustomName ?? '';
     const financialInstitution = this.financialInstitutionsStore.financialInstitutionsById().get(loan.loanEntityId);
     if (!financialInstitution?.isOther) return financialInstitution?.name ?? '';
     return loan.lenderCustomName || this.translate.instant('loans.entityOtros');
   }
 
   protected getStatusColor(statusId: number): string {
-    const colors: Record<number, string> = { 1: 'badge-warning', 2: 'badge-success', 3: 'badge-neutral', 4: 'badge-error' };
+    const colors: Record<number, string> = { 1: 'badge-success', 2: 'badge-info', 3: 'badge-ghost', 4: 'badge-error' };
     return colors[statusId] ?? 'badge-ghost';
   }
 
@@ -121,6 +131,15 @@ export class LoansListComponent implements OnInit {
 
   protected getLoanTypeBadgeColor = (typeId: number): string =>
     LoanTypeBadgeColors[typeId as LoanType] ?? '';
+
+  protected getDirectionLabel = (direction: number): string =>
+    LoanDirectionLabels[(direction ?? LoanDirection.Borrowed) as LoanDirection] ?? '';
+
+  protected getDirectionBadgeColor = (direction: number): string =>
+    LoanDirectionBadgeColors[(direction ?? LoanDirection.Borrowed) as LoanDirection] ?? '';
+
+  protected getDirectionIcon = (direction: number): string =>
+    LoanDirectionIcons[(direction ?? LoanDirection.Borrowed) as LoanDirection] ?? '';
 
   protected formatCurrency = this.formatterService.formatCurrency;
   protected getFormattedDate = (dateStr: string): string => {

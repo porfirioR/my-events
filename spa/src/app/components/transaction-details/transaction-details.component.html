@@ -1,4 +1,4 @@
-<section class="container mx-auto px-4 py-8">
+<section>
   <article class="max-w-4xl mx-auto">
     <!-- Header -->
     <header class="mb-6">
@@ -34,7 +34,7 @@
         }">
         
         <!-- Total Amount - SIEMPRE se muestra -->
-        <article class="stats shadow bg-base-200 dark:bg-base-300">
+        <article class="stats shadow bg-base-100">
           <div class="stat py-4">
             <div class="stat-figure text-primary">
               <i class="fas fa-dollar-sign text-2xl"></i>
@@ -48,7 +48,7 @@
 
         <!-- Reimbursement - Solo si totalReimbursement > 0 -->
         @if (transactionDetails()!.totalReimbursement > 0) {
-          <article class="stats shadow bg-base-200 dark:bg-base-300">
+          <article class="stats shadow bg-base-100">
             <div class="stat py-4">
               <div class="stat-figure text-warning">
                 <i class="fas fa-undo text-2xl"></i>
@@ -63,7 +63,7 @@
 
         <!-- Net Amount - Solo si es diferente de Total Amount -->
         @if (transactionDetails()!.netAmount !== transactionDetails()!.totalAmount) {
-          <article class="stats shadow bg-base-200 dark:bg-base-300">
+          <article class="stats shadow bg-base-100">
             <div class="stat py-4">
               <div class="stat-figure text-success">
                 <i class="fas fa-check-circle text-2xl"></i>
@@ -77,7 +77,7 @@
         }
 
         <!-- Status - SIEMPRE se muestra -->
-        <article class="stats shadow bg-base-200 dark:bg-base-300">
+        <article class="stats shadow bg-base-100">
           <div class="stat py-4">
             <div class="stat-figure"
               [ngClass]="{
@@ -111,7 +111,7 @@
       </section>
 
       <!-- Main Info Card -->
-      <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
+      <section class="bg-base-100 rounded-xl mb-6">
         <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
           <h3 class="text-lg font-semibold text-base-content">
             {{ 'transactionDetails.transactionInformation' | translate }}
@@ -227,7 +227,7 @@
       </section>
 
       <!-- Splits Section -->
-      <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
+      <section class="bg-base-100 rounded-xl mb-6">
         <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
           <h3 class="text-lg font-semibold text-base-content">
             {{ 'transactionDetails.splitDetails' | translate }}
@@ -237,7 +237,7 @@
         <main class="p-6">
           <ul class="space-y-3" role="list">
             @for (split of transactionDetails()!.splits; track split.id) {
-              <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 border"
+              <li class="bg-base-200 dark:bg-base-300 rounded-lg p-4 border"
                 [ngClass]="{
                   'border-success/30': split.isPayer,
                   'border-base-300': !split.isPayer
@@ -355,7 +355,7 @@
 
       <!-- Reimbursements Section -->
       @if (transactionDetails()!.reimbursements.length > 0) {
-        <section class="bg-base-200 dark:bg-base-300 rounded-xl mb-6">
+        <section class="bg-base-100 rounded-xl mb-6">
           <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
             <h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
               <i class="fas fa-undo text-warning"></i>
@@ -366,7 +366,7 @@
           <main class="p-6">
             <ul class="space-y-3" role="list">
               @for (reimbursement of transactionDetails()!.reimbursements; track reimbursement.id) {
-                <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 border border-warning/20">
+                <li class="bg-base-200 dark:bg-base-300 rounded-lg p-4 border border-warning/20">
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="font-semibold text-base-content">
@@ -445,7 +445,7 @@
       }
 
       <!-- Actions Footer - Desktop only -->
-      <footer class="hidden sm:flex bg-base-200 dark:bg-base-300 rounded-xl p-6 justify-between items-center gap-4">
+      <footer class="hidden sm:flex bg-base-100 rounded-xl p-6 justify-between items-center gap-4">
         <button
           type="button"
           class="btn btn-outline btn-primary"
@@ -501,7 +501,7 @@
     } @else {
       <!-- Not Found State -->
       <div class="text-center py-16">
-        <figure class="mx-auto w-20 h-20 bg-base-200 dark:bg-base-300 rounded-full flex items-center justify-center mb-4">
+        <figure class="mx-auto w-20 h-20 bg-base-100 rounded-full flex items-center justify-center mb-4">
           <i class="fas fa-exclamation-circle text-3xl text-error"></i>
         </figure>
         <h3 class="text-lg font-semibold text-base-content mb-2">{{ 'transactionDetails.notFound' | translate }}</h3>
