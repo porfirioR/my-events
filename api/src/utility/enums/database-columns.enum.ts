@@ -54,6 +54,7 @@ export enum DatabaseColumns {
   
   // ===== TRAVEL MODULE COLUMNS =====
   TravelId = 'travelid',
+  MemberUserId = 'memberuserid',
   MemberId = 'memberid',
   OperationId = 'operationid',
   PaymentMethodId = 'paymentmethodid',

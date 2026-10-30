@@ -90,6 +90,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
         [DatabaseColumns.LastUpdatedByUserId]: request.lastUpdatedByUserId,
         [DatabaseColumns.UpdatedAt]: new Date(),
         [DatabaseColumns.CategoryId]: request.categoryId,
+        paymentinstitutionid: request.paymentInstitutionId,
       })
       .eq(DatabaseColumns.EntityId, request.id)
       .eq(DatabaseColumns.TravelId, request.travelId)
@@ -122,11 +123,47 @@ export class TravelOperationAccessService extends BaseAccessService implements I
     return this.mapEntityToAccessModel(data);
   };
 
+  public updateCharge = async (
+    id: number,
+    travelId: number,
+    chargedAmount: number | null,
+    chargedCurrencyId: number | null,
+  ): Promise<TravelOperationAccessModel> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.TravelOperations)
+      .update({
+        chargedamount: chargedAmount,
+        chargedcurrencyid: chargedCurrencyId,
+        updatedat: new Date().toISOString(),
+      })
+      .eq(DatabaseColumns.EntityId, id)
+      .eq(DatabaseColumns.TravelId, travelId)
+      .select()
+      .single<TravelOperationEntity>();
+
+    if (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+
+    return this.mapEntityToAccessModel(data);
+  };
+
   public delete = async (id: number, travelId: number): Promise<void> => {
     const { error } = await this.dbContext
       .from(TableEnum.TravelOperations)
       .delete()
       .eq(DatabaseColumns.EntityId, id)
+      .eq(DatabaseColumns.TravelId, travelId);
+
+    if (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  };
+
+  public deleteByTravelId = async (travelId: number): Promise<void> => {
+    const { error } = await this.dbContext
+      .from(TableEnum.TravelOperations)
+      .delete()
       .eq(DatabaseColumns.TravelId, travelId);
 
     if (error) {
@@ -221,12 +258,15 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       new Date(entity.transactiondate!),
       entity.lastupdatedbyuserid || null,
       entity.updatedat ? new Date(entity.updatedat) : null,
-      entity.categoryid
+      entity.categoryid,
+      entity.chargedamount ?? null,
+      entity.chargedcurrencyid ?? null,
+      entity.paymentinstitutionid ?? null,
     );
   };
 
   private mapCreateRequestToEntity = (request: CreateTravelOperationAccessRequest): TravelOperationEntity => {
-    return new TravelOperationEntity(
+    const entity = new TravelOperationEntity(
       request.travelId,
       request.createdByUserId,
       request.currencyId,
@@ -241,5 +281,7 @@ export class TravelOperationAccessService extends BaseAccessService implements I
       undefined,
       request.transactionDate,
     );
+    entity.paymentinstitutionid = request.paymentInstitutionId;
+    return entity;
   };
 }

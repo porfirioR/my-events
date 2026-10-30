@@ -66,4 +66,9 @@ export class UpdateTravelOperationApiRequest {
   @IsNumber()
   @IsOptional()
   categoryId?: number;
+
+  // Tarjeta o banco con que se pagó (opcional)
+  @IsOptional()
+  @IsInt()
+  paymentInstitutionId?: number | null;
 }

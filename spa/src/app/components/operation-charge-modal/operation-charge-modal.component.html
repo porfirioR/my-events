@@ -1,0 +1,62 @@
+@if (visible() && operation(); as op) {
+<dialog class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-2">{{ 'operations.registerChargeTitle' | translate }}</h3>
+    <p class="text-sm text-base-content/70 mb-4">
+      {{ 'operations.registerChargeDesc' | translate: { amount: formatCurrency(op.amount, op.currencyId) } }}
+    </p>
+
+    <form [formGroup]="form" (submit)="submit()">
+      <app-text
+        formControlName="chargedAmount"
+        type="number"
+        [label]="'operations.chargedAmount' | translate"
+        id="chargedAmount"
+        name="chargedAmount"
+        [description]="'operations.chargedAmountDesc' | translate"
+      />
+
+      <app-select-input
+        formControlName="chargedCurrencyId"
+        id="chargedCurrencyId"
+        [label]="'operations.chargedCurrency' | translate"
+        name="chargedCurrencyId"
+        [list]="currencyList()"
+      />
+
+      @if (exchangeRate(); as rate) {
+        <div class="alert alert-info alert-soft text-sm mt-2">
+          <i class="fas fa-right-left" aria-hidden="true"></i>
+          <span>{{ 'operations.realExchangeRate' | translate }}: <strong>{{ rate.unit }} = {{ rate.value }}</strong></span>
+        </div>
+      }
+
+      <div class="modal-action flex-wrap">
+        @if (op.chargedAmount) {
+          <button type="button" class="btn btn-ghost text-error mr-auto" (click)="removeCharge()" [disabled]="isSubmitting()">
+            <i class="fas fa-trash text-sm"></i>{{ 'operations.removeCharge' | translate }}
+          </button>
+        }
+        <button type="button" class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105" (click)="close()">
+          {{ 'common.cancel' | translate }}
+        </button>
+
+        @if (isSubmitting()) {
+          <button type="button" class="btn btn-primary flex items-center gap-2 loading-btn">
+            <span class="loading loading-spinner loading-xs"></span>
+            {{ 'travels.saving' | translate }}
+          </button>
+        } @else {
+          <button role="button" type="submit"
+            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            [disabled]="form.invalid" [class.btn-disabled]="form.invalid">
+            <i class="fas fa-credit-card text-sm"></i>
+            {{ 'operations.registerCharge' | translate }}
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+  <div class="modal-backdrop" (click)="close()"></div>
+</dialog>
+}

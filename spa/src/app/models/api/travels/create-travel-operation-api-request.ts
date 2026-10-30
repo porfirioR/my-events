@@ -13,6 +13,7 @@ export class CreateTravelOperationApiRequest {
     public participantMemberIds: number[],
     public categoryId: number,
     public customAmounts?: number[],
-    public customPercentages?: number[]
+    public customPercentages?: number[],
+    public paymentInstitutionId: number | null = null,
   ) {}
 }

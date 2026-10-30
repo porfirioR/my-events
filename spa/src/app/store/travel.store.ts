@@ -14,6 +14,7 @@ import {
   CreateTravelOperationApiRequest,
   UpdateTravelOperationApiRequest,
   RejectOperationApiRequest,
+  RegisterOperationChargeApiRequest,
   OperationCategoryApiModel,
   OperationCategorySummaryApiModel,
   OperationAttachmentApiModel
@@ -583,6 +584,26 @@ export const TravelStore = signalStore(
         }),
         catchError(error => {
           patchState(store, { error: 'Failed to reject operation' });
+          throw new Error(error);
+        })
+      );
+    },
+
+    registerOperationCharge: (operationId: number, request: RegisterOperationChargeApiRequest) => {
+      loadingStore.setLoading();
+      patchState(store, { error: null });
+
+      return travelApiService.registerOperationCharge(operationId, request).pipe(
+        tap(updatedOperation => {
+          const updatedOperations = store.operations().map(o =>
+            o.id === operationId ? updatedOperation : o
+          );
+          patchState(store, { operations: updatedOperations });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          patchState(store, { error: 'Failed to register operation charge' });
+          loadingStore.setLoadingSuccess();
           throw new Error(error);
         })
       );

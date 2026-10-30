@@ -33,12 +33,12 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
     return this.mapEntityToAccessModel(data);
   };
 
+  // Lo ven el creador y los miembros con cuenta vinculada (memberuserid)
   public getById = async (id: number, userId: number): Promise<TravelAccessModel | null> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.Travels)
       .select(DatabaseColumns.All)
       .eq(DatabaseColumns.EntityId, id)
-      .eq(DatabaseColumns.CreatedByUserId, userId)
       .single<TravelEntity>();
 
     if (error) {
@@ -46,6 +46,7 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
       throw new Error(error.message);
     }
 
+    if (data.createdbyuserid !== userId && !(await this.isMember(id, userId))) return null;
     return this.mapEntityToAccessModel(data);
   };
 
@@ -53,7 +54,7 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
     const { data, error } = await this.dbContext
       .from(TableEnum.Travels)
       .select(DatabaseColumns.All)
-      .eq(DatabaseColumns.CreatedByUserId, userId)
+      .or(await this.createdOrMemberFilter(userId))
       .order(DatabaseColumns.DateCreated, { ascending: false });
 
     if (error) {
@@ -67,7 +68,7 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
     const { data, error } = await this.dbContext
       .from(TableEnum.Travels)
       .select(DatabaseColumns.All)
-      .eq(DatabaseColumns.CreatedByUserId, userId)
+      .or(await this.createdOrMemberFilter(userId))
       .eq(DatabaseColumns.Status, status)
       .order(DatabaseColumns.DateCreated, { ascending: false });
 
@@ -159,7 +160,7 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
       .from(TableEnum.TravelMembers)
       .select(DatabaseColumns.EntityId)
       .eq(DatabaseColumns.TravelId, travelId)
-      .eq(DatabaseColumns.UserId, userId)
+      .eq(DatabaseColumns.MemberUserId, userId)
       .limit(1);
 
     if (error) {
@@ -167,6 +168,23 @@ export class TravelAccessService extends BaseAccessService implements ITravelAcc
     }
 
     return (data?.length || 0) > 0;
+  };
+
+  // Filtro .or() para los viajes que el usuario creó o en los que es miembro
+  private createdOrMemberFilter = async (userId: number): Promise<string> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.TravelMembers)
+      .select(DatabaseColumns.TravelId)
+      .eq(DatabaseColumns.MemberUserId, userId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const travelIds = [...new Set((data ?? []).map(x => x.travelid as number))];
+    return travelIds.length > 0
+      ? `${DatabaseColumns.CreatedByUserId}.eq.${userId},${DatabaseColumns.EntityId}.in.(${travelIds.join(',')})`
+      : `${DatabaseColumns.CreatedByUserId}.eq.${userId}`;
   };
 
   

@@ -6,5 +6,7 @@ export class TravelMemberEntity {
     public userid: number,
     public collaboratorid: number,
     public joineddate?: Date,
+    // Usuario real del miembro (null = sin cuenta vinculada). userid es el dueño del colaborador
+    public memberuserid: number | null = null,
   ) {}
 }

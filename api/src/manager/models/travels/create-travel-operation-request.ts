@@ -14,5 +14,6 @@ export class CreateTravelOperationRequest {
     public participantMemberIds: number[], // IDs de los miembros que participan // Solo usado si participantType === 'Selected'
     public customAmounts?: number[],        //Para splitType === 'Custom'
     public customPercentages?: number[],    //Para splitType === 'Percentage'
+    public paymentInstitutionId: number | null = null, // Tarjeta o banco con que se pagó
   ) {}
 }

@@ -3,5 +3,6 @@ export class AddTravelMemberAccessRequest {
     public travelId: number,
     public userId: number,
     public collaboratorId: number,
+    public memberUserId: number | null = null,
   ) {}
 }

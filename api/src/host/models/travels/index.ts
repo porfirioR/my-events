@@ -4,3 +4,4 @@ export { CreateTravelOperationApiRequest } from './create-travel-operation-api-r
 export { RejectOperationApiRequest } from './reject-operation-api-request';
 export { UpdateTravelApiRequest } from './update-travel-api-request';
 export { UpdateTravelOperationApiRequest } from './update-travel-operation-api-request';
+export { RegisterOperationChargeApiRequest } from './register-operation-charge-api-request';

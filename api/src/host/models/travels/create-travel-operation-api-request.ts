@@ -1,4 +1,4 @@
-import { ArrayMinSize, IsArray, IsDateString, IsEnum, IsInt, IsNumber, IsPositive, IsString, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsOptional, ArrayMinSize, IsArray, IsDateString, IsEnum, IsInt, IsNumber, IsPositive, IsString, MaxLength, Min, ValidateIf } from 'class-validator';
 import { SplitType, TravelParticipantType } from '../../../utility/enums';
 
 export class CreateTravelOperationApiRequest {
@@ -53,4 +53,9 @@ export class CreateTravelOperationApiRequest {
   @IsNumber()
   @IsPositive()
   categoryId: number
+
+  // Tarjeta o banco con que se pagó (opcional)
+  @IsOptional()
+  @IsInt()
+  paymentInstitutionId?: number | null;
 }

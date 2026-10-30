@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { TRAVEL_TOKENS, COLLABORATOR_TOKENS } from '../../utility/constants';
+import { FINANCIAL_INSTITUTION_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { TravelStatus, TravelOperationStatus, ApprovalStatus, TravelParticipantType, SplitType, } from '../../utility/enums';
 import {
   ITravelAccessService,
@@ -25,6 +26,8 @@ import {
   CreateOperationAttachmentAccessRequest,
 } from '../../access/contract/travels';
 import { ICollaboratorAccessService } from '../../access/contract/collaborators';
+import { ICollaboratorMatchAccessService } from '../../access/contract/collaborator-match';
+import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import {
   TravelModel,
   CreateTravelRequest,
@@ -35,6 +38,7 @@ import {
   CreateTravelOperationRequest,
   UpdateTravelOperationRequest,
   ApproveOperationRequest,
+  RegisterOperationChargeRequest,
   RejectOperationRequest,
   PaymentMethodModel,
   TravelBalanceDetailModel,
@@ -53,6 +57,10 @@ import { OperationAttachmentModel } from '../models/travels/operation-attachment
 import { SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { IConfigurationAccessService } from '../../access/contract/configurations';
 import { CloudinaryService } from '../../access/blob';
+
+// paymentmethods: 1 Card, 2 Cash, 3 Bank
+const CARD_PAYMENT_METHOD_ID = 1;
+const BANK_PAYMENT_METHOD_ID = 3;
 
 @Injectable()
 export class TravelManagerService {
@@ -79,6 +87,12 @@ export class TravelManagerService {
 
     @Inject(COLLABORATOR_TOKENS.ACCESS_SERVICE)
     private collaboratorAccessService: ICollaboratorAccessService,
+
+    @Inject(COLLABORATOR_TOKENS.MATCH_ACCESS_SERVICE)
+    private matchAccessService: ICollaboratorMatchAccessService,
+
+    @Inject(FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE)
+    private financialInstitutionAccessService: IFinancialInstitutionAccessService,
 
     @Inject(TRAVEL_TOKENS.OPERATION_CATEGORY_ACCESS_SERVICE)
     private operationCategoryAccessService: IOperationCategoryAccessService,
@@ -126,6 +140,7 @@ export class TravelManagerService {
       accessModel.id,
       request.userId,
       internalCollaborator.id,
+      request.userId,
     );
 
     await this.travelMemberAccessService.add(memberRequest);
@@ -211,16 +226,16 @@ export class TravelManagerService {
   public deleteTravel = async (id: number, userId: number): Promise<void> => {
     const isCreator = await this.travelAccessService.isCreator(id, userId);
     if (!isCreator) {
-      throw new BadRequestException('Only the travel creator can delete it');
+      throw new BadRequestException('travels.deleteOnlyCreator');
     }
 
     const travel = await this.travelAccessService.getById(id, userId);
     if (!travel) {
-      throw new NotFoundException('Travel not found');
+      throw new NotFoundException('travels.travelNotFound');
     }
 
     if (travel.status !== TravelStatus.Finalized) {
-      throw new BadRequestException('Only finalized travels can be deleted');
+      throw new BadRequestException('travels.deleteOnlyFinalized');
     }
 
     // ✅ NUEVO: Verificar que no hay operaciones aprobadas
@@ -229,14 +244,29 @@ export class TravelManagerService {
       op.status === TravelOperationStatus.Approved
     );
 
+    // Los viajes con movimientos aprobados se conservan como historial
     if (approvedOperations.length > 0) {
-      throw new BadRequestException(
-        'Cannot delete travel with approved operations. ' +
-        'Travels with financial transactions cannot be deleted for audit purposes.'
-      );
+      throw new BadRequestException('travels.deleteHasApprovedOperations');
     }
 
     this.logger.log(`Deleting travel ${id}: No approved operations found`);
+
+    // Los archivos en Cloudinary no se borran en cascada con la base
+    for (const operation of operations) {
+      const attachments = await this.operationAttachmentAccessService.getByOperationId(operation.id);
+      for (const attachment of attachments) {
+        try {
+          await this.cloudinaryService.deleteFile(attachment.externalId);
+        } catch (error) {
+          this.logger.error('Failed to delete from Cloudinary:', error);
+        }
+      }
+    }
+
+    // Primero las operaciones (cascada a aprobaciones, participantes y adjuntos) y después el
+    // viaje: si se borra el viaje directo, la cascada a travelmembers choca con las FKs de
+    // traveloperationapprovals.memberid y traveloperations.whopaidmemberid (sin ON DELETE)
+    await this.travelOperationAccessService.deleteByTravelId(id);
     await this.travelAccessService.delete(id, userId);
   };
 
@@ -365,10 +395,20 @@ export class TravelManagerService {
       throw new BadRequestException('Collaborator is already a member of this travel');
     }
 
+    // La misma persona puede estar como colaborador de distintos miembros: se compara el usuario real
+    const memberUserId = await this.resolveMemberUserId(request.collaboratorId);
+    if (memberUserId !== null) {
+      const members = await this.travelMemberAccessService.getByTravelId(request.travelId);
+      if (members.some(x => x.memberUserId === memberUserId)) {
+        throw new BadRequestException('travels.memberAlreadyInTravel');
+      }
+    }
+
     const accessRequest = new AddTravelMemberAccessRequest(
       request.travelId,
       request.userId,
       request.collaboratorId,
+      memberUserId,
     );
 
     const accessModel = await this.travelMemberAccessService.add(accessRequest);
@@ -420,6 +460,14 @@ export class TravelManagerService {
     await this.travelMemberAccessService.remove(memberId);
   };
 
+  // Usuario real detrás de un colaborador: el otro lado de su match. Sin match → null
+  // (miembro sin cuenta vinculada: no ve el viaje y sus gastos los carga otro miembro)
+  private resolveMemberUserId = async (collaboratorId: number): Promise<number | null> => {
+    const match = await this.matchAccessService.getMatchByCollaboratorId(collaboratorId);
+    if (!match) return null;
+    return match.collaborator1Id === collaboratorId ? match.user2Id : match.user1Id;
+  };
+
   private enrichTravelMemberModel = async (accessModel: TravelMemberAccessModel): Promise<TravelMemberModel> => {
     // Obtener información del colaborador
     const collaborator = await this.collaboratorAccessService.getById(
@@ -436,6 +484,9 @@ export class TravelManagerService {
       collaborator?.surname || '',
       collaborator?.email || null,
       accessModel.joinedDate,
+      undefined,
+      undefined,
+      accessModel.memberUserId,
     );
   };
 
@@ -554,7 +605,8 @@ export class TravelManagerService {
       request.participantType,
       request.splitType,
       request.transactionDate,
-      request.categoryId
+      request.categoryId,
+      await this.resolvePaymentInstitutionId(request.paymentMethodId, request.paymentInstitutionId, request.userId),
     );
 
     const operationAccessModel = await this.travelOperationAccessService.create(accessRequest);
@@ -591,7 +643,7 @@ export class TravelManagerService {
 
   private getUserMemberInTravel = async (travelId: number, userId: number): Promise<TravelMemberAccessModel> => {
     const members = await this.travelMemberAccessService.getByTravelId(travelId);
-    return members.find(x => x.userId === userId);
+    return members.find(x => x.memberUserId === userId);
   };
 
   // ==================== TRAVEL OPERATIONS - UPDATE & DELETE ====================
@@ -655,7 +707,11 @@ export class TravelManagerService {
       request.splitType,
       request.transactionDate,
       request.userId,
-      request.categoryId
+      request.categoryId,
+      // Si no cambió, se conserva sin validar (puede ser una entidad propia de otro miembro)
+      request.paymentInstitutionId === currentOperation.paymentInstitutionId && request.paymentMethodId === currentOperation.paymentMethodId
+        ? currentOperation.paymentInstitutionId
+        : await this.resolvePaymentInstitutionId(request.paymentMethodId, request.paymentInstitutionId, request.userId),
     );
 
     const operationAccessModel = await this.travelOperationAccessService.update(accessRequest);
@@ -872,7 +928,7 @@ export class TravelManagerService {
 
     // Buscar el userId del miembro para validar si es creador
     const member = await this.travelMemberAccessService.getById(memberId);
-    if (member && operation.createdByUserId === member.userId) {
+    if (member && operation.createdByUserId === member.memberUserId) {
       throw new BadRequestException('Creator should delete the operation instead of leaving it');
     }
 
@@ -948,8 +1004,71 @@ export class TravelManagerService {
       participants.length,
       approvedApprovals.length,
       pendingApprovals.length,
-      enrichedParticipants
+      enrichedParticipants,
+      accessModel.chargedAmount,
+      accessModel.chargedCurrencyId,
+      accessModel.paymentInstitutionId,
+      accessModel.paymentInstitutionId ? await this.financialInstitutionAccessService.getNameById(accessModel.paymentInstitutionId) : null,
     );
+  };
+
+  // Entidad del medio de pago: opcional y solo para tarjeta o banco. Tiene que ser del sistema
+  // o propia del usuario (getById da NotFound si no)
+  private resolvePaymentInstitutionId = async (paymentMethodId: number, institutionId: number | null, userId: number): Promise<number | null> => {
+    if (!institutionId || (paymentMethodId !== CARD_PAYMENT_METHOD_ID && paymentMethodId !== BANK_PAYMENT_METHOD_ID)) return null;
+    await this.financialInstitutionAccessService.getById(institutionId, userId);
+    return institutionId;
+  };
+
+  // ==================== TRAVEL OPERATION CHARGE ====================
+
+  // Lo que el banco cobró en la moneda local por un gasto con tarjeta (ej. R$ 300 → Gs. 412.000),
+  // que llega días después. Es informativo (opción A): no cambia la división ni los balances,
+  // por eso se puede registrar con la operación aprobada o el viaje finalizado.
+  // TODO (cobro de tarjeta, opción B): analizar saldar las deudas en la moneda cobrada con la
+  // cotización real (chargedAmount / amount) en vez de la moneda de la operación. Ver
+  // calculateDetailedBalances.
+  public registerOperationCharge = async (request: RegisterOperationChargeRequest): Promise<TravelOperationModel> => {
+    const operation = await this.travelOperationAccessService.getById(request.operationId);
+    if (!operation) {
+      throw new NotFoundException('operations.operationNotFound');
+    }
+
+    const travel = await this.travelAccessService.getById(operation.travelId, request.userId);
+    if (!travel) {
+      throw new NotFoundException('travels.travelNotFound');
+    }
+
+    // Lo registra quien pagó (es su tarjeta) o el creador del viaje
+    const payer = await this.travelMemberAccessService.getById(operation.whoPaidMemberId);
+    if (payer?.memberUserId !== request.userId && travel.createdByUserId !== request.userId) {
+      throw new BadRequestException('operations.chargeOnlyPayer');
+    }
+
+    if (operation.paymentMethodId !== CARD_PAYMENT_METHOD_ID) {
+      throw new BadRequestException('operations.chargeOnlyCard');
+    }
+
+    const isClearing = request.chargedAmount === null;
+    if (!isClearing) {
+      if (request.chargedAmount <= 0) {
+        throw new BadRequestException('operations.chargeAmountPositive');
+      }
+      if (request.chargedCurrencyId === null) {
+        throw new BadRequestException('operations.chargeCurrencyRequired');
+      }
+      if (request.chargedCurrencyId === operation.currencyId) {
+        throw new BadRequestException('operations.chargeSameCurrency');
+      }
+    }
+
+    const updated = await this.travelOperationAccessService.updateCharge(
+      operation.id,
+      operation.travelId,
+      isClearing ? null : request.chargedAmount,
+      isClearing ? null : request.chargedCurrencyId,
+    );
+    return await this.enrichTravelOperationModel(updated);
   };
 
   // ==================== TRAVEL OPERATION APPROVALS ====================
@@ -1277,6 +1396,9 @@ export class TravelManagerService {
   ): Promise<TravelBalanceDetailModel[]> => {
     // Obtener todas las operaciones de esta moneda
     const allOperations = await this.travelOperationAccessService.getByTravelId(travelId);
+    // TODO (cobro de tarjeta, opción B): hoy las deudas se calculan en la moneda de la operación y
+    // chargedAmount/chargedCurrencyId (lo que cobró el banco) es solo informativo. Analizar si las
+    // operaciones con cobro registrado deberían sumarse en la moneda cobrada, con la cotización real.
     const operations = allOperations.filter(x => x.currencyId === currencyId && (x.status === TravelOperationStatus.Approved || x.status === TravelOperationStatus.Pending));
 
     // Obtener todos los miembros del viaje

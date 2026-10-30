@@ -1,5 +1,7 @@
 <fieldset [ngClass]="ngControl.control?.invalid && ngControl.control?.touched ? 'mb-0': 'mb-6'">
-  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" [for]="name">{{label}}</label>
+  <label class="label p-0 pb-2 justify-start" [for]="id">
+    <span class="label-text text-base-content font-medium text-sm transition-colors duration-200 dark:text-white">{{label}}</span>
+  </label>
   <input
     type="date"
     #date

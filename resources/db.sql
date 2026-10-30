@@ -1213,3 +1213,59 @@ ALTER TABLE loans ADD CONSTRAINT check_loan_amortization_type CHECK (amortizatio
 ALTER TABLE loans ADD CONSTRAINT check_loan_flat_total_rate CHECK (amortizationtype <> 'flat' OR totalratepercentage IS NOT NULL);
 
 CREATE INDEX IF NOT EXISTS idx_loans_user_direction_status ON loans(userid, direction, statusid);
+
+
+-- =====================================================
+-- PARTE 22.1: VIAJES MULTIUSUARIO (travelmembers.memberuserid)
+-- =====================================================
+-- travelmembers.userid es el DUEÑO del registro de colaborador (quien agregó al miembro) y
+-- se usa para leer el nombre del colaborador; no es el usuario del miembro. Por eso los
+-- demás miembros no veían el viaje. memberuserid = usuario real del miembro:
+--   - creador: su colaborador interno (email del colaborador = email del usuario)
+--   - vinculado: el otro usuario del match del colaborador (collaboratormatches)
+--   - NULL: miembro sin cuenta vinculada (no ve el viaje; sus gastos los carga otro miembro)
+ALTER TABLE travelmembers ADD COLUMN IF NOT EXISTS memberuserid INT NULL REFERENCES users(id);
+
+UPDATE travelmembers tm
+SET memberuserid = c.userid
+FROM collaborators c
+JOIN users u ON u.id = c.userid
+WHERE c.id = tm.collaboratorid
+  AND lower(c.email) = lower(u.email)
+  AND tm.memberuserid IS NULL;
+
+UPDATE travelmembers tm
+SET memberuserid = CASE WHEN cm.collaborator1id = tm.collaboratorid THEN cm.user2id ELSE cm.user1id END
+FROM collaboratormatches cm
+WHERE (cm.collaborator1id = tm.collaboratorid OR cm.collaborator2id = tm.collaboratorid)
+  AND tm.memberuserid IS NULL;
+
+-- userid se repite en un mismo viaje (es el dueño del colaborador): la restricción original
+-- impedía tener más de un miembro agregado por la misma persona
+ALTER TABLE travelmembers DROP CONSTRAINT IF EXISTS unique_travel_user;
+
+-- Un usuario aparece una sola vez por viaje. Antes de crearlo, verificar que no haya duplicados:
+--   SELECT travelid, memberuserid, count(*) FROM travelmembers
+--   WHERE memberuserid IS NOT NULL GROUP BY travelid, memberuserid HAVING count(*) > 1;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_travelmembers_travel_memberuser
+    ON travelmembers(travelid, memberuserid) WHERE memberuserid IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_travelmembers_memberuser ON travelmembers(memberuserid);
+
+-- =====================================================
+-- PARTE 22.2: COBRO DE LA TARJETA EN OPERACIONES DE VIAJE
+-- =====================================================
+-- Lo que el banco cobró en la moneda local por un gasto con tarjeta (ej. R$ 300 → Gs. 412.000),
+-- registrado días después. Es informativo (opción A): las deudas siguen en la moneda de la
+-- operación. Cotización real = chargedamount / amount.
+ALTER TABLE traveloperations ADD COLUMN IF NOT EXISTS chargedamount BIGINT NULL CHECK (chargedamount IS NULL OR chargedamount > 0);
+ALTER TABLE traveloperations ADD COLUMN IF NOT EXISTS chargedcurrencyid INT NULL REFERENCES currencies(id);
+ALTER TABLE traveloperations ADD CONSTRAINT check_traveloperation_charge CHECK ((chargedamount IS NULL) = (chargedcurrencyid IS NULL));
+
+-- =====================================================
+-- PARTE 22.3: ENTIDAD DEL MEDIO DE PAGO EN OPERACIONES DE VIAJE
+-- =====================================================
+-- Con qué tarjeta o banco se pagó (ej. tarjeta Itaú). Opcional y solo para los métodos
+-- 1 Card y 3 Bank; para efectivo queda NULL. Sirve para el cobro de la tarjeta y para la
+-- futura conciliación con MyMoney (#233).
+ALTER TABLE traveloperations ADD COLUMN IF NOT EXISTS paymentinstitutionid INT NULL REFERENCES financialinstitutions(id);
+CREATE INDEX IF NOT EXISTS idx_traveloperations_paymentinstitution ON traveloperations(paymentinstitutionid);

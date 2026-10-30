@@ -15,5 +15,6 @@ export class UpdateTravelOperationRequest {
     public participantMemberIds: number[], // IDs de los miembros que participan
     public customAmounts?: number[],
     public customPercentages?: number[],
+    public paymentInstitutionId: number | null = null, // Tarjeta o banco con que se pagó
   ) {}
 }

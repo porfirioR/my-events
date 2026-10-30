@@ -5,5 +5,6 @@ export class TravelMemberAccessModel {
     public userId: number,
     public collaboratorId: number,
     public joinedDate: Date,
+    public memberUserId: number | null = null,
   ) {}
 }

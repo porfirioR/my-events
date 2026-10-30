@@ -7,17 +7,25 @@ import { useTravelStore, useCollaboratorStore, useAuthStore, useCurrencyStore } 
 import { AlertService, BreadcrumbService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { ApprovalStatus } from '../../models/enums';
+import { DetailFieldViewModel } from '../../models/view';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
+import { DetailStatCardsComponent } from '../detail-stat-cards/detail-stat-cards.component';
+import { DetailInfoGridComponent } from '../detail-info-grid/detail-info-grid.component';
+import { OperationChargeModalComponent } from '../operation-charge-modal/operation-charge-modal.component';
+
+// paymentmethods: 1 Card, 2 Cash, 3 Bank
+const CARD_PAYMENT_METHOD_ID = 1;
 
 @Component({
   selector: 'app-travel-detail',
   templateUrl: './travel-detail.component.html',
   styleUrls: ['./travel-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent]
+  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent, DetailStatCardsComponent, DetailInfoGridComponent, OperationChargeModalComponent]
 })
 export class TravelDetailComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @ViewChild(OperationChargeModalComponent) chargeModal!: OperationChargeModalComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   private destroyRef = inject(DestroyRef);
@@ -56,6 +64,13 @@ export class TravelDetailComponent implements OnInit {
   protected formatCurrency = this.formatterService.formatCurrency;
   protected getInitials = FormatterHelperService.getInitials;
 
+  // Nombre de la moneda traducido (currencies.<id>); si no hay traducción, el de la base
+  protected currencyLabel = (currencyId: number, fallback: string): string => {
+    const key = `currencies.${currencyId}`;
+    const translated = this.translate.instant(key);
+    return translated !== key ? translated : fallback;
+  };
+
   // Computed para colaboradores disponibles (no son miembros todavía)
   protected availableCollaborators = computed(() => {
     const allCollaborators = this.collaboratorStore.linkedCollaborators();
@@ -64,6 +79,81 @@ export class TravelDetailComponent implements OnInit {
 
     return allCollaborators.filter(c => !memberCollaboratorIds.includes(c.id));
   });
+
+  // Editar el viaje es solo del creador (lo valida el backend)
+  protected isCreator = computed(() => {
+    const travel = this.travel();
+    return !!travel && Number(travel.createdByUserId) === Number(this.authStore.userId());
+  });
+
+  // Resumen (mismos bloques que en préstamos y ahorros)
+  protected statCards = computed<DetailFieldViewModel[]>(() => {
+    const operations = this.operations();
+    const count = (status: string) => String(operations.filter(o => o.status === status).length);
+    return [
+      new DetailFieldViewModel('travels.operations', String(operations.length)),
+      new DetailFieldViewModel('travels.approvedOperations', count(ApprovalStatus.Approved), 'text-success'),
+      new DetailFieldViewModel('travels.pendingOperations', count(ApprovalStatus.Pending), 'text-warning'),
+      new DetailFieldViewModel('travels.members', String(this.members().length)),
+    ];
+  });
+
+  protected infoFields = computed<DetailFieldViewModel[]>(() => {
+    const travel = this.travel();
+    if (!travel) return [];
+    const fields: DetailFieldViewModel[] = [];
+    if (travel.startDate) fields.push(new DetailFieldViewModel('travels.startDate', this.getFormattedDateCustom(travel.startDate)));
+    if (travel.endDate) fields.push(new DetailFieldViewModel('travels.endDate', this.getFormattedDateCustom(travel.endDate)));
+    fields.push(new DetailFieldViewModel('travels.created', this.getFormattedDateCustom(travel.dateCreated)));
+    if (travel.finalizedDate) {
+      fields.push(new DetailFieldViewModel('travels.finalizedDate', this.getFormattedDateCustom(travel.finalizedDate), 'text-info'));
+    }
+    // Solo lo aprobado: lo pendiente todavía no está confirmado y lo rechazado no cuenta.
+    // Un campo con todas las monedas (no se suman entre sí)
+    const totals = new Map<number, number>();
+    for (const operation of this.operations()) {
+      if (operation.status !== ApprovalStatus.Approved) continue;
+      totals.set(operation.currencyId, (totals.get(operation.currencyId) ?? 0) + operation.amount);
+    }
+    if (totals.size > 0) {
+      const value = [...totals].map(([currencyId, total]) => this.formatCurrency(total, currencyId)).join(' · ');
+      fields.push(new DetailFieldViewModel('travels.totalSpent', value));
+    }
+    // Lo que cobró el banco por los gastos con tarjeta en otra moneda (informativo)
+    const charged = new Map<number, number>();
+    for (const operation of this.operations()) {
+      if (!operation.chargedAmount || !operation.chargedCurrencyId || operation.status === ApprovalStatus.Rejected) continue;
+      charged.set(operation.chargedCurrencyId, (charged.get(operation.chargedCurrencyId) ?? 0) + operation.chargedAmount);
+    }
+    if (charged.size > 0) {
+      const value = [...charged].map(([currencyId, total]) => this.formatCurrency(total, currencyId)).join(' · ');
+      fields.push(new DetailFieldViewModel('travels.totalCharged', value, 'text-info'));
+    }
+    return fields;
+  });
+
+  // Cuántas operaciones pagó cada miembro
+  protected paidCountByMember = computed(() => {
+    const counts = new Map<number, number>();
+    for (const operation of this.operations()) {
+      counts.set(operation.whoPaidMemberId, (counts.get(operation.whoPaidMemberId) ?? 0) + 1);
+    }
+    return counts;
+  });
+
+  // Cada deuda viene dos veces (quien debe y quien recibe): se muestra una sola vez como transferencia
+  protected settlementsByCurrency = computed(() =>
+    this.balances().map(currencyBalance => ({
+      currencyId: currencyBalance.currencyId,
+      currencyName: currencyBalance.currencyName,
+      currencySymbol: currencyBalance.currencySymbol,
+      transfers: currencyBalance.simplifiedBalances.flatMap(balance =>
+        balance.settlements
+          .filter(settlement => settlement.direction === 'owes')
+          .map(settlement => ({ from: balance.memberName, to: settlement.otherMemberName, amount: settlement.amount }))
+      ),
+    }))
+  );
 
   ngOnInit(): void {
     this.travelStore.loadCategories()
@@ -200,6 +290,17 @@ export class TravelDetailComponent implements OnInit {
     });
   }
 
+  // Cobro de la tarjeta: solo operaciones con tarjeta, lo registra quien pagó o el creador
+  protected canRegisterCharge(operation: TravelOperationApiModel): boolean {
+    if (operation.paymentMethodId !== CARD_PAYMENT_METHOD_ID) return false;
+    if (this.isCreator()) return true;
+    return this.getCurrentUserMember()?.id === operation.whoPaidMemberId;
+  }
+
+  protected openChargeModal(operation: TravelOperationApiModel): void {
+    this.chargeModal.open(operation);
+  }
+
   protected deleteOperation(operation: TravelOperationApiModel): void {
     this.pendingCallback = (result) => {
       if (result.confirmed) {
@@ -305,7 +406,7 @@ export class TravelDetailComponent implements OnInit {
 
   private getCurrentUserMember(): TravelMemberApiModel | undefined {
     const members = this.members();
-    return members.find(x => x.collaboratorId === this.authStore.collaboratorId());
+    return members.find(x => x.memberUserId === this.authStore.userId());
   }
 
 }
