@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, Input, OnInit, Self, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Input, OnInit, Self, computed, inject, input, signal } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NgControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -36,6 +36,9 @@ export class InstitutionSelectorComponent implements ControlValueAccessor, OnIni
   @Input({ required: true }) name: string = '';
   @Input() description?: string | null;
   @Input() allowCreate = true;
+  // Tipos de entidad que se pueden elegir y crear (null = todos). Ej. operaciones de viaje
+  // con tarjeta o banco: solo bancos y cooperativas
+  public allowedTypes = input<FinancialInstitutionType[] | null>(null);
 
   private destroyRef = inject(DestroyRef);
   private translate = inject(TranslateService);
@@ -52,9 +55,20 @@ export class InstitutionSelectorComponent implements ControlValueAccessor, OnIni
   );
   protected typeList = computed(() => {
     const translations = this.typeTranslations();
-    return this.types.map(type =>
+    return this.visibleTypes().map(type =>
       new KeyValueViewModel(type, translations[FinancialInstitutionTypeLabels[type]] ?? FinancialInstitutionTypeLabels[type], '')
     );
+  });
+
+  private visibleTypes = computed(() => {
+    const allowed = this.allowedTypes();
+    return allowed ? this.types.filter(type => allowed.includes(type)) : this.types;
+  });
+
+  protected groups = computed(() => {
+    const allowed = this.allowedTypes();
+    const groups = this.financialInstitutionsStore.financialInstitutionsByType();
+    return allowed ? groups.filter(group => allowed.includes(group.type)) : groups;
   });
 
   protected showCreate = signal(false);
@@ -86,7 +100,7 @@ export class InstitutionSelectorComponent implements ControlValueAccessor, OnIni
 
   protected toggleCreate = (): void => {
     this.showCreate.update(v => !v);
-    this.formGroup.reset({ name: '', type: FinancialInstitutionType.Bank });
+    this.formGroup.reset({ name: '', type: this.visibleTypes()[0] ?? FinancialInstitutionType.Bank });
   };
 
   protected onCreateKeydown = (event: Event): void => {

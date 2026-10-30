@@ -49,6 +49,17 @@ export class FinancialInstitutionAccessService extends BaseAccessService impleme
     return this.mapEntityToModel(data);
   };
 
+  public getNameById = async (id: number): Promise<string | null> => {
+    const { data, error } = await this.dbContext
+      .from(TableEnum.FinancialInstitutions)
+      .select('name')
+      .eq(DatabaseColumns.EntityId, id)
+      .maybeSingle<{ name: string }>();
+
+    if (error) throw new InternalServerErrorException(error.message);
+    return data?.name ?? null;
+  };
+
   // Entidades del sistema (userid NULL) + las propias del usuario
   public getAll = async (userId: number): Promise<FinancialInstitutionAccessModel[]> => {
     const { data, error } = await this.dbContext

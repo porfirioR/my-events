@@ -9,6 +9,12 @@ import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/
 import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
 import { ApprovalStatus } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
+import { OperationChargeModalComponent } from '../operation-charge-modal/operation-charge-modal.component';
+
+// paymentmethods: 1 Card, 2 Cash, 3 Bank
+const CARD_PAYMENT_METHOD_ID = 1;
+// Nombres de paymentmethods = claves de traducción
+const PAYMENT_METHOD_LABELS: Record<number, string> = { 1: 'Card', 2: 'Cash', 3: 'Bank' };
 
 @Component({
   selector: 'app-operation-detail',
@@ -20,11 +26,13 @@ import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/c
     RouterModule,
     TranslateModule,
     AttachmentListComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    OperationChargeModalComponent,
   ]
 })
 export class OperationDetailComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @ViewChild(OperationChargeModalComponent) chargeModal!: OperationChargeModalComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   private destroyRef = inject(DestroyRef);
@@ -76,6 +84,7 @@ export class OperationDetailComponent implements OnInit {
     if (!this.travelId || !this.operationId) return;
 
     this.travelStore.loadTravelById(this.travelId);
+    this.travelStore.loadMembers(this.travelId);
     this.travelStore.loadOperationById(this.operationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (operation) => {
         this.operation.set(operation);
@@ -97,6 +106,24 @@ export class OperationDetailComponent implements OnInit {
       this.router.navigate(['/travels']);
     }
   }
+
+  // Cobro de la tarjeta: solo operaciones con tarjeta, lo registra quien pagó o el creador del viaje
+  protected canRegisterCharge(operation: TravelOperationApiModel): boolean {
+    if (operation.paymentMethodId !== CARD_PAYMENT_METHOD_ID) return false;
+    const travel = this.travel();
+    if (travel && Number(travel.createdByUserId) === Number(this.authStore.userId())) return true;
+    return this.getCurrentUserMember()?.id === operation.whoPaidMemberId;
+  }
+
+  protected openChargeModal(operation: TravelOperationApiModel): void {
+    this.chargeModal.open(operation);
+  }
+
+  protected paymentMethodLabel = (paymentMethodId: number): string => PAYMENT_METHOD_LABELS[paymentMethodId] ?? '';
+
+  // Cotización real del cobro: lo cobrado por cada unidad de la moneda de la operación
+  protected chargeRate = (operation: TravelOperationApiModel): string =>
+    this.formatCurrency(operation.chargedAmount! / operation.amount, operation.chargedCurrencyId!);
 
   protected editOperation(): void {
     if (this.travelId && this.operationId) {
@@ -251,6 +278,6 @@ export class OperationDetailComponent implements OnInit {
   // Método para obtener el miembro actual del usuario en el viaje
   private getCurrentUserMember(): TravelMemberApiModel | undefined {
     const members = this.travelStore.members();
-    return members.find(x => x.collaboratorId === this.authStore.collaboratorId());
+    return members.find(x => x.memberUserId === this.authStore.userId());
   }
 }

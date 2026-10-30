@@ -28,6 +28,7 @@ import {
   UpdateTravelOperationRequest,
   ApproveOperationRequest,
   RejectOperationRequest,
+  RegisterOperationChargeRequest,
   TravelBalanceByCurrencyModel,
   OperationAttachmentModel,
   CreateOperationAttachmentRequest,
@@ -41,6 +42,7 @@ import {
   CreateTravelOperationApiRequest,
   UpdateTravelOperationApiRequest,
   RejectOperationApiRequest,
+  RegisterOperationChargeApiRequest,
 } from '../models/travels';
 import { MessageModel } from '../models/message.model';
 import { TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
@@ -331,6 +333,7 @@ export class TravelsController {
       participantMemberIds,
       customAmounts,
       customPercentages,
+      apiRequest.paymentInstitutionId ? +apiRequest.paymentInstitutionId : null,
     );
 
     return await this.travelManagerService.createTravelOperation(request);
@@ -382,6 +385,7 @@ export class TravelsController {
       apiRequest.participantMemberIds.map(x => +x),
       customAmounts,
       customPercentages,
+      apiRequest.paymentInstitutionId ? +apiRequest.paymentInstitutionId : null,
     );
 
     return await this.travelManagerService.updateTravelOperation(request);
@@ -453,6 +457,28 @@ export class TravelsController {
     );
 
     return await this.travelManagerService.rejectOperation(request);
+  }
+
+  /**
+   * Registrar lo que el banco cobró por una operación con tarjeta (null = borrarlo)
+   * PUT /api/travels/operations/:operationId/charge
+   */
+  @Put('operations/:operationId/charge')
+  async registerOperationCharge(
+    @Param('operationId', ParseIntPipe) operationId: number,
+    @Body() apiRequest: RegisterOperationChargeApiRequest,
+  ): Promise<TravelOperationModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    const hasCharge = apiRequest.chargedAmount !== null && apiRequest.chargedAmount !== undefined;
+
+    const request = new RegisterOperationChargeRequest(
+      userId,
+      operationId,
+      hasCharge ? +apiRequest.chargedAmount : null,
+      hasCharge ? +apiRequest.chargedCurrencyId : null,
+    );
+
+    return await this.travelManagerService.registerOperationCharge(request);
   }
 
   // ==================== TRAVEL BALANCES ====================

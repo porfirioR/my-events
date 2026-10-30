@@ -25,5 +25,11 @@ export class TravelOperationModel {
     public approvalCount?: number,
     public pendingApprovalCount?: number,
     public participants?: OperationParticipantModel[],
+    // Lo que cobró el banco en otra moneda (tarjeta); null si no se registró
+    public chargedAmount: number | null = null,
+    public chargedCurrencyId: number | null = null,
+    // Entidad de la tarjeta o el banco con que se pagó (opcional)
+    public paymentInstitutionId: number | null = null,
+    public paymentInstitutionName: string | null = null,
   ) {}
 }

@@ -10,5 +10,7 @@ export class TravelMemberModel {
     public joinedDate: Date,
     public source?: 'MyCollaborator' | 'CreatorCollaborator' | 'Me',
     public canAddToMyCollaborators?: boolean,
+    // Usuario real del miembro (null = sin cuenta vinculada: no ve el viaje)
+    public memberUserId: number | null = null,
   ) {}
 }

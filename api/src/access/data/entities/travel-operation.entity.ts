@@ -1,5 +1,7 @@
 export class TravelOperationEntity {
   public id?: number;
+  // Entidad de la tarjeta o el banco con que se pagó (opcional)
+  public paymentinstitutionid?: number | null;
 
   constructor(
     public travelid: number,
@@ -17,5 +19,7 @@ export class TravelOperationEntity {
     public transactiondate?: Date,
     public lastupdatedbyuserid?: number | null,
     public updatedat?: Date | null,
+    public chargedamount?: number | null,
+    public chargedcurrencyid?: number | null,
   ) {}
 }

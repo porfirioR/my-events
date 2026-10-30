@@ -128,7 +128,8 @@ export class TravelsListComponent implements OnInit {
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => this.alertService.showSuccess(this.translate.instant('travels.travelDeletedSuccess')),
-            error: () => this.alertService.showError(this.translate.instant('travels.travelDeletedError')),
+            // El interceptor global ya muestra el motivo que manda el backend (clave i18n)
+            error: () => {},
           });
       }
     };

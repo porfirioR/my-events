@@ -15,15 +15,18 @@ async function bootstrap() {
   logger.log(`   SPA_URL2: ${configService.get(SPA_URL2)}`);
   logger.log(`   LOCAL_DEV: ${configService.get(LOCAL_DEV)}`);
 
+  const isLocalDev: boolean = configService.get<boolean>(LOCAL_DEV) || false;
+
   app.setGlobalPrefix('api')
   app.enableCors({
     origin: [
       configService.get<string>(SPA_URL),
       configService.get<string>(SPA_URL2),
+      // En local se acepta cualquier puerto de localhost (ng serve en 4300, 4200, etc.).
+      // LOCAL_DEV llega como string desde el .env: se compara con 'true'
+      ...(String(configService.get(LOCAL_DEV)) === 'true' ? [/^http:\/\/localhost:\d+$/] : []),
     ]
   })
-
-  const isLocalDev: boolean = configService.get<boolean>(LOCAL_DEV) || false;
   const port = configService.get<number>('PORT') || 3000;
 
   if (isLocalDev) {

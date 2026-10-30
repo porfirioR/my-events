@@ -1,46 +1,33 @@
 <div class="form-control w-full">
-  <label class="label">
-    <span class="label-text">
-      {{ label() | translate }}
-      @if (required()) {
-        <span class="text-error ml-1">*</span>
-      }
-    </span>
-  </label>
+  <p class="text-sm font-medium text-base-content mb-2">
+    {{ label() | translate }}
+    @if (required()) {
+      <span class="text-error ml-1">*</span>
+    }
+  </p>
 
-  <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+  <!-- Chips compactos: la elegida queda marcada con su color (volver a tocarla la quita) -->
+  <div class="flex flex-wrap gap-2" role="radiogroup">
     @for (category of activeCategories(); track category.id) {
       <button
         type="button"
-        class="btn btn-sm border-2 transition-all duration-200"
-        [class]="getCategoryClasses(category)"
-        [style.border-color]="isSelected(category) ? category.color : 'transparent'"
-        [style.background-color]="isSelected(category) ? category.color + '20' : 'transparent'"
-        [title]="'categories.' + category.name | translate"
+        role="radio"
+        class="btn btn-sm rounded-full gap-1.5 font-normal border transition-colors duration-200"
+        [class.btn-ghost]="!isSelected(category)"
+        [class.border-base-300]="!isSelected(category)"
+        [class.font-semibold]="isSelected(category)"
+        [style.border-color]="isSelected(category) ? category.color : null"
+        [style.background-color]="isSelected(category) ? category.color + '26' : null"
+        [attr.aria-checked]="isSelected(category)"
         (click)="selectCategory(category)"
         [disabled]="disabled()"
       >
-        <span class="text-lg">{{ category.icon }}</span>
-        <span class="text-xs truncate">{{ 'categories.' + category.name | translate }}</span>
+        <span aria-hidden="true">{{ category.icon }}</span>
+        {{ 'categories.' + category.name | translate }}
+        @if (isSelected(category)) {
+          <i class="fas fa-check text-xs" aria-hidden="true"></i>
+        }
       </button>
     }
   </div>
-
-  @if (selectedCategory()) {
-    <div class="mt-2 p-2 rounded-lg border" [style.border-color]="selectedCategory()!.color">
-      <div class="flex items-center gap-2">
-        <span class="text-lg">{{ selectedCategory()!.icon }}</span>
-        <span class="font-medium">{{ 'categories.' + selectedCategory()!.name | translate }}</span>
-        <button 
-          type="button" 
-          class="btn btn-ghost btn-xs ml-auto"
-          [title]="'operations.clearCategory' | translate"
-          (click)="clearSelection()"
-          [disabled]="disabled()"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-  }
 </div>

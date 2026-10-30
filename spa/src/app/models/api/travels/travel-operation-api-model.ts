@@ -24,4 +24,10 @@ export interface TravelOperationApiModel {
   pendingApprovalCount?: number;
   categoryId: number;
   participants?: OperationParticipantApiModel[];
+  // Lo que cobró el banco en otra moneda (tarjeta); null si no se registró
+  chargedAmount?: number | null;
+  chargedCurrencyId?: number | null;
+  // Entidad de la tarjeta o el banco con que se pagó (opcional)
+  paymentInstitutionId?: number | null;
+  paymentInstitutionName?: string | null;
 }

@@ -13,6 +13,7 @@ import {
   CreateTravelOperationApiRequest,
   UpdateTravelOperationApiRequest,
   RejectOperationApiRequest,
+  RegisterOperationChargeApiRequest,
   OperationCategoryApiModel,
   OperationCategorySummaryApiModel,
   OperationAttachmentApiModel
@@ -96,6 +97,9 @@ export class TravelApiService {
 
   public rejectOperation = (operationId: number, request: RejectOperationApiRequest): Observable<TravelOperationApiModel> =>
     this.httpClient.post<TravelOperationApiModel>(`${this.section}/operations/${operationId}/reject`, request);
+
+  public registerOperationCharge = (operationId: number, request: RegisterOperationChargeApiRequest): Observable<TravelOperationApiModel> =>
+    this.httpClient.put<TravelOperationApiModel>(`${this.section}/operations/${operationId}/charge`, request);
 
   // ==================== TRAVEL BALANCES ====================
 

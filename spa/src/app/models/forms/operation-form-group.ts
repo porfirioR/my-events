@@ -15,4 +15,5 @@ export interface OperationFormGroup {
   customAmounts: FormControl<number[] | null>;
   customPercentages: FormControl<number[] | null>;
   categoryId: FormControl<number | null>;
+  paymentInstitutionId: FormControl<number | null>;
 }

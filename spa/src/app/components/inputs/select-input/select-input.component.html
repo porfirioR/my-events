@@ -1,5 +1,7 @@
 <fieldset [ngClass]="ngControl.control?.invalid && ngControl.control?.touched ? 'mb-0': 'mb-6'">
-  <label class="label-text text-base-content font-medium text-sm transition-colors duration-200 dark:text-white" >{{label}}</label>
+  <label class="label p-0 pb-2 justify-start" [for]="id">
+    <span class="label-text text-base-content font-medium text-sm transition-colors duration-200 dark:text-white">{{label}}</span>
+  </label>
   <select
     [id]="id"
     [name]="name"
@@ -24,6 +26,11 @@
   </select>
   <app-form-errors [formControl]="$any(ngControl).control" [label]="label"/>
   @if (getSelectedDescription()) {
-    <span class="text-gray-500">{{ getSelectedDescription() }}</span>
+    <div class="mt-2">
+      <span class="text-base-content/70 text-xs italic flex items-center gap-1 transition-colors duration-200 dark:text-gray-400">
+        <i class="fas fa-info-circle text-info text-xs"></i>
+        {{ getSelectedDescription() }}
+      </span>
+    </div>
   }
 </fieldset>

@@ -1,24 +1,41 @@
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, Signal, computed, effect, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { switchMap, of, catchError } from 'rxjs';
+import { switchMap, of, catchError, map } from 'rxjs';
 import { OperationFormGroup } from '../../models/forms/operation-form-group';
-import { useTravelStore, useLoadingStore, useCurrencyStore } from '../../store';
+import { useTravelStore, useLoadingStore, useCurrencyStore, useAuthStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { CreateTravelOperationApiRequest, OperationCategoryApiModel, TravelOperationApiModel, UpdateTravelOperationApiRequest } from '../../models/api/travels';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
-import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { TextComponent } from '../inputs/text/text.component';
 import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { CategorySelectorComponent } from '../category-selector/category-selector.component';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
+import { InstitutionSelectorComponent } from '../institution-selector/institution-selector.component';
 import { KeyValueViewModel } from '../../models/view';
-import { Configurations, SplitType, TravelParticipantType } from '../../models/enums';
+import { Configurations, FinancialInstitutionType, SplitType, TravelParticipantType } from '../../models/enums';
+
+// paymentmethods: 1 Card, 2 Cash, 3 Bank
+const PAYMENT_METHOD_ICONS: Record<number, string> = { 1: 'fa-credit-card', 2: 'fa-money-bill-wave', 3: 'fa-building-columns' };
+// Tarjeta y banco llevan entidad (cuál tarjeta / cuál banco); efectivo no
+const PAYMENT_METHODS_WITH_INSTITUTION = [1, 3];
+// Última entidad usada por método, para no elegirla en cada operación (preferencia local)
+const LAST_INSTITUTION_STORAGE_KEY = 'travelOperation.lastPaymentInstitution';
+
+// Parte de cada participante en el resumen lateral
+interface ShareRow {
+  memberId: number;
+  name: string;
+  initials: string;
+  amount: number;
+  percentage: number;
+  isPayer: boolean;
+}
 
 @Component({
   selector: 'app-upsert-operation',
@@ -32,11 +49,11 @@ import { Configurations, SplitType, TravelParticipantType } from '../../models/e
     TranslateModule,
     SelectInputComponent,
     TextComponent,
-    TextAreaInputComponent,
     DateInputComponent,
     CategorySelectorComponent,
     FileUploadComponent,
-    AttachmentListComponent
+    AttachmentListComponent,
+    InstitutionSelectorComponent,
   ]
 })
 export class UpsertOperationComponent implements OnInit {
@@ -51,6 +68,7 @@ export class UpsertOperationComponent implements OnInit {
   private travelStore = useTravelStore();
   private currencyStore = useCurrencyStore();
   private loadingStore = useLoadingStore();
+  private authStore = useAuthStore();
 
   protected isLoading = this.loadingStore.isLoading;
   protected travel = this.travelStore.selectedTravel;
@@ -69,8 +87,13 @@ export class UpsertOperationComponent implements OnInit {
     return this.formatterService.convertToList(this.currencyStore.currencies(), Configurations.Currencies);
   });
 
+  // Valores del formulario como signals: un computed solo avisa cuando su valor cambia
+  private participantTypeValue = computed(() => this.formValue().participantType);
+  protected amountValue = computed(() => +(this.formValue().amount || 0));
+  private splitTypeValue = computed(() => this.formValue().splitType);
+
   protected customSplitParticipants = computed(() => {
-    const participantType = this.formGroup.value.participantType;
+    const participantType = this.participantTypeValue();
 
     let participantIds: number[] = [];
 
@@ -119,8 +142,8 @@ export class UpsertOperationComponent implements OnInit {
 
   // ✅ COMPUTED: Validaciones para custom splits
   protected isCustomSplitValid = computed(() => {
-    const splitType = this.formGroup.value.splitType;
-    const amount = this.formGroup.value.amount || 0;
+    const splitType = this.splitTypeValue();
+    const amount = this.amountValue();
 
     if (splitType === this.splitType.Custom) {
       const totalCustom = this.customSplitData().reduce((sum, d) => sum + (d.amount || 0), 0);
@@ -137,8 +160,8 @@ export class UpsertOperationComponent implements OnInit {
 
   // ✅ COMPUTED: Información de split para mostrar
   protected readonly splitSummary = computed(() => {
-    const splitType = this.formGroup.value.splitType;
-    const amount = this.formGroup.value.amount || 0;
+    const splitType = this.splitTypeValue();
+    const amount = this.amountValue();
     const participantCount = this.customSplitParticipants().length;
 
     if (splitType === this.splitType.Equal) {
@@ -198,6 +221,62 @@ export class UpsertOperationComponent implements OnInit {
 
   public ignorePreventUnsavedChanges = false;
   public formGroup: FormGroup<OperationFormGroup>;
+  // formGroup.value no es reactivo: los computed del resumen leen este signal
+  protected formValue!: Signal<ReturnType<FormGroup<OperationFormGroup>['getRawValue']>>;
+
+  protected getInitials = FormatterHelperService.getInitials;
+  protected paymentMethodIcon = (id: number): string => PAYMENT_METHOD_ICONS[id] ?? 'fa-wallet';
+
+  // Miembro del usuario actual: quién pagó por defecto (como "Yo pagué" en transacciones)
+  protected currentUserMemberId = computed(() =>
+    this.members().find(x => x.memberUserId === this.authStore.userId())?.id ?? null
+  );
+
+  protected participantIds = computed(() =>
+    this.formValue().participantType === TravelParticipantType.All
+      ? this.members().map(m => m.id)
+      : this.selectedParticipants()
+  );
+
+  // Resumen lateral: lo que le toca a cada participante según el tipo de división
+  protected shareRows = computed<ShareRow[]>(() => {
+    const { amount, splitType, whoPaidMemberId } = this.formValue();
+    const total = +(amount || 0);
+    const ids = this.participantIds();
+    const splitData = this.customSplitData();
+    return ids.map(id => {
+      const member = this.members().find(m => m.id === id);
+      const name = member ? `${member.collaboratorName} ${member.collaboratorSurname}` : '';
+      const data = splitData.find(d => d.memberId === id);
+      let share = ids.length > 0 ? total / ids.length : 0;
+      let percentage = ids.length > 0 ? 100 / ids.length : 0;
+      if (splitType === SplitType.Custom) {
+        share = data?.amount || 0;
+        percentage = total > 0 ? (share / total) * 100 : 0;
+      } else if (splitType === SplitType.Percentage) {
+        percentage = data?.percentage || 0;
+        share = (total * percentage) / 100;
+      }
+      return { memberId: id, name, initials: this.getInitials(name), amount: share, percentage, isPayer: id === whoPaidMemberId };
+    });
+  });
+
+  // Lo que el resto le debe a quien pagó (su propia parte no se la debe nadie)
+  protected payerReceives = computed(() =>
+    this.shareRows().filter(x => !x.isPayer).reduce((sum, x) => sum + x.amount, 0)
+  );
+
+  // Las tarjetas las emiten bancos y cooperativas: el resto de tipos no aplica acá
+  protected paymentInstitutionTypes = [FinancialInstitutionType.Bank, FinancialInstitutionType.Cooperative];
+
+  protected needsPaymentInstitution = computed(() =>
+    PAYMENT_METHODS_WITH_INSTITUTION.includes(this.formValue().paymentMethodId ?? 0)
+  );
+
+  protected payerName = computed(() => {
+    const member = this.members().find(m => m.id === this.formValue().whoPaidMemberId);
+    return member ? `${member.collaboratorName} ${member.collaboratorSurname}` : '';
+  });
 
   constructor() {
     preventUnsavedUnload(this);
@@ -214,7 +293,18 @@ export class UpsertOperationComponent implements OnInit {
       participantMemberIds: new FormControl<number[]>([]),
       customAmounts:new FormControl<number[]>([]),
       customPercentages: new FormControl<number[]>([]),
-      categoryId: new FormControl(1, [Validators.required])
+      categoryId: new FormControl(1, [Validators.required]),
+      paymentInstitutionId: new FormControl<number | null>(null),
+    });
+    // getRawValue: al guardar el form se deshabilita y value dejaría el resumen en 0
+    this.formValue = toSignal(this.formGroup.valueChanges.pipe(map(() => this.formGroup.getRawValue())), { initialValue: this.formGroup.getRawValue() });
+
+    // Quién pagó: por defecto el usuario actual (solo al crear)
+    effect(() => {
+      const memberId = this.currentUserMemberId();
+      if (memberId && !this.isEditMode() && !this.formGroup.controls.whoPaidMemberId.value) {
+        this.formGroup.controls.whoPaidMemberId.setValue(memberId);
+      }
     });
 
     // ✅ Effect para establecer moneda por defecto cuando se carga el travel
@@ -252,8 +342,8 @@ export class UpsertOperationComponent implements OnInit {
     // ✅ NUEVO: Effect para inicializar custom split data
     effect(() => {
       const participantIds = this.customSplitParticipants().map(p => p.memberId);
-      const amount = this.formGroup.value.amount || 0;
-      const splitType = this.formGroup.value.splitType;
+      const amount = this.amountValue();
+      const splitType = this.splitTypeValue();
 
       // ✅ PROTECCIÓN: Solo procesar si hay datos válidos
       if (participantIds.length > 0 && amount > 0) {
@@ -330,8 +420,8 @@ export class UpsertOperationComponent implements OnInit {
 
     // ✅ NUEVO: Effect separado para recalcular Equal automáticamente cuando cambia el monto
     effect(() => {
-      const amount = this.formGroup.value.amount || 0;
-      const splitType = this.formGroup.value.splitType;
+      const amount = this.amountValue();
+      const splitType = this.splitTypeValue();
       const participants = this.customSplitParticipants();
 
       // Solo recalcular automáticamente si es Equal y hay participantes
@@ -396,6 +486,7 @@ export class UpsertOperationComponent implements OnInit {
       id: operation.id,
       currencyId: operation.currencyId,
       paymentMethodId: operation.paymentMethodId,
+      paymentInstitutionId: operation.paymentInstitutionId ?? null,
       whoPaidMemberId: operation.whoPaidMemberId,
       amount: operation.amount,
       description: operation.description,
@@ -451,7 +542,62 @@ export class UpsertOperationComponent implements OnInit {
   }
 
   protected isParticipantSelected(memberId: number): boolean {
-    return this.selectedParticipants().includes(memberId);
+    return this.participantIds().includes(memberId);
+  }
+
+  protected setWhoPaid(memberId: number): void {
+    this.formGroup.controls.whoPaidMemberId.setValue(memberId);
+    this.formGroup.controls.whoPaidMemberId.markAsDirty();
+  }
+
+  protected setPaymentMethod(paymentMethodId: number): void {
+    this.formGroup.controls.paymentMethodId.setValue(paymentMethodId);
+    this.formGroup.controls.paymentMethodId.markAsDirty();
+    // Propone la última entidad usada con ese método; efectivo no lleva entidad
+    const institutionId = PAYMENT_METHODS_WITH_INSTITUTION.includes(paymentMethodId)
+      ? this.readLastInstitution()[paymentMethodId] ?? null
+      : null;
+    this.formGroup.controls.paymentInstitutionId.setValue(institutionId);
+  }
+
+  private readLastInstitution(): Record<number, number> {
+    try {
+      return JSON.parse(localStorage.getItem(LAST_INSTITUTION_STORAGE_KEY) ?? '{}');
+    } catch {
+      return {};
+    }
+  }
+
+  private rememberLastInstitution(paymentMethodId: number | null, institutionId: number | null): void {
+    if (!paymentMethodId || !institutionId) return;
+    try {
+      localStorage.setItem(LAST_INSTITUTION_STORAGE_KEY, JSON.stringify({ ...this.readLastInstitution(), [paymentMethodId]: institutionId }));
+    } catch {
+      // Sin localStorage (modo privado): solo se pierde la sugerencia
+    }
+  }
+
+  protected setSplitType(splitType: SplitType): void {
+    this.formGroup.controls.splitType.setValue(splitType);
+    this.formGroup.controls.splitType.markAsDirty();
+  }
+
+  // Chips de participantes: "Todos" = participantType All; si se saca a alguien pasa a Selected
+  protected selectAllParticipants(): void {
+    const allIds = this.members().map(m => m.id);
+    this.formGroup.patchValue({ participantType: TravelParticipantType.All, participantMemberIds: allIds });
+    this.selectedParticipants.set(allIds);
+  }
+
+  protected toggleParticipantChip(memberId: number): void {
+    const current = this.participantIds();
+    const next = current.includes(memberId) ? current.filter(id => id !== memberId) : [...current, memberId];
+    if (next.length === this.members().length) {
+      this.selectAllParticipants();
+      return;
+    }
+    this.formGroup.patchValue({ participantType: TravelParticipantType.Selected, participantMemberIds: next });
+    this.selectedParticipants.set(next);
   }
 
   protected async save(): Promise<void> {
@@ -479,9 +625,11 @@ export class UpsertOperationComponent implements OnInit {
         formValue.participantMemberIds!,
         formValue.categoryId!,
         formValue.customAmounts ?? undefined,
-        formValue.customPercentages ?? undefined
+        formValue.customPercentages ?? undefined,
+        this.needsPaymentInstitution() ? formValue.paymentInstitutionId ?? null : null,
       );
 
+      this.rememberLastInstitution(formValue.paymentMethodId ?? null, formValue.paymentInstitutionId ?? null);
       this.formGroup.disable();
       this.travelStore.updateOperation(this.travelId, this.operationId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
@@ -513,9 +661,11 @@ export class UpsertOperationComponent implements OnInit {
         formValue.participantMemberIds!,
         formValue.categoryId!,
         formValue.customAmounts ?? undefined,
-        formValue.customPercentages ?? undefined
+        formValue.customPercentages ?? undefined,
+        this.needsPaymentInstitution() ? formValue.paymentInstitutionId ?? null : null,
       );
 
+      this.rememberLastInstitution(formValue.paymentMethodId ?? null, formValue.paymentInstitutionId ?? null);
       this.formGroup.disable();
       this.travelStore.createOperation(this.travelId, request).pipe(
         switchMap(operation => {

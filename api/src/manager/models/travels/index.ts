@@ -9,6 +9,7 @@ export { CreateTravelOperationRequest } from './create-travel-operation-request'
 export { UpdateTravelOperationRequest } from './update-travel-operation-request';
 export { ApproveOperationRequest } from './approve-operation-request';
 export { RejectOperationRequest } from './reject-operation-request';
+export { RegisterOperationChargeRequest } from './register-operation-charge-request';
 export { TravelBalanceDetailModel, DebtDetailModel, CreditDetailModel } from './travel-balance-detail.model';
 export { TravelBalanceSimplifiedModel, SettlementModel } from './travel-balance-simplified.model';
 export { TravelBalanceByCurrencyModel } from './travel-balance-by-currency.model';

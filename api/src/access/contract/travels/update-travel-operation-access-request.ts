@@ -11,6 +11,7 @@ export class UpdateTravelOperationAccessRequest {
     public splitType: string,
     public transactionDate: Date,
     public lastUpdatedByUserId: number,
-    public categoryId: number
+    public categoryId: number,
+    public paymentInstitutionId: number | null = null,
   ) {}
 }

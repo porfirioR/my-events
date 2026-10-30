@@ -37,6 +37,16 @@ export interface ITravelOperationAccessService {
   delete(id: number, travelId: number): Promise<void>;
 
   /**
+   * Registrar (o borrar, con null) lo que el banco cobró por la operación en otra moneda
+   */
+  updateCharge(id: number, travelId: number, chargedAmount: number | null, chargedCurrencyId: number | null): Promise<TravelOperationAccessModel>;
+
+  /**
+   * Eliminar todas las operaciones de un viaje (cascada: participantes, aprobaciones y adjuntos)
+   */
+  deleteByTravelId(travelId: number): Promise<void>;
+
+  /**
    * Verificar si todas las operaciones del viaje están aprobadas
    */
   areAllApproved(travelId: number): Promise<boolean>;

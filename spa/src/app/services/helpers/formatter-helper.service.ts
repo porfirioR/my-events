@@ -19,9 +19,11 @@ export class FormatterHelperService {
     let value = ''
     switch (configurationType) {
       case Configurations.Currencies:
+        // Nombre traducido + símbolo: el país no aporta al elegir y "$" solo es ambiguo (USD, ARS)
         const currency = (x as CurrencyApiModel)
-        moreData = this.translate.instant('inputs.currency', {symbol: currency.symbol, country: currency.country})
-        value = currency.name
+        const nameKey = `currencies.${currency.id}`
+        const translatedName = this.translate.instant(nameKey)
+        value = `${translatedName !== nameKey ? translatedName : currency.name} (${currency.symbol})`
         break;
       case Configurations.Periods:
         const period = (x as PeriodApiModel)

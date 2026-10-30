@@ -133,7 +133,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
     .from(TableEnum.TravelMembers)
     .select(DatabaseColumns.EntityId)
     .eq(DatabaseColumns.TravelId, travelId)
-    .eq(DatabaseColumns.UserId, userId)
+    .eq(DatabaseColumns.MemberUserId, userId)
     .limit(1);
 
   if (error) {
@@ -151,6 +151,7 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       entity.userid,
       entity.collaboratorid,
       new Date(entity.joineddate!),
+      entity.memberuserid ?? null,
     );
   };
 
@@ -159,6 +160,8 @@ export class TravelMemberAccessService extends BaseAccessService implements ITra
       request.travelId,
       request.userId,
       request.collaboratorId,
+      undefined,
+      request.memberUserId,
     );
   };
 }

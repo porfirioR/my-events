@@ -1,523 +1,329 @@
 <section>
   @if (travel(); as travelData) {
-    <article class="max-w-5xl mx-auto">
-      <!-- Header -->
-      <header class="bg-base-100 rounded-xl shadow-lg p-6 mb-6">
-        <div class="flex items-start justify-between gap-4">
-          <button
-            type="button"
-            class="btn btn-sm btn-ghost btn-circle"
-            (click)="backToList()"
-          >
-            <i class="fas fa-arrow-left"></i>
+    <!-- Header (misma estructura que el detalle de préstamos y ahorros) -->
+    <header class="flex flex-wrap items-center gap-4 mb-6">
+      <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="backToList()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="grow min-w-0">
+        <h1 class="text-2xl font-bold text-base-content">{{ travelData.name }}</h1>
+        <p class="text-base-content/70 text-sm flex flex-wrap items-center gap-x-1 gap-y-1">
+          @if (travelData.startDate) {
+            <span>
+              <i class="fas fa-calendar-alt mr-1"></i>{{ getFormattedDateCustom(travelData.startDate) }}
+              @if (travelData.endDate) { - {{ getFormattedDateCustom(travelData.endDate) }} }
+            </span>
+          }
+          <span class="badge badge-sm gap-1 ml-1" [ngClass]="getTravelStatusBadgeClass(travelData.status)">
+            <i [class]="'fas ' + getTravelStatusIcon(travelData.status)"></i>{{ 'travels.' + travelData.status.toLowerCase() | translate }}
+          </span>
+        </p>
+        @if (travelData.description) {
+          <p class="text-sm text-base-content/60 mt-1">{{ travelData.description }}</p>
+        }
+      </div>
+
+      @if (travelData.status === 'Active') {
+        <div class="flex flex-wrap gap-2">
+          @if (isCreator()) {
+            <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="editTravel()">
+              <i class="fas fa-edit"></i>{{ 'travels.edit' | translate }}
+            </button>
+          }
+          <button type="button" class="btn btn-sm btn-primary" (click)="createOperation()">
+            <i class="fas fa-plus"></i>{{ 'travels.newOperation' | translate }}
           </button>
-
-          <div class="flex-grow">
-            <h1 class="text-2xl md:text-3xl font-bold text-base-content mb-2">
-              {{ travelData.name }}
-            </h1>
-            @if (travelData.description) {
-              <p class="text-base-content/70 mb-3">
-                {{ travelData.description }}
-              </p>
-            }
-
-            <!-- Metadata -->
-            <div class="flex items-center gap-4 flex-wrap">
-              <!-- Status Badge -->
-              <span class="badge badge-soft gap-1"
-                [ngClass]="getTravelStatusBadgeClass(travelData.status)">
-                <i [class]="'fas ' + getTravelStatusIcon(travelData.status)"></i>
-                {{ 'travels.' + travelData.status.toLowerCase() | translate }}
-              </span>
-
-              <!-- Dates -->
-              @if (travelData.startDate) {
-                <span class="text-sm text-base-content/70">
-                  <i class="fas fa-calendar-alt mr-1"></i>
-                  {{ getFormattedDateCustom(travelData.startDate) }}
-                  @if (travelData.endDate) {
-                    - {{ getFormattedDateCustom(travelData.endDate) }}
-                  }
-                </span>
-              }
-
-              <!-- Created Date -->
-              <time class="text-sm text-base-content/60" [attr.datetime]="travelData.dateCreated">
-                {{ 'travels.created' | translate }} {{ getFormattedDate(travelData.dateCreated) }}
-              </time>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          @if (travelData.status === 'Active') {
-            <div class="flex gap-2">
-              <button
-                type="button"
-                class="btn btn-sm btn-primary"
-                (click)="editTravel()"
-              >
-                <i class="fas fa-edit"></i>
-                <span class="hidden md:inline ml-1">{{ 'travels.edit' | translate }}</span>
-              </button>
-            </div>
-          }
         </div>
-      </header>
+      }
+    </header>
 
-      <!-- Tabs -->
-      <div role="tablist" class="tabs tabs-boxed bg-base-100 p-1 mb-6">
-        <button
-          role="tab"
-          class="tab"
-          [class.tab-active]="activeTab() === 'operations'"
-          (click)="setActiveTab('operations')"
-        >
-          <i class="fas fa-receipt mr-2"></i>
-          {{ 'travels.operations' | translate }}
-          @if (operations().length > 0) {
-            <span class="badge badge-sm badge-soft ml-2">{{ operations().length }}</span>
-          }
+    <!-- Resumen (mismos bloques que en préstamos y ahorros) -->
+    <app-detail-stat-cards class="block mb-6" [cards]="statCards()" />
+
+    <app-detail-info-grid class="block mb-6" [fields]="infoFields()" />
+
+    <!-- Operaciones, miembros y balances (mismo bloque de pestañas que en préstamos y ahorros) -->
+    <article class="bg-base-100 rounded-xl border border-base-300/60 shadow-sm">
+      <div role="tablist" class="tabs tabs-border px-4 pt-2">
+        <button type="button" role="tab" class="tab" [class.tab-active]="activeTab() === 'operations'" (click)="setActiveTab('operations')">
+          <i class="fas fa-receipt mr-2" aria-hidden="true"></i>{{ 'travels.operations' | translate }}
+          <span class="badge badge-sm badge-soft ml-2">{{ operations().length }}</span>
         </button>
-        <button
-          role="tab"
-          class="tab"
-          [class.tab-active]="activeTab() === 'members'"
-          (click)="setActiveTab('members')"
-        >
-          <i class="fas fa-users mr-2"></i>
-          {{ 'travels.members' | translate }}
-          @if (members().length > 0) {
-            <span class="badge badge-sm badge-soft ml-2">{{ members().length }}</span>
-          }
+        <button type="button" role="tab" class="tab" [class.tab-active]="activeTab() === 'members'" (click)="setActiveTab('members')">
+          <i class="fas fa-users mr-2" aria-hidden="true"></i>{{ 'travels.members' | translate }}
+          <span class="badge badge-sm badge-soft ml-2">{{ members().length }}</span>
         </button>
-        <button
-          role="tab"
-          class="tab"
-          [class.tab-active]="activeTab() === 'balances'"
-          (click)="setActiveTab('balances')"
-        >
-          <i class="fas fa-balance-scale mr-2"></i>
-          {{ 'travels.balances' | translate }}
+        <button type="button" role="tab" class="tab" [class.tab-active]="activeTab() === 'balances'" (click)="setActiveTab('balances')">
+          <i class="fas fa-balance-scale mr-2" aria-hidden="true"></i>{{ 'travels.balances' | translate }}
         </button>
       </div>
 
-      <!-- Tab Content -->
-      <div class="bg-base-100 rounded-xl shadow-lg p-6">
+      <div class="p-4">
         <!-- OPERATIONS TAB -->
         @if (activeTab() === 'operations') {
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-semibold text-base-content">
-                {{ 'travels.operations' | translate }}
-              </h2>
-              @if (travelData.status === 'Active') {
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary"
-                  (click)="createOperation()"
-                >
-                  <i class="fas fa-plus mr-1"></i>
-                  {{ 'travels.newOperation' | translate }}
-                </button>
-              }
+          @if (isOperationsLoading()) {
+            <div class="flex justify-center items-center py-12">
+              <span class="loading loading-spinner loading-lg"></span>
             </div>
+          } @else {
+            <ul class="space-y-2" role="list">
+              @for (operation of operations(); track operation.id) {
+                <li class="rounded-xl border border-base-300/60 bg-base-100 p-4 hover:bg-base-200/60 transition-colors duration-200 cursor-pointer"
+                  (click)="viewOperationDetail(operation)">
+                  <article class="flex items-start gap-4">
+                    <!-- Categoría -->
+                    <span class="w-10 h-10 shrink-0 rounded-full grid place-items-center bg-base-200 text-lg" aria-hidden="true">
+                      {{ selectedCategory(operation.categoryId)?.icon || '🧾' }}
+                    </span>
 
-            @if (isOperationsLoading()) {
-              <div class="flex justify-center items-center py-12">
-                <span class="loading loading-spinner loading-lg"></span>
-              </div>
-            } @else {
-              <ul class="space-y-4">
-                @for (operation of operations(); track operation.id) {
-                  <li class="bg-base-200 dark:bg-base-300 rounded-lg p-6 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-all duration-200 shadow-sm relative">
-                    <article class="space-y-4">
-
-                      <!-- Header: Título, monto y status -->
-                      <div class="space-y-3 sm:space-y-0 sm:flex sm:items-start sm:justify-between sm:gap-4">
-                        <!-- MOBILE: Stacked Layout -->
-                        <div class="block sm:hidden space-y-2 w-full pr-10"><!-- ✅ Agregar padding-right -->
-                          <!-- Primera línea: Descripción completa -->
-                          <h3 class="text-lg font-bold text-base-content leading-tight line-clamp-2">
-                            {{ operation.description }}
-                          </h3>
-                          <!-- Segunda línea: Monto y Status -->
-                          <div class="flex items-center justify-between">
-                            <span class="text-lg font-bold text-primary">
-                              {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
-                            </span>
-                            <span class="badge badge-sm badge-soft gap-1"
-                              [ngClass]="getOperationStatusBadgeClass(operation.status)"
-                            >
-                              <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
-                              {{ 'travels.' + operation.status.toLowerCase() | translate }}
-                            </span>
-                          </div>
-                        </div>
-
-                        <!-- DESKTOP: Side-by-side Layout -->
-                        <div class="hidden sm:flex sm:items-start sm:justify-between sm:gap-4 w-full">
-                          <!-- LEFT: Description -->
-                          <h3 class="text-lg font-bold text-base-content truncate flex-grow">
-                            {{ operation.description }}
-                          </h3>
-
-                          <!-- RIGHT: Amount + Status -->
-                          <div class="flex items-center gap-3 flex-shrink-0">
-                            <!-- Amount -->
-                            <span class="text-lg sm:text-xl font-bold text-base-content whitespace-nowrap">
-                              {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
-                            </span>
-
-                            <!-- Status -->
-                            <span class="badge badge-soft gap-1"
-                              [ngClass]="getOperationStatusBadgeClass(operation.status)"
-                            >
-                              <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
-                              {{ 'travels.' + operation.status.toLowerCase() | translate }}
-                            </span>
-                          </div>
-                        </div>
-
-                        <!-- ✅ CORREGIR: Actions Menu siempre visible -->
-                        <div class="absolute top-3 right-3 sm:relative sm:top-0 sm:right-0 sm:flex-shrink-0">
-                          <div class="dropdown dropdown-end">
-                            <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
-                              <i class="fas fa-ellipsis-v"></i>
-                            </label>
-                            <ul
-                              tabindex="0"
-                              class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 dark:bg-base-300 rounded-lg w-48 border border-base-300"
-                            >
-                              <li>
-                                <button (click)="viewOperationDetail(operation)">
-                                  <i class="fas fa-eye text-info"></i>
-                                  {{ 'travels.viewDetails' | translate }}
-                                </button>
-                              </li>
-
-                              @if (travelData.status === 'Active' && operation.status === approvalStatus.Pending) {
-                                @if (hasCurrentUserApproved(operation)) {
-                                  <li>
-                                    <div class="flex items-center gap-2 py-3 text-sm text-success">
-                                      <i class="fas fa-check-circle"></i>
-                                      <span>{{ 'operations.youAlreadyApproved' | translate }}</span>
-                                    </div>
-                                  </li>
-                                }
-                                @if (canCurrentUserApprove(operation)) {
-                                  <li>
-                                    <button (click)="approveOperation(operation)">
-                                      <i class="fas fa-check text-success"></i>
-                                      {{ 'travels.approve' | translate }}
-                                    </button>
-                                  </li>
-                                }
-                                @if (canCurrentUserReject(operation)) {
-                                  <li>
-                                    <button (click)="rejectOperation(operation)">
-                                      <i class="fas fa-times text-error"></i>
-                                      {{ 'travels.reject' | translate }}
-                                    </button>
-                                  </li>
-                                }
-                                <li>
-                                  <button (click)="editOperation(operation)">
-                                    <i class="fas fa-edit text-primary"></i>
-                                    {{ 'travels.edit' | translate }}
-                                  </button>
-                                </li>
-                              }
-
-                              @if (operation.status !== approvalStatus.Approved) {
-                                <li><hr class="my-1 border-base-300" /></li>
-                                <li>
-                                  <button (click)="deleteOperation(operation)">
-                                    <i class="fas fa-trash text-error"></i>
-                                    {{ 'travels.delete' | translate }}
-                                  </button>
-                                </li>
-                              }
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Quien pagó (destacado) -->
-                      <div class="block sm:hidden">
-                        <div class="flex items-center gap-2">
-                          <div class="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center font-bold text-sm">
-                            {{ getInitials(operation.whoPaidMemberName || 'UK') }}
-                          </div>
-                          <span class="text-sm text-base-content/70">
-                            {{ operation.whoPaidMemberName || ('operations.unknownMember' | translate) }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="hidden sm:block">
-                        <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center font-bold shadow-md">
-                            {{ getInitials(operation.whoPaidMemberName || 'UK') }}
-                          </div>
-                          <div class="flex-grow">
-                            <p class="text-sm font-semibold">{{ 'operations.whoPaid' | translate }}</p>
-                            <p class="text-xs text-base-content/70">
-                              {{ operation.whoPaidMemberName || ('operations.unknownMember' | translate) }}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Participantes (avatares) -->
-                      <div class="space-y-2">
-                        <!-- Mobile: Solo avatares -->
-                        <div class="flex items-center justify-between sm:hidden">
-                          <div class="flex items-center gap-1">
-                            @for (participant of operation.participants; track participant.memberId; let i = $index) {
-                              @if (i < 3) {
-                                <div class="tooltip" [attr.data-tip]="participant.memberName">
-                                  <div class="w-6 h-6 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold">
-                                    {{ getInitials(participant.memberName + ' ' + participant.memberSurname) }}
-                                  </div>
-                                </div>
-                              }
-                            }
-                            @if (operation.participantCount && operation.participantCount > 3) {
-                              <span class="text-xs text-base-content/70">+{{ operation.participantCount - 3 }}</span>
-                            }
-                          </div>
-                          <span class="text-xs text-base-content/70">
-                            {{ operation.participantCount || 0 }} {{ 'travels.people' | translate }}
-                          </span>
-                        </div>
-
-                        <!-- Desktop: Completo con nombres -->
-                        <div class="hidden sm:block space-y-2">
-                          <p class="text-sm font-medium text-base-content/70">
-                            {{ 'travels.participants' | translate }}:
-                          </p>
-                          <div class="flex items-center gap-2 flex-wrap">
-                            @for (participant of operation.participants; track participant.memberId) {
-                              <div class="tooltip" [attr.data-tip]="participant.memberName">
-                                <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold shadow-sm ring-2 ring-base-100">
-                                  {{ getInitials(participant.memberName + ' ' + participant.memberSurname) }}
-                                </div>
-                              </div>
-                            }
-                            <span class="text-sm text-base-content/70 ml-2">
-                              {{ operation.participantCount || 0 }} {{ 'travels.people' | translate }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="space-y-2">
-                        <span class="text-sm font-medium text-base-content/70">
-                          {{'operations.category' | translate}}: 
-                        </span>
-                        <p class="text-base-content/70">
-                          {{selectedCategory(operation.categoryId)?.icon}} {{'categories.' + selectedCategory(operation.categoryId)?.name | translate}}
+                    <div class="grow min-w-0">
+                      <div class="flex items-start justify-between gap-3">
+                        <h3 class="font-semibold text-base-content truncate">{{ operation.description }}</h3>
+                        <p class="font-bold text-base-content whitespace-nowrap">
+                          {{ formatCurrency(operation.amount, operation.currencyId || 0) }}
                         </p>
                       </div>
 
-                      <!-- Metadata (fecha, split type, etc.) -->
-                      <div class="flex items-center justify-between text-xs text-base-content/60 pt-2 border-t border-base-300">
-                        <!-- Left: Date and split -->
-                        <div class="flex items-center gap-2 sm:gap-4">
-                          <span class="flex items-center gap-1">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span class="hidden sm:inline">{{ getFormattedDateCustom(operation.transactionDate) }}</span>
-                            <span class="sm:hidden">{{ getFormattedDateCustom(operation.transactionDate) }}</span>
-                          </span>
-                          <span class="hidden sm:flex sm:items-center sm:gap-1">
-                            <i class="fas fa-calculator"></i>
-                            {{ 'operations.splitTypes.' + operation.splitType | translate }}
-                          </span>
-                        </div>
+                      <p class="text-sm text-base-content/70 truncate">
+                        <i class="fas fa-user mr-1" aria-hidden="true"></i>{{ 'travels.paidBy' | translate: { name: operation.whoPaidMemberName || ('operations.unknownMember' | translate) } }}
+                        @if (selectedCategory(operation.categoryId); as category) {
+                          · {{ 'categories.' + category.name | translate }}
+                        }
+                      </p>
 
-                        <!-- Right: Approvals -->
+                      <div class="flex items-center gap-x-3 gap-y-2 mt-2 flex-wrap text-xs text-base-content/60">
+                        <span class="badge badge-sm gap-1" [ngClass]="getOperationStatusBadgeClass(operation.status)">
+                          <i [class]="'fas ' + getOperationStatusIcon(operation.status)"></i>
+                          {{ 'travels.' + operation.status.toLowerCase() | translate }}
+                        </span>
+
+                        <!-- Participantes -->
+                        <span class="flex items-center gap-1">
+                          <span class="flex -space-x-2">
+                            @for (participant of operation.participants; track participant.memberId; let i = $index) {
+                              @if (i < 4) {
+                                <span class="tooltip w-6 h-6 rounded-full bg-primary text-primary-content grid place-items-center text-[10px] font-semibold ring-2 ring-base-100"
+                                  [attr.data-tip]="participant.memberName">
+                                  {{ getInitials(participant.memberName + ' ' + participant.memberSurname) }}
+                                </span>
+                              }
+                            }
+                          </span>
+                          {{ operation.participantCount || 0 }} {{ 'travels.people' | translate }}
+                        </span>
+
+                        <span><i class="fas fa-calendar-alt mr-1" aria-hidden="true"></i>{{ getFormattedDateCustom(operation.transactionDate) }}</span>
+                        <span class="hidden sm:inline"><i class="fas fa-calculator mr-1" aria-hidden="true"></i>{{ 'operations.splitTypes.' + operation.splitType | translate }}</span>
                         @if (operation.approvalCount !== undefined && operation.participantCount) {
-                          <span class="flex items-center gap-1">
-                            <i class="fas fa-check-circle"></i>
-                            {{ operation.approvalCount }}/{{ operation.participantCount }}
+                          <span><i class="fas fa-check-circle mr-1" aria-hidden="true"></i>{{ operation.approvalCount }}/{{ operation.participantCount }}</span>
+                        }
+                        @if (operation.paymentInstitutionName) {
+                          <span><i class="fas fa-building-columns mr-1" aria-hidden="true"></i>{{ operation.paymentInstitutionName }}</span>
+                        }
+                        @if (operation.chargedAmount && operation.chargedCurrencyId) {
+                          <span class="text-info">
+                            <i class="fas fa-credit-card mr-1" aria-hidden="true"></i>{{ 'operations.charged' | translate }} {{ formatCurrency(operation.chargedAmount, operation.chargedCurrencyId) }}
                           </span>
                         }
                       </div>
-                    </article>
-                  </li>
-                } @empty {
-                  <!-- Estado vacío existente -->
-                  <li class="text-center py-12">
-                    <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
-                      <i class="fas fa-receipt text-2xl text-base-content/50"></i>
-                    </figure>
-                    <h3 class="text-lg font-medium text-base-content mb-2">
-                      {{ 'travels.noOperationsYet' | translate }}
-                    </h3>
-                    <p class="text-base-content/70 mb-4">{{ 'travels.startTrackingExpenses' | translate }}</p>
-                    @if (travelData.status === 'Active') {
-                      <button class="btn btn-primary" (click)="createOperation()">
-                        <i class="fas fa-plus mr-2"></i>
-                        {{ 'travels.createOperation' | translate }}
-                      </button>
-                    }
-                  </li>
-                }
-              </ul>
-            }
-          </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="dropdown dropdown-end shrink-0" (click)="$event.stopPropagation()">
+                      <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </label>
+                      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
+                        <li>
+                          <button (click)="viewOperationDetail(operation)">
+                            <i class="fas fa-eye text-info"></i>{{ 'travels.viewDetails' | translate }}
+                          </button>
+                        </li>
+
+                        @if (travelData.status === 'Active' && operation.status === approvalStatus.Pending) {
+                          @if (hasCurrentUserApproved(operation)) {
+                            <li>
+                              <span class="text-sm text-success">
+                                <i class="fas fa-check-circle"></i>{{ 'operations.youAlreadyApproved' | translate }}
+                              </span>
+                            </li>
+                          }
+                          @if (canCurrentUserApprove(operation)) {
+                            <li>
+                              <button (click)="approveOperation(operation)">
+                                <i class="fas fa-check text-success"></i>{{ 'travels.approve' | translate }}
+                              </button>
+                            </li>
+                          }
+                          @if (canCurrentUserReject(operation)) {
+                            <li>
+                              <button (click)="rejectOperation(operation)">
+                                <i class="fas fa-times text-error"></i>{{ 'travels.reject' | translate }}
+                              </button>
+                            </li>
+                          }
+                          <li>
+                            <button (click)="editOperation(operation)">
+                              <i class="fas fa-edit text-primary"></i>{{ 'travels.edit' | translate }}
+                            </button>
+                          </li>
+                        }
+
+                        @if (canRegisterCharge(operation)) {
+                          <li>
+                            <button (click)="openChargeModal(operation)">
+                              <i class="fas fa-credit-card text-info"></i>{{ (operation.chargedAmount ? 'operations.editCharge' : 'operations.registerCharge') | translate }}
+                            </button>
+                          </li>
+                        }
+
+                        @if (operation.status !== approvalStatus.Approved) {
+                          <li><hr class="my-1 border-base-300" /></li>
+                          <li>
+                            <button (click)="deleteOperation(operation)">
+                              <i class="fas fa-trash text-error"></i>{{ 'travels.delete' | translate }}
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </article>
+                </li>
+              } @empty {
+                <li class="text-center py-12 text-base-content/50">
+                  <i class="fas fa-receipt text-3xl mb-3 block" aria-hidden="true"></i>
+                  <p class="font-medium text-base-content">{{ 'travels.noOperationsYet' | translate }}</p>
+                  <p class="text-sm mb-4">{{ 'travels.startTrackingExpenses' | translate }}</p>
+                  @if (travelData.status === 'Active') {
+                    <button type="button" class="btn btn-sm btn-primary" (click)="createOperation()">
+                      <i class="fas fa-plus"></i>{{ 'travels.createOperation' | translate }}
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          }
         }
 
         <!-- MEMBERS TAB -->
         @if (activeTab() === 'members') {
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-semibold text-base-content">
-                {{ 'travels.members' | translate }}
-              </h2>
-              @if (travelData.status === 'Active' && availableCollaborators().length > 0) {
-                <div class="dropdown dropdown-end">
-                  <label tabindex="0" class="btn btn-sm btn-primary">
-                    <i class="fas fa-user-plus mr-1"></i>
-                    {{ 'travels.addMember' | translate }}
-                  </label>
-                  <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 dark:bg-base-300 rounded-lg w-64 border border-base-300 max-h-64 overflow-y-auto">
-                    @for (collaborator of availableCollaborators(); track collaborator.id) {
-                      <li>
-                        <button (click)="addMember(collaborator.id)">
-                          <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs font-semibold">
-                              {{ getInitials(collaborator.name + ' ' + collaborator.surname) }}
-                            </div>
-                            <span>{{ collaborator.name }} {{ collaborator.surname }}</span>
-                          </div>
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                </div>
-              }
-            </div>
-
-            @if (isMembersLoading()) {
-              <div class="flex justify-center items-center py-12">
-                <span class="loading loading-spinner loading-lg"></span>
+          @if (travelData.status === 'Active' && availableCollaborators().length > 0) {
+            <div class="flex justify-end mb-4">
+              <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-sm btn-primary">
+                  <i class="fas fa-user-plus"></i>{{ 'travels.addMember' | translate }}
+                </label>
+                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-64 border border-base-300 max-h-64 overflow-y-auto">
+                  @for (collaborator of availableCollaborators(); track collaborator.id) {
+                    <li>
+                      <button (click)="addMember(collaborator.id)">
+                        <span class="w-8 h-8 rounded-full bg-primary text-primary-content grid place-items-center text-xs font-semibold">
+                          {{ getInitials(collaborator.name + ' ' + collaborator.surname) }}
+                        </span>
+                        {{ collaborator.name }} {{ collaborator.surname }}
+                      </button>
+                    </li>
+                  }
+                </ul>
               </div>
-            } @else {
-              <ul class="space-y-3">
-                @for (member of members(); track member.id) {
-                  <li class="bg-base-200 dark:bg-base-300 rounded-lg p-4">
-                    <article class="flex items-center gap-4">
-                      <!-- Avatar -->
-                      <figure class="flex-shrink-0">
-                        <div class="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center text-sm font-semibold shadow-md">
-                          {{ getInitials(member.collaboratorName + ' ' + member.collaboratorSurname) }}
-                        </div>
-                      </figure>
+            </div>
+          }
 
-                      <!-- Content -->
-                      <div class="flex-grow">
-                        <h3 class="font-semibold text-base-content">
-                          {{ member.collaboratorName }} {{ member.collaboratorSurname }}
-                        </h3>
-                        @if (member.collaboratorEmail) {
-                          <p class="text-sm text-base-content/70">
-                            <i class="fas fa-envelope mr-1"></i>
-                            {{ member.collaboratorEmail }}
-                          </p>
-                        }
-                        <time class="text-xs text-base-content/60">
-                          {{ 'travels.joined' | translate }} {{ getFormattedDate(member.joinedDate) }}
-                        </time>
-                      </div>
-
-                      <!-- Remove button -->
-                      @if (travelData.status === 'Active') {
-                        <button
-                          type="button"
-                          class="btn btn-ghost btn-sm btn-circle text-error"
-                          (click)="removeMember(member)"
-                        >
-                          <i class="fas fa-user-minus"></i>
-                        </button>
+          @if (isMembersLoading()) {
+            <div class="flex justify-center items-center py-12">
+              <span class="loading loading-spinner loading-lg"></span>
+            </div>
+          } @else {
+            <ul class="space-y-2" role="list">
+              @for (member of members(); track member.id) {
+                <li class="flex items-center gap-4 rounded-xl border border-base-300/60 bg-base-100 p-4">
+                  <span class="w-10 h-10 shrink-0 rounded-full bg-primary text-primary-content grid place-items-center text-sm font-semibold">
+                    {{ getInitials(member.collaboratorName + ' ' + member.collaboratorSurname) }}
+                  </span>
+                  <div class="grow min-w-0">
+                    <p class="font-semibold text-base-content">
+                      {{ member.collaboratorName }} {{ member.collaboratorSurname }}
+                      @if (member.memberUserId === null) {
+                        <span class="badge badge-sm badge-soft badge-warning ml-1 tooltip" [attr.data-tip]="'travels.memberNotLinkedHint' | translate">
+                          {{ 'travels.memberNotLinked' | translate }}
+                        </span>
                       }
-                    </article>
-                  </li>
-                } @empty {
-                  <li class="text-center py-12">
-                    <p class="text-base-content/70">{{ 'travels.noMembersYet' | translate }}</p>
-                  </li>
-                }
-              </ul>
-            }
-          </div>
+                    </p>
+                    @if (member.collaboratorEmail) {
+                      <p class="text-sm text-base-content/70 truncate">
+                        <i class="fas fa-envelope mr-1" aria-hidden="true"></i>{{ member.collaboratorEmail }}
+                      </p>
+                    }
+                    <p class="text-xs text-base-content/60">
+                      {{ 'travels.joined' | translate }} {{ getFormattedDate(member.joinedDate) }}
+                      · {{ 'travels.paidOperations' | translate: { count: paidCountByMember().get(member.id) ?? 0 } }}
+                    </p>
+                  </div>
+                  @if (travelData.status === 'Active') {
+                    <button type="button" class="btn btn-ghost btn-sm btn-circle text-error" (click)="removeMember(member)">
+                      <i class="fas fa-user-minus"></i>
+                    </button>
+                  }
+                </li>
+              } @empty {
+                <li class="text-center py-12 text-base-content/50">
+                  <i class="fas fa-users text-3xl mb-3 block" aria-hidden="true"></i>
+                  <p>{{ 'travels.noMembersYet' | translate }}</p>
+                </li>
+              }
+            </ul>
+          }
         }
 
         <!-- BALANCES TAB -->
         @if (activeTab() === 'balances') {
-          <div>
-            <h2 class="text-xl font-semibold text-base-content mb-4">
-              {{ 'travels.balances' | translate }}
-            </h2>
-
-            @if (isBalancesLoading()) {
-              <div class="flex justify-center items-center py-12">
-                <span class="loading loading-spinner loading-lg"></span>
-              </div>
-            } @else {
-              @if (balances().length > 0) {
-                <div class="space-y-6">
-                  @for (currencyBalance of balances(); track currencyBalance.currencyId) {
-                    <div class="bg-base-200 dark:bg-base-300 rounded-lg p-4">
-                      <h3 class="font-semibold text-base-content mb-4 flex items-center gap-2">
-                        <i class="fas fa-coins text-warning"></i>
-                        {{ currencyBalance.currencyName }} ({{ currencyBalance.currencySymbol }})
-                      </h3>
-
-                      <!-- Simplified Balances -->
-                      <div class="space-y-2">
-                        @for (balance of currencyBalance.simplifiedBalances; track balance.memberId) {
-                          <div>
-                            <p class="font-medium text-base-content mb-2">{{ balance.memberName }}:</p>
-                            @if (balance.settlements.length > 0) {
-                              <ul class="pl-4 space-y-1">
-                                @for (settlement of balance.settlements; track $index) {
-                                  <li class="text-sm">
-                                    @if (settlement.direction === 'owes') {
-                                      <span class="text-error">
-                                        <i class="fas fa-arrow-down mr-1"></i>
-                                        {{ 'travels.owes' | translate }} {{ settlement.otherMemberName }}: 
-                                        <strong>{{ formatCurrency(settlement.amount, currencyBalance.currencyId) }}</strong>
-                                      </span>
-                                    } @else {
-                                      <span class="text-success">
-                                        <i class="fas fa-arrow-up mr-1"></i>
-                                        {{ 'travels.receives' | translate }} {{ 'travels.from' | translate }} {{ settlement.otherMemberName }}: 
-                                        <strong>{{ formatCurrency(settlement.amount, currencyBalance.currencyId) }}</strong>
-                                      </span>
-                                    }
-                                  </li>
-                                }
-                              </ul>
-                            } @else {
-                              <p class="text-sm text-base-content/70 pl-4">{{ 'travels.noDebts' | translate }}</p>
-                            }
-                          </div>
-                        }
-                      </div>
-                    </div>
+          @if (isBalancesLoading()) {
+            <div class="flex justify-center items-center py-12">
+              <span class="loading loading-spinner loading-lg"></span>
+            </div>
+          } @else {
+            @for (currencyBalance of settlementsByCurrency(); track currencyBalance.currencyId) {
+              <div class="mb-6 last:mb-0">
+                <h3 class="font-semibold text-base-content mb-3 flex items-center gap-2">
+                  <i class="fas fa-coins text-warning" aria-hidden="true"></i>
+                  {{ currencyLabel(currencyBalance.currencyId, currencyBalance.currencyName) }} ({{ currencyBalance.currencySymbol }})
+                </h3>
+                <ul class="space-y-2" role="list">
+                  @for (transfer of currencyBalance.transfers; track $index) {
+                    <li class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-base-300/60 bg-base-100 p-4">
+                      <span class="flex items-center gap-2 min-w-0">
+                        <span class="w-8 h-8 shrink-0 rounded-full bg-error/15 text-error grid place-items-center text-xs font-semibold">
+                          {{ getInitials(transfer.from) }}
+                        </span>
+                        <span class="font-medium text-base-content truncate">{{ transfer.from }}</span>
+                      </span>
+                      <span class="text-xs text-base-content/60 flex items-center gap-1">
+                        {{ 'travels.owes' | translate }} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                      </span>
+                      <span class="flex items-center gap-2 min-w-0">
+                        <span class="w-8 h-8 shrink-0 rounded-full bg-success/15 text-success grid place-items-center text-xs font-semibold">
+                          {{ getInitials(transfer.to) }}
+                        </span>
+                        <span class="font-medium text-base-content truncate">{{ transfer.to }}</span>
+                      </span>
+                      <span class="ml-auto font-bold text-base-content whitespace-nowrap">
+                        {{ formatCurrency(transfer.amount, currencyBalance.currencyId) }}
+                      </span>
+                    </li>
+                  } @empty {
+                    <li class="flex items-center gap-3 rounded-xl border border-base-300/60 bg-base-100 p-4 text-success">
+                      <i class="fas fa-check-circle" aria-hidden="true"></i>{{ 'travels.noDebts' | translate }}
+                    </li>
                   }
-                </div>
-              } @else {
-                <div class="text-center py-12">
-                  <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
-                    <i class="fas fa-balance-scale text-2xl text-base-content/50"></i>
-                  </figure>
-                  <p class="text-base-content/70">{{ 'travels.noBalancesYet' | translate }}</p>
-                </div>
-              }
+                </ul>
+              </div>
+            } @empty {
+              <div class="text-center py-12 text-base-content/50">
+                <i class="fas fa-balance-scale text-3xl mb-3 block" aria-hidden="true"></i>
+                <p>{{ 'travels.noBalancesYet' | translate }}</p>
+              </div>
             }
-          </div>
+          }
         }
       </div>
     </article>
@@ -528,3 +334,4 @@
   }
 </section>
 <app-confirm-dialog (confirmed)="onConfirmResult($event)" />
+<app-operation-charge-modal />

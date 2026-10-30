@@ -56,6 +56,12 @@
 
           <!-- Action Buttons -->
           <div class="flex gap-2 flex-col lg:flex-row">
+            @if (canRegisterCharge(op)) {
+              <button type="button" class="btn btn-sm btn-outline btn-info" (click)="openChargeModal(op)">
+                <i class="fas fa-credit-card"></i>
+                <span class="hidden md:inline ml-1">{{ (op.chargedAmount ? 'operations.editCharge' : 'operations.registerCharge') | translate }}</span>
+              </button>
+            }
             @if (op.status === approvalStatus.Pending && travel()?.status === 'Active') {
               @if (hasCurrentUserApproved(op)) {
                 <div class="flex items-center gap-2 px-3 py-2 bg-success/10 rounded-lg">
@@ -132,6 +138,19 @@
                 </dd>
               </div>
 
+              <!-- Cobro de la tarjeta (informativo) -->
+              @if (op.chargedAmount && op.chargedCurrencyId) {
+                <div class="flex justify-between items-start border-b border-base-300 pb-3">
+                  <dt class="text-base-content/70 font-medium">{{ 'operations.chargedAmount' | translate }}</dt>
+                  <dd class="text-right">
+                    <div class="text-lg font-bold text-info">{{ formatCurrency(op.chargedAmount, op.chargedCurrencyId) }}</div>
+                    <div class="text-xs text-base-content/60">
+                      {{ 'operations.realExchangeRate' | translate }}: 1 {{ op.currencySymbol }} = {{ chargeRate(op) }}
+                    </div>
+                  </dd>
+                </div>
+              }
+
               <!-- Who Paid -->
               <div class="flex justify-between items-center border-b border-base-300 pb-3">
                 <dt class="text-base-content/70 font-medium">{{ 'operations.whoPaid' | translate }}</dt>
@@ -149,12 +168,15 @@
               </div>
 
               <!-- Payment Method -->
-              @if (op.paymentMethodName) {
-                <div class="flex justify-between items-center">
-                  <dt class="text-base-content/70 font-medium">{{ 'operations.paymentMethod' | translate }}</dt>
-                  <dd class="text-right font-semibold text-base-content">{{ op.paymentMethodName }}</dd>
-                </div>
-              }
+              <div class="flex justify-between items-center">
+                <dt class="text-base-content/70 font-medium">{{ 'operations.paymentMethod' | translate }}</dt>
+                <dd class="text-right font-semibold text-base-content">
+                  {{ paymentMethodLabel(op.paymentMethodId) | translate }}
+                  @if (op.paymentInstitutionName) {
+                    <span class="text-base-content/70 font-normal">· {{ op.paymentInstitutionName }}</span>
+                  }
+                </dd>
+              </div>
             </dl>
           </article>
 
@@ -334,4 +356,5 @@
     </div>
   }
 </section>
+<app-operation-charge-modal (completed)="operation.set($event)" />
 <app-confirm-dialog (confirmed)="onConfirmResult($event)" />

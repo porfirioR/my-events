@@ -11,5 +11,6 @@ export class CreateTravelOperationAccessRequest {
     public splitType: string,
     public transactionDate: Date,
     public categoryId: number,
+    public paymentInstitutionId: number | null = null,
   ) {}
 }
