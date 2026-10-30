@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx ng *)",
+      "Bash(node -e \"const e=require\\('./src/assets/i18n/es.json'\\);console.log\\(JSON.stringify\\(e.loanDetail.rate\\), JSON.stringify\\(e.loanDetail.totalRate\\)\\)\")",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

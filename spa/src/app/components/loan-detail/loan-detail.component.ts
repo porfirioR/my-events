@@ -1,16 +1,26 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy, Component, DestroyRef, OnInit,
-  inject, signal, computed,
+  inject, signal, computed, effect,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AlertService, FormatterHelperService } from '../../services';
+import { AlertService, BreadcrumbService, FormatterHelperService } from '../../services';
 import { useCurrencyStore, useFinancialInstitutionsStore, useLoansStore } from '../../store';
 import { PayLoanInstallmentApiRequest } from '../../models/api/loans';
-import { LoanType, LoanTypeLabels, LoanDirection, LoanDirectionLabels, LoanDirectionBadgeColors, LoanDirectionIcons, AmortizationType, InstallmentStatus, InstallmentStatusBadgeColors, InstallmentStatusColors, InstallmentStatusIcons, InstallmentStatusLabels } from '../../models/enums';
+import { TextComponent } from '../inputs/text/text.component';
+import { DateInputComponent } from '../inputs/date-input/date-input.component';
+import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
+import { NextInstallmentAlertComponent } from '../next-installment-alert/next-installment-alert.component';
+import { InstallmentsTableComponent } from '../installments-table/installments-table.component';
+import { MovementsListComponent } from '../movements-list/movements-list.component';
+import { DetailFieldViewModel, InstallmentColumnViewModel, InstallmentRowViewModel, MovementViewModel } from '../../models/view';
+import { DetailStatCardsComponent } from '../detail-stat-cards/detail-stat-cards.component';
+import { DetailProgressComponent } from '../detail-progress/detail-progress.component';
+import { DetailInfoGridComponent } from '../detail-info-grid/detail-info-grid.component';
+import { LoanType, LoanTypeLabels, LoanDirection, LoanDirectionLabels, LoanDirectionBadgeColors, LoanDirectionIcons, AmortizationType } from '../../models/enums';
 
 // Textos que cambian en un préstamo otorgado: los pagos son cobros (loanDetail.lent.*)
 const LENT_KEYS = new Set([
@@ -23,7 +33,9 @@ const LENT_KEYS = new Set([
   templateUrl: './loan-detail.component.html',
   styleUrls: ['./loan-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, TranslateModule, TextComponent, DateInputComponent, TextAreaInputComponent,
+    NextInstallmentAlertComponent, InstallmentsTableComponent, MovementsListComponent,
+    DetailStatCardsComponent, DetailProgressComponent, DetailInfoGridComponent],
 })
 export class LoanDetailComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
@@ -46,11 +58,6 @@ export class LoanDetailComponent implements OnInit {
   protected LoanType = LoanType;
   protected LoanTypeLabels = LoanTypeLabels;
   protected AmortizationType = AmortizationType;
-  protected InstallmentStatus = InstallmentStatus;
-  protected InstallmentStatusBadgeColors = InstallmentStatusBadgeColors;
-  protected InstallmentStatusColors = InstallmentStatusColors;
-  protected InstallmentStatusIcons = InstallmentStatusIcons;
-  protected InstallmentStatusLabels = InstallmentStatusLabels;
 
   protected activeTab = signal<'table' | 'payments'>('table');
   protected payingInstallmentId = signal<number | null>(null);
@@ -69,6 +76,67 @@ export class LoanDetailComponent implements OnInit {
 
   protected key = (key: string): string =>
     this.isLent() && LENT_KEYS.has(key) ? `loanDetail.lent.${key}` : `loanDetail.${key}`;
+
+  private breadcrumbService = inject(BreadcrumbService);
+  // Muestra el nombre del préstamo en el breadcrumb (en vez de "#id")
+  private breadcrumbLabel = effect(() => {
+    const l = this.loan();
+    if (l) this.breadcrumbService.setLabel(`/loans/${l.id}`, l.name);
+  });
+
+  protected canAct = computed(() => this.loan()?.statusId === 1);
+
+  protected statCards = computed<DetailFieldViewModel[]>(() => {
+    const l = this.loan();
+    if (!l) return [];
+    return [
+      new DetailFieldViewModel('loanDetail.principal', this.formatCurrency(l.principalAmount, l.currencyId)),
+      new DetailFieldViewModel(this.key('remaining'), this.formatCurrency(this.remaining(), l.currencyId), 'text-warning'),
+      new DetailFieldViewModel(this.key('totalPaid'), this.formatCurrency(l.totalPaid, l.currencyId), 'text-success'),
+      new DetailFieldViewModel('loanDetail.installment', this.formatCurrency(l.actualInstallmentAmount, l.currencyId), '', '', 'loanDetail.perMonth'),
+    ];
+  });
+
+  protected infoFields = computed<DetailFieldViewModel[]>(() => {
+    const l = this.loan();
+    if (!l) return [];
+    const money = (amount: number) => this.formatCurrency(amount, l.currencyId);
+    const fields = [
+      new DetailFieldViewModel('loanDetail.calculatedInstallment', money(l.calculatedInstallmentAmount)),
+      // En un otorgado el interés es ganancia
+      new DetailFieldViewModel(this.key('totalInterest'), money(l.calculatedTotalInterest), this.isLent() ? 'text-success' : 'text-error'),
+      new DetailFieldViewModel(this.key('totalAmount'), money(l.actualTotalAmount)),
+      new DetailFieldViewModel('loanDetail.startDate', this.formatDate(l.startDate)),
+    ];
+    if (l.expectedEndDate) fields.push(new DetailFieldViewModel('loanDetail.expectedEnd', this.formatDate(l.expectedEndDate)));
+    if (l.completedDate) fields.push(new DetailFieldViewModel('loanDetail.completedDate', this.formatDate(l.completedDate), 'text-success'));
+    if (l.administrativeFees) fields.push(new DetailFieldViewModel('loanDetail.administrativeFees', money(l.administrativeFees)));
+    if (l.ivaPercentage) {
+      fields.push(new DetailFieldViewModel('loanDetail.ivaOnInterest', `${money(l.calculatedTotalInterest * l.ivaPercentage / 100)} (${l.ivaPercentage}%)`));
+    }
+    if (l.insuranceAmount) fields.push(new DetailFieldViewModel('loanDetail.insurance', money(l.insuranceAmount)));
+    return fields;
+  });
+
+  protected installmentColumns = computed(() => [
+    new InstallmentColumnViewModel('principal', 'loanDetail.capital', 'text-primary'),
+    // En un otorgado el interés es ganancia
+    new InstallmentColumnViewModel('interest', 'loanDetail.interest', this.isLent() ? 'text-success' : 'text-error'),
+    new InstallmentColumnViewModel('balance', 'loanDetail.balance', 'text-base-content/70'),
+  ]);
+
+  protected installmentRows = computed(() => this.installments().map(i => new InstallmentRowViewModel(
+    i.id, i.installmentNumber, i.dueDate, i.totalAmount, i.statusId, i.paidDate,
+    { principal: i.principalAmount, interest: i.interestAmount, balance: i.remainingBalance },
+  )));
+
+  protected movementItems = computed(() => {
+    const numberById = new Map(this.installments().map(i => [i.id, i.installmentNumber]));
+    return this.payments().map(p => new MovementViewModel(
+      p.id, p.amount, p.paymentDate, p.description, false,
+      p.installmentId !== null ? numberById.get(p.installmentId) ?? null : null,
+    ));
+  });
 
   protected entityLabel = computed(() => {
     const l = this.loan();
@@ -158,7 +226,7 @@ export class LoanDetailComponent implements OnInit {
   }
 
   protected getStatusColor(statusId: number): string {
-    const colors: Record<number, string> = { 1: 'badge-warning', 2: 'badge-success', 3: 'badge-neutral', 4: 'badge-error' };
+    const colors: Record<number, string> = { 1: 'badge-success', 2: 'badge-info', 3: 'badge-ghost', 4: 'badge-error' };
     return colors[statusId] ?? 'badge-ghost';
   }
 
@@ -178,12 +246,6 @@ export class LoanDetailComponent implements OnInit {
     return this.formatterService.getFormattedDateCustom(new Date(normalized));
   };
 
-  protected instBadgeColor = (statusId: number): string =>
-    InstallmentStatusBadgeColors[statusId as InstallmentStatus] ?? 'badge-ghost';
-  protected instIcon = (statusId: number): string =>
-    InstallmentStatusIcons[statusId as InstallmentStatus] ?? '';
-  protected instLabel = (statusId: number): string =>
-    InstallmentStatusLabels[statusId as InstallmentStatus] ?? '';
   protected loanTypeLabel = (typeId: number): string =>
     LoanTypeLabels[typeId as LoanType] ?? '';
   protected directionLabel = (direction: number): string =>

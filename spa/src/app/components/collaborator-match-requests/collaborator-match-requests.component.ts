@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from '@angular/forms';
+import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { 
   ReceivedMatchRequestModel, 
@@ -72,6 +73,7 @@ export class CollaboratorMatchRequestsComponent implements OnInit {
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   constructor() {
+    preventUnsavedUnload(this);
     this.formGroup = new FormGroup<MatchRequestFormGroup>({
       collaboratorId: new FormControl(null, [Validators.required]),
       targetEmail: new FormControl(null, [Validators.required, Validators.email]),

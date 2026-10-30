@@ -1,83 +1,25 @@
 <header class="navbar bg-primary text-primary-content shadow-lg fixed top-0 left-0 right-0 z-50 transition-colors duration-300">
   @if (isAuthenticated()) {
-    <article class="navbar-start">
-      <!-- Mobile menu button -->
-      <div class="dropdown">
-        <div tabindex="0" role="button" class="btn btn-ghost hover:bg-primary-focus transition-colors duration-200">
-          <i class="fas fa-bars text-xl"></i>
-        </div>
-        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 text-base-content rounded-box w-52">
-          <li class="menu-title">{{ 'common.navigation' | translate }}</li>
-          <li>
-            <a [routerLink]="['']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-tachometer-alt mr-2"></i>{{ 'common.dashboard' | translate }}
-            </a>
-          </li>
-          <li>
-            <a [routerLink]="['collaborators']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-users mr-2"></i>{{ 'common.collaborators' | translate }}
-            </a>
-          </li>
-          <li>
-            <a [routerLink]="['transactions']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-dollar-sign mr-2"></i>{{ 'common.transactions' | translate }}
-            </a>
-          </li>
-          <li>
-            <a [routerLink]="['projects']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
-              <i class="fas fa-project-diagram mr-2"></i>{{ 'common.projects' | translate }}
-            </a>
-          </li>
-          <li>
-            <a routerLink="/savings" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-piggy-bank"></i>
-              <span>{{ 'common.savingsGoals' | translate }}</span>
-            </a>
-          </li>
-          <li>
-            <a routerLink="/loans" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-hand-holding-dollar"></i>
-              <span>{{ 'common.loans' | translate }}</span>
-            </a>
-          </li>
-          <li>
-            <a routerLink="/travels" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-suitcase-rolling "></i>
-              <span>{{ 'common.travels' | translate }}</span>
-            </a>
-          </li>
-          <li>
-            <a [routerLink]="['events']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
-              <i class="fas fa-calendar mr-2"></i>Events
-            </a>
-          </li>
-          <li>
-            <a [routerLink]="['finance']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
-              <i class="fas fa-wallet mr-2"></i>Finance
-            </a>
-          </li>
-          <li>
-            <a [routerLink]="['settings']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
-              <i class="fas fa-cogs mr-2"></i>Settings
-            </a>
-          </li>
-          <div class="divider"></div>
-          <li>
-            <a [routerLink]="['settings']" (click)="closeDropdown($event)" class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg hidden">
-              <i class="fas fa-question-circle mr-2"></i>Help
-            </a>
-          </li>
-          <li>
-            <a (click)="logOut()" class="hover:bg-error hover:text-error-content transition-colors duration-200 rounded-lg">
-              <i class="fas fa-sign-out-alt mr-2"></i>
-              <span>{{ 'auth.logout' | translate }}</span>
-            </a>
-          </li>
-        </ul>
-      </div>
+    <article class="navbar-start w-auto flex items-center gap-1">
+      <!-- Móvil: abre el cajón. Escritorio: colapsa/expande la barra lateral -->
+      <button type="button" class="btn btn-ghost btn-square hover:bg-primary-focus transition-colors duration-200"
+        (click)="layoutService.toggleSidebar()"
+        [attr.aria-label]="(isSidebarCollapsed() ? 'common.expandMenu' : 'common.collapseMenu') | translate">
+        <i class="fas fa-bars text-xl" aria-hidden="true"></i>
+      </button>
+      <a routerLink="/" class="px-1 text-lg font-bold tracking-tight whitespace-nowrap">
+        {{ 'auth.appName' | translate }}
+      </a>
     </article>
-    <article class="navbar-end">
+    <article class="navbar-end ml-auto">
       <app-language-selector/>
+      <!-- Tema claro/oscuro -->
+      <button type="button" class="btn btn-ghost btn-circle hover:bg-primary-focus transition-colors duration-200"
+        (click)="toggleTheme()"
+        [attr.aria-label]="(currentTheme == 'light' ? 'common.darkMode' : 'common.lightMode') | translate"
+        [attr.title]="(currentTheme == 'light' ? 'common.darkMode' : 'common.lightMode') | translate">
+        <i class="fas text-xl" [class.fa-moon]="currentTheme == 'light'" [class.fa-sun]="currentTheme == 'dark'" aria-hidden="true"></i>
+      </button>
       <!-- User Profile -->
       <div class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle flex items-center justify-center">
@@ -101,17 +43,6 @@
           <li class="hidden">
             <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
               <i class="fas fa-cog mr-2"></i>Settings
-            </a>
-          </li>
-          <li (click)="toggleTheme()">
-            <a class="hover:bg-primary hover:text-primary-content transition-colors duration-200 rounded-lg">
-              @if (currentTheme == 'light') {
-                <i class="fas fa-moon mr-2"></i>
-                {{ 'common.darkMode' | translate }}
-              } @else {
-                <i class="fas fa-sun mr-2"></i>
-                {{ 'common.lightMode' | translate }}
-              }
             </a>
           </li>
           <div class="divider my-1"></div>

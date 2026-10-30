@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useTravelStore, useLoadingStore, useAuthStore, useCurrencyStore } from '../../store';
-import { AlertService, FormatterHelperService } from '../../services';
+import { AlertService, BreadcrumbService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { AttachmentListComponent } from '../attachment-list/attachment-list.component';
 import { ApprovalStatus } from '../../models/enums';
@@ -41,6 +41,12 @@ export class OperationDetailComponent implements OnInit {
 
   protected isLoading = this.loadingStore.isLoading;
   protected travel = this.travelStore.selectedTravel;
+  private breadcrumbService = inject(BreadcrumbService);
+  // Muestra el nombre del viaje en el breadcrumb (en vez de "#id")
+  private breadcrumbLabel = effect(() => {
+    const travel = this.travel();
+    if (travel) this.breadcrumbService.setLabel(`/travels/${travel.id}`, travel.name);
+  });
   protected operation = signal<TravelOperationApiModel | null>(null);
 
   protected travelId?: number;

@@ -25,5 +25,5 @@ export const InstallmentStatusColors: Record<InstallmentStatus, string> = {
 export const InstallmentStatusBadgeColors: Record<InstallmentStatus, string> = {
   [InstallmentStatus.Pending]: 'badge-warning',
   [InstallmentStatus.Paid]: 'badge-success',
-  [InstallmentStatus.Skipped]: 'badge-neutral',
+  [InstallmentStatus.Skipped]: 'badge-ghost',
 };

@@ -5,3 +5,6 @@ export { TransactionSplitPlanViewModel } from './transaction-split-plan-view-mod
 export { MonthlyBalanceSummaryViewModel } from './monthly-balance-summary-view-model';
 export { CollaboratorBalanceViewModel } from './collaborator-balance-view-model';
 export { TransactionMonthGroupViewModel } from './transaction-month-group-view-model';
+export { InstallmentRowViewModel, InstallmentColumnViewModel } from './installment-row-view-model';
+export { MovementViewModel } from './movement-view-model';
+export { DetailFieldViewModel } from './detail-field-view-model';

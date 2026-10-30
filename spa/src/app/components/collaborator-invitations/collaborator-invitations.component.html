@@ -1,6 +1,6 @@
-<section aria-labelledby="invitations-heading" class="min-h-[calc(100vh-4rem)] bg-base-200 dark:bg-base-300">
-  <article class="bg-base-200 dark:bg-base-300 rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300">
-    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+<section aria-labelledby="invitations-heading">
+  <article class="transition-all duration-300">
+    <header class="pb-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <button
@@ -26,7 +26,7 @@
       </div>
     </header>
 
-    <div class="p-6">
+    <div class="py-6">
       <!-- Summary View -->
       @if (viewMode === 'summary') {
         @if (isSummaryLoading()) {
@@ -36,7 +36,7 @@
         } @else {
           <ul class="space-y-4" role="list">
             @for (summary of invitationsSummary(); track summary.collaborator.id) {
-              <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
+              <li class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 hover:shadow-md transition-colors duration-200 cursor-pointer"
                   (click)="viewCollaboratorInvitations(summary)">
                 <article class="flex items-center justify-between">
                   <div class="flex items-center gap-4 flex-grow">
@@ -96,7 +96,7 @@
         } @else {
           <ul class="space-y-4" role="list">
             @for (invitation of selectedCollaboratorInvitations(); track invitation.id) {
-              <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+              <li class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 hover:shadow-md transition-colors duration-200">
                 <article>
                   <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3">

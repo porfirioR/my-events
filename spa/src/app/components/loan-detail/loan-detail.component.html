@@ -1,5 +1,5 @@
 @if (loan(); as l) {
-  <section class="container mx-auto px-4 py-8">
+  <section>
 
     <!-- Header -->
     <header class="flex items-center gap-4 mb-6">
@@ -17,217 +17,74 @@
         </p>
       </div>
       @if (l.statusId !== 2) {
-        <button type="button" class="btn btn-sm btn-outline hover:btn-primary" (click)="edit()">
+        <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="edit()">
           <i class="fas fa-edit mr-1"></i>{{ 'loans.edit' | translate }}
         </button>
       }
     </header>
 
-    <!-- Stats cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="stat bg-base-200 rounded-xl p-4">
-        <div class="stat-title text-xs">{{ 'loanDetail.principal' | translate }}</div>
-        <div class="stat-value text-lg text-base-content">{{ formatCurrency(l.principalAmount, l.currencyId) }}</div>
-      </div>
-      <div class="stat bg-base-200 rounded-xl p-4">
-        <div class="stat-title text-xs">{{ key('remaining') | translate }}</div>
-        <div class="stat-value text-lg text-warning">{{ formatCurrency(remaining(), l.currencyId) }}</div>
-      </div>
-      <div class="stat bg-base-200 rounded-xl p-4">
-        <div class="stat-title text-xs">{{ key('totalPaid') | translate }}</div>
-        <div class="stat-value text-lg text-success">{{ formatCurrency(l.totalPaid, l.currencyId) }}</div>
-      </div>
-      <div class="stat bg-base-200 rounded-xl p-4">
-        <div class="stat-title text-xs">{{ 'loanDetail.installment' | translate }}</div>
-        <div class="stat-value text-lg text-base-content">{{ formatCurrency(l.actualInstallmentAmount, l.currencyId) }}</div>
-        <div class="stat-desc">{{ 'loanDetail.perMonth' | translate }}</div>
-      </div>
-    </div>
+    <!-- Resumen (mismos bloques que en ahorros) -->
+    <app-detail-stat-cards class="block mb-6" [cards]="statCards()" />
 
-    <!-- Progress bar -->
-    <div class="bg-base-200 rounded-xl p-4 mb-6">
-      <div class="flex justify-between text-sm mb-2">
-        <span>{{ 'loanDetail.progress' | translate }}</span>
-        <span class="font-bold" [ngClass]="l.statusId === 2 ? 'text-success' : 'text-warning'">{{ progress() }}%</span>
-      </div>
-      <progress class="progress w-full" [ngClass]="l.statusId === 2 ? 'progress-success' : 'progress-warning'"
-        [value]="l.totalPaid" [max]="l.actualTotalAmount || 1"></progress>
-      <div class="flex justify-between text-xs text-base-content/60 mt-1">
-        <span>{{ l.paidInstallmentsCount }}/{{ l.numberOfInstallments }} {{ 'loans.installments' | translate }}</span>
-        @if (l.amortizationType === AmortizationType.Flat && l.totalRatePercentage !== null) {
-          <span>{{ 'loanDetail.totalRate' | translate }}: {{ l.totalRatePercentage }}% ({{ 'loanDetail.rate' | translate }} {{ l.annualRatePercentage }}%)</span>
-        } @else {
-          <span>{{ 'loanDetail.rate' | translate }}: {{ l.annualRatePercentage }}%</span>
-        }
-      </div>
-    </div>
+    <app-detail-progress class="block mb-6"
+      [percent]="progress()"
+      [value]="l.totalPaid"
+      [max]="l.actualTotalAmount"
+      [progressClass]="l.statusId === 2 ? 'progress-info' : 'progress-success'"
+      [textClass]="l.statusId === 2 ? 'text-info' : 'text-success'"
+      [leftText]="l.paidInstallmentsCount + '/' + l.numberOfInstallments + ' ' + ('loans.installments' | translate)"
+      [rightText]="l.amortizationType === AmortizationType.Flat && l.totalRatePercentage !== null
+        ? ('loanDetail.totalRate' | translate) + ': ' + l.totalRatePercentage + '% (' + ('loanDetail.rate' | translate) + ' ' + l.annualRatePercentage + '%)'
+        : ('loanDetail.rate' | translate) + ': ' + l.annualRatePercentage + '%'" />
 
-    <!-- Loan info summary -->
-    <div class="bg-base-200 rounded-xl p-4 mb-6 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-      <div>
-        <p class="text-base-content/60">{{ 'loanDetail.calculatedInstallment' | translate }}</p>
-        <p class="font-semibold">{{ formatCurrency(l.calculatedInstallmentAmount, l.currencyId) }}</p>
-      </div>
-      <div>
-        <p class="text-base-content/60">{{ key('totalInterest') | translate }}</p>
-        <p class="font-semibold" [ngClass]="isLent() ? 'text-success' : 'text-error'">{{ formatCurrency(l.calculatedTotalInterest, l.currencyId) }}</p>
-      </div>
-      <div>
-        <p class="text-base-content/60">{{ key('totalAmount') | translate }}</p>
-        <p class="font-semibold">{{ formatCurrency(l.actualTotalAmount, l.currencyId) }}</p>
-      </div>
-      <div>
-        <p class="text-base-content/60">{{ 'loanDetail.startDate' | translate }}</p>
-        <p class="font-semibold">{{ formatDate(l.startDate) }}</p>
-      </div>
-      @if (l.expectedEndDate) {
-        <div>
-          <p class="text-base-content/60">{{ 'loanDetail.expectedEnd' | translate }}</p>
-          <p class="font-semibold">{{ formatDate(l.expectedEndDate) }}</p>
-        </div>
-      }
-      @if (l.completedDate) {
-        <div>
-          <p class="text-base-content/60">{{ 'loanDetail.completedDate' | translate }}</p>
-          <p class="font-semibold text-success">{{ formatDate(l.completedDate) }}</p>
-        </div>
-      }
-      @if (l.administrativeFees) {
-        <div>
-          <p class="text-base-content/60">{{ 'loanDetail.administrativeFees' | translate }}</p>
-          <p class="font-semibold">{{ formatCurrency(l.administrativeFees, l.currencyId) }}</p>
-        </div>
-      }
-      @if (l.ivaPercentage) {
-        <div>
-          <p class="text-base-content/60">{{ 'loanDetail.ivaOnInterest' | translate }} ({{ l.ivaPercentage }}%)</p>
-          <p class="font-semibold">{{ formatCurrency(l.calculatedTotalInterest * l.ivaPercentage / 100, l.currencyId) }}</p>
-        </div>
-      }
-      @if (l.insuranceAmount) {
-        <div>
-          <p class="text-base-content/60">{{ 'loanDetail.insurance' | translate }}</p>
-          <p class="font-semibold">{{ formatCurrency(l.insuranceAmount, l.currencyId) }}</p>
-        </div>
-      }
-    </div>
+    <app-detail-info-grid class="block mb-6" [fields]="infoFields()" />
 
     <!-- Próxima cuota -->
     @if (nextInstallment(); as next) {
-      <div class="alert mb-6 bg-warning/10 border border-warning text-base-content">
-        <i class="fas fa-bell text-warning"></i>
-        <div>
-          <h4 class="font-semibold">{{ 'loanDetail.nextInstallment' | translate }} #{{ next.installmentNumber }}</h4>
-          <p class="text-sm">
-            {{ formatCurrency(next.totalAmount, l.currencyId) }}
-            @if (next.dueDate) { · {{ 'loanDetail.dueDate' | translate }}: {{ formatDate(next.dueDate) }} }
-          </p>
-        </div>
-        <button type="button" class="btn btn-sm btn-primary" (click)="openPayModal(next.id)">
-          <i class="fas fa-credit-card mr-1"></i>{{ key('pay') | translate }}
+      <app-next-installment-alert class="block mb-6"
+        [installmentNumber]="next.installmentNumber"
+        [amount]="next.totalAmount"
+        [dueDate]="next.dueDate"
+        [currencyId]="l.currencyId"
+        [actionLabel]="key('pay')"
+        [canAct]="canAct()"
+        (act)="openPayModal(next.id)" />
+    }
+
+    <!-- Cuotas y movimientos (mismo bloque que en ahorros) -->
+    <article class="bg-base-100 rounded-xl border border-base-300/60 shadow-sm">
+      <div role="tablist" class="tabs tabs-border px-4 pt-2">
+        <button type="button" role="tab" class="tab" [class.tab-active]="activeTab() === 'table'" (click)="setTab('table')">
+          <i class="fas fa-list-ol mr-2" aria-hidden="true"></i>{{ 'paymentSchedule.installments' | translate }}
+          <span class="badge badge-sm badge-soft ml-2">{{ installmentRows().length }}</span>
+        </button>
+        <button type="button" role="tab" class="tab" [class.tab-active]="activeTab() === 'payments'" (click)="setTab('payments')">
+          <i class="fas fa-receipt mr-2" aria-hidden="true"></i>{{ 'paymentSchedule.movements' | translate }}
+          <span class="badge badge-sm badge-soft ml-2">{{ movementItems().length }}</span>
         </button>
       </div>
-    }
-
-    <!-- Tabs -->
-    <div class="tabs tabs-boxed mb-4">
-      <button class="tab" [ngClass]="{'tab-active': activeTab() === 'table'}" (click)="setTab('table')">
-        <i class="fas fa-table mr-1"></i>{{ 'loanDetail.amortizationTable' | translate }}
-      </button>
-      <button class="tab" [ngClass]="{'tab-active': activeTab() === 'payments'}" (click)="setTab('payments')">
-        <i class="fas fa-receipt mr-1"></i>{{ key('paymentHistory') | translate }}
-      </button>
-    </div>
-
-    <!-- Tabla de amortización -->
-    @if (activeTab() === 'table') {
-      <div class="bg-base-200 rounded-xl overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="table table-sm w-full">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>{{ 'loanDetail.dueDate' | translate }}</th>
-                <th class="text-right">{{ 'loanDetail.total' | translate }}</th>
-                <th class="text-right">{{ 'loanDetail.capital' | translate }}</th>
-                <th class="text-right">{{ 'loanDetail.interest' | translate }}</th>
-                <th class="text-right">{{ 'loanDetail.balance' | translate }}</th>
-                <th>{{ 'loanDetail.status' | translate }}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (inst of installments(); track inst.id) {
-                <tr [ngClass]="{
-                  'opacity-60': inst.statusId === InstallmentStatus.Skipped,
-                  'bg-success/10': inst.statusId === InstallmentStatus.Paid,
-                  'bg-warning/5': inst.statusId === InstallmentStatus.Pending
-                }">
-                  <td class="font-mono text-xs">{{ inst.installmentNumber }}</td>
-                  <td class="text-xs">{{ inst.dueDate ? formatDate(inst.dueDate) : '—' }}</td>
-                  <td class="text-right font-semibold">{{ formatCurrency(inst.totalAmount, l.currencyId) }}</td>
-                  <td class="text-right text-primary">{{ formatCurrency(inst.principalAmount, l.currencyId) }}</td>
-                  <td class="text-right text-error">{{ formatCurrency(inst.interestAmount, l.currencyId) }}</td>
-                  <td class="text-right text-base-content/70">{{ formatCurrency(inst.remainingBalance, l.currencyId) }}</td>
-                  <td>
-                    <span class="badge badge-xs badge-soft" [ngClass]="instBadgeColor(inst.statusId)">
-                      <i [class]="'fas ' + instIcon(inst.statusId) + ' mr-1'"></i>
-                      {{ instLabel(inst.statusId) | translate }}
-                    </span>
-                    @if (inst.paidDate) {
-                      <div class="text-xs text-base-content/50">{{ formatDate(inst.paidDate) }}</div>
-                    }
-                  </td>
-                  <td>
-                    @if (inst.statusId === InstallmentStatus.Pending && l.statusId === 1) {
-                      <div class="flex gap-1">
-                        <button type="button" class="btn btn-xs btn-primary" (click)="openPayModal(inst.id)">
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button type="button" class="btn btn-xs btn-ghost" (click)="skipInstallment(inst.id)" [title]="'loanDetail.skip' | translate">
-                          <i class="fas fa-forward"></i>
-                        </button>
-                      </div>
-                    }
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="8" class="text-center py-8 text-base-content/50">
-                    {{ 'loanDetail.noInstallments' | translate }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
-
-    <!-- Historial de pagos -->
-    @if (activeTab() === 'payments') {
-      <div class="space-y-3">
-        @for (payment of payments(); track payment.id) {
-          <div class="bg-base-200 rounded-lg p-4 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
-              <i class="fas fa-check text-success"></i>
-            </div>
-            <div class="grow">
-              <p class="font-semibold">{{ formatCurrency(payment.amount, l.currencyId) }}</p>
-              @if (payment.description) {
-                <p class="text-sm text-base-content/70">{{ payment.description }}</p>
-              }
-            </div>
-            <time class="text-xs text-base-content/60">{{ formatDate(payment.paymentDate) }}</time>
-          </div>
-        } @empty {
-          <div class="text-center py-12 text-base-content/50">
-            <i class="fas fa-receipt text-3xl mb-3 block"></i>
-            <p>{{ key('noPayments') | translate }}</p>
-          </div>
+      <div class="p-4">
+        @if (activeTab() === 'table') {
+          <app-installments-table
+            [rows]="installmentRows()"
+            [columns]="installmentColumns()"
+            [currencyId]="l.currencyId"
+            [canAct]="canAct()"
+            amountLabel="loanDetail.total"
+            [payLabel]="key('pay')"
+            skipLabel="loanDetail.skip"
+            emptyLabel="loanDetail.noInstallments"
+            (pay)="openPayModal($event.id)"
+            (skip)="skipInstallment($event.id)" />
+        }
+        @if (activeTab() === 'payments') {
+          <app-movements-list
+            [items]="movementItems()"
+            [currencyId]="l.currencyId"
+            [emptyLabel]="key('noPayments')" />
         }
       </div>
-    }
+    </article>
 
   </section>
 } @else {
@@ -242,33 +99,26 @@
     <h3 class="font-bold text-lg mb-4">
       <i class="fas fa-credit-card mr-2 text-warning"></i>{{ key('payInstallment') | translate }}
     </h3>
-    <form [formGroup]="payForm" class="space-y-4">
-      <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ key('payAmount') | translate }}</span></div>
-        <input type="number" formControlName="amount"
-          class="input input-bordered w-full"
-          [ngClass]="{'input-error': payForm.controls.amount.invalid && payForm.controls.amount.touched}"
-          min="1" />
-        @if (payForm.controls.amount.touched && payForm.controls.amount.hasError('required')) {
-          <p class="text-error text-xs mt-1">{{ key('payAmount') | translate }} {{ 'validation.required' | translate }}</p>
-        }
-        @if (payForm.controls.amount.touched && payForm.controls.amount.hasError('min')) {
-          <p class="text-error text-xs mt-1">{{ 'validation.min' | translate: { value: 1 } }}</p>
-        }
-      </label>
-      <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ key('paymentDate') | translate }}</span></div>
-        <input type="date" formControlName="paymentDate"
-          class="input input-bordered w-full"
-          [ngClass]="{'input-error': payForm.controls.paymentDate.invalid && payForm.controls.paymentDate.touched}" />
-        @if (payForm.controls.paymentDate.touched && payForm.controls.paymentDate.hasError('required')) {
-          <p class="text-error text-xs mt-1">{{ key('paymentDate') | translate }} {{ 'validation.required' | translate }}</p>
-        }
-      </label>
-      <label class="form-control w-full">
-        <div class="label"><span class="label-text">{{ 'loanDetail.payDescription' | translate }}</span></div>
-        <input type="text" formControlName="description" class="input input-bordered w-full" />
-      </label>
+    <form [formGroup]="payForm">
+      <app-text
+        formControlName="amount"
+        type="number"
+        [label]="key('payAmount') | translate"
+        id="payAmount"
+        name="payAmount"
+      />
+      <app-date-input
+        formControlName="paymentDate"
+        [label]="key('paymentDate') | translate"
+        id="paymentDate"
+        name="paymentDate"
+      />
+      <app-text-area-input
+        formControlName="description"
+        [label]="'loanDetail.payDescription' | translate"
+        id="payDescription"
+        name="payDescription"
+      />
     </form>
     <div class="modal-action">
       <button type="button" class="btn btn-ghost" (click)="closePayModal()" [disabled]="isSaving()">

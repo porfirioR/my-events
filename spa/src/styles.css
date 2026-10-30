@@ -14,6 +14,57 @@
   --color-primary-content: #ffffff;
 }
 
+/* Pestañas: la activa en primary (por defecto daisyUI usa el color del texto) */
+.tabs-border .tab.tab-active {
+  --tab-border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Grupos de filtros: btn-group es de daisyUI 4 y en la 5 no existe; los pegamos como un "join"
+   y marcamos el activo en primary suave, que se distingue en los dos temas */
+.btn-group {
+  display: inline-flex;
+}
+.btn-group > .btn {
+  border-radius: 0;
+}
+.btn-group > .btn:not(:first-child) {
+  margin-inline-start: -1px;
+}
+.btn-group > .btn:first-child {
+  border-start-start-radius: var(--radius-field);
+  border-end-start-radius: var(--radius-field);
+}
+.btn-group > .btn:last-child {
+  border-start-end-radius: var(--radius-field);
+  border-end-end-radius: var(--radius-field);
+}
+.btn-group > .btn.btn-active {
+  background-color: color-mix(in oklab, var(--color-primary) 15%, var(--color-base-100));
+  border-color: color-mix(in oklab, var(--color-primary) 45%, transparent);
+  color: var(--color-primary);
+  position: relative;
+  z-index: 1;
+}
+
+/* Modo oscuro: el primary (#4338CA) sobre fondo oscuro casi no se lee como texto;
+   para textos y bordes usamos una variante más clara (los fondos btn-primary no cambian) */
+.dark {
+  --color-primary-text: #a5b4fc;
+}
+.dark .text-primary,
+.dark .tabs-border .tab.tab-active,
+.dark .btn-group > .btn.btn-active {
+  color: var(--color-primary-text);
+}
+.dark .tabs-border .tab.tab-active {
+  --tab-border-color: var(--color-primary-text);
+}
+.dark .btn-outline.btn-primary:not(:hover):not(.btn-active) {
+  color: var(--color-primary-text);
+  border-color: var(--color-primary-text);
+}
+
 .swal2-icon-question-custom.swal2-icon.swal2-question {
   @apply border-primary text-primary;
 }

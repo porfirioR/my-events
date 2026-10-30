@@ -40,6 +40,14 @@
     "travels": "Travels",
     "noData": "No data",
     "navigation": "Navigation",
+    "progress": "Progress",
+    "home": "Home",
+    "new": "New",
+    "detail": "Detail",
+    "invitations": "Invitations",
+    "breadcrumb": "Breadcrumb",
+    "collapseMenu": "Collapse menu",
+    "expandMenu": "Expand menu",
     "loans": "Loans"
   },
   "auth": {
@@ -298,6 +306,9 @@
     "signupFailed": "Signup failed. Please try again."
   },
   "dashboard": {
+    "title": "Overview",
+    "subtitle": "A quick look at your modules",
+    "paidOff": "paid off",
     "modulesHeading": "Modules",
     "collaborators": "Collaborators",
     "transactions": "Transactions",
@@ -321,7 +332,7 @@
     "left": "Left",
     "travels": "Travels",
     "newTravel": "New Travel",
-    "finalized": "Finalized",
+    "finalized": "finalized",
     "loans": "Loans",
     "newLoan": "New Loan"
   },
@@ -531,6 +542,17 @@
     "atMaturity": "At maturity"
   },
   "savingsGoalDetail": {
+    "statTarget": "Target",
+    "statRemaining": "Remaining",
+    "statSaved": "Saved",
+    "statInstallment": "Installment",
+    "statPayout": "Paid out",
+    "statContributed": "Total contributed",
+    "statWithdrawn": "Total withdrawn",
+    "startDate": "Start date",
+    "expectedEnd": "Expected end",
+    "completedDate": "Completed on",
+    "estimatedPayoutLabel": "Estimated payout",
     "registerPayout": "Register payout",
     "skippedInstallments": "Skipped installments",
     "registerPayoutTitle": "Register payout",
@@ -1084,6 +1106,22 @@
     "directionBorrowed": "Borrowed",
     "directionLent": "Lent",
     "allDirections": "All"
+  },
+  "paymentSchedule": {
+    "installments": "Installments",
+    "movements": "Movements",
+    "nextInstallment": "Next installment",
+    "dueDate": "Due date",
+    "dueOn": "Due on",
+    "amount": "Amount",
+    "status": "Status",
+    "pay": "Pay",
+    "collect": "Collect",
+    "skip": "Skip",
+    "accumulated": "Accumulated",
+    "noInstallments": "No installments generated",
+    "noMovements": "No movements recorded",
+    "linkedToInstallment": "Installment #{{number}}"
   },
   "loanDetail": {
     "principal": "Principal",

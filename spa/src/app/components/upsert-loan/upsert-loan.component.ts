@@ -4,6 +4,7 @@ import {
   inject, effect, computed, signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { startWith } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -127,6 +128,7 @@ export class UpsertLoanComponent implements OnInit {
   protected LoanDirection = LoanDirection;
 
   constructor() {
+    preventUnsavedUnload(this);
     const today = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd') as string;
 
     this.formGroup = new FormGroup<LoanFormGroup>({
@@ -238,11 +240,20 @@ export class UpsertLoanComponent implements OnInit {
     const lent = direction === LoanDirection.Lent;
     this.formGroup.controls.loanTypeId.setValue(lent ? LoanType.Informal : LoanType.Personal);
     this.formGroup.controls.amortizationType.setValue(lent ? AmortizationType.Flat : AmortizationType.French);
+    const person = this.financialInstitutionsStore.financialInstitutions().find(f => f.type === FinancialInstitutionType.Person);
     if (lent) {
       this.formGroup.patchValue({ administrativeFees: null, ivaPercentage: null, insuranceAmount: null });
-      const person = this.financialInstitutionsStore.financialInstitutions().find(f => f.type === FinancialInstitutionType.Person);
       if (person && !this.formGroup.controls.loanEntityId.value) {
         this.formGroup.controls.loanEntityId.setValue(person.id);
+      }
+    } else {
+      // Volver a "Recibido": quitar la entidad Persona que se puso sola y el nombre del deudor,
+      // que quedaría oculto y se guardaría como lendercustomname (salvo entidad "Otros", que lo usa)
+      if (person && this.formGroup.controls.loanEntityId.value === person.id) {
+        this.formGroup.controls.loanEntityId.setValue(null);
+      }
+      if (!this.isOtherEntity()) {
+        this.formGroup.controls.lenderCustomName.setValue(null);
       }
     }
   }

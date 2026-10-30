@@ -2,6 +2,7 @@ import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, Signal, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { switchMap, of, catchError } from 'rxjs';
@@ -199,6 +200,7 @@ export class UpsertOperationComponent implements OnInit {
   public formGroup: FormGroup<OperationFormGroup>;
 
   constructor() {
+    preventUnsavedUnload(this);
     this.formGroup = new FormGroup<OperationFormGroup>({
       id: new FormControl(null),
       currencyId: new FormControl(null, [Validators.required]),

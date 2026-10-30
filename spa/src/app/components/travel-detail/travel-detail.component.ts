@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useTravelStore, useCollaboratorStore, useAuthStore, useCurrencyStore } from '../../store';
-import { AlertService, FormatterHelperService } from '../../services';
+import { AlertService, BreadcrumbService, FormatterHelperService } from '../../services';
 import { TravelMemberApiModel, TravelOperationApiModel } from '../../models/api/travels';
 import { ApprovalStatus } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -37,6 +37,12 @@ export class TravelDetailComponent implements OnInit {
   protected isMembersLoading = this.travelStore.needsLoadingMembers;
   protected isBalancesLoading = this.travelStore.needsLoadingBalances;
   protected travel = this.travelStore.selectedTravel;
+  private breadcrumbService = inject(BreadcrumbService);
+  // Muestra el nombre del viaje en el breadcrumb (en vez de "#id")
+  private breadcrumbLabel = effect(() => {
+    const travel = this.travel();
+    if (travel) this.breadcrumbService.setLabel(`/travels/${travel.id}`, travel.name);
+  });
   protected members = this.travelStore.members;
   protected operations = this.travelStore.sortedOperations;
   protected balances = this.travelStore.balances;

@@ -40,6 +40,14 @@
     "travels": "Viajes",
     "noData": "Sin datos",
     "navigation": "Navegación",
+    "progress": "Progreso",
+    "home": "Inicio",
+    "new": "Nuevo",
+    "detail": "Detalle",
+    "invitations": "Invitaciones",
+    "breadcrumb": "Ruta de navegación",
+    "collapseMenu": "Contraer menú",
+    "expandMenu": "Expandir menú",
     "loans": "Préstamos"
   },
   "auth": {
@@ -298,6 +306,9 @@
     "signupFailed": "Error al registrarse. Por favor intenta nuevamente."
   },
   "dashboard": {
+    "title": "Resumen",
+    "subtitle": "Un vistazo rápido a tus módulos",
+    "paidOff": "saldados",
     "modulesHeading": "Módulos",
     "collaborators": "Colaboradores",
     "transactions": "Transacciones",
@@ -321,7 +332,7 @@
     "left": "Restante",
     "travels": "Viajes",
     "newTravel": "Nuevo Viaje",
-    "finalized": "Finalizados",
+    "finalized": "finalizados",
     "loans": "Préstamos",
     "newLoan": "Nuevo Préstamo"
   },
@@ -531,6 +542,17 @@
     "atMaturity": "Al vencimiento"
   },
   "savingsGoalDetail": {
+    "statTarget": "Meta",
+    "statRemaining": "Restante",
+    "statSaved": "Ahorrado",
+    "statInstallment": "Cuota",
+    "statPayout": "Cobrado",
+    "statContributed": "Total aportado",
+    "statWithdrawn": "Total retirado",
+    "startDate": "Fecha de inicio",
+    "expectedEnd": "Fecha esperada",
+    "completedDate": "Fecha de completado",
+    "estimatedPayoutLabel": "Devolución estimada",
     "registerPayout": "Registrar cobro",
     "skippedInstallments": "Cuotas omitidas",
     "registerPayoutTitle": "Registrar cobro",
@@ -1084,6 +1106,22 @@
     "directionBorrowed": "Recibido",
     "directionLent": "Otorgado",
     "allDirections": "Todos"
+  },
+  "paymentSchedule": {
+    "installments": "Cuotas",
+    "movements": "Movimientos",
+    "nextInstallment": "Próxima cuota",
+    "dueDate": "Vencimiento",
+    "dueOn": "Vence el",
+    "amount": "Monto",
+    "status": "Estado",
+    "pay": "Pagar",
+    "collect": "Cobrar",
+    "skip": "Omitir",
+    "accumulated": "Acumulado",
+    "noInstallments": "Sin cuotas generadas",
+    "noMovements": "Sin movimientos registrados",
+    "linkedToInstallment": "Cuota #{{number}}"
   },
   "loanDetail": {
     "principal": "Capital inicial",

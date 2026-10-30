@@ -1,6 +1,6 @@
-<section aria-labelledby="match-requests-heading" class="min-h-[calc(100vh-4rem)] bg-base-200 dark:bg-base-300">
-  <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
-    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+<section aria-labelledby="match-requests-heading">
+  <article class="transition-all duration-300">
+    <header class="pb-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center gap-3">
           <a
@@ -50,7 +50,7 @@
       </div>
     </header>
 
-    <div class="p-6">
+    <div class="py-6">
       @if (initialLoading()) {
         <div class="flex justify-center items-center py-12">
           <span class="loading loading-spinner loading-lg"></span>
@@ -62,7 +62,7 @@
           <div>
             <ul class="space-y-4" role="list">
               @for (request of receivedRequests(); track request.id) {
-                <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+                <li class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 hover:shadow-md transition-colors duration-200">
                   <article class="flex items-center justify-between">
                     <div class="flex items-center gap-4 flex-grow">
                       <figure class="hidden flex-shrink-0 w-12 h-12 rounded-full bg-primary/20 md:flex items-center justify-center text-primary font-semibold">
@@ -118,7 +118,7 @@
           <div>
             <ul class="space-y-4" role="list">
               @for (request of sentRequests(); track request.id) {
-                <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200">
+                <li class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 hover:shadow-md transition-colors duration-200">
                   <article class="flex items-center justify-between">
                     <div class="flex items-center gap-4 flex-grow">
                       <figure class="flex-shrink-0 w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-semibold">

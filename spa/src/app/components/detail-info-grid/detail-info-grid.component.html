@@ -1,0 +1,12 @@
+@if (fields().length > 0) {
+  <div class="bg-base-100 rounded-xl border border-base-300/60 shadow-sm p-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+    @for (field of fields(); track field.label) {
+      <div>
+        <p class="text-base-content/60">{{ field.label | translate }}</p>
+        <p class="font-semibold" [ngClass]="field.valueClass">
+          {{ field.value }} @if (field.valueSuffix) { {{ field.valueSuffix | translate }} }
+        </p>
+      </div>
+    }
+  </div>
+}

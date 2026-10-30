@@ -112,7 +112,7 @@ export class LoansListComponent implements OnInit {
   }
 
   protected getStatusColor(statusId: number): string {
-    const colors: Record<number, string> = { 1: 'badge-warning', 2: 'badge-success', 3: 'badge-neutral', 4: 'badge-error' };
+    const colors: Record<number, string> = { 1: 'badge-success', 2: 'badge-info', 3: 'badge-ghost', 4: 'badge-error' };
     return colors[statusId] ?? 'badge-ghost';
   }
 

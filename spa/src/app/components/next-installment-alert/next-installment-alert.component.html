@@ -1,0 +1,19 @@
+<div class="flex flex-wrap items-center gap-4 rounded-xl border border-warning/50 bg-warning/10 p-4">
+  <span class="w-10 h-10 shrink-0 rounded-full bg-warning/20 grid place-items-center">
+    <i class="fas fa-bell text-warning" aria-hidden="true"></i>
+  </span>
+  <div class="grow min-w-0">
+    <p class="text-xs text-base-content/60">{{ 'paymentSchedule.nextInstallment' | translate }} #{{ installmentNumber() }}</p>
+    <p class="font-bold text-lg text-base-content">{{ formatCurrency(amount()) }}</p>
+    @if (dueDate(); as due) {
+      <p class="text-xs text-base-content/60">
+        <i class="fas fa-calendar-alt mr-1" aria-hidden="true"></i>{{ 'paymentSchedule.dueOn' | translate }} {{ formatDate(due) }}
+      </p>
+    }
+  </div>
+  @if (canAct()) {
+    <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="act.emit()">
+      <i class="fas fa-check-circle" aria-hidden="true"></i>{{ actionLabel() | translate }}
+    </button>
+  }
+</div>

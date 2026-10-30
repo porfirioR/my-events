@@ -1,6 +1,6 @@
-<section aria-labelledby="loans-heading" class="min-h-[calc(100vh-4rem)] bg-base-200 dark:bg-base-300">
-  <article class="bg-base-200 dark:bg-base-300 rounded-xl transition-all duration-300">
-    <header class="px-6 py-4 border-b border-base-300 dark:border-base-100">
+<section aria-labelledby="loans-heading">
+  <article class="transition-all duration-300">
+    <header class="pb-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <h2 id="loans-heading" class="text-xl font-semibold text-base-content">
           <i class="fas fa-hand-holding-dollar mr-2 text-warning"></i>
@@ -57,7 +57,7 @@
       </div>
     </header>
 
-    <div class="p-6">
+    <div class="py-6">
       @if (isLoading()) {
         <div class="flex justify-center items-center py-12">
           <span class="loading loading-spinner loading-lg"></span>
@@ -66,15 +66,15 @@
       } @else {
         <ul class="space-y-4" role="list">
           @for (loan of loans(); track loan.id) {
-            <li class="bg-base-100 dark:bg-base-200 rounded-lg p-4 hover:bg-base-300/50 dark:hover:bg-base-100/50 transition-colors duration-200 cursor-pointer"
+            <li class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 hover:shadow-md transition-colors duration-200 cursor-pointer"
                 (click)="viewDetail(loan)">
               <article class="flex items-start gap-4">
                 <!-- Icon -->
                 <figure class="flex-shrink-0">
                   <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md"
                     [ngClass]="{
-                      'bg-warning': loan.statusId === 1,
-                      'bg-success': loan.statusId === 2,
+                      'bg-success': loan.statusId === 1,
+                      'bg-info': loan.statusId === 2,
                       'bg-neutral': loan.statusId === 3,
                       'bg-error': loan.statusId === 4
                     }">
@@ -135,13 +135,13 @@
                       <span class="text-base-content/70">
                         {{ formatCurrency(loan.totalPaid, loan.currencyId) }} / {{ formatCurrency(loan.actualTotalAmount, loan.currencyId) }}
                       </span>
-                      <span class="font-semibold" [ngClass]="loan.statusId === 2 ? 'text-success' : 'text-warning'">
+                      <span class="font-semibold" [ngClass]="loan.statusId === 2 ? 'text-info' : 'text-success'">
                         {{ getProgress(loan) }}%
                       </span>
                     </div>
                     <progress
                       class="progress w-full"
-                      [ngClass]="loan.statusId === 2 ? 'progress-success' : 'progress-warning'"
+                      [ngClass]="loan.statusId === 2 ? 'progress-info' : 'progress-success'"
                       [value]="loan.totalPaid"
                       [max]="loan.actualTotalAmount || 1">
                     </progress>

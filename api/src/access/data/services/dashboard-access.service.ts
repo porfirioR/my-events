@@ -36,20 +36,19 @@ export class DashboardAccessService extends BaseAccessService implements IDashbo
   };
 
   private getTransactionStats = async (userId: number) => {
-    const [total, unsettled, settled] = await Promise.all([
+    // issettled vive en transactionsplits: una transacción está pendiente si tiene al menos un split sin liquidar
+    const [total, unsettled] = await Promise.all([
       this.dbContext.from(TableEnum.Transactions)
         .select(DatabaseColumns.EntityId, { count: 'exact', head: true })
         .eq(DatabaseColumns.UserId, userId),
       this.dbContext.from(TableEnum.Transactions)
-        .select(DatabaseColumns.EntityId, { count: 'exact', head: true })
+        .select(`${DatabaseColumns.EntityId}, ${TableEnum.TransactionSplits}!inner(${DatabaseColumns.IsSettled})`, { count: 'exact', head: true })
         .eq(DatabaseColumns.UserId, userId)
-        .eq(DatabaseColumns.IsSettled, false),
-      this.dbContext.from(TableEnum.Transactions)
-        .select(DatabaseColumns.EntityId, { count: 'exact', head: true })
-        .eq(DatabaseColumns.UserId, userId)
-        .eq(DatabaseColumns.IsSettled, true),
+        .eq(`${TableEnum.TransactionSplits}.${DatabaseColumns.IsSettled}`, false),
     ]);
-    return { total: total.count ?? 0, unsettled: unsettled.count ?? 0, settled: settled.count ?? 0 };
+    const totalCount = total.count ?? 0;
+    const unsettledCount = unsettled.count ?? 0;
+    return { total: totalCount, unsettled: unsettledCount, settled: totalCount - unsettledCount };
   };
 
   private getSavingsStats = async (userId: number) => {

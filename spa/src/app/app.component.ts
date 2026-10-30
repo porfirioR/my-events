@@ -1,8 +1,10 @@
 import { Component, inject } from '@angular/core'
 import { Router, RouterOutlet } from '@angular/router'
-import { LocalService, ThemeService } from './services'
+import { LayoutService, LocalService, ThemeService } from './services'
 import { useAuthStore } from './store'
 import { HeaderComponent } from "./components/header/header.component";
+import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { CommonModule } from '@angular/common';
 
 
@@ -11,6 +13,8 @@ import { CommonModule } from '@angular/common';
   imports: [
     RouterOutlet,
     HeaderComponent,
+    SidebarComponent,
+    BreadcrumbComponent,
     CommonModule
 ],
   templateUrl: './app.component.html',
@@ -21,6 +25,7 @@ export class AppComponent {
   private localService = inject(LocalService);
   private router = inject(Router);
   private themeService = inject(ThemeService);
+  protected isSidebarCollapsed = inject(LayoutService).isSidebarCollapsed;
 
   constructor() {
     this.initializeAuth();
