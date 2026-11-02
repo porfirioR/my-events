@@ -20,6 +20,12 @@
   color: var(--color-primary);
 }
 
+/* Tailwind 4 dejó el cursor por defecto en los botones: los que no usan .btn (ej. contraer menú) no mostraban la manito */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 /* Grupos de filtros: btn-group es de daisyUI 4 y en la 5 no existe; los pegamos como un "join"
    y marcamos el activo en primary suave, que se distingue en los dos temas */
 .btn-group {

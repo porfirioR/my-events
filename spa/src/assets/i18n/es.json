@@ -948,7 +948,11 @@
     "New Loan": "Nuevo Préstamo",
     "Loan Detail": "Detalle del Préstamo",
     "Edit Loan": "Editar Préstamo",
-    "Edit Transaction": "Editar Transacción"
+    "Edit Transaction": "Editar Transacción",
+    "Accounts": "Cuentas",
+    "New Account": "Nueva cuenta",
+    "Monthly Balances": "Saldos del mes",
+    "Edit Account": "Editar cuenta"
   },
   "travels": {
     "title": "Viajes",
