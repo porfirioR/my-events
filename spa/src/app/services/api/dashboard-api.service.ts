@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { DashboardSummaryApiModel } from '../../models/api/dashboard/dashboard-summary-api.model';
+import { NetWorthSummaryApiModel } from '../../models/api/dashboard/net-worth-summary-api.model';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardApiService {
@@ -11,4 +12,7 @@ export class DashboardApiService {
 
   getSummary = (): Observable<DashboardSummaryApiModel> =>
     this.httpClient.get<DashboardSummaryApiModel>(`${this.section}/summary`);
+
+  getNetWorth = (): Observable<NetWorthSummaryApiModel> =>
+    this.httpClient.get<NetWorthSummaryApiModel>(`${this.section}/net-worth`);
 }

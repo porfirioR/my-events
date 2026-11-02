@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, inject, computed, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, inject, computed, signal, effect, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
@@ -74,6 +74,8 @@ export class SavingsGoalDetailComponent implements OnInit {
   private financialInstitutionsStore = useFinancialInstitutionsStore();
 
   protected goal = this.savingsStore.selectedGoal;
+  private goalId: number | null = null;
+  private openPayoutOnLoad = false;
   private breadcrumbService = inject(BreadcrumbService);
   // Muestra el nombre de la meta en el breadcrumb (en vez de "#id")
   private breadcrumbLabel = effect(() => {
@@ -146,6 +148,15 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected isRotating = computed(() => this.goal()?.progressionTypeId === ProgressionType.Rotating);
   protected MovementType = MovementType;
 
+  // Cobro registrado: lo ahorrado (capital en plazo fijo/CDA) y la ganancia real = cobrado − ahorrado
+  protected payoutSummary = computed(() => {
+    const goal = this.goal();
+    if (goal?.statusId !== GoalStatus.Withdrawn || goal.payoutAmount == null) return null;
+    const saved = this.isLumpSum() ? (goal.baseAmount ?? goal.currentAmount) : goal.currentAmount;
+    const gain = goal.payoutAmount - saved;
+    return { saved, gain, gainAbs: Math.abs(gain) };
+  });
+
   // ==================== CABECERA (misma estructura que el detalle de préstamos) ====================
   // Monto contra el que se mide el progreso: capital en plazo fijo/CDA, total a depositar en ahorro programado
   protected progressTarget = computed(() => {
@@ -185,16 +196,18 @@ export class SavingsGoalDetailComponent implements OnInit {
       ];
     }
 
-    const cards = [new DetailFieldViewModel('savingsGoalDetail.statTarget', money(this.progressTarget()))];
-    cards.push(goal.statusId === GoalStatus.Withdrawn
-      ? new DetailFieldViewModel('savingsGoalDetail.statPayout', money(goal.payoutAmount ?? goal.currentAmount), 'text-primary')
-      : new DetailFieldViewModel('savingsGoalDetail.statRemaining', money(this.remaining()), 'text-warning'));
-    cards.push(new DetailFieldViewModel('savingsGoalDetail.statSaved', money(goal.currentAmount), 'text-success'));
+    // Orden: cuota → ahorrado → meta → cobrado (o restante mientras no se cobró)
+    const cards: DetailFieldViewModel[] = [];
     if (this.hasInstallments()) {
       const installmentAmount = this.nextInstallment()?.amount ?? goal.baseAmount ?? 0;
       cards.push(new DetailFieldViewModel('savingsGoalDetail.statInstallment', money(installmentAmount), '', '',
         goal.paymentPeriod ? `upsertSavingsGoal.paymentPeriod${goal.paymentPeriod}` : ''));
     }
+    cards.push(new DetailFieldViewModel('savingsGoalDetail.statSaved', money(goal.currentAmount), 'text-success'));
+    cards.push(new DetailFieldViewModel('savingsGoalDetail.statTarget', money(this.progressTarget())));
+    cards.push(goal.statusId === GoalStatus.Withdrawn
+      ? new DetailFieldViewModel('savingsGoalDetail.statPayout', money(goal.payoutAmount ?? goal.currentAmount), 'text-primary')
+      : new DetailFieldViewModel('savingsGoalDetail.statRemaining', money(this.remaining()), 'text-warning'));
     return cards;
   });
 
@@ -231,10 +244,23 @@ export class SavingsGoalDetailComponent implements OnInit {
       fields.push(new DetailFieldViewModel('savingsGoalDetail.paymentPeriodLabel', '', '', `upsertSavingsGoal.paymentPeriod${goal.paymentPeriod}`));
     }
 
+    // Ganancia real: solo con el monto cobrado registrado; va al lado de la estimada
+    const payout = this.payoutSummary();
+    const realGainField = payout
+      // En el color de "Cobrado" para distinguirla de la estimada
+      ? new DetailFieldViewModel('savingsGoalDetail.realGain', `${payout.gain < 0 ? '-' : '+'} ${money(payout.gainAbs)}`, 'text-primary')
+      : null;
+
     const programmedYield = this.programmedYield();
     if (programmedYield) {
       fields.push(new DetailFieldViewModel('savingsGoalDetail.estimatedYield', `+ ${money(programmedYield.yieldAmount)}`, 'text-success'));
-      fields.push(new DetailFieldViewModel('savingsGoalDetail.totalAtMaturity', money(programmedYield.totalAmount), 'text-success'));
+      if (realGainField) fields.push(realGainField);
+      // Cobrado: lo que realmente se recibió, en el color de "Cobrado"
+      fields.push(payout
+        ? new DetailFieldViewModel('savingsGoalDetail.totalCollected', money(goal.payoutAmount!), 'text-primary')
+        : new DetailFieldViewModel('savingsGoalDetail.totalAtMaturity', money(programmedYield.totalAmount), 'text-success'));
+    } else if (realGainField) {
+      fields.push(realGainField);
     }
     return fields;
   });
@@ -316,6 +342,16 @@ export class SavingsGoalDetailComponent implements OnInit {
       ]),
     });
 
+    // Viene de "Registrar cobro" en la lista: abre el modal una vez cuando la meta ya cargó
+    effect(() => {
+      const goal = this.goal();
+      if (!this.openPayoutOnLoad || !goal || goal.id !== this.goalId) return;
+      this.openPayoutOnLoad = false;
+      // Saca el ?payout de la URL para que un refresh no vuelva a abrir el modal
+      untracked(() => this.router.navigate([], { relativeTo: this.activatedRoute, queryParams: {}, replaceUrl: true }));
+      if (untracked(() => this.canWithdraw())) untracked(() => this.openWithdrawModal());
+    });
+
     effect(() => {
       if ((this.isFreeForm() || this.isLumpSum() || this.isMutualFund()) && this.activeTab() === 'installments') {
         this.setActiveTab('deposits');
@@ -325,6 +361,8 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = +this.activatedRoute.snapshot.params['id'];
+    this.goalId = id;
+    this.openPayoutOnLoad = this.activatedRoute.snapshot.queryParamMap.has('payout');
     this.savingsStore.clearSelectedGoal();
     this.savingsStore.loadGoalById(id);
     this.savingsStore.loadInstallments(id);

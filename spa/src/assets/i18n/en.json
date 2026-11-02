@@ -342,6 +342,31 @@
     "newAccount": "New account",
     "updateBalances": "Monthly balances"
   },
+  "netWorth": {
+    "title": "Net worth",
+    "balancesAsOf": "Account balances as of {{month}}",
+    "noBalancesYet": "No account balances loaded yet",
+    "currency": "Currency",
+    "updateBalances": "Update balances",
+    "total": "Net worth",
+    "liquidToday": "Liquid today",
+    "locked": "Locked",
+    "debts": "Debts",
+    "byLiquidity": "By liquidity",
+    "byInstitution": "By institution",
+    "liquidityImmediate": "Immediate",
+    "liquidityDays": "Within days",
+    "liquidityLocked": "Locked",
+    "liquidityReceivable": "Receivable",
+    "noInstitution": "No institution",
+    "debt": "Debt",
+    "accountsWithoutBalance": "Active accounts without a balance: {{count}}. They don't count toward net worth.",
+    "loadBalances": "Load balances",
+    "emptyTitle": "There is no data to calculate your net worth yet",
+    "emptyMessage": "Create your accounts and load this month's balances; savings and loans are added automatically.",
+    "loadError": "Net worth could not be loaded.",
+    "retry": "Retry"
+  },
   "matchRequests": {
     "title": "Match Requests",
     "received": "Received",
@@ -573,7 +598,15 @@
     "deleteGoalMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "goalDeletedSuccess": "Savings goal deleted successfully",
     "deposit": "Deposit",
-    "atMaturity": "At maturity"
+    "atMaturity": "At maturity",
+    "institution": "Institution",
+    "allInstitutions": "All institutions",
+    "noInstitution": "No institution",
+    "institutionTotal": "Saved in {{name}} (with the status filter):",
+    "institutionTotalHint": "The dashboard net worth adds active, completed and paused goals: choose \"All\" and leave out cancelled and withdrawn ones to compare.",
+    "collected": "Collected",
+    "saved": "Saved",
+    "totalDeposits": "Total deposits"
   },
   "savingsGoalDetail": {
     "statTarget": "Target",
@@ -678,7 +711,9 @@
     "fixedDepositPrincipal": "Principal",
     "fixedDepositInterest": "Interest earned",
     "fixedDepositTotalAtMaturity": "Total at maturity",
-    "maturityDate": "Maturity date"
+    "maturityDate": "Maturity date",
+    "realGain": "Actual gain",
+    "totalCollected": "Total collected"
   },
   "upsertSavingsGoal": {
     "editTitle": "Edit Savings Goal",

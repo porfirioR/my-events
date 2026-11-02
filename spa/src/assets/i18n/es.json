@@ -342,6 +342,31 @@
     "newAccount": "Nueva cuenta",
     "updateBalances": "Saldos del mes"
   },
+  "netWorth": {
+    "title": "Patrimonio",
+    "balancesAsOf": "Saldos de cuentas a {{month}}",
+    "noBalancesYet": "Todavía no cargaste saldos de cuentas",
+    "currency": "Moneda",
+    "updateBalances": "Actualizar saldos",
+    "total": "Patrimonio neto",
+    "liquidToday": "Líquido hoy",
+    "locked": "Bloqueado",
+    "debts": "Deudas",
+    "byLiquidity": "Por liquidez",
+    "byInstitution": "Por entidad",
+    "liquidityImmediate": "Inmediata",
+    "liquidityDays": "En días",
+    "liquidityLocked": "Bloqueada",
+    "liquidityReceivable": "Por cobrar",
+    "noInstitution": "Sin entidad",
+    "debt": "Deuda",
+    "accountsWithoutBalance": "Cuentas activas sin saldo cargado: {{count}}. No suman al patrimonio.",
+    "loadBalances": "Cargar saldos",
+    "emptyTitle": "Todavía no hay datos para calcular tu patrimonio",
+    "emptyMessage": "Creá tus cuentas y cargá los saldos del mes; los ahorros y préstamos se suman solos.",
+    "loadError": "No se pudo calcular el patrimonio.",
+    "retry": "Reintentar"
+  },
   "matchRequests": {
     "title": "Solicitudes de Vinculación",
     "received": "Recibidas",
@@ -573,7 +598,15 @@
     "deleteGoalMessage": "¿Estás seguro de que quieres eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
     "goalDeletedSuccess": "Meta de ahorro eliminada exitosamente",
     "deposit": "Depósito",
-    "atMaturity": "Al vencimiento"
+    "atMaturity": "Al vencimiento",
+    "institution": "Entidad",
+    "allInstitutions": "Todas las entidades",
+    "noInstitution": "Sin entidad",
+    "institutionTotal": "Ahorrado en {{name}} (según el filtro de estado):",
+    "institutionTotalHint": "El patrimonio del tablero suma las metas activas, completadas y pausadas: elegí \"Todas\" y descontá las canceladas y cobradas para comparar.",
+    "collected": "Cobrado",
+    "saved": "Ahorrado",
+    "totalDeposits": "Total a depositar"
   },
   "savingsGoalDetail": {
     "statTarget": "Meta",
@@ -678,7 +711,9 @@
     "fixedDepositPrincipal": "Capital",
     "fixedDepositInterest": "Interés generado",
     "fixedDepositTotalAtMaturity": "Total al vencimiento",
-    "maturityDate": "Fecha de vencimiento"
+    "maturityDate": "Fecha de vencimiento",
+    "realGain": "Ganancia real",
+    "totalCollected": "Total cobrado"
   },
   "upsertSavingsGoal": {
     "editTitle": "Editar Meta de Ahorro",

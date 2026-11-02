@@ -15,3 +15,5 @@ export { MovementType } from './movement-type.enum';
 export { FinancialInstitutionType } from './financial-institution-type.enum';
 export { LoanDirection } from './loan-direction.enum';
 export { AccountType } from './account-type.enum';
+export { NetWorthLiquidity } from './net-worth-liquidity.enum';
+export { NetWorthItemType } from './net-worth-item-type.enum';

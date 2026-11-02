@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { useDashboardStore } from '../../store';
+import { NetWorthSectionComponent } from '../net-worth-section/net-worth-section.component';
 
 interface DashboardStat {
   value: number;
@@ -34,7 +35,8 @@ interface DashboardQuickAction {
   styleUrls: ['./dashboard.component.css'],
   imports: [
     RouterModule,
-    TranslateModule
+    TranslateModule,
+    NetWorthSectionComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

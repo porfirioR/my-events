@@ -69,6 +69,17 @@
   }
 }
 
+/* Ítem elegido en los menús de filtro (Tipo, Entidad): mismo primary suave que el filtro activo de los btn-group,
+   en vez del negro (neutral) que daisyUI usa por defecto */
+.menu .menu-active,
+.menu .menu-active:hover {
+  background-color: color-mix(in oklab, var(--color-primary) 15%, var(--color-base-100));
+  color: var(--color-primary);
+}
+.dark .menu .menu-active {
+  color: var(--color-primary-text);
+}
+
 /* Modo oscuro: el primary (#4338CA) sobre fondo oscuro casi no se lee como texto;
    para textos y bordes usamos una variante más clara (los fondos btn-primary no cambian) */
 .dark {
