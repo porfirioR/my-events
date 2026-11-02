@@ -14,3 +14,4 @@ export { SavingsFrequency } from './savings-frequency.enum';
 export { MovementType } from './movement-type.enum';
 export { FinancialInstitutionType } from './financial-institution-type.enum';
 export { LoanDirection } from './loan-direction.enum';
+export { AccountType } from './account-type.enum';

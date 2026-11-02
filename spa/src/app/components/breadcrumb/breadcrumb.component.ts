@@ -19,6 +19,9 @@ const SEGMENT_LABELS: Record<string, string> = {
   savings: 'common.savingsGoals',
   loans: 'common.loans',
   travels: 'common.travels',
+  accounts: 'common.accounts',
+  // Mismo segmento con distinto significado según el módulo
+  'accounts/balances': 'accountBalances.title',
   balances: 'dashboard.balances',
   create: 'common.new',
   new: 'common.new',
@@ -65,8 +68,8 @@ export class BreadcrumbComponent {
 
       if (knownLabel) {
         items.push({ label: knownLabel, translate: false, url: isLast ? null : url });
-      } else if (SEGMENT_LABELS[segment]) {
-        items.push({ label: SEGMENT_LABELS[segment], translate: true, url: isLast || !isRoute ? null : url });
+      } else if (this.segmentLabel(segments, index)) {
+        items.push({ label: this.segmentLabel(segments, index)!, translate: true, url: isLast || !isRoute ? null : url });
       } else if (isLast && segments[index - 1] === 'edit') {
         // /collaborators/edit/5 → "Editar"
         items.push({ label: 'common.edit', translate: true, url: null });
@@ -76,6 +79,10 @@ export class BreadcrumbComponent {
     });
     return items;
   });
+
+  // Primero "padre/segmento" (ej. accounts/balances) y después el segmento solo
+  private segmentLabel = (segments: string[], index: number): string | undefined =>
+    SEGMENT_LABELS[`${segments[index - 1]}/${segments[index]}`] ?? SEGMENT_LABELS[segments[index]];
 
   private isRoute = (segments: string[]): boolean =>
     this.routePatterns.some(pattern =>

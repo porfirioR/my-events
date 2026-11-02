@@ -17,7 +17,7 @@ import { EventsController } from './controllers/events.controller';
 import { PaymentController } from './controllers/payments.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { TransactionController } from './controllers/transaction.controller';
-import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController, DashboardController, FinancialInstitutionsController, LoansController, SavingsGoalsController, TravelsController } from './controllers';
+import { CollaboratorInvitationsController, CollaboratorMatchesController, CollaboratorMatchRequestsController, CollaboratorsController, DashboardController, FinancialInstitutionsController, AccountsController, LoansController, SavingsGoalsController, TravelsController } from './controllers';
 
 @Module({
   imports: [
@@ -43,6 +43,7 @@ import { CollaboratorInvitationsController, CollaboratorMatchesController, Colla
     LoansController,
     DashboardController,
     FinancialInstitutionsController,
+    AccountsController,
   ],
   providers: [
     JwtService,

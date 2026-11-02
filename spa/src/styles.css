@@ -47,6 +47,28 @@
   z-index: 1;
 }
 
+/* Barra de filtros y acciones de los listados: en celular ocupa todo el ancho, los grupos de filtros
+   se reparten el renglón y los botones de acción comparten el que les toque (no quedan desparejos) */
+@media (max-width: 639px) {
+  .page-toolbar {
+    width: 100%;
+  }
+  .page-toolbar > .btn,
+  .page-toolbar > .dropdown {
+    flex: 1 1 auto;
+  }
+  .page-toolbar > .dropdown > .btn {
+    width: 100%;
+  }
+  .page-toolbar > .btn-group {
+    width: 100%;
+  }
+  .page-toolbar > .btn-group > .btn {
+    flex: 1 1 auto;
+    padding-inline: 0.5rem;
+  }
+}
+
 /* Modo oscuro: el primary (#4338CA) sobre fondo oscuro casi no se lee como texto;
    para textos y bordes usamos una variante más clara (los fondos btn-primary no cambian) */
 .dark {

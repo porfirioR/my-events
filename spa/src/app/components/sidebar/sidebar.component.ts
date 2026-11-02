@@ -31,6 +31,7 @@ export class SidebarComponent {
     { route: '/', label: 'common.dashboard', icon: 'fa-gauge-high', exact: true },
     { route: '/collaborators', label: 'common.collaborators', icon: 'fa-users', exact: false },
     { route: '/transactions', label: 'common.transactions', icon: 'fa-dollar-sign', exact: false },
+    { route: '/accounts', label: 'common.accounts', icon: 'fa-wallet', exact: false },
     { route: '/savings', label: 'common.savingsGoals', icon: 'fa-piggy-bank', exact: false },
     { route: '/loans', label: 'common.loans', icon: 'fa-hand-holding-dollar', exact: false },
     { route: '/travels', label: 'common.travels', icon: 'fa-suitcase-rolling', exact: false },

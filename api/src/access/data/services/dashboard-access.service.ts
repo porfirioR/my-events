@@ -10,14 +10,15 @@ export class DashboardAccessService extends BaseAccessService implements IDashbo
   }
 
   public getSummary = async (userId: number): Promise<DashboardAccessModel> => {
-    const [collaborators, transactions, savingsGoals, travels, loans] = await Promise.all([
+    const [collaborators, transactions, savingsGoals, travels, loans, accounts] = await Promise.all([
       this.getCollaboratorStats(userId),
       this.getTransactionStats(userId),
       this.getSavingsStats(userId),
       this.getTravelStats(userId),
       this.getLoanStats(userId),
+      this.getAccountStats(userId),
     ]);
-    return new DashboardAccessModel(collaborators, transactions, savingsGoals, travels, loans);
+    return new DashboardAccessModel(collaborators, transactions, savingsGoals, travels, loans, accounts);
   };
 
   private getCollaboratorStats = async (userId: number) => {
@@ -101,5 +102,20 @@ export class DashboardAccessService extends BaseAccessService implements IDashbo
         .eq(DatabaseColumns.StatusId, 2),
     ]);
     return { total: total.count ?? 0, active: active.count ?? 0, completed: completed.count ?? 0 };
+  };
+
+  private getAccountStats = async (userId: number) => {
+    const [total, active] = await Promise.all([
+      this.dbContext.from(TableEnum.Accounts)
+        .select(DatabaseColumns.EntityId, { count: 'exact', head: true })
+        .eq(DatabaseColumns.UserId, userId),
+      this.dbContext.from(TableEnum.Accounts)
+        .select(DatabaseColumns.EntityId, { count: 'exact', head: true })
+        .eq(DatabaseColumns.UserId, userId)
+        .eq(DatabaseColumns.IsActive, true),
+    ]);
+    const totalCount = total.count ?? 0;
+    const activeCount = active.count ?? 0;
+    return { total: totalCount, active: activeCount, inactive: totalCount - activeCount };
   };
 }

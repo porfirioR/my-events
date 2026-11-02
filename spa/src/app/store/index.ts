@@ -10,3 +10,4 @@ export { useDashboardStore } from './dashboard.store';
 
 
 export { useFinancialInstitutionsStore } from './financial-institutions.store';
+export { useAccountsStore } from './accounts.store';

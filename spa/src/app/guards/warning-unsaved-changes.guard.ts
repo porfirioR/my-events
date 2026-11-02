@@ -8,6 +8,8 @@ import { CollaboratorMatchRequestsComponent } from '../components/collaborator-m
 import { UpsertOperationComponent } from '../components/upsert-operation/upsert-operation.component';
 import { UpsertLoanComponent } from '../components/upsert-loan/upsert-loan.component';
 import { UpsertSavingsGoalComponent } from '../components/upsert-savings-goal/upsert-savings-goal.component';
+import { UpsertAccountComponent } from '../components/upsert-account/upsert-account.component';
+import { AccountBalancesComponent } from '../components/account-balances/account-balances.component';
 
 export const WarningUnsavedChanges: CanDeactivateFn<
   | UpsertTransactionComponent
@@ -16,6 +18,8 @@ export const WarningUnsavedChanges: CanDeactivateFn<
   | UpsertOperationComponent
   | UpsertLoanComponent
   | UpsertSavingsGoalComponent
+  | UpsertAccountComponent
+  | AccountBalancesComponent
 > = (
   component:
     | UpsertTransactionComponent
@@ -24,6 +28,8 @@ export const WarningUnsavedChanges: CanDeactivateFn<
     | UpsertOperationComponent
     | UpsertLoanComponent
     | UpsertSavingsGoalComponent
+    | UpsertAccountComponent
+    | AccountBalancesComponent
 ): boolean | Promise<boolean> => {
   const alertService = inject(AlertService);
   const translate = inject(TranslateService);

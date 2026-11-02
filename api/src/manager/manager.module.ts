@@ -5,8 +5,9 @@ import { AuthModule } from '../access/auth/auth.module';
 import { DataModule } from '../access/data/data.module';
 import { TransactionManagerService } from './services/transaction.manager.service';
 import { TRANSACTION_TOKENS } from '../utility/constants';
-import { DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants/injection-tokens.const';
+import { ACCOUNT_TOKENS, DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../utility/constants/injection-tokens.const';
 import { FinancialInstitutionManagerService } from './services/financial-institution-manager.service';
+import { AccountManagerService } from './services/account-manager.service';
 import { TravelManagerService } from './services/travel-manager.service';
 import { LoanManagerService } from './services/loan-manager.service';
 import { DashboardManagerService } from './services/dashboard-manager.service';
@@ -36,6 +37,11 @@ import { BlobModule } from '../access/blob/blob.module';
     {
       provide: FINANCIAL_INSTITUTION_TOKENS.MANAGER_SERVICE,
       useExisting: FinancialInstitutionManagerService,
+    },
+    AccountManagerService,
+    {
+      provide: ACCOUNT_TOKENS.MANAGER_SERVICE,
+      useExisting: AccountManagerService,
     },
     {
       provide: DASHBOARD_TOKENS.MANAGER_SERVICE,
@@ -71,6 +77,7 @@ import { BlobModule } from '../access/blob/blob.module';
     LOAN_TOKENS.MANAGER_SERVICE,
     DASHBOARD_TOKENS.MANAGER_SERVICE,
     FINANCIAL_INSTITUTION_TOKENS.MANAGER_SERVICE,
+    ACCOUNT_TOKENS.MANAGER_SERVICE,
   ]
 })
 export class ManagerModule {}

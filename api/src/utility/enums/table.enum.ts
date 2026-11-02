@@ -40,4 +40,8 @@ export enum TableEnum {
   LoanPayments = 'loanpayments',
   LoanEntityTerms = 'loanentityterms',
   FinancialInstitutions = 'financialinstitutions',
+
+  // ===== ACCOUNTS MODULE TABLES =====
+  Accounts = 'accounts',
+  AccountBalanceSnapshots = 'accountbalancesnapshots',
 }

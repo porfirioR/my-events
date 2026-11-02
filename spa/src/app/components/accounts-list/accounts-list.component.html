@@ -1,0 +1,165 @@
+<section aria-labelledby="accounts-heading">
+  <article class="transition-all duration-300">
+    <header class="pb-4 border-b border-base-300 dark:border-base-100">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex-1 min-w-64">
+          <h2 id="accounts-heading" class="text-xl font-semibold text-base-content">
+            <i class="fas fa-wallet mr-2 text-cyan-500"></i>
+            {{ 'accounts.title' | translate }}
+          </h2>
+          <p class="text-sm text-base-content/60 mt-1">{{ 'accounts.subtitle' | translate }}</p>
+        </div>
+
+        <div class="page-toolbar flex items-center gap-2 flex-wrap">
+          <!-- Filtro por estado -->
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterActive() === null}" (click)="setActiveFilter(null)">
+              {{ 'accounts.all' | translate }}
+            </button>
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterActive() === true}" (click)="setActiveFilter(true)">
+              <i class="fas fa-circle-check mr-1"></i>{{ 'accounts.active' | translate }}
+            </button>
+            <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterActive() === false}" (click)="setActiveFilter(false)">
+              <i class="fas fa-circle-pause mr-1"></i>{{ 'accounts.inactive' | translate }}
+            </button>
+          </div>
+
+          <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="updateBalances()">
+            <i class="fas fa-calendar-check mr-1" aria-hidden="true"></i>
+            {{ 'accounts.updateBalances' | translate }}
+          </button>
+
+          <button type="button" class="btn btn-sm btn-primary" (click)="create()">
+            <i class="fas fa-plus mr-1" aria-hidden="true"></i>
+            {{ 'accounts.newAccount' | translate }}
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="py-6">
+      @if (isLoading()) {
+        <div class="flex justify-center items-center py-12">
+          <span class="loading loading-spinner loading-lg"></span>
+          <p class="ml-3 text-base-content/70">{{ 'accounts.loading' | translate }}</p>
+        </div>
+      } @else {
+        <!-- Total líquido de las cuentas activas, por moneda -->
+        @if (totalsByCurrency().length > 0) {
+          <div class="flex flex-wrap items-center gap-3 mb-6">
+            <span class="text-sm text-base-content/60">{{ 'accounts.liquidTotal' | translate }}</span>
+            @for (item of totalsByCurrency(); track item.currencyId) {
+              <span class="badge badge-lg badge-soft font-semibold bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-0">
+                {{ formatCurrency(item.total, item.currencyId) }}
+              </span>
+            }
+          </div>
+        }
+
+        @for (group of groups(); track group.institutionId) {
+          <section class="mb-6" [attr.aria-label]="group.institutionName">
+            <h3 class="text-sm font-semibold text-base-content/70 mb-3 flex items-center gap-2">
+              <i class="fas {{ group.institutionIcon }}" aria-hidden="true"></i>{{ group.institutionName }}
+            </h3>
+            <ul class="space-y-4" role="list">
+              @for (account of group.accounts; track account.id) {
+                <li class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 hover:shadow-md transition-colors duration-200 cursor-pointer"
+                    [class.opacity-60]="!account.isActive"
+                    (click)="editAccount(account)">
+                  <article class="flex items-start gap-4">
+                    <!-- Icon -->
+                    <figure class="flex-shrink-0">
+                      <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md"
+                        [ngClass]="account.isActive ? 'bg-cyan-500' : 'bg-neutral'">
+                        <i [class]="'fas ' + getTypeIcon(account.type)"></i>
+                      </div>
+                    </figure>
+
+                    <div class="flex-grow min-w-0">
+                      <div class="flex items-start justify-between gap-4">
+                        <div class="flex-grow min-w-0">
+                          <h3 class="font-semibold text-base-content text-lg truncate">{{ account.name }}</h3>
+                          @if (account.notes) {
+                            <p class="text-sm text-base-content/70 truncate">{{ account.notes }}</p>
+                          }
+                        </div>
+
+                        <!-- Saldo actual (último snapshot) -->
+                        <div class="text-right shrink-0">
+                          <p class="text-xs text-base-content/60">{{ 'accounts.currentBalance' | translate }}</p>
+                          @if (account.currentBalance !== null) {
+                            <p class="font-bold text-lg" [ngClass]="account.currentBalance < 0 ? 'text-error' : 'text-base-content'">
+                              {{ formatCurrency(account.currentBalance, account.currencyId) }}
+                            </p>
+                          } @else {
+                            <p class="text-sm font-medium text-warning">{{ 'accounts.noBalance' | translate }}</p>
+                          }
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
+                          <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
+                            <i class="fas fa-ellipsis-v"></i>
+                          </label>
+                          <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-48 border border-base-300">
+                            <li>
+                              <button (click)="editAccount(account)">
+                                <i class="fas fa-edit text-primary"></i>{{ 'accounts.edit' | translate }}
+                              </button>
+                            </li>
+                            <li><hr class="my-1 border-base-300"></li>
+                            <li>
+                              <button (click)="deleteAccount(account)">
+                                <i class="fas fa-trash text-error"></i>{{ 'accounts.delete' | translate }}
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <!-- Metadata -->
+                      <div class="flex items-center gap-4 mt-3 flex-wrap">
+                        <span class="badge badge-sm badge-soft gap-1 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-0">
+                          <i [class]="'fas ' + getTypeIcon(account.type)"></i>
+                          {{ getTypeLabel(account.type) | translate }}
+                        </span>
+
+                        @if (!account.isActive) {
+                          <span class="badge badge-sm badge-soft badge-ghost">
+                            {{ 'accounts.inactiveBadge' | translate }}
+                          </span>
+                        }
+
+                        <span class="text-xs text-base-content/70">
+                          <i class="fas fa-coins mr-1"></i>{{ getCurrencyName(account.currencyId) }}
+                        </span>
+
+                        @if (account.lastSnapshotDate) {
+                          <span class="text-xs text-base-content/60">
+                            <i class="fas fa-calendar-check mr-1"></i>{{ 'accounts.updatedAt' | translate }} {{ formatMonth(account.lastSnapshotDate) }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </article>
+                </li>
+              }
+            </ul>
+          </section>
+        } @empty {
+          <div class="text-center py-12">
+            <figure class="mx-auto w-16 h-16 bg-base-content/10 rounded-full flex items-center justify-center mb-4">
+              <i class="fas fa-wallet text-2xl text-base-content/50"></i>
+            </figure>
+            <h3 class="text-lg font-medium text-base-content mb-2">{{ 'accounts.noAccountsYet' | translate }}</h3>
+            <p class="text-base-content/70 mb-4">{{ 'accounts.noAccountsMessage' | translate }}</p>
+            <button class="btn btn-primary" (click)="create()">
+              <i class="fas fa-plus mr-2"></i>{{ 'accounts.newAccount' | translate }}
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </article>
+</section>
+<app-confirm-dialog (confirmed)="onConfirmResult($event)" />

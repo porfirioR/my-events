@@ -41,6 +41,9 @@ export class SavingsGoalsListComponent implements OnInit {
   protected GoalStatusColors = GoalStatusColors;
   protected ProgressionType = ProgressionType;
   protected ProgressionTypeLabels = ProgressionTypeLabels;
+  protected ProgressionTypeIcons = ProgressionTypeIcons;
+  // Todos los tipos del enum, así el filtro no queda desactualizado al agregar uno nuevo
+  protected progressionTypes = Object.values(ProgressionType).filter((v): v is ProgressionType => typeof v === 'number');
 
   protected goals = computed(() => {
     let filtered = this.savingsStore.filteredGoals();

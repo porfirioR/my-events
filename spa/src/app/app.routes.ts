@@ -19,6 +19,9 @@ import { SavingsGoalsListComponent } from './components/savings-goals-list/savin
 import { LoansListComponent } from './components/loans-list/loans-list.component';
 import { UpsertLoanComponent } from './components/upsert-loan/upsert-loan.component';
 import { LoanDetailComponent } from './components/loan-detail/loan-detail.component';
+import { AccountsListComponent } from './components/accounts-list/accounts-list.component';
+import { UpsertAccountComponent } from './components/upsert-account/upsert-account.component';
+import { AccountBalancesComponent } from './components/account-balances/account-balances.component';
 
 export const routes: Routes = [
   {
@@ -85,6 +88,36 @@ export const routes: Routes = [
             title: 'Edit Loan',
             canDeactivate: [WarningUnsavedChanges],
             loadComponent: () => UpsertLoanComponent
+          },
+        ],
+      },
+      // Accounts
+      {
+        path: 'accounts',
+        canActivate: [authGuard],
+        children: [
+          {
+            path: '',
+            title: 'Accounts',
+            loadComponent: () => AccountsListComponent
+          },
+          {
+            path: 'create',
+            title: 'New Account',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () => UpsertAccountComponent
+          },
+          {
+            path: 'balances',
+            title: 'Monthly Balances',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () => AccountBalancesComponent
+          },
+          {
+            path: ':id/edit',
+            title: 'Edit Account',
+            canDeactivate: [WarningUnsavedChanges],
+            loadComponent: () => UpsertAccountComponent
           },
         ],
       },
