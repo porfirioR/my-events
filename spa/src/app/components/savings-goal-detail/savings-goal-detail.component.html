@@ -77,10 +77,11 @@
       <i class="fas fa-hand-holding-dollar"></i>
       <span class="text-sm">
         {{ 'savingsGoalDetail.withdrawnOn' | translate }} {{ getFormattedDate(g.payoutDate!) }}
-        @if (g.payoutAmount) {
-          · {{ formatCurrency(g.payoutAmount, g.currencyId) }}
-          @if (g.payoutAmount > g.currentAmount) {
-            <span class="text-success">(+{{ formatCurrency(g.payoutAmount - g.currentAmount, g.currencyId) }})</span>
+        <!-- Lo ahorrado y, entre paréntesis, la ganancia real (cobrado − ahorrado) -->
+        @if (payoutSummary(); as payout) {
+          · {{ formatCurrency(payout.saved, g.currencyId) }}
+          @if (payout.gain !== 0) {
+            <span [ngClass]="payout.gain > 0 ? 'text-success' : 'text-error'">({{ payout.gain > 0 ? '+' : '-' }}{{ formatCurrency(payout.gainAbs, g.currencyId) }})</span>
           }
         }
       </span>

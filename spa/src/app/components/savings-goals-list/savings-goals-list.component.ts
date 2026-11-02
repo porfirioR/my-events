@@ -8,6 +8,19 @@ import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, Moveme
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 import { MutualFundMovementModalComponent } from '../mutual-fund-movement-modal/mutual-fund-movement-modal.component';
 
+interface MaturityBlock {
+  leftLabel: string;
+  leftAmount: number;
+  rightLabel: string;
+  rightAmount: number;
+  gain: number;
+  gainAbs: number;
+  isCollected: boolean;
+}
+
+// Valor del filtro para las metas sin entidad (los ids de entidades empiezan en 1)
+const NO_INSTITUTION = 0;
+
 @Component({
   selector: 'app-savings-goals-list',
   templateUrl: './savings-goals-list.component.html',
@@ -33,6 +46,8 @@ export class SavingsGoalsListComponent implements OnInit {
   protected isLoading = this.savingsStore.needsLoadingGoals;
   protected filterStatus = signal<number | null>(GoalStatus.Active);
   protected filterProgressionType = signal<number | null>(null);
+  protected filterInstitution = signal<number | null>(null);
+  protected NO_INSTITUTION = NO_INSTITUTION;
 
   // Enums para el template
   protected GoalStatus = GoalStatus;
@@ -58,7 +73,37 @@ export class SavingsGoalsListComponent implements OnInit {
       filtered = filtered.filter(g => g.progressionTypeId === typeFilter);
     }
 
+    const institutionFilter = this.filterInstitution();
+    if (institutionFilter !== null) {
+      filtered = filtered.filter(g => (g.institutionId ?? NO_INSTITUTION) === institutionFilter);
+    }
+
     return filtered;
+  });
+
+  // Solo las entidades que tienen alguna meta, ordenadas por nombre; "Sin entidad" al final
+  protected institutionOptions = computed(() => {
+    const institutions = this.financialInstitutionsStore.financialInstitutionsById();
+    const ids = new Set(this.savingsStore.filteredGoals().map(g => g.institutionId ?? NO_INSTITUTION));
+    const options = [...ids]
+      .filter(id => id !== NO_INSTITUTION)
+      .map(id => ({ id, name: institutions.get(id)?.name ?? '' }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return ids.has(NO_INSTITUTION) ? [...options, { id: NO_INSTITUTION, name: '' }] : options;
+  });
+
+  protected selectedInstitutionName = computed(() => {
+    const id = this.filterInstitution();
+    if (id === null) return null;
+    return id === NO_INSTITUTION ? this.translate.instant('savingsGoals.noInstitution') : this.getFinancialInstitutionName(id);
+  });
+
+  // Total de lo ahorrado en las metas filtradas, por moneda: para compararlo con la barra de la entidad en el dashboard
+  protected institutionTotals = computed(() => {
+    if (this.filterInstitution() === null) return [];
+    const totals = new Map<number, number>();
+    this.goals().forEach(g => totals.set(g.currencyId, (totals.get(g.currencyId) ?? 0) + (g.currentAmount ?? 0)));
+    return [...totals.entries()].map(([currencyId, total]) => ({ currencyId, total }));
   });
 
   ngOnInit(): void {
@@ -80,12 +125,21 @@ export class SavingsGoalsListComponent implements OnInit {
     this.filterProgressionType.set(typeId);
   }
 
+  protected setInstitutionFilter(institutionId: number | null): void {
+    this.filterInstitution.set(institutionId);
+  }
+
   protected create(): void {
     this.router.navigate(['/savings/create']);
   }
 
   protected viewDetail(goal: any): void {
     this.router.navigate(['/savings', goal.id]);
+  }
+
+  // El modal de cobro vive en el detalle: se abre ahí directamente
+  protected registerPayout(goal: any): void {
+    this.router.navigate(['/savings', goal.id], { queryParams: { payout: 1 } });
   }
 
   protected editGoal(goal: any): void {
@@ -164,8 +218,39 @@ export class SavingsGoalsListComponent implements OnInit {
     return this.calculateProgress(goal.currentAmount, this.getProgressTarget(goal));
   }
 
-  protected getMaturityGain(goal: any): number {
-    return Math.max(0, goal.targetAmount - (goal.baseAmount ?? goal.targetAmount));
+  // Bloque "depósito → al vencimiento". Con el cobro registrado muestra lo cobrado y la ganancia real (cobrado − ahorrado)
+  protected getMaturityBlock(goal: any): MaturityBlock | null {
+    const isCollected = goal.statusId === GoalStatus.Withdrawn && goal.payoutAmount != null;
+    let leftLabel: string;
+    let leftAmount: number;
+    let estimated: number;
+    if (this.isDepositType(goal)) {
+      leftLabel = 'savingsGoals.deposit';
+      leftAmount = goal.baseAmount ?? goal.currentAmount;
+      estimated = goal.targetAmount;
+    } else if (goal.progressionTypeId === ProgressionType.Scheduled && goal.baseAmount && goal.numberOfInstallments) {
+      // Cobrado: contra lo que realmente se depositó; si no, contra el total del cronograma
+      leftLabel = isCollected ? 'savingsGoals.saved' : 'savingsGoals.totalDeposits';
+      leftAmount = isCollected ? goal.currentAmount : goal.baseAmount * goal.numberOfInstallments;
+      estimated = goal.targetAmount;
+    } else if (isCollected) {
+      leftLabel = 'savingsGoals.saved';
+      leftAmount = goal.currentAmount;
+      estimated = goal.payoutAmount;
+    } else {
+      return null;
+    }
+    const rightAmount = isCollected ? goal.payoutAmount : estimated;
+    const gain = rightAmount - leftAmount;
+    return {
+      leftLabel,
+      leftAmount,
+      rightLabel: isCollected ? 'savingsGoals.collected' : 'savingsGoals.atMaturity',
+      rightAmount,
+      gain,
+      gainAbs: Math.abs(gain),
+      isCollected,
+    };
   }
 
   protected getDepositTimeProgress(goal: any): number {

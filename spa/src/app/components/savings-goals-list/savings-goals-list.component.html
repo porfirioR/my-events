@@ -70,6 +70,26 @@
             </ul>
           </div>
 
+          <!-- Filtro por Entidad -->
+          <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-sm btn-outline">
+              <i class="fas fa-building-columns mr-1"></i>
+              {{ selectedInstitutionName() ?? ('savingsGoals.institution' | translate) }}
+            </label>
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-56 max-h-80 overflow-y-auto flex-nowrap border border-base-300">
+              <li>
+                <button [ngClass]="{'menu-active': filterInstitution() === null}" (click)="setInstitutionFilter(null)">{{ 'savingsGoals.allInstitutions' | translate }}</button>
+              </li>
+              @for (option of institutionOptions(); track option.id) {
+                <li>
+                  <button [ngClass]="{'menu-active': filterInstitution() === option.id}" (click)="setInstitutionFilter(option.id)">
+                    {{ option.id === NO_INSTITUTION ? ('savingsGoals.noInstitution' | translate) : option.name }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </div>
+
           <button
             type="button"
             class="btn btn-sm btn-primary"
@@ -89,6 +109,21 @@
           <p class="ml-3 text-base-content/70">{{ 'savingsGoals.loadingGoals' | translate }}</p>
         </div>
       } @else {
+        <!-- Total de la entidad filtrada -->
+        @if (institutionTotals().length > 0) {
+          <div class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 mb-4">
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="text-sm text-base-content/70">{{ 'savingsGoals.institutionTotal' | translate: { name: selectedInstitutionName() } }}</span>
+              @for (item of institutionTotals(); track item.currencyId) {
+                <span class="badge badge-lg badge-soft font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0">
+                  {{ formatCurrency(item.total, item.currencyId) }}
+                </span>
+              }
+            </div>
+            <p class="text-xs text-base-content/60 mt-2">{{ 'savingsGoals.institutionTotalHint' | translate }}</p>
+          </div>
+        }
+
         <ul class="space-y-4" role="list">
           @for (goal of goals(); track goal.id) {
             <li class="bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4 hover:shadow-md transition-colors duration-200 cursor-pointer"
@@ -170,40 +205,49 @@
                               {{ 'savingsGoals.delete' | translate }}
                             </button>
                           </li>
-                        } @else {
-                          <!-- ✅ Para goals completed, mostrar info adicional -->
+                        } @else if (goal.statusId === GoalStatus.Completed) {
+                          <!-- Completada: la plata sigue en la entidad hasta que se registra el cobro -->
                           <li><hr class="my-1 border-base-300"></li>
                           <li>
-                            <span class="text-sm text-success font-medium px-2 py-1">
-                              <i class="fas fa-check-circle mr-1"></i>
-                              {{ 'savingsGoals.goalCompleted' | translate }}
-                            </span>
+                            <button (click)="registerPayout(goal)">
+                              <i class="fas fa-hand-holding-dollar text-success"></i>
+                              {{ 'savingsGoalDetail.registerPayout' | translate }}
+                            </button>
                           </li>
                         }
                       </ul>
                     </div>
                   </div>
 
-                  <!-- Progress: Plazo Fijo / CDA -->
-                  @if (isDepositType(goal)) {
+                  <!-- Depósito → al vencimiento (plazo fijo, CDA, ahorro programado); cobrado: monto real y ganancia real -->
+                  @let maturity = getMaturityBlock(goal);
+                  @if (maturity) {
                     <div class="mt-3 p-3 bg-base-200/60 rounded-lg">
                       <div class="flex items-center justify-between gap-2 text-sm flex-wrap">
                         <div>
-                          <p class="text-xs text-base-content/50 mb-0.5">{{ 'savingsGoals.deposit' | translate }}</p>
-                          <span class="font-semibold">{{ formatCurrency(goal.baseAmount ?? goal.currentAmount, goal.currencyId) }}</span>
+                          <p class="text-xs text-base-content/50 mb-0.5">{{ maturity.leftLabel | translate }}</p>
+                          <span class="font-semibold">{{ formatCurrency(maturity.leftAmount, goal.currencyId) }}</span>
                         </div>
                         <i class="fas fa-arrow-right text-base-content/30 text-xs"></i>
                         <div class="text-right">
-                          <p class="text-xs text-base-content/50 mb-0.5">{{ 'savingsGoals.atMaturity' | translate }}</p>
-                          <span class="font-bold">{{ formatCurrency(goal.targetAmount, goal.currencyId) }}</span>
-                          @if (getMaturityGain(goal) > 0) {
-                            <p class="text-xs text-success font-semibold mt-0.5">
-                              <i class="fas fa-arrow-trend-up mr-1"></i>+{{ formatCurrency(getMaturityGain(goal), goal.currencyId) }}
+                          <p class="text-xs text-base-content/50 mb-0.5">{{ maturity.rightLabel | translate }}</p>
+                          <span class="font-bold" [ngClass]="{'text-primary': maturity.isCollected}">{{ formatCurrency(maturity.rightAmount, goal.currencyId) }}</span>
+                          @if (maturity.isCollected || maturity.gain > 0) {
+                            <p class="text-xs font-semibold mt-0.5" [ngClass]="maturity.gain < 0 ? 'text-error' : 'text-success'">
+                              <i class="fas mr-1" [ngClass]="maturity.gain < 0 ? 'fa-arrow-trend-down' : 'fa-arrow-trend-up'"></i>
+                              {{ maturity.gain < 0 ? '-' : '+' }}{{ formatCurrency(maturity.gainAbs, goal.currencyId) }}
+                              @if (maturity.isCollected) {
+                                <span class="font-normal text-base-content/60">{{ 'savingsGoalDetail.realGain' | translate }}</span>
+                              }
                             </p>
                           }
                         </div>
                       </div>
                     </div>
+                  }
+
+                  <!-- Progress: Plazo Fijo / CDA -->
+                  @if (isDepositType(goal)) {
                     @if (goal.numberOfInstallments) {
                       <div class="mt-2">
                         <div class="flex items-center justify-between text-xs mb-1">

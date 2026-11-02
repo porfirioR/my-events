@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, tap, switchMap, catchError, of } from 'rxjs';
 import { DashboardSummaryApiModel } from '../models/api/dashboard/dashboard-summary-api.model';
+import { NetWorthSummaryApiModel } from '../models/api/dashboard/net-worth-summary-api.model';
 import { DashboardApiService } from '../services/api/dashboard-api.service';
 import { useLoadingStore } from './loading.store';
 
@@ -10,12 +11,18 @@ export interface DashboardState {
   summary: DashboardSummaryApiModel | null;
   isLoaded: boolean;
   error: string | null;
+  netWorth: NetWorthSummaryApiModel | null;
+  isNetWorthLoading: boolean;
+  netWorthError: string | null;
 }
 
 const initialState: DashboardState = {
   summary: null,
   isLoaded: false,
   error: null,
+  netWorth: null,
+  isNetWorthLoading: false,
+  netWorthError: null,
 };
 
 export const DashboardStore = signalStore(
@@ -72,6 +79,25 @@ export const DashboardStore = signalStore(
         )
       )
     ),
+
+    // Sin caché: los saldos cambian desde otros módulos (cuentas, ahorros, préstamos), así que se pide cada vez que se abre el dashboard.
+    // Mientras carga se sigue mostrando el último patrimonio; no usa el loading global para no tapar la pantalla.
+    loadNetWorth: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { isNetWorthLoading: true, netWorthError: null })),
+        switchMap(() =>
+          dashboardApiService.getNetWorth().pipe(
+            tap(netWorth => patchState(store, { netWorth, isNetWorthLoading: false })),
+            catchError(() => {
+              patchState(store, { netWorthError: 'Failed to load net worth', isNetWorthLoading: false });
+              return of(null);
+            })
+          )
+        )
+      )
+    ),
+
+    clearNetWorth: () => patchState(store, { netWorth: null, netWorthError: null }),
   }))
 );
 

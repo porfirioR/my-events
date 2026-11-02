@@ -1,0 +1,146 @@
+<section aria-labelledby="net-worth-heading" class="bg-base-100 rounded-2xl border border-base-300/60 shadow-sm p-5">
+  <header class="flex items-start justify-between flex-wrap gap-3">
+    <div class="flex-1 min-w-48">
+      <h2 id="net-worth-heading" class="text-base font-semibold text-base-content flex items-center gap-2">
+        <i class="fas fa-scale-balanced text-primary" aria-hidden="true"></i>
+        {{ 'netWorth.title' | translate }}
+      </h2>
+      <!-- Solo con datos: si falló o está cargando no se sabe si hay saldos -->
+      @if (netWorth()) {
+        <p class="text-xs text-base-content/60 mt-1">
+          @if (lastUpdate()) {
+            {{ 'netWorth.balancesAsOf' | translate: { month: lastUpdate() } }}
+          } @else {
+            {{ 'netWorth.noBalancesYet' | translate }}
+          }
+        </p>
+      }
+    </div>
+
+    <div class="page-toolbar flex items-center gap-2 flex-wrap">
+      @if (currencies().length > 1) {
+        <div class="btn-group" role="group" [attr.aria-label]="'netWorth.currency' | translate">
+          @for (currency of currencies(); track currency.currencyId) {
+            <button type="button" class="btn btn-sm"
+              [ngClass]="{'btn-active': currency.currencyId === current()?.currencyId}"
+              (click)="selectCurrency(currency.currencyId)">
+              {{ getCurrencyCode(currency.currencyId) }}
+            </button>
+          }
+        </div>
+      }
+      <a class="btn btn-sm btn-outline btn-primary" routerLink="/accounts/balances">
+        <i class="fas fa-calendar-check mr-1" aria-hidden="true"></i>
+        {{ 'netWorth.updateBalances' | translate }}
+      </a>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="skeleton h-20 rounded-xl"></div>
+      }
+    </div>
+    <div class="skeleton h-3 w-full rounded-full mt-6"></div>
+  } @else if (hasError()) {
+    <div class="flex flex-wrap items-center gap-3 mt-5 text-sm text-error">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+      <span>{{ 'netWorth.loadError' | translate }}</span>
+      <button type="button" class="btn btn-sm btn-ghost" (click)="reload()">
+        <i class="fas fa-rotate-right mr-1" aria-hidden="true"></i>{{ 'netWorth.retry' | translate }}
+      </button>
+    </div>
+  } @else if (!current()) {
+    <!-- Vacío: sin cuentas con saldo, ahorros ni préstamos -->
+    <div class="text-center py-8">
+      <figure class="mx-auto w-14 h-14 bg-base-content/10 rounded-full grid place-items-center mb-3">
+        <i class="fas fa-scale-balanced text-xl text-base-content/50" aria-hidden="true"></i>
+      </figure>
+      <h3 class="font-medium text-base-content mb-1">{{ 'netWorth.emptyTitle' | translate }}</h3>
+      <p class="text-sm text-base-content/70 mb-4">{{ 'netWorth.emptyMessage' | translate }}</p>
+      <a class="btn btn-sm btn-primary" routerLink="/accounts/create">
+        <i class="fas fa-plus mr-1" aria-hidden="true"></i>{{ 'accounts.newAccount' | translate }}
+      </a>
+    </div>
+  } @else {
+    @if (netWorth()!.accountsWithoutBalance > 0) {
+      <div role="note" class="alert alert-warning alert-soft text-sm mt-4 py-2">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+        <span>{{ 'netWorth.accountsWithoutBalance' | translate: { count: netWorth()!.accountsWithoutBalance } }}</span>
+        <a class="link link-hover font-medium" routerLink="/accounts/balances">{{ 'netWorth.loadBalances' | translate }}</a>
+      </div>
+    }
+
+    <!-- KPIs -->
+    <dl class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
+      @for (kpi of kpis(); track kpi.label) {
+        <div class="rounded-xl border border-base-300/60 p-3 sm:p-4 min-w-0">
+          <dt class="flex items-center gap-2 text-xs sm:text-sm text-base-content/60">
+            <span class="w-7 h-7 shrink-0 rounded-lg grid place-items-center {{ kpi.iconClass }}">
+              <i class="fas {{ kpi.icon }} text-xs" aria-hidden="true"></i>
+            </span>
+            <span class="truncate">{{ kpi.label | translate }}</span>
+          </dt>
+          <dd class="mt-2 text-base sm:text-xl font-bold tabular-nums break-words {{ kpi.valueClass }}">
+            {{ formatCurrency(kpi.amount, current()!.currencyId) }}
+          </dd>
+        </div>
+      }
+    </dl>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <!-- Por liquidez: barra apilada de los activos -->
+      <section aria-labelledby="net-worth-liquidity-heading">
+        <h3 id="net-worth-liquidity-heading" class="text-sm font-semibold text-base-content mb-3">{{ 'netWorth.byLiquidity' | translate }}</h3>
+        <div class="flex h-3 w-full rounded-full overflow-hidden bg-base-200 dark:bg-base-300">
+          @for (segment of liquiditySegments(); track segment.liquidity) {
+            @if (segment.share > 0) {
+              <div class="h-full transition-all duration-500 {{ segment.colorClass }}" [style.width.%]="segment.share"
+                [attr.title]="(segment.label | translate) + ': ' + formatCurrency(segment.amount, current()!.currencyId)"></div>
+            }
+          }
+        </div>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-4" role="list">
+          @for (segment of liquiditySegments(); track segment.liquidity) {
+            <li class="flex items-center justify-between gap-2 text-sm min-w-0">
+              <span class="flex items-center gap-2 min-w-0 text-base-content/70">
+                <span class="w-2.5 h-2.5 shrink-0 rounded-full {{ segment.colorClass }}"></span>
+                <span class="truncate">{{ segment.label | translate }}</span>
+              </span>
+              <span class="text-right shrink-0">
+                <strong class="tabular-nums" [ngClass]="segment.amount < 0 ? 'text-error' : 'text-base-content'">
+                  {{ formatCurrency(segment.amount, current()!.currencyId) }}
+                </strong>
+                <span class="text-xs text-base-content/50 ml-1 tabular-nums">{{ segment.share | number: '1.0-0' }}%</span>
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Por entidad -->
+      <section aria-labelledby="net-worth-institution-heading">
+        <h3 id="net-worth-institution-heading" class="text-sm font-semibold text-base-content mb-3">{{ 'netWorth.byInstitution' | translate }}</h3>
+        <ul class="space-y-3" role="list">
+          @for (institution of institutions(); track institution.institutionId) {
+            <li>
+              <div class="flex items-center justify-between gap-2 text-sm">
+                <span class="truncate text-base-content">{{ institution.institutionName ?? ('netWorth.noInstitution' | translate) }}</span>
+                <strong class="tabular-nums shrink-0 text-base-content">{{ formatCurrency(institution.assets, current()!.currencyId) }}</strong>
+              </div>
+              <div class="h-1.5 w-full rounded-full overflow-hidden bg-base-200 dark:bg-base-300 mt-1.5">
+                <div class="h-full bg-primary/70 transition-all duration-500" [style.width.%]="institution.share"></div>
+              </div>
+              @if (institution.liabilities > 0) {
+                <p class="text-xs text-error mt-1 tabular-nums">
+                  {{ 'netWorth.debt' | translate }}: {{ formatCurrency(institution.liabilities, current()!.currencyId) }}
+                </p>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+</section>

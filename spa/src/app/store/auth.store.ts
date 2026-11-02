@@ -3,6 +3,7 @@ import { inject, computed } from '@angular/core';
 import { useCurrencyStore } from './currency.store';
 import { useFinancialInstitutionsStore } from './financial-institutions.store';
 import { useAccountsStore } from './accounts.store';
+import { useDashboardStore } from './dashboard.store';
 import { useCollaboratorStore, useSavingsStore, useTransactionStore, useTravelStore } from '.';
 
 export interface AuthState {
@@ -50,6 +51,7 @@ export const AuthStore = signalStore(
     travelStore = useTravelStore(),
     financialInstitutionsStore = useFinancialInstitutionsStore(),
     accountsStore = useAccountsStore(),
+    dashboardStore = useDashboardStore(),
   ) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
 
@@ -114,6 +116,7 @@ export const AuthStore = signalStore(
       travelStore.clearAll();
       financialInstitutionsStore.clearAll();
       accountsStore.clearAll();
+      dashboardStore.clearNetWorth();
     },
 
     updateEmailVerificationStatus: (isVerified: boolean) => {
