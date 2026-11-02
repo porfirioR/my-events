@@ -1,12 +1,17 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/*.{css,js,json,ico,png,jpg,jpeg,gif,svg,woff,woff2,ttf,eot}"]
+    "exclude": [
+      "/assets/*",
+      "/*.{css,js,json,ico,png,jpg,jpeg,gif,svg,woff,woff2,ttf,eot,txt,xml,webmanifest}"
+    ]
   },
   "routes": [
     {
       "route": "/*",
-      "allowedRoles": ["anonymous"]
+      "allowedRoles": [
+        "anonymous"
+      ]
     }
   ],
   "platform": {
@@ -18,6 +23,9 @@
   "mimeTypes": {
     ".json": "application/json",
     ".js": "text/javascript",
-    ".css": "text/css"
+    ".css": "text/css",
+    ".webmanifest": "application/manifest+json",
+    ".xml": "application/xml",
+    ".txt": "text/plain"
   }
 }

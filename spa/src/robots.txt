@@ -1,0 +1,8 @@
+# La app es privada (todo pasa detrás del login): solo se indexan las páginas públicas
+User-agent: *
+Allow: /$
+Allow: /login
+Allow: /signup
+Disallow: /
+
+Sitemap: https://kind-coast-0bf3d7c10.4.azurestaticapps.net/sitemap.xml

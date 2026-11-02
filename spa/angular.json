@@ -24,8 +24,11 @@
             ],
             "assets": [
               "src/favicon.ico",
+              "src/favicon.svg",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/robots.txt",
+              "src/sitemap.xml"
             ],
             "styles": [
               "src/styles.css"
@@ -88,8 +91,11 @@
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/favicon.ico",
+              "src/favicon.svg",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/robots.txt",
+              "src/sitemap.xml"
             ],
             "styles": [
               "src/styles.css"
