@@ -48,7 +48,8 @@
     "breadcrumb": "Breadcrumb",
     "collapseMenu": "Collapse menu",
     "expandMenu": "Expand menu",
-    "loans": "Loans"
+    "loans": "Loans",
+    "accounts": "Accounts"
   },
   "auth": {
     "appName": "My Events",
@@ -107,6 +108,7 @@
   },
   "transactions": {
     "title": "Transactions",
+    "subtitle": "Expenses shared with your collaborators: who paid, how it is split and what is still pending.",
     "newTransaction": "New Transaction",
     "totalAmount": "Total Amount",
     "description": "Description",
@@ -228,6 +230,7 @@
   },
   "collaborators": {
     "title": "Collaborators",
+    "subtitle": "The people you share expenses with. Link them to their user to see transactions together.",
     "addCollaborator": "Add Collaborator",
     "name": "Name",
     "surname": "Surname",
@@ -334,7 +337,10 @@
     "newTravel": "New Travel",
     "finalized": "finalized",
     "loans": "Loans",
-    "newLoan": "New Loan"
+    "newLoan": "New Loan",
+    "accounts": "Accounts",
+    "newAccount": "New account",
+    "updateBalances": "Monthly balances"
   },
   "matchRequests": {
     "title": "Match Requests",
@@ -536,6 +542,7 @@
   },
   "savingsGoals": {
     "title": "Savings Goals",
+    "subtitle": "Your goals and investments: installment savings, fixed deposits, CDAs, mutual funds and rotating savings.",
     "all": "All",
     "active": "Active",
     "completed": "Completed",
@@ -910,6 +917,7 @@
   },
   "travels": {
     "title": "Travels",
+    "subtitle": "Trips and events with expenses shared among their members.",
     "newTravel": "New Travel",
     "all": "All",
     "active": "Active",
@@ -1097,6 +1105,31 @@
     "paid": "Paid",
     "skipped": "Skipped"
   },
+  "accounts": {
+    "typeChecking": "Checking account",
+    "typeSavingsAccount": "Savings account",
+    "typeCash": "Cash",
+    "title": "Accounts",
+    "subtitle": "Money available to use: savings and checking accounts, and cash. Term savings belong in Savings Goals.",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "inactiveBadge": "Inactive",
+    "updateBalances": "Monthly balances",
+    "newAccount": "New account",
+    "loading": "Loading accounts...",
+    "noAccountsYet": "You don't have accounts yet",
+    "noAccountsMessage": "Register your checking accounts and cash to track your liquid money",
+    "currentBalance": "Current balance",
+    "noBalance": "No balance yet",
+    "updatedAt": "Updated",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete account",
+    "deleteMessage": "Are you sure you want to delete \"{{name}}\"? Its balance history is deleted too.",
+    "deletedSuccess": "Account deleted",
+    "liquidTotal": "Liquid total"
+  },
   "financialInstitutions": {
     "typeBank": "Bank",
     "typeCooperative": "Cooperative",
@@ -1115,6 +1148,7 @@
   },
   "loans": {
     "title": "Loans",
+    "subtitle": "What you owe and what you are owed: loans, credit cards and their installments.",
     "newLoan": "New Loan",
     "all": "All",
     "allTypes": "All types",
@@ -1289,5 +1323,40 @@
     "5": "Argentine Peso",
     "6": "Real",
     "7": "Other"
+  },
+  "upsertAccount": {
+    "newTitle": "New account",
+    "editTitle": "Edit account",
+    "name": "Name",
+    "nameExample": "E.g. Itaú savings account",
+    "type": "Account type",
+    "institution": "Institution",
+    "currency": "Currency",
+    "notes": "Notes (optional)",
+    "notesPlaceholder": "E.g. salary account",
+    "isActive": "Active account (included in the monthly balance update)",
+    "doubleCountHint": "Don't create an account for money you already track as savings at that institution: it would be counted twice in your net worth.",
+    "createAccount": "Create account",
+    "createdSuccess": "Account created",
+    "createdError": "Could not create the account",
+    "updatedSuccess": "Account updated",
+    "updatedError": "Could not update the account"
+  },
+  "accountBalances": {
+    "title": "Monthly balances",
+    "subtitle": "Enter the balance of each active account; empty ones are not saved.",
+    "month": "Month",
+    "previousBalance": "Previous balance",
+    "newBalance": "New balance",
+    "difference": "Difference",
+    "noPrevious": "No previous balance",
+    "noActiveAccounts": "You don't have active accounts",
+    "noActiveAccountsMessage": "Create an account to enter its balances",
+    "total": "Total",
+    "save": "Save balances",
+    "savedSuccess": "Balances saved",
+    "savedError": "Could not save the balances",
+    "nothingToSave": "Enter at least one balance",
+    "alreadyLoaded": "This month already has balances; saving updates them."
   }
 }

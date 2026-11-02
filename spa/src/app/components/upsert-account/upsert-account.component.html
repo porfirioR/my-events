@@ -1,0 +1,96 @@
+<section>
+  <article class="max-w-3xl mx-auto bg-base-100 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle" [routerLink]="['/accounts']">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl transition-colors duration-300">
+          {{ isEditMode ? ('upsertAccount.editTitle' | translate) : ('upsertAccount.newTitle' | translate) }}
+        </h1>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="cancel()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </header>
+
+    <form [formGroup]="formGroup" (keydown.enter)="save($event)" (submit)="save()" class="space-y-4">
+
+      <!-- Nombre -->
+      <app-text
+        formControlName="name"
+        type="text"
+        [label]="'upsertAccount.name' | translate"
+        id="name"
+        name="name"
+        [description]="'upsertAccount.nameExample' | translate"
+        [disabled]="saving()"
+      />
+
+      <!-- Tipo y moneda en la misma línea (en móvil una debajo de la otra) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        <app-select-input
+          formControlName="type"
+          id="type"
+          [label]="'upsertAccount.type' | translate"
+          name="type"
+          [list]="typeList()"
+          [disabled]="saving()"
+        />
+        <app-select-input
+          formControlName="currencyId"
+          id="currency"
+          [label]="'upsertAccount.currency' | translate"
+          name="currency"
+          [list]="currencyList"
+          [disabled]="saving()"
+        />
+      </div>
+
+      <!-- Entidad -->
+      <app-institution-selector
+        formControlName="institutionId"
+        id="institutionId"
+        [label]="'upsertAccount.institution' | translate"
+        name="institutionId"
+      />
+
+      <div role="note" class="alert alert-info alert-soft text-sm">
+        <i class="fas fa-circle-info" aria-hidden="true"></i>
+        <span>{{ 'upsertAccount.doubleCountHint' | translate }}</span>
+      </div>
+
+      <!-- Notas -->
+      <app-text-area-input
+        formControlName="notes"
+        [label]="'upsertAccount.notes' | translate"
+        [placeholder]="'upsertAccount.notesPlaceholder' | translate"
+        id="notes"
+        name="notes"
+        [disabled]="saving()"
+      />
+
+      @if (isEditMode) {
+        <app-check-box-input
+          formControlName="isActive"
+          [label]="'upsertAccount.isActive' | translate"
+        />
+      }
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-3 pt-4">
+        <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving() || formGroup.invalid">
+          @if (saving()) {
+            <span class="loading loading-spinner loading-sm"></span>
+          } @else {
+            <i class="fas fa-save mr-1"></i>
+          }
+          {{ isEditMode ? ('common.save' | translate) : ('upsertAccount.createAccount' | translate) }}
+        </button>
+      </div>
+    </form>
+  </article>
+</section>

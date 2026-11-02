@@ -18,6 +18,7 @@ export class DashboardManagerService {
       data.savingsGoals,
       data.travels,
       data.loans,
+      data.accounts,
     );
   };
 }

@@ -2,6 +2,7 @@ import { signalStore, withState, withMethods, patchState, withComputed } from '@
 import { inject, computed } from '@angular/core';
 import { useCurrencyStore } from './currency.store';
 import { useFinancialInstitutionsStore } from './financial-institutions.store';
+import { useAccountsStore } from './accounts.store';
 import { useCollaboratorStore, useSavingsStore, useTransactionStore, useTravelStore } from '.';
 
 export interface AuthState {
@@ -48,6 +49,7 @@ export const AuthStore = signalStore(
     savingsStore = useSavingsStore(),
     travelStore = useTravelStore(),
     financialInstitutionsStore = useFinancialInstitutionsStore(),
+    accountsStore = useAccountsStore(),
   ) => ({
     loginStart: () => patchState(store, { loginLoading: true, error: null }),
 
@@ -111,6 +113,7 @@ export const AuthStore = signalStore(
       savingsStore.clearAll();
       travelStore.clearAll();
       financialInstitutionsStore.clearAll();
+      accountsStore.clearAll();
     },
 
     updateEmailVerificationStatus: (isVerified: boolean) => {

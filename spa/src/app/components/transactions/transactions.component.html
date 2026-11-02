@@ -2,11 +2,14 @@
   <article class="transition-all duration-300">
     <header class="pb-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
-        <h2 id="transactions-heading" class="text-xl font-semibold text-base-content">
-          <i class="fas fa-dollar-sign mr-2 text-green-500"></i>
-          {{ 'transactions.title' | translate }}
-        </h2>
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex-1 min-w-64">
+          <h2 id="transactions-heading" class="text-xl font-semibold text-base-content">
+            <i class="fas fa-dollar-sign mr-2 text-green-500"></i>
+            {{ 'transactions.title' | translate }}
+          </h2>
+          <p class="text-sm text-base-content/60 mt-1">{{ 'transactions.subtitle' | translate }}</p>
+        </div>
+        <div class="page-toolbar flex items-center gap-2 flex-wrap">
           <div class="btn-group">
             <button 
               type="button"
@@ -48,7 +51,7 @@
           <!-- Balances -->
           <a
             type="button"
-            class="btn btn-sm btn-outline btn-info"
+            class="btn btn-sm btn-outline btn-primary"
             [routerLink]="['/transactions/balances']"
           >
             <i class="fas fa-balance-scale mr-1" aria-hidden="true"></i>

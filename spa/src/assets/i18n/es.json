@@ -48,7 +48,8 @@
     "breadcrumb": "Ruta de navegación",
     "collapseMenu": "Contraer menú",
     "expandMenu": "Expandir menú",
-    "loans": "Préstamos"
+    "loans": "Préstamos",
+    "accounts": "Cuentas"
   },
   "auth": {
     "appName": "Mis Eventos",
@@ -107,6 +108,7 @@
   },
   "transactions": {
     "title": "Transacciones",
+    "subtitle": "Gastos compartidos con tus colaboradores: quién pagó, cómo se divide y qué queda pendiente.",
     "newTransaction": "Nueva Transacción",
     "totalAmount": "Monto Total",
     "description": "Descripción",
@@ -228,6 +230,7 @@
   },
   "collaborators": {
     "title": "Colaboradores",
+    "subtitle": "Las personas con las que compartís gastos. Vinculalas con su usuario para ver las transacciones en conjunto.",
     "addCollaborator": "Agregar Colaborador",
     "name": "Nombre",
     "surname": "Apellido",
@@ -334,7 +337,10 @@
     "newTravel": "Nuevo Viaje",
     "finalized": "finalizados",
     "loans": "Préstamos",
-    "newLoan": "Nuevo Préstamo"
+    "newLoan": "Nuevo Préstamo",
+    "accounts": "Cuentas",
+    "newAccount": "Nueva cuenta",
+    "updateBalances": "Saldos del mes"
   },
   "matchRequests": {
     "title": "Solicitudes de Vinculación",
@@ -536,6 +542,7 @@
   },
   "savingsGoals": {
     "title": "Metas de Ahorro",
+    "subtitle": "Tus metas e inversiones: ahorro por cuotas, plazo fijo, CDA, fondos mutuos y ruedas.",
     "all": "Todas",
     "active": "Activas",
     "completed": "Completadas",
@@ -910,6 +917,7 @@
   },
   "travels": {
     "title": "Viajes",
+    "subtitle": "Viajes y eventos con gastos compartidos entre los participantes.",
     "newTravel": "Nuevo Viaje",
     "all": "Todos",
     "active": "Activos",
@@ -1097,6 +1105,31 @@
     "paid": "Pagada",
     "skipped": "Omitida"
   },
+  "accounts": {
+    "typeChecking": "Cuenta corriente",
+    "typeSavingsAccount": "Caja de ahorro",
+    "typeCash": "Efectivo",
+    "title": "Cuentas",
+    "subtitle": "Plata disponible para usar: cajas de ahorro, cuentas corrientes y efectivo. Los ahorros a plazo van en Metas de Ahorro.",
+    "all": "Todas",
+    "active": "Activas",
+    "inactive": "Inactivas",
+    "inactiveBadge": "Inactiva",
+    "updateBalances": "Saldos del mes",
+    "newAccount": "Nueva cuenta",
+    "loading": "Cargando cuentas...",
+    "noAccountsYet": "Todavía no tenés cuentas",
+    "noAccountsMessage": "Registrá tus cuentas a la vista y el efectivo para seguir tu plata líquida",
+    "currentBalance": "Saldo actual",
+    "noBalance": "Sin saldo cargado",
+    "updatedAt": "Actualizado",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteTitle": "Eliminar cuenta",
+    "deleteMessage": "¿Seguro que querés eliminar \"{{name}}\"? También se borra su historial de saldos.",
+    "deletedSuccess": "Cuenta eliminada",
+    "liquidTotal": "Total líquido"
+  },
   "financialInstitutions": {
     "typeBank": "Banco",
     "typeCooperative": "Cooperativa",
@@ -1115,6 +1148,7 @@
   },
   "loans": {
     "title": "Préstamos",
+    "subtitle": "Lo que debés y lo que te deben: préstamos, tarjetas y sus cuotas.",
     "newLoan": "Nuevo Préstamo",
     "all": "Todos",
     "allTypes": "Todos los tipos",
@@ -1289,5 +1323,40 @@
     "5": "Peso argentino",
     "6": "Real",
     "7": "Otra"
+  },
+  "upsertAccount": {
+    "newTitle": "Nueva cuenta",
+    "editTitle": "Editar cuenta",
+    "name": "Nombre",
+    "nameExample": "Ej: Itaú caja de ahorro",
+    "type": "Tipo de cuenta",
+    "institution": "Entidad",
+    "currency": "Moneda",
+    "notes": "Notas (opcional)",
+    "notesPlaceholder": "Ej: cuenta sueldo",
+    "isActive": "Cuenta activa (se incluye en la carga mensual de saldos)",
+    "doubleCountHint": "No crees una cuenta para plata que ya registraste como ahorro en esa entidad: se contaría dos veces en tu patrimonio.",
+    "createAccount": "Crear cuenta",
+    "createdSuccess": "Cuenta creada",
+    "createdError": "No se pudo crear la cuenta",
+    "updatedSuccess": "Cuenta actualizada",
+    "updatedError": "No se pudo actualizar la cuenta"
+  },
+  "accountBalances": {
+    "title": "Saldos del mes",
+    "subtitle": "Cargá el saldo de cada cuenta activa; los que dejes vacíos no se guardan.",
+    "month": "Mes",
+    "previousBalance": "Saldo anterior",
+    "newBalance": "Saldo nuevo",
+    "difference": "Diferencia",
+    "noPrevious": "Sin saldo anterior",
+    "noActiveAccounts": "No tenés cuentas activas",
+    "noActiveAccountsMessage": "Creá una cuenta para poder cargar sus saldos",
+    "total": "Total",
+    "save": "Guardar saldos",
+    "savedSuccess": "Saldos guardados",
+    "savedError": "No se pudieron guardar los saldos",
+    "nothingToSave": "Cargá al menos un saldo",
+    "alreadyLoaded": "Este mes ya tiene saldos cargados; al guardar se actualizan."
   }
 }

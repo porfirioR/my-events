@@ -2,12 +2,15 @@
   <article class="transition-all duration-300">
     <header class="pb-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
-        <h2 id="loans-heading" class="text-xl font-semibold text-base-content">
-          <i class="fas fa-hand-holding-dollar mr-2 text-warning"></i>
-          {{ 'loans.title' | translate }}
-        </h2>
+        <div class="flex-1 min-w-64">
+          <h2 id="loans-heading" class="text-xl font-semibold text-base-content">
+            <i class="fas fa-hand-holding-dollar mr-2 text-warning"></i>
+            {{ 'loans.title' | translate }}
+          </h2>
+          <p class="text-sm text-base-content/60 mt-1">{{ 'loans.subtitle' | translate }}</p>
+        </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="page-toolbar flex items-center gap-2 flex-wrap">
           <!-- Filtro por Estado -->
           <div class="btn-group">
             <button type="button" class="btn btn-sm" [ngClass]="{'btn-active': filterStatus() === null}" (click)="setStatusFilter(null)">

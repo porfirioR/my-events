@@ -85,4 +85,8 @@ export enum DatabaseColumns {
   Icon = 'icon',
   Color = 'color',
   ParticipantType = 'participanttype',
+
+  // ===== ACCOUNTS MODULE COLUMNS =====
+  AccountId = 'accountid',
+  SnapshotDate = 'snapshotdate',
 }

@@ -72,6 +72,17 @@ export class DashboardComponent {
         secondary: { value: summary?.transactions.settled ?? 0, label: 'dashboard.settled' },
       },
       {
+        route: 'accounts',
+        title: 'dashboard.accounts',
+        icon: 'fa-wallet',
+        iconClass: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400',
+        primaryBarClass: 'bg-cyan-500',
+        secondaryBarClass: 'bg-cyan-500/30',
+        total: summary?.accounts.total ?? 0,
+        primary: { value: summary?.accounts.active ?? 0, label: 'dashboard.active' },
+        secondary: { value: summary?.accounts.inactive ?? 0, label: 'dashboard.inactive' },
+      },
+      {
         route: 'savings',
         title: 'dashboard.savingsGoals',
         icon: 'fa-piggy-bank',
@@ -110,6 +121,8 @@ export class DashboardComponent {
   protected quickActions: DashboardQuickAction[] = [
     { route: 'collaborators/create', label: 'dashboard.addCollaborator', icon: 'fa-user-plus', iconClass: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
     { route: 'transactions/new', label: 'dashboard.addTransaction', icon: 'fa-dollar-sign', iconClass: 'bg-green-500/15 text-green-600 dark:text-green-400' },
+    { route: 'accounts/create', label: 'dashboard.newAccount', icon: 'fa-wallet', iconClass: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' },
+    { route: 'accounts/balances', label: 'dashboard.updateBalances', icon: 'fa-calendar-check', iconClass: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' },
     { route: 'savings/create', label: 'dashboard.newSavingsGoal', icon: 'fa-piggy-bank', iconClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
     { route: 'loans/create', label: 'dashboard.newLoan', icon: 'fa-hand-holding-dollar', iconClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
     { route: 'travels/create', label: 'dashboard.newTravel', icon: 'fa-suitcase-rolling', iconClass: 'bg-orange-500/15 text-orange-600 dark:text-orange-400' },

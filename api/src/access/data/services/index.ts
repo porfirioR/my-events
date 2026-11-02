@@ -44,4 +44,5 @@ export { LoanAccessService } from './loan-access.service';
 export { LoanInstallmentAccessService } from './loan-installment-access.service';
 export { LoanPaymentAccessService } from './loan-payment-access.service';
 export { LoanEntityTermAccessService } from './loan-entity-term-access.service';
-export { FinancialInstitutionAccessService } from './financial-institution-access.service';
+export { FinancialInstitutionAccessService } from './financial-institution-access.service';export { AccountAccessService } from './account-access.service';
+export { AccountBalanceSnapshotAccessService } from './account-balance-snapshot-access.service';

@@ -2,12 +2,15 @@
   <article class="transition-all duration-300">
     <header class="pb-4 border-b border-base-300 dark:border-base-100">
       <div class="flex items-center justify-between flex-wrap gap-4">
-        <h2 id="savings-goals-heading" class="text-xl font-semibold text-base-content">
-          <i class="fas fa-piggy-bank mr-2 text-emerald-500"></i>
-          {{ 'savingsGoals.title' | translate }}
-        </h2>
+        <div class="flex-1 min-w-64">
+          <h2 id="savings-goals-heading" class="text-xl font-semibold text-base-content">
+            <i class="fas fa-piggy-bank mr-2 text-emerald-500"></i>
+            {{ 'savingsGoals.title' | translate }}
+          </h2>
+          <p class="text-sm text-base-content/60 mt-1">{{ 'savingsGoals.subtitle' | translate }}</p>
+        </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="page-toolbar flex items-center gap-2 flex-wrap">
           <!-- Filtro por Estado -->
           <div class="btn-group">
             <button 
@@ -55,30 +58,15 @@
             </label>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 dark:bg-base-200 rounded-lg w-52 border border-base-300">
               <li>
-                <button (click)="setProgressionTypeFilter(null)">{{ 'savingsGoals.allTypes' | translate }}</button>
+                <button [ngClass]="{'menu-active': filterProgressionType() === null}" (click)="setProgressionTypeFilter(null)">{{ 'savingsGoals.allTypes' | translate }}</button>
               </li>
-              <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Fixed)">{{ 'savingsGoals.fixed' | translate }}</button>
-              </li>
-              <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Ascending)">{{ 'savingsGoals.ascending' | translate }}</button>
-              </li>
-              <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Descending)">{{ 'savingsGoals.descending' | translate }}</button>
-              </li>
-              <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.Random)">{{ 'savingsGoals.random' | translate }}</button>
-              </li>
-              <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.FreeForm)">{{ 'savingsGoals.freeForm' | translate }}</button>
-              </li>
-              <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.FixedDeposit)">{{ 'savingsGoals.fixedDeposit' | translate }}</button>
-              </li>
-              <li>
-                <button (click)="setProgressionTypeFilter(ProgressionType.CDA)">{{ 'savingsGoals.cda' | translate }}</button>
-                <button (click)="setProgressionTypeFilter(ProgressionType.MutualFund)">{{ 'savingsGoals.mutualFund' | translate }}</button>
-              </li>
+              @for (type of progressionTypes; track type) {
+                <li>
+                  <button [ngClass]="{'menu-active': filterProgressionType() === type}" (click)="setProgressionTypeFilter(type)">
+                    <i [class]="'fas ' + ProgressionTypeIcons[type]" aria-hidden="true"></i>{{ ProgressionTypeLabels[type] | translate }}
+                  </button>
+                </li>
+              }
             </ul>
           </div>
 

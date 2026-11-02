@@ -25,5 +25,10 @@ export class DashboardSummaryApiModel {
       active: number;
       completed: number;
     },
+    public accounts: {
+      total: number;
+      active: number;
+      inactive: number;
+    },
   ) {}
 }

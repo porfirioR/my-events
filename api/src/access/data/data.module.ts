@@ -10,7 +10,7 @@ import { CollaboratorAccessService } from './services/collaborator-access.servic
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
 import { UserAccessService } from './services/user-access.service';
-import { DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { ACCOUNT_TOKENS, DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { SavingsInstallmentAccessService } from './services/savings-installment-access.service';
 import { SavingsDepositAccessService } from './services/savings-deposit-access.service';
 import { LoanAccessService } from './services/loan-access.service';
@@ -19,6 +19,8 @@ import { LoanPaymentAccessService } from './services/loan-payment-access.service
 import { LoanEntityTermAccessService } from './services/loan-entity-term-access.service';
 import { DashboardAccessService } from './services/dashboard-access.service';
 import { FinancialInstitutionAccessService } from './services/financial-institution-access.service';
+import { AccountAccessService } from './services/account-access.service';
+import { AccountBalanceSnapshotAccessService } from './services/account-balance-snapshot-access.service';
 
 @Module({
   imports: [
@@ -62,6 +64,16 @@ import { FinancialInstitutionAccessService } from './services/financial-institut
     {
       provide: FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE,
       useExisting: FinancialInstitutionAccessService,
+    },
+    AccountAccessService,
+    {
+      provide: ACCOUNT_TOKENS.ACCOUNT_ACCESS_SERVICE,
+      useExisting: AccountAccessService,
+    },
+    AccountBalanceSnapshotAccessService,
+    {
+      provide: ACCOUNT_TOKENS.BALANCE_SNAPSHOT_ACCESS_SERVICE,
+      useExisting: AccountBalanceSnapshotAccessService,
     },
     {
       provide: DASHBOARD_TOKENS.ACCESS_SERVICE,
@@ -192,6 +204,8 @@ import { FinancialInstitutionAccessService } from './services/financial-institut
     LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE,
     DASHBOARD_TOKENS.ACCESS_SERVICE,
     FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE,
+    ACCOUNT_TOKENS.ACCOUNT_ACCESS_SERVICE,
+    ACCOUNT_TOKENS.BALANCE_SNAPSHOT_ACCESS_SERVICE,
   ],
 })
 export class DataModule {}

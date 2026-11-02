@@ -3,7 +3,14 @@
     "allow": [
       "Bash(npx ng *)",
       "Bash(node -e \"const e=require\\('./src/assets/i18n/es.json'\\);console.log\\(JSON.stringify\\(e.loanDetail.rate\\), JSON.stringify\\(e.loanDetail.totalRate\\)\\)\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(cd /c/Users/porfi/Documents/GitHub/my-events/api/src && sed -n 1,80p manager/services/loan-manager.service.ts; grep -n \"dateupdated\\\\|updatedat\\\\|datecreated\" access/data/entities/loan.entity.ts access/data/services/loan-access.service.ts | head; grep -n \"currencies\\\\|REFERENCES currencies\" ../../resources/db.sql | head -5; grep -n \"ENABLE ROW LEVEL\\\\|DISABLE ROW LEVEL\" ../../resources/db.sql | head)",
+      "Read(//c/Users/porfi/Documents/resources/**)",
+      "Bash(sed -i \"s/import { DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '..\\\\/utility\\\\/constants\\\\/injection-tokens.const';/import { ACCOUNT_TOKENS, DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '..\\\\/utility\\\\/constants\\\\/injection-tokens.const';/\" manager/manager.module.ts)",
+      "Bash(sed -i \"s/^import { FinancialInstitutionManagerService } from '.\\\\/services\\\\/financial-institution-manager.service';/import { FinancialInstitutionManagerService } from '.\\\\/services\\\\/financial-institution-manager.service';\\\\nimport { AccountManagerService } from '.\\\\/services\\\\/account-manager.service';/\" manager/manager.module.ts)",
+      "Bash(sed -i \"s/DashboardController, FinancialInstitutionsController, LoansController/DashboardController, FinancialInstitutionsController, AccountsController, LoansController/\" host/controller.module.ts)",
+      "Bash(sed -i \"s/^ FinancialInstitutionsController,$/ FinancialInstitutionsController,\\\\n AccountsController,/\" host/controller.module.ts)",
+      "Bash(echo \"exit $?\")"
     ]
   }
 }

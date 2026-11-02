@@ -13,4 +13,4 @@ export { LoanType, LoanTypeLabels, LoanTypeBadgeColors } from './loan-type.enum'
 export { LoanDirection, LoanDirectionLabels, LoanDirectionBadgeColors, LoanDirectionIcons } from './loan-direction.enum';
 export { FinancialInstitutionType, FinancialInstitutionTypeLabels, FinancialInstitutionTypeIcons } from './financial-institution-type.enum';
 export { AmortizationType, AmortizationTypeLabels } from './amortization-type.enum';
-export { MovementType } from './movement-type.enum';
+export { MovementType } from './movement-type.enum';export { AccountType, AccountTypeLabels, AccountTypeIcons } from './account-type.enum';

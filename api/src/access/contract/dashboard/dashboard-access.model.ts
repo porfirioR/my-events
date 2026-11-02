@@ -5,5 +5,6 @@ export class DashboardAccessModel {
     public readonly savingsGoals: { total: number; active: number; completed: number },
     public readonly travels: { total: number; active: number; finalized: number },
     public readonly loans: { total: number; active: number; completed: number },
+    public readonly accounts: { total: number; active: number; inactive: number },
   ) {}
 }

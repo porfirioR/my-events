@@ -1269,3 +1269,61 @@ ALTER TABLE traveloperations ADD CONSTRAINT check_traveloperation_charge CHECK (
 -- futura conciliación con MyMoney (#233).
 ALTER TABLE traveloperations ADD COLUMN IF NOT EXISTS paymentinstitutionid INT NULL REFERENCES financialinstitutions(id);
 CREATE INDEX IF NOT EXISTS idx_traveloperations_paymentinstitution ON traveloperations(paymentinstitutionid);
+
+-- =====================================================
+-- PARTE 23: CUENTAS LÍQUIDAS (#220)
+-- =====================================================
+-- Plata que no es ahorro ni préstamo: cuentas a la vista y efectivo.
+-- Regla contra el doble conteo: si la plata de una entidad ya está registrada como ahorros
+-- (ej. los ahorros "Ña" en la Coop Universitaria), NO se crea además una cuenta para esa
+-- entidad; solo el excedente que no figura en ningún ahorro.
+CREATE TABLE IF NOT EXISTS accounts (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    institutionid INT NOT NULL,
+    currencyid INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    -- 1 Checking (cuenta corriente), 2 SavingsAccount (caja de ahorro), 3 Cash (efectivo)
+    type SMALLINT NOT NULL,
+    isactive BOOLEAN NOT NULL DEFAULT TRUE,
+    notes TEXT NULL,
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (institutionid) REFERENCES financialinstitutions(id),
+    FOREIGN KEY (currencyid) REFERENCES currencies(id),
+    CONSTRAINT check_account_type CHECK (type IN (1, 2, 3))
+);
+
+CREATE INDEX IF NOT EXISTS idx_accounts_user_active ON accounts(userid, isactive);
+-- Un nombre de cuenta por usuario (sin distinguir mayúsculas)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_accounts_user_name ON accounts(userid, lower(name));
+
+ALTER TABLE accounts DISABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PARTE 24: SALDOS MENSUALES DE CUENTAS (#221)
+-- =====================================================
+-- Una foto del saldo por cuenta y por mes; el saldo actual de una cuenta es su último snapshot.
+-- Cargar dos veces el mismo mes actualiza (UNIQUE + upsert), no duplica.
+CREATE TABLE IF NOT EXISTS accountbalancesnapshots (
+    id SERIAL PRIMARY KEY,
+    accountid INT NOT NULL,
+    -- Siempre el día 1 del mes
+    snapshotdate DATE NOT NULL,
+    -- Puede ser negativo (ej. cuenta corriente en sobregiro)
+    balance BIGINT NOT NULL,
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (accountid) REFERENCES accounts(id) ON DELETE CASCADE,
+    CONSTRAINT ux_accountbalancesnapshots_account_date UNIQUE (accountid, snapshotdate),
+    CONSTRAINT check_snapshot_month_start CHECK (snapshotdate = date_trunc('month', snapshotdate)::date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_accountbalancesnapshots_date ON accountbalancesnapshots(snapshotdate);
+
+ALTER TABLE accountbalancesnapshots DISABLE ROW LEVEL SECURITY;
