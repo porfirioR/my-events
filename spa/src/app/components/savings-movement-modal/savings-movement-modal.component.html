@@ -12,9 +12,7 @@
         [label]="'savingsGoalDetail.amount' | translate"
         id="mutualFundAmount"
         name="Amount"
-        [description]="movementType() === MovementType.Withdrawal
-          ? ('savingsGoalDetail.availableBalance' | translate: { amount: formatCurrency(maxWithdrawal(), currencyId()) })
-          : ''"
+        [description]="maxAmountHint() ? (maxAmountHint() | translate: { amount: formatCurrency(maxAmount() ?? 0, currencyId()) }) : ''"
       />
 
       <app-date-input

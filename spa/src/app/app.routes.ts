@@ -22,6 +22,8 @@ import { LoanDetailComponent } from './components/loan-detail/loan-detail.compon
 import { AccountsListComponent } from './components/accounts-list/accounts-list.component';
 import { UpsertAccountComponent } from './components/upsert-account/upsert-account.component';
 import { AccountBalancesComponent } from './components/account-balances/account-balances.component';
+import { MaturitiesCalendarComponent } from './components/maturities-calendar/maturities-calendar.component';
+import { DebtsOverviewComponent } from './components/debts-overview/debts-overview.component';
 
 export const routes: Routes = [
   {
@@ -90,6 +92,19 @@ export const routes: Routes = [
             loadComponent: () => UpsertLoanComponent
           },
         ],
+      },
+      // Vista completa de las secciones del dashboard
+      {
+        path: 'maturities',
+        title: 'Maturities',
+        canActivate: [authGuard],
+        loadComponent: () => MaturitiesCalendarComponent,
+      },
+      {
+        path: 'debts',
+        title: 'Debts',
+        canActivate: [authGuard],
+        loadComponent: () => DebtsOverviewComponent,
       },
       // Accounts
       {

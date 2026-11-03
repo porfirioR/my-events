@@ -4,6 +4,8 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, tap, switchMap, catchError, of } from 'rxjs';
 import { DashboardSummaryApiModel } from '../models/api/dashboard/dashboard-summary-api.model';
 import { NetWorthSummaryApiModel } from '../models/api/dashboard/net-worth-summary-api.model';
+import { MaturityCalendarApiModel } from '../models/api/dashboard/maturity-calendar-api.model';
+import { DebtsOverviewApiModel } from '../models/api/dashboard/debts-overview-api.model';
 import { DashboardApiService } from '../services/api/dashboard-api.service';
 import { useLoadingStore } from './loading.store';
 
@@ -14,6 +16,12 @@ export interface DashboardState {
   netWorth: NetWorthSummaryApiModel | null;
   isNetWorthLoading: boolean;
   netWorthError: string | null;
+  maturities: MaturityCalendarApiModel | null;
+  isMaturitiesLoading: boolean;
+  maturitiesError: string | null;
+  debts: DebtsOverviewApiModel | null;
+  isDebtsLoading: boolean;
+  debtsError: string | null;
 }
 
 const initialState: DashboardState = {
@@ -23,6 +31,18 @@ const initialState: DashboardState = {
   netWorth: null,
   isNetWorthLoading: false,
   netWorthError: null,
+  maturities: null,
+  isMaturitiesLoading: false,
+  maturitiesError: null,
+  debts: null,
+  isDebtsLoading: false,
+  debtsError: null,
+};
+
+// Fecha local 'YYYY-MM-DD' (no toISOString: de noche en Paraguay ya sería mañana en UTC)
+const localToday = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 };
 
 export const DashboardStore = signalStore(
@@ -97,7 +117,38 @@ export const DashboardStore = signalStore(
       )
     ),
 
-    clearNetWorth: () => patchState(store, { netWorth: null, netWorthError: null }),
+    // Igual que el patrimonio: sin caché y sin loading global (se muestra el último dato mientras se actualiza)
+    loadMaturities: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { isMaturitiesLoading: true, maturitiesError: null })),
+        switchMap(() =>
+          dashboardApiService.getMaturities(localToday()).pipe(
+            tap(maturities => patchState(store, { maturities, isMaturitiesLoading: false })),
+            catchError(() => {
+              patchState(store, { maturitiesError: 'Failed to load maturities', isMaturitiesLoading: false });
+              return of(null);
+            })
+          )
+        )
+      )
+    ),
+
+    loadDebts: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { isDebtsLoading: true, debtsError: null })),
+        switchMap(() =>
+          dashboardApiService.getDebts(localToday()).pipe(
+            tap(debts => patchState(store, { debts, isDebtsLoading: false })),
+            catchError(() => {
+              patchState(store, { debtsError: 'Failed to load debts', isDebtsLoading: false });
+              return of(null);
+            })
+          )
+        )
+      )
+    ),
+
+    clearFinancialData: () => patchState(store, { netWorth: null, netWorthError: null, maturities: null, maturitiesError: null, debts: null, debtsError: null }),
   }))
 );
 

@@ -16,5 +16,6 @@ export class CreateSavingsGoalApiRequest {
     public institutionId?: number,
     public payoutDate?: string,
     public initialPaidInstallments?: number,
+    public plannedDestination?: string | null,
   ) {}
 }

@@ -77,4 +77,9 @@ export class UpdateSavingsGoalApiRequest {
   @IsOptional()
   @IsDateString()
   payoutDate?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  plannedDestination?: string;
 }

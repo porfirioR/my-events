@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 
 export type Language = 'en' | 'es';
 
@@ -36,19 +37,17 @@ export class TranslationService {
     }
   ];
 
-  constructor() {
-    this.initLanguage();
-  }
-
   /**
-   * Inicializa el idioma desde localStorage o usa el idioma del navegador
+   * Inicializa el idioma desde localStorage o usa el idioma del navegador.
+   * Se llama al arrancar la app (app.config) y espera a que cargue el JSON,
+   * así ninguna pantalla se arma con el idioma de respaldo (inglés)
    */
-  private initLanguage(): void {
+  init(): Observable<unknown> {
     const savedLanguage = this.getSavedLanguage();
     const browserLanguage = this.getBrowserLanguage();
     const defaultLanguage: Language = savedLanguage || browserLanguage || 'en';
 
-    this.setLanguage(defaultLanguage);
+    return this.applyLanguage(defaultLanguage);
   }
 
   /**
@@ -78,11 +77,14 @@ export class TranslationService {
    * Cambia el idioma de la aplicación
    */
   setLanguage(lang: Language): void {
-    this.translate.use(lang);
+    this.applyLanguage(lang);
+    this.refreshPageTitle();
+  }
+
+  private applyLanguage(lang: Language): Observable<unknown> {
     localStorage.setItem(this.STORAGE_KEY, lang);
     document.documentElement.lang = lang;
-
-    this.refreshPageTitle();
+    return this.translate.use(lang);
   }
 
   /**

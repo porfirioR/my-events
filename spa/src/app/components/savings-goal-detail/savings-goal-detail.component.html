@@ -28,12 +28,27 @@
       }
     </div>
 
-    <!-- Actions -->
+    <!-- Actions: de derecha a izquierda por uso; la principal (lila, sólida) va al final, el resto outline -->
     <div class="flex flex-wrap gap-2">
       @if (g.statusId !== GoalStatus.Completed && g.statusId !== GoalStatus.Withdrawn) {
         <button type="button" class="btn btn-sm btn-outline btn-primary" (click)="editGoal()">
           <i class="fas fa-edit"></i>
           {{ 'savingsGoalDetail.edit' | translate }}
+        </button>
+      }
+
+      @if (canWithdraw()) {
+        <button type="button" class="btn btn-sm btn-outline btn-success" (click)="openWithdrawModal()">
+          <i class="fas fa-hand-holding-dollar"></i>
+          {{ 'savingsGoalDetail.registerPayout' | translate }}
+        </button>
+      }
+
+      <!-- Forma libre y fondo mutuo: depósitos y retiros parciales (el ahorro sigue abierto) -->
+      @if (canPartialWithdraw()) {
+        <button type="button" class="btn btn-sm btn-outline btn-warning" (click)="openMovementModal(MovementType.Withdrawal)">
+          <i class="fas fa-money-bill-transfer"></i>
+          {{ 'savingsGoalDetail.withdraw' | translate }}
         </button>
       }
 
@@ -44,28 +59,10 @@
         </button>
       }
 
-      @if (isFreeForm() && g.statusId === GoalStatus.Active) {
-        <button type="button" class="btn btn-sm btn-accent" (click)="openFreeFormModal()">
+      @if (canDeposit()) {
+        <button type="button" class="btn btn-sm btn-primary" (click)="openMovementModal(MovementType.Deposit)">
           <i class="fas fa-hand-holding-dollar"></i>
-          {{ 'savingsGoalDetail.addDeposit' | translate }}
-        </button>
-      }
-
-      @if (isMutualFund() && g.statusId === GoalStatus.Active) {
-        <button type="button" class="btn btn-sm btn-accent" (click)="openMutualFundModal(MovementType.Deposit)">
-          <i class="fas fa-hand-holding-dollar"></i>
-          {{ 'savingsGoalDetail.contribute' | translate }}
-        </button>
-        <button type="button" class="btn btn-sm btn-outline btn-warning" (click)="openMutualFundModal(MovementType.Withdrawal)">
-          <i class="fas fa-money-bill-transfer"></i>
-          {{ 'savingsGoalDetail.withdraw' | translate }}
-        </button>
-      }
-
-      @if (canWithdraw()) {
-        <button type="button" class="btn btn-sm btn-outline btn-success" (click)="openWithdrawModal()">
-          <i class="fas fa-hand-holding-dollar"></i>
-          {{ 'savingsGoalDetail.registerPayout' | translate }}
+          {{ (isMutualFund() ? 'savingsGoalDetail.contribute' : 'savingsGoalDetail.addDeposit') | translate }}
         </button>
       }
     </div>
@@ -150,7 +147,7 @@
         <app-movements-list
           [items]="movementItems()"
           [currencyId]="g.currencyId"
-          [showSign]="isMutualFund()"
+          [showSign]="hasMovements()"
           emptyLabel="savingsGoalDetail.noDepositsYet" />
       }
     </div>
@@ -266,61 +263,17 @@
 </dialog>
 }
 
-<!-- FreeForm Deposit Modal -->
-@if (showFreeFormModal()) {
-<dialog class="modal modal-open">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">{{ 'savingsGoalDetail.addDepositTitle' | translate }}</h3>
-
-    <form [formGroup]="freeFormDepositForm" (submit)="createFreeFormDeposit()">
-      <app-text
-        formControlName="amount"
-        type="number"
-        [label]="'savingsGoalDetail.amount' | translate"
-        id="amount"
-        name="Amount"
-        [description]="'savingsGoalDetail.remainingToGoal' | translate: { amount: formatCurrency(remaining(), goal()?.currencyId) }"
-      />
-
-      <app-text-area-input
-        formControlName="description"
-        [label]="'savingsGoalDetail.descriptionOptional' | translate"
-        [placeholder]="'savingsGoalDetail.addNote' | translate"
-        id="description" 
-        name="description"
-      />
-
-      <div class="modal-action">
-        <button type="button" class="btn btn-outline btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105" (click)="closeFreeFormModal()">
-          {{ 'savingsGoalDetail.cancel' | translate }}
-        </button>
-
-        @if (isSubmitting()) {
-          <button type="button" class="btn btn-primary flex items-center gap-2 loading-btn">
-            <span class="loading loading-spinner loading-xs"></span>
-            {{ 'savingsGoalDetail.saving' | translate }}
-          </button>
-        } @else {
-          <button role="button" type="submit"
-            class="btn btn-primary flex items-center gap-2 transition-all duration-200 hover:scale-105"
-            [disabled]="freeFormDepositForm.invalid || isSubmitting()" [class.btn-disabled]="freeFormDepositForm.invalid || isSubmitting()">
-            <i class="fas fa-hand-holding-dollar text-sm"></i>
-            {{ 'savingsGoalDetail.addDepositButton' | translate }}
-          </button>
-        }
-      </div>
-    </form>
-  </div>
-  <div class="modal-backdrop" (click)="closeFreeFormModal()"></div>
-</dialog>
-}
-
 <!-- Withdraw (Registrar cobro) Modal -->
 @if (showWithdrawModal()) {
 <dialog class="modal modal-open">
   <div class="modal-box">
     <h3 class="font-bold text-lg mb-2">{{ 'savingsGoalDetail.registerPayoutTitle' | translate }}</h3>
-    <p class="text-sm text-base-content/70 mb-4">{{ 'savingsGoalDetail.registerPayoutDesc' | translate }}</p>
+    <p class="text-sm text-base-content/70 mb-4">
+      {{ 'savingsGoalDetail.registerPayoutDesc' | translate }}
+      @if (hasMovements()) {
+        {{ 'savingsGoalDetail.registerPayoutPartialHint' | translate }}
+      }
+    </p>
 
     <form [formGroup]="withdrawForm" (submit)="withdrawGoal()">
       <app-text
@@ -365,7 +318,7 @@
 }
 
 <!-- Mutual Fund Movement Modal -->
-<app-mutual-fund-movement-modal (completed)="onMutualFundMovementCompleted()" />
+<app-savings-movement-modal (completed)="onMovementCompleted()" />
 
 <!-- Add Installments Modal -->
 @if (showAddInstallmentsModal()) {

@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { DashboardSummaryApiModel } from '../../models/api/dashboard/dashboard-summary-api.model';
 import { NetWorthSummaryApiModel } from '../../models/api/dashboard/net-worth-summary-api.model';
+import { MaturityCalendarApiModel } from '../../models/api/dashboard/maturity-calendar-api.model';
+import { DebtsOverviewApiModel } from '../../models/api/dashboard/debts-overview-api.model';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardApiService {
@@ -15,4 +17,11 @@ export class DashboardApiService {
 
   getNetWorth = (): Observable<NetWorthSummaryApiModel> =>
     this.httpClient.get<NetWorthSummaryApiModel>(`${this.section}/net-worth`);
+
+  // today = fecha local ('YYYY-MM-DD'): el servidor está en UTC
+  getMaturities = (today: string): Observable<MaturityCalendarApiModel> =>
+    this.httpClient.get<MaturityCalendarApiModel>(`${this.section}/maturities`, { params: { today } });
+
+  getDebts = (today: string): Observable<DebtsOverviewApiModel> =>
+    this.httpClient.get<DebtsOverviewApiModel>(`${this.section}/debts`, { params: { today } });
 }

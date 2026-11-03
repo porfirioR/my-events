@@ -395,6 +395,20 @@
         />
       }
 
+      <!-- Destino planeado: qué hacer con la plata cuando vence (se ve en el calendario de vencimientos). El fondo mutuo no vence -->
+      @if (!isMutualFund()) {
+        <app-text
+          formControlName="plannedDestination"
+          type="text"
+          [label]="'upsertSavingsGoal.plannedDestination' | translate"
+          [placeholder]="'upsertSavingsGoal.plannedDestinationPlaceholder' | translate"
+          [description]="'upsertSavingsGoal.plannedDestinationDesc' | translate"
+          id="plannedDestination"
+          name="plannedDestination"
+          [disabled]="saving"
+        />
+      }
+
       <!-- Action Buttons -->
       <footer class="flex justify-between items-center pt-6 gap-4">
         <button

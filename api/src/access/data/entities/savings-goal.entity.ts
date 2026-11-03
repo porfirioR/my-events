@@ -23,5 +23,6 @@ export class SavingsGoalEntity {
     public institutionid?: number | null,
     public payoutdate?: Date | null,
     public payoutamount?: number | null,
+    public planneddestination?: string | null,
   ) {}
 }

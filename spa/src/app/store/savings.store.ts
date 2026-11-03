@@ -12,8 +12,7 @@ import {
   CreateSavingsGoalApiRequest,
   UpdateSavingsGoalApiRequest,
   PayInstallmentApiRequest,
-  CreateFreeFormDepositApiRequest,
-  CreateMutualFundMovementApiRequest,
+  CreateSavingsMovementApiRequest,
   AddInstallmentsApiRequest,
   WithdrawSavingsGoalApiRequest
 } from '../models/api/savings';
@@ -446,42 +445,11 @@ export const SavingsStore = signalStore(
       )
     ),
 
-    createFreeFormDeposit: (goalId: number, request: CreateFreeFormDepositApiRequest) => {
-      loadingStore.setLoading();
-      patchState(store, { error: null });
-      
-      return savingsGoalApiService.createFreeFormDeposit(goalId, request).pipe(
-        tap(deposit => {
-          const currentDeposits = store.deposits();
-          const currentGoal = store.selectedGoal();
-
-          if (currentGoal) {
-            const updatedGoal = {
-              ...currentGoal,
-              currentAmount: currentGoal.currentAmount + request.amount
-            };
-            const updatedGoals = store.goals().map(g => g.id === currentGoal.id ? updatedGoal : g);
-
-            patchState(store, {
-              deposits: [...currentDeposits, deposit],
-              selectedGoal: updatedGoal,
-              goals: updatedGoals
-            });
-          }
-          loadingStore.setLoadingSuccess();
-        }),
-        catchError(error => {
-          patchState(store, { error: 'Failed to create deposit' });
-          throw new Error(error);
-        })
-      );
-    },
-
-    createMutualFundMovement: (goalId: number, request: CreateMutualFundMovementApiRequest) => {
+    createMovement: (goalId: number, request: CreateSavingsMovementApiRequest) => {
       loadingStore.setLoading();
       patchState(store, { error: null });
 
-      return savingsGoalApiService.createMutualFundMovement(goalId, request).pipe(
+      return savingsGoalApiService.createMovement(goalId, request).pipe(
         tap(deposit => {
           const currentGoal = store.selectedGoal();
           const delta = request.movementType === MovementType.Withdrawal ? -request.amount : request.amount;

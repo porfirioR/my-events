@@ -160,6 +160,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       institutionId: new FormControl<number | null>(null),
       payoutDate: new FormControl<Date | string | null>(null),
       initialPaidInstallments: new FormControl<number | null>(null, [Validators.min(0)]),
+      plannedDestination: new FormControl<string | null>(null, [Validators.maxLength(200)]),
     });
 
     // 2. SEGUNDO: Crear los signals desde los FormControls
@@ -232,6 +233,8 @@ export class UpsertSavingsGoalComponent implements OnInit {
     // Calcular base amount y target amount en tiempo real
     this.formGroup.controls.progressionTypeId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.updateFieldValidators();
+      // Al cambiar de tipo los campos que dependen de él arrancan limpios (sin el "requerido" del tipo anterior)
+      this.typeDependentControls().forEach(control => control.markAsUntouched());
       this.calculateBaseAndTarget();
     });
 
@@ -280,6 +283,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
       payoutDate: goal.payoutDate
         ? new DatePipe('en-US').transform(new Date(goal.payoutDate), 'yyyy-MM-dd', 'UTC') as string
         : null,
+      plannedDestination: goal.plannedDestination ?? null,
     });
 
     this.formGroup.controls.numberOfInstallments.disable()
@@ -360,6 +364,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
     this.formGroup.controls.baseAmount.clearValidators();
     this.formGroup.controls.incrementAmount.clearValidators();
     this.formGroup.controls.annualRatePercentage.clearValidators();
+    this.formGroup.controls.paymentPeriod.clearValidators();
     this.formGroup.controls.institutionId.clearValidators();
 
     if (typeId === ProgressionType.Scheduled || typeId === ProgressionType.FixedDeposit || typeId === ProgressionType.CDA || typeId === ProgressionType.MutualFund || typeId === ProgressionType.Rotating) {
@@ -387,14 +392,14 @@ export class UpsertSavingsGoalComponent implements OnInit {
       this.formGroup.controls.incrementAmount.setValidators([Validators.required, Validators.min(1)]);
     }
 
-    this.formGroup.controls.targetAmount.updateValueAndValidity();
-    this.formGroup.controls.numberOfInstallments.updateValueAndValidity();
-    this.formGroup.controls.baseAmount.updateValueAndValidity();
-    this.formGroup.controls.incrementAmount.updateValueAndValidity();
-    this.formGroup.controls.annualRatePercentage.updateValueAndValidity();
-    this.formGroup.controls.paymentPeriod.updateValueAndValidity();
-    this.formGroup.controls.institutionId.updateValueAndValidity();
+    this.typeDependentControls().forEach(control => control.updateValueAndValidity());
   }
+
+  private typeDependentControls = () => {
+    const controls = this.formGroup.controls;
+    return [controls.targetAmount, controls.numberOfInstallments, controls.baseAmount, controls.incrementAmount,
+      controls.annualRatePercentage, controls.paymentPeriod, controls.institutionId];
+  };
 
   private calculateBaseAndTarget(): void {
     const typeId = this.formGroup.controls.progressionTypeId.value;
@@ -590,6 +595,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.paymentPeriod ?? undefined,
         values.institutionId ? +values.institutionId : undefined,
         values.payoutDate?.toString() || undefined,
+        values.plannedDestination?.trim() || null,
       );
 
       this.savingsStore.updateGoal(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -624,6 +630,7 @@ export class UpsertSavingsGoalComponent implements OnInit {
         values.institutionId ? +values.institutionId : undefined,
         values.payoutDate?.toString() || undefined,
         values.initialPaidInstallments ? +values.initialPaidInstallments : undefined,
+        values.plannedDestination?.trim() || null,
       );
 
       this.savingsStore.createGoal(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

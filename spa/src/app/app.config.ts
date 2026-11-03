@@ -2,9 +2,12 @@ import {
   ApplicationConfig,
   ErrorHandler,
   importProvidersFrom,
+  inject,
   isDevMode,
+  provideAppInitializer,
   provideZonelessChangeDetection,
 } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter, TitleStrategy } from '@angular/router';
@@ -18,6 +21,7 @@ import { loadingInterceptor } from './interceptors/loading.interceptor';
 import { provideTranslateService } from '@ngx-translate/core';
 import {provideTranslateHttpLoader} from "@ngx-translate/http-loader";
 import { AppTitleStrategy } from './services';
+import { TranslationService } from './services/translation.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -48,6 +52,8 @@ export const appConfig: ApplicationConfig = {
         suffix: '.json'
       })
     }),
+    // El idioma guardado se carga antes de crear cualquier pantalla
+    provideAppInitializer(() => firstValueFrom(inject(TranslationService).init())),
   ],
 };
 

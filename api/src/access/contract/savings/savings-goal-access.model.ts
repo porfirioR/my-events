@@ -23,6 +23,7 @@ export class SavingsGoalAccessModel {
     public readonly institutionId: number | null,
     public readonly payoutDate: Date | null,
     public readonly payoutAmount: number | null,
+    public readonly plannedDestination: string | null,
     public readonly paidInstallmentsCount: number = 0,
   ) {}
 }

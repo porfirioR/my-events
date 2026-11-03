@@ -367,6 +367,43 @@
     "loadError": "No se pudo calcular el patrimonio.",
     "retry": "Reintentar"
   },
+  "maturities": {
+    "title": "Próximos vencimientos",
+    "subtitle": "Lo que vence o se cobra en los próximos 12 meses, para decidir antes qué hacer con esa plata.",
+    "summarySubtitle": "Ahorros, ruedas y cobros de los próximos meses",
+    "seeAll": "Ver todo",
+    "overdueTitle": "Vencidos sin cobrar",
+    "overdueHint": "Ahorros con la fecha ya pasada y cuotas atrasadas de préstamos que otorgaste. Si ya los cobraste, registralo para que dejen de aparecer.",
+    "overdueCount": "Vencidos sin cobrar: {{count}}",
+    "noEventsInMonth": "Sin vencimientos este mes",
+    "empty": "No hay vencimientos en los próximos 12 meses.",
+    "releases": "libera {{amount}}/mes",
+    "loadError": "No se pudieron cargar los vencimientos.",
+    "typeSavingsMaturity": "Vence ahorro",
+    "typeRotatingPayout": "Cobro de rueda (estimado)",
+    "typeLentCollection": "Cobro de préstamo",
+    "typeLoanEnd": "Termina préstamo"
+  },
+  "debts": {
+    "title": "Deudas y préstamos",
+    "subtitle": "Lo que debés y lo que te deben, con las cuotas que quedan y los cobros atrasados.",
+    "summarySubtitle": "Lo que debés y lo que te deben",
+    "iOwe": "Debo",
+    "theyOweMe": "Me deben",
+    "monthlyCommitted": "Cuotas del mes",
+    "borrowedTitle": "Lo que debo",
+    "lentTitle": "Lo que me deben",
+    "remainingInstallments": "{{count}} cuotas restantes",
+    "next": "Próxima:",
+    "nextCollection": "Próximo cobro:",
+    "endsOn": "Termina el {{date}}",
+    "overdueInstallments": "Cuotas atrasadas: {{count}}",
+    "overdueCollections": "Cobros atrasados: {{count}} ·",
+    "overdueCollectionBadge": "Atrasado: {{count}} ({{amount}})",
+    "moreLoans": "Ver {{count}} más",
+    "empty": "No tenés deudas ni préstamos otorgados en curso.",
+    "loadError": "No se pudieron cargar las deudas."
+  },
   "matchRequests": {
     "title": "Solicitudes de Vinculación",
     "received": "Recibidas",
@@ -624,6 +661,7 @@
     "skippedInstallments": "Cuotas omitidas",
     "registerPayoutTitle": "Registrar cobro",
     "registerPayoutDesc": "El ahorro pasa a Cobrado y deja de sumar a tu patrimonio. Si quedan cuotas pendientes (ej. ganaste el sorteo de la rueda) se cancelan.",
+    "registerPayoutPartialHint": "Para sacar solo una parte usá Retirar: el ahorro sigue abierto.",
     "payoutAmount": "Monto cobrado (opcional)",
     "payoutAmountDesc": "Lo que efectivamente recibiste; puede ser mayor a lo aportado",
     "payoutDate": "Fecha de cobro",
@@ -640,6 +678,7 @@
     "contributeTitle": "Aportar al Fondo Mutuo",
     "withdrawTitle": "Retirar del Fondo Mutuo",
     "availableBalance": "Disponible para retirar (incluye ganancia estimada): {{amount}}",
+    "availableToWithdraw": "Disponible para retirar: {{amount}}",
     "contributeButton": "Aportar",
     "withdrawButton": "Retirar",
     "withdrawalCreatedSuccess": "Retiro registrado exitosamente",
@@ -713,7 +752,8 @@
     "fixedDepositTotalAtMaturity": "Total al vencimiento",
     "maturityDate": "Fecha de vencimiento",
     "realGain": "Ganancia real",
-    "totalCollected": "Total cobrado"
+    "totalCollected": "Total cobrado",
+    "plannedDestination": "Destino planeado"
   },
   "upsertSavingsGoal": {
     "editTitle": "Editar Meta de Ahorro",
@@ -800,7 +840,10 @@
     "mutualFundTitle": "Fondo Mutuo",
     "mutualFundDescription": "Deposita y retira libremente cuando quieras. No hay monto ni plazo fijo.",
     "mutualFundAnnualRateLabel": "Tasa anual (%) - informativa",
-    "mutualFundAnnualRateDescription": "Opcional. Es solo referencial, no se usa para calcular un monto final."
+    "mutualFundAnnualRateDescription": "Opcional. Es solo referencial, no se usa para calcular un monto final.",
+    "plannedDestination": "Destino planeado (opcional)",
+    "plannedDestinationPlaceholder": "Ej: pagar la tarjeta, renovar en CDA",
+    "plannedDestinationDesc": "Qué pensás hacer con la plata cuando vence; se ve en el calendario de vencimientos."
   },
   "savingsFrequency": {
     "monthly": "Mensual"
@@ -952,7 +995,9 @@
     "Accounts": "Cuentas",
     "New Account": "Nueva cuenta",
     "Monthly Balances": "Saldos del mes",
-    "Edit Account": "Editar cuenta"
+    "Edit Account": "Editar cuenta",
+    "Maturities": "Próximos vencimientos",
+    "Debts": "Deudas y préstamos"
   },
   "travels": {
     "title": "Viajes",
@@ -1276,6 +1321,7 @@
     "skippedError": "Error al omitir la cuota",
     "administrativeFees": "Gastos administrativos",
     "ivaOnInterest": "IVA sobre interés",
+    "totalCreditCost": "Costo total del crédito",
     "insurance": "Seguro",
     "totalRate": "Tasa total",
     "lent": {

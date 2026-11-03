@@ -6,7 +6,7 @@ import { useCurrencyStore, useFinancialInstitutionsStore, useSavingsStore } from
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, MovementType, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
-import { MutualFundMovementModalComponent } from '../mutual-fund-movement-modal/mutual-fund-movement-modal.component';
+import { SavingsMovementModalComponent } from '../savings-movement-modal/savings-movement-modal.component';
 
 interface MaturityBlock {
   leftLabel: string;
@@ -25,12 +25,12 @@ const NO_INSTITUTION = 0;
   selector: 'app-savings-goals-list',
   templateUrl: './savings-goals-list.component.html',
   styleUrls: ['./savings-goals-list.component.css'],
-  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent, MutualFundMovementModalComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, ConfirmDialogComponent, SavingsMovementModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SavingsGoalsListComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
-  @ViewChild(MutualFundMovementModalComponent) mutualFundModal!: MutualFundMovementModalComponent;
+  @ViewChild(SavingsMovementModalComponent) movementModal!: SavingsMovementModalComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   private router = inject(Router);
@@ -184,14 +184,16 @@ export class SavingsGoalsListComponent implements OnInit {
 
   protected MovementType = MovementType;
 
-  protected openMutualFundModal(goal: any, movementType: number): void {
-    this.mutualFundModal.open({
+  protected openMovementModal(goal: any, movementType: number): void {
+    this.movementModal.open({
       goalId: goal.id,
       currencyId: goal.currencyId,
       currentAmount: goal.currentAmount,
       annualRatePercentage: goal.annualRatePercentage,
       startDate: goal.startDate,
       movementType,
+      progressionTypeId: goal.progressionTypeId,
+      targetAmount: goal.targetAmount,
     });
   }
 

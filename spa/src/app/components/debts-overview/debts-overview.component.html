@@ -1,0 +1,185 @@
+<section aria-labelledby="debts-heading"
+  [ngClass]="isSummary() ? 'bg-base-100 rounded-2xl border border-base-300/60 shadow-sm p-5 h-full' : ''">
+
+  <!-- Cabecera -->
+  @if (isSummary()) {
+    <header class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h2 id="debts-heading" class="text-base font-semibold text-base-content flex items-center gap-2">
+          <i class="fas fa-hand-holding-dollar text-amber-500" aria-hidden="true"></i>
+          {{ 'debts.title' | translate }}
+        </h2>
+        <p class="text-xs text-base-content/60 mt-1">{{ 'debts.summarySubtitle' | translate }}</p>
+      </div>
+      <a class="btn btn-sm btn-ghost shrink-0" routerLink="/debts">
+        {{ 'maturities.seeAll' | translate }}<i class="fas fa-arrow-right ml-1" aria-hidden="true"></i>
+      </a>
+    </header>
+  } @else {
+    <header class="pb-4 border-b border-base-300 dark:border-base-100">
+      <h2 id="debts-heading" class="text-xl font-semibold text-base-content">
+        <i class="fas fa-hand-holding-dollar mr-2 text-amber-500" aria-hidden="true"></i>
+        {{ 'debts.title' | translate }}
+      </h2>
+      <p class="text-sm text-base-content/60 mt-1">{{ 'debts.subtitle' | translate }}</p>
+    </header>
+  }
+
+  @if (isLoading()) {
+    <div class="space-y-3" [ngClass]="isSummary() ? 'mt-5' : 'py-6'">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton h-14 rounded-xl"></div>
+      }
+    </div>
+  } @else if (hasError()) {
+    <div class="flex flex-wrap items-center gap-3 text-sm text-error" [ngClass]="isSummary() ? 'mt-5' : 'py-6'">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+      <span>{{ 'debts.loadError' | translate }}</span>
+      <button type="button" class="btn btn-sm btn-ghost" (click)="reload()">
+        <i class="fas fa-rotate-right mr-1" aria-hidden="true"></i>{{ 'netWorth.retry' | translate }}
+      </button>
+    </div>
+  } @else if (isEmpty()) {
+    <div class="text-center py-6">
+      <figure class="mx-auto w-14 h-14 bg-base-content/10 rounded-full grid place-items-center mb-3">
+        <i class="fas fa-face-smile text-xl text-base-content/50" aria-hidden="true"></i>
+      </figure>
+      <p class="text-sm text-base-content/70">{{ 'debts.empty' | translate }}</p>
+    </div>
+  } @else if (debts()) {
+    <div [ngClass]="isSummary() ? 'mt-4 space-y-4' : 'py-6 space-y-6'">
+
+      <!-- Cobros atrasados -->
+      @if (overdueCollections().count > 0) {
+        <div role="alert" class="alert alert-warning alert-soft text-sm py-2">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+          <span>
+            {{ 'debts.overdueCollections' | translate: { count: overdueCollections().count } }}
+            @for (item of overdueCollections().amounts; track item.currencyId) {
+              <strong class="tabular-nums ml-1">{{ formatCurrency(item.amount, item.currencyId) }}</strong>
+            }
+          </span>
+        </div>
+      }
+
+      <!-- Totales por moneda -->
+      <dl class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="rounded-xl border border-base-300/60 p-3 min-w-0">
+          <dt class="text-xs text-base-content/60">{{ 'debts.iOwe' | translate }}</dt>
+          @for (total of totals(); track total.currencyId) {
+            <dd class="font-bold tabular-nums mt-1" [ngClass]="total.borrowed > 0 ? 'text-error' : 'text-base-content'">
+              {{ formatCurrency(total.borrowed, total.currencyId) }}
+            </dd>
+          }
+        </div>
+        <div class="rounded-xl border border-base-300/60 p-3 min-w-0">
+          <dt class="text-xs text-base-content/60">{{ 'debts.theyOweMe' | translate }}</dt>
+          @for (total of totals(); track total.currencyId) {
+            <dd class="font-bold tabular-nums mt-1 text-base-content">{{ formatCurrency(total.lent, total.currencyId) }}</dd>
+          }
+        </div>
+        <div class="rounded-xl border border-base-300/60 p-3 min-w-0">
+          <dt class="text-xs text-base-content/60">{{ 'debts.monthlyCommitted' | translate }}</dt>
+          @for (total of totals(); track total.currencyId) {
+            <dd class="font-bold tabular-nums mt-1 text-base-content">{{ formatCurrency(total.monthlyCommitted, total.currencyId) }}</dd>
+          }
+        </div>
+      </dl>
+
+      <div class="grid grid-cols-1 gap-6" [ngClass]="isSummary() ? '' : 'lg:grid-cols-2'">
+        <!-- Lo que debo -->
+        @if (borrowed().length > 0) {
+          <section aria-labelledby="debts-borrowed-heading">
+            <h3 id="debts-borrowed-heading" class="text-sm font-semibold text-base-content mb-2 flex items-center gap-2">
+              <i class="fas fa-arrow-down text-error" aria-hidden="true"></i>{{ 'debts.borrowedTitle' | translate }}
+            </h3>
+            <ul class="divide-y divide-base-300/60" role="list">
+              @for (loan of borrowed(); track loan.loanId) {
+                <li>
+                  <button type="button" class="w-full text-left py-2.5 px-1 -mx-1 rounded-lg hover:bg-base-200/60 dark:hover:bg-base-300/40 transition-colors"
+                    (click)="openLoan(loan)">
+                    <span class="flex items-start justify-between gap-2">
+                      <span class="min-w-0">
+                        <span class="block font-medium text-sm text-base-content truncate">{{ loan.name }}</span>
+                        <span class="block text-xs text-base-content/60 truncate">
+                          {{ loan.counterpartName }}
+                          @if (loan.remainingInstallments > 0) {
+                            · {{ 'debts.remainingInstallments' | translate: { count: loan.remainingInstallments } }}
+                          }
+                        </span>
+                      </span>
+                      <span class="text-right shrink-0">
+                        <span class="block text-sm font-semibold tabular-nums text-error">{{ formatCurrency(loan.currentBalance, loan.currencyId) }}</span>
+                        @if (loan.nextDueDate) {
+                          <span class="block text-xs text-base-content/60 tabular-nums">
+                            {{ 'debts.next' | translate }} {{ formatDate(loan.nextDueDate) }} · {{ formatCurrency(loan.nextAmount, loan.currencyId) }}
+                          </span>
+                        }
+                      </span>
+                    </span>
+                    @if (!isSummary() && loan.expectedEndDate) {
+                      <span class="block text-xs text-base-content/50 mt-0.5">{{ 'debts.endsOn' | translate: { date: formatDate(loan.expectedEndDate) } }}</span>
+                    }
+                    @if (loan.overdueCount > 0) {
+                      <span class="badge badge-sm badge-soft badge-error mt-1">
+                        {{ 'debts.overdueInstallments' | translate: { count: loan.overdueCount } }}
+                      </span>
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        <!-- Lo que me deben -->
+        @if (lent().length > 0) {
+          <section aria-labelledby="debts-lent-heading">
+            <h3 id="debts-lent-heading" class="text-sm font-semibold text-base-content mb-2 flex items-center gap-2">
+              <i class="fas fa-arrow-up text-success" aria-hidden="true"></i>{{ 'debts.lentTitle' | translate }}
+            </h3>
+            <ul class="divide-y divide-base-300/60" role="list">
+              @for (loan of lent(); track loan.loanId) {
+                <li>
+                  <button type="button" class="w-full text-left py-2.5 px-1 -mx-1 rounded-lg hover:bg-base-200/60 dark:hover:bg-base-300/40 transition-colors"
+                    (click)="openLoan(loan)">
+                    <span class="flex items-start justify-between gap-2">
+                      <span class="min-w-0">
+                        <span class="block font-medium text-sm text-base-content truncate">{{ loan.counterpartName ?? loan.name }}</span>
+                        <span class="block text-xs text-base-content/60 truncate">
+                          {{ loan.name }}
+                          @if (loan.remainingInstallments > 0) {
+                            · {{ 'debts.remainingInstallments' | translate: { count: loan.remainingInstallments } }}
+                          }
+                        </span>
+                      </span>
+                      <span class="text-right shrink-0">
+                        <span class="block text-sm font-semibold tabular-nums text-base-content">{{ formatCurrency(loan.currentBalance, loan.currencyId) }}</span>
+                        @if (loan.nextDueDate) {
+                          <span class="block text-xs tabular-nums" [ngClass]="loan.overdueCount > 0 ? 'text-warning' : 'text-base-content/60'">
+                            {{ 'debts.nextCollection' | translate }} {{ formatDate(loan.nextDueDate) }} · {{ formatCurrency(loan.nextAmount, loan.currencyId) }}
+                          </span>
+                        }
+                      </span>
+                    </span>
+                    @if (loan.overdueCount > 0) {
+                      <span class="badge badge-sm badge-soft badge-warning mt-1">
+                        {{ 'debts.overdueCollectionBadge' | translate: { count: loan.overdueCount, amount: formatCurrency(loan.overdueAmount, loan.currencyId) } }}
+                      </span>
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+
+      @if (hiddenCount() > 0) {
+        <a class="link link-hover text-sm text-primary" routerLink="/debts">
+          {{ 'debts.moreLoans' | translate: { count: hiddenCount() } }}
+        </a>
+      }
+    </div>
+  }
+</section>

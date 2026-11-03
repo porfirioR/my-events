@@ -1,0 +1,143 @@
+<section aria-labelledby="maturities-heading"
+  [ngClass]="isSummary() ? 'bg-base-100 rounded-2xl border border-base-300/60 shadow-sm p-5 h-full' : ''">
+
+  <!-- Cabecera -->
+  @if (isSummary()) {
+    <header class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h2 id="maturities-heading" class="text-base font-semibold text-base-content flex items-center gap-2">
+          <i class="fas fa-calendar-days text-emerald-500" aria-hidden="true"></i>
+          {{ 'maturities.title' | translate }}
+        </h2>
+        <p class="text-xs text-base-content/60 mt-1">{{ 'maturities.summarySubtitle' | translate }}</p>
+      </div>
+      <a class="btn btn-sm btn-ghost shrink-0" routerLink="/maturities">
+        {{ 'maturities.seeAll' | translate }}<i class="fas fa-arrow-right ml-1" aria-hidden="true"></i>
+      </a>
+    </header>
+  } @else {
+    <header class="pb-4 border-b border-base-300 dark:border-base-100">
+      <h2 id="maturities-heading" class="text-xl font-semibold text-base-content">
+        <i class="fas fa-calendar-days mr-2 text-emerald-500" aria-hidden="true"></i>
+        {{ 'maturities.title' | translate }}
+      </h2>
+      <p class="text-sm text-base-content/60 mt-1">{{ 'maturities.subtitle' | translate }}</p>
+    </header>
+  }
+
+  @if (isLoading()) {
+    <div class="space-y-3" [ngClass]="isSummary() ? 'mt-5' : 'py-6'">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton h-14 rounded-xl"></div>
+      }
+    </div>
+  } @else if (hasError()) {
+    <div class="flex flex-wrap items-center gap-3 text-sm text-error" [ngClass]="isSummary() ? 'mt-5' : 'py-6'">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+      <span>{{ 'maturities.loadError' | translate }}</span>
+      <button type="button" class="btn btn-sm btn-ghost" (click)="reload()">
+        <i class="fas fa-rotate-right mr-1" aria-hidden="true"></i>{{ 'netWorth.retry' | translate }}
+      </button>
+    </div>
+  } @else {
+    <div [ngClass]="isSummary() ? 'mt-4 space-y-4' : 'py-6 space-y-6'">
+
+      <!-- Vencidos sin cobrar -->
+      @if (overdue().length > 0) {
+        @if (isSummary()) {
+          <a role="alert" class="alert alert-warning alert-soft text-sm py-2" routerLink="/maturities">
+            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+            <span>{{ 'maturities.overdueCount' | translate: { count: overdue().length } }}</span>
+          </a>
+        } @else {
+          <section aria-labelledby="maturities-overdue-heading"
+            class="bg-base-100 border border-warning/40 shadow-sm rounded-xl p-4">
+            <h3 id="maturities-overdue-heading" class="text-sm font-semibold text-warning flex items-center gap-2 mb-1">
+              <i class="fas fa-circle-exclamation" aria-hidden="true"></i>{{ 'maturities.overdueTitle' | translate }}
+            </h3>
+            <p class="text-xs text-base-content/60 mb-3">{{ 'maturities.overdueHint' | translate }}</p>
+            <ul class="divide-y divide-base-300/60" role="list">
+              @for (event of overdue(); track event.type + '-' + event.sourceId + '-' + event.date) {
+                <ng-container *ngTemplateOutlet="eventRow; context: { $implicit: event, overdue: true }" />
+              }
+            </ul>
+          </section>
+        }
+      }
+
+      <!-- Meses -->
+      @for (month of months(); track month.month) {
+        <section [attr.aria-label]="formatMonth(month.month)"
+          [ngClass]="isSummary() ? '' : 'bg-base-100 border border-base-300/60 shadow-sm rounded-xl p-4'">
+          <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
+            <h3 class="text-sm font-semibold text-base-content">{{ formatMonth(month.month) }}</h3>
+            <div class="flex flex-wrap gap-2">
+              @for (total of month.totals; track total.currencyId) {
+                <span class="badge badge-sm badge-soft font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0 tabular-nums">
+                  {{ formatCurrency(total.amount, total.currencyId) }}
+                </span>
+              }
+            </div>
+          </div>
+          @if (month.events.length > 0) {
+            <ul class="divide-y divide-base-300/60" role="list">
+              @for (event of month.events; track event.type + '-' + event.sourceId + '-' + event.date) {
+                <ng-container *ngTemplateOutlet="eventRow; context: { $implicit: event, overdue: false }" />
+              }
+            </ul>
+          } @else {
+            <p class="text-xs text-base-content/50 italic">{{ 'maturities.noEventsInMonth' | translate }}</p>
+          }
+        </section>
+      }
+
+      <!-- Vacío -->
+      @if (!hasAnyEvent() && overdue().length === 0) {
+        <div class="text-center py-6">
+          <figure class="mx-auto w-14 h-14 bg-base-content/10 rounded-full grid place-items-center mb-3">
+            <i class="fas fa-calendar-days text-xl text-base-content/50" aria-hidden="true"></i>
+          </figure>
+          <p class="text-sm text-base-content/70">{{ 'maturities.empty' | translate }}</p>
+        </div>
+      }
+    </div>
+  }
+</section>
+
+<!-- Fila de un evento (se usa en vencidos y en cada mes) -->
+<ng-template #eventRow let-event let-overdue="overdue">
+  <li>
+    <button type="button" class="w-full flex items-start gap-3 py-2.5 text-left rounded-lg hover:bg-base-200/60 dark:hover:bg-base-300/40 transition-colors px-1 -mx-1"
+      (click)="openSource(event)">
+      <span class="w-9 h-9 shrink-0 rounded-lg grid place-items-center {{ typeColor(event.type) }}">
+        <i class="fas {{ typeIcon(event.type) }} text-sm" aria-hidden="true"></i>
+      </span>
+      <span class="flex-1 min-w-0">
+        <span class="flex items-start justify-between gap-2">
+          <span class="font-medium text-sm text-base-content truncate">{{ event.name }}</span>
+          @if (event.type === MaturityEventType.LoanEnd) {
+            <!-- El fin de un préstamo no trae plata: libera la cuota -->
+            <span class="text-xs text-base-content/70 shrink-0 tabular-nums">
+              {{ 'maturities.releases' | translate: { amount: formatCurrency(event.amount, event.currencyId) } }}
+            </span>
+          } @else {
+            <span class="text-sm font-semibold shrink-0 tabular-nums" [ngClass]="overdue ? 'text-warning' : 'text-success'">
+              +{{ formatCurrency(event.amount, event.currencyId) }}
+            </span>
+          }
+        </span>
+        <span class="block text-xs text-base-content/60 truncate">
+          {{ formatDay(event.date) }} · {{ typeLabel(event.type) | translate }}
+          @if (event.counterpartName || event.institutionName) {
+            · {{ event.counterpartName ?? event.institutionName }}
+          }
+        </span>
+        @if (event.plannedDestination) {
+          <span class="block text-xs text-primary mt-0.5 truncate">
+            <i class="fas fa-signs-post mr-1" aria-hidden="true"></i>{{ event.plannedDestination }}
+          </span>
+        }
+      </span>
+    </button>
+  </li>
+</ng-template>

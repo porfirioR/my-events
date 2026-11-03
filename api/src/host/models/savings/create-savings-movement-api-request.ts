@@ -1,7 +1,7 @@
 import { IsDateString, IsIn, IsInt, IsOptional, IsPositive, IsString, MaxLength } from 'class-validator';
 import { MovementType } from '../../../utility/enums';
 
-export class CreateMutualFundMovementApiRequest {
+export class CreateSavingsMovementApiRequest {
   @IsInt()
   @IsPositive()
   amount: number;

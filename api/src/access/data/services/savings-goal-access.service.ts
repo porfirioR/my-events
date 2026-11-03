@@ -266,6 +266,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       entity.institutionid ?? null,
       entity.payoutdate ? new Date(entity.payoutdate) : null,
       entity.payoutamount ?? null,
+      entity.planneddestination ?? null,
       paidInstallmentsCount,
     );
   };
@@ -291,6 +292,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     entity.payment_period = accessRequest.paymentPeriod ?? null;
     entity.institutionid = accessRequest.institutionId ?? null;
     entity.payoutdate = accessRequest.payoutDate ?? null;
+    entity.planneddestination = accessRequest.plannedDestination ?? null;
     return entity;
   };
 
@@ -320,6 +322,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     entity.institutionid = accessRequest.institutionId ?? null;
     entity.payoutdate = accessRequest.payoutDate ?? null;
     entity.payoutamount = accessRequest.payoutAmount ?? null;
+    entity.planneddestination = accessRequest.plannedDestination ?? null;
     return entity;
   };
 }
