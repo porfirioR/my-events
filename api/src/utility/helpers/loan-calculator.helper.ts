@@ -41,6 +41,28 @@ export class LoanCalculatorHelper {
     return this.calculateFrench(principal, annualRatePercentage, numberOfInstallments, startDate);
   }
 
+  /**
+   * Ajusta el cronograma a la cuota real del banco (incluye gastos, IVA, seguro).
+   * Las cuotas valen la cuota real y la última absorbe la diferencia hasta el total real
+   * (ej. Ueno: 11 × 646.071 + 649.382 = 7.756.163). El capital y el saldo no cambian;
+   * lo que el banco cobra de más se suma al interés de cada cuota (costo del crédito).
+   */
+  static applyActualAmounts(
+    schedule: LoanInstallmentSchedule[],
+    actualInstallmentAmount: number | null,
+    actualTotalAmount: number | null,
+  ): LoanInstallmentSchedule[] {
+    if (!actualInstallmentAmount || schedule.length === 0) return schedule;
+    const last = schedule.length;
+    const lastAmount = actualTotalAmount
+      ? actualTotalAmount - actualInstallmentAmount * (last - 1)
+      : actualInstallmentAmount;
+    return schedule.map(s => {
+      const totalAmount = s.installmentNumber === last ? lastAmount : actualInstallmentAmount;
+      return { ...s, totalAmount, interestAmount: totalAmount - s.principalAmount };
+    });
+  }
+
   static calculateFrench(
     principal: number,
     annualRatePercentage: number,

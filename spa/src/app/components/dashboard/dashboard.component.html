@@ -9,6 +9,12 @@
     <!-- Patrimonio -->
     <app-net-worth-section />
 
+    <!-- Próximos vencimientos y deudas (resumen; "Ver todo" abre la pantalla completa) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <app-maturities-calendar mode="summary" />
+      <app-debts-overview mode="summary" />
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Módulos -->

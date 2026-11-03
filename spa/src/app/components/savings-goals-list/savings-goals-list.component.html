@@ -176,13 +176,13 @@
                         <!-- ✅ Acciones rápidas para Fondo Mutuo -->
                         @if (isMutualFund(goal) && goal.statusId === GoalStatus.Active) {
                           <li>
-                            <button (click)="openMutualFundModal(goal, MovementType.Deposit)">
+                            <button (click)="openMovementModal(goal, MovementType.Deposit)">
                               <i class="fas fa-hand-holding-dollar text-success"></i>
                               {{ 'savingsGoalDetail.contribute' | translate }}
                             </button>
                           </li>
                           <li>
-                            <button (click)="openMutualFundModal(goal, MovementType.Withdrawal)">
+                            <button (click)="openMovementModal(goal, MovementType.Withdrawal)">
                               <i class="fas fa-money-bill-transfer text-warning"></i>
                               {{ 'savingsGoalDetail.withdraw' | translate }}
                             </button>
@@ -364,4 +364,4 @@
   </article>
 </section>
 <app-confirm-dialog (confirmed)="onConfirmResult($event)" />
-<app-mutual-fund-movement-modal />
+<app-savings-movement-modal />

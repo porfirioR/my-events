@@ -22,5 +22,6 @@ export interface SavingsGoalApiModel {
   institutionId: number | null;
   payoutDate: Date | null;
   payoutAmount: number | null;
+  plannedDestination: string | null;
   paidInstallmentsCount: number;
 }

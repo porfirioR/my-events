@@ -116,7 +116,13 @@ export class LoanManagerService {
 
     const loan = await this.loanAccessService.create(accessRequest);
 
-    const installmentRequests = calc.schedule.map(s =>
+    // Si el banco informa una cuota distinta a la calculada, las cuotas usan la real
+    const schedule = LoanCalculatorHelper.applyActualAmounts(
+      calc.schedule,
+      request.actualInstallmentAmount ?? null,
+      request.actualTotalAmount ?? null,
+    );
+    const installmentRequests = schedule.map(s =>
       new CreateLoanInstallmentAccessRequest(
         loan.id,
         s.installmentNumber,

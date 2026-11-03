@@ -116,7 +116,7 @@ export const AuthStore = signalStore(
       travelStore.clearAll();
       financialInstitutionsStore.clearAll();
       accountsStore.clearAll();
-      dashboardStore.clearNetWorth();
+      dashboardStore.clearFinancialData();
     },
 
     updateEmailVerificationStatus: (isVerified: boolean) => {

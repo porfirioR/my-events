@@ -17,3 +17,4 @@ export { MovementType } from './movement-type.enum';
 export { AccountType, AccountTypeLabels, AccountTypeIcons } from './account-type.enum';
 export { NetWorthLiquidity, NetWorthLiquidityLabels, NetWorthLiquidityColors } from './net-worth-liquidity.enum';
 export { NetWorthItemType } from './net-worth-item-type.enum';
+export { MaturityEventType, MaturityEventTypeLabels, MaturityEventTypeIcons, MaturityEventTypeColors } from './maturity-event-type.enum';

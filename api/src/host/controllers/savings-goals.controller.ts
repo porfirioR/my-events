@@ -20,8 +20,7 @@ import {
   CreateSavingsGoalRequest,
   UpdateSavingsGoalRequest,
   PayInstallmentRequest,
-  CreateFreeFormDepositRequest,
-  CreateMutualFundMovementRequest,
+  CreateSavingsMovementRequest,
   AddInstallmentsRequest,
   WithdrawSavingsGoalRequest,
 } from '../../manager/models/savings';
@@ -29,8 +28,7 @@ import {
   CreateSavingsGoalApiRequest,
   UpdateSavingsGoalApiRequest,
   PayInstallmentApiRequest,
-  CreateFreeFormDepositApiRequest,
-  CreateMutualFundMovementApiRequest,
+  CreateSavingsMovementApiRequest,
   AddInstallmentsApiRequest,
   WithdrawSavingsGoalApiRequest,
 } from '../models/savings';
@@ -131,6 +129,7 @@ export class SavingsGoalsController {
       apiRequest.institutionId ? +apiRequest.institutionId : null,
       apiRequest.payoutDate ? new Date(apiRequest.payoutDate) : null,
       apiRequest.initialPaidInstallments ? +apiRequest.initialPaidInstallments : null,
+      apiRequest.plannedDestination?.trim() || null,
     );
 
     return await this.savingsManagerService.createSavingsGoal(request);
@@ -166,6 +165,7 @@ export class SavingsGoalsController {
       apiRequest.paymentPeriod ?? null,
       apiRequest.institutionId ? +apiRequest.institutionId : null,
       apiRequest.payoutDate ? new Date(apiRequest.payoutDate) : null,
+      apiRequest.plannedDestination?.trim() || null,
     );
 
     return await this.savingsManagerService.updateSavingsGoal(request);
@@ -306,38 +306,17 @@ export class SavingsGoalsController {
   }
 
   /**
-   * Crear depósito libre (FreeForm)
-   * POST /api/savings-goals/:goalId/deposits/freeform
+   * Crear movimiento (depósito o retiro parcial) en forma libre o fondo mutuo
+   * POST /api/savings-goals/:goalId/deposits/movement
    */
-  @Post(':goalId/deposits/freeform')
-  async createFreeFormDeposit(
+  @Post(':goalId/deposits/movement')
+  async createMovement(
     @Param('goalId', ParseIntPipe) goalId: number,
-    @Body() apiRequest: CreateFreeFormDepositApiRequest,
+    @Body() apiRequest: CreateSavingsMovementApiRequest,
   ): Promise<SavingsDepositModel> {
     const userId = await this.currentUserService.getCurrentUserId();
 
-    const request = new CreateFreeFormDepositRequest(
-      userId,
-      goalId,
-      apiRequest.amount,
-      apiRequest.description,
-    );
-
-    return await this.savingsManagerService.createFreeFormDeposit(request);
-  }
-
-  /**
-   * Crear movimiento de fondo mutuo (depósito o retiro)
-   * POST /api/savings-goals/:goalId/deposits/mutualfund
-   */
-  @Post(':goalId/deposits/mutualfund')
-  async createMutualFundMovement(
-    @Param('goalId', ParseIntPipe) goalId: number,
-    @Body() apiRequest: CreateMutualFundMovementApiRequest,
-  ): Promise<SavingsDepositModel> {
-    const userId = await this.currentUserService.getCurrentUserId();
-
-    const request = new CreateMutualFundMovementRequest(
+    const request = new CreateSavingsMovementRequest(
       userId,
       goalId,
       apiRequest.amount,
@@ -346,7 +325,7 @@ export class SavingsGoalsController {
       apiRequest.date ? new Date(apiRequest.date) : undefined,
     );
 
-    return await this.savingsManagerService.createMutualFundMovement(request);
+    return await this.savingsManagerService.createMovement(request);
   }
 
   /**

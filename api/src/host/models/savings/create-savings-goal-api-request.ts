@@ -75,4 +75,9 @@ export class CreateSavingsGoalApiRequest {
   @IsInt()
   @Min(0)
   initialPaidInstallments?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  plannedDestination?: string;
 }

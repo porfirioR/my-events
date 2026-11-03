@@ -18,5 +18,6 @@ export class UpdateSavingsGoalRequest {
     public readonly paymentPeriod: number | null,
     public readonly institutionId: number | null,
     public readonly payoutDate: Date | null,
+    public readonly plannedDestination: string | null,
   ) {}
 }

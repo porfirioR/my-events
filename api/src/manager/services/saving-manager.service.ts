@@ -20,12 +20,12 @@ import {
   CreateSavingsGoalRequest,
   UpdateSavingsGoalRequest,
   PayInstallmentRequest,
-  CreateFreeFormDepositRequest,
-  CreateMutualFundMovementRequest,
+  CreateSavingsMovementRequest,
   AddInstallmentsRequest,
   WithdrawSavingsGoalRequest,
 } from '../models/savings';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
+import { SavingsMovementHelper } from '../../utility/helpers/savings-movement.helper';
 import { FINANCIAL_INSTITUTION_TOKENS, SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import { ProgressionType, MovementType } from 'src/utility/enums';
@@ -193,6 +193,7 @@ export class SavingsManagerService {
       request.paymentPeriod,
       request.institutionId,
       payoutDate,
+      request.plannedDestination ?? null,
     );
 
     const goalAccessModel = await this.savingsGoalAccessService.create(accessRequest);
@@ -332,6 +333,7 @@ export class SavingsManagerService {
       request.institutionId,
       request.payoutDate ?? currentGoal.payoutDate,
       currentGoal.payoutAmount,
+      request.plannedDestination,
     );
 
     const accessModel = await this.savingsGoalAccessService.update(accessRequest);
@@ -580,6 +582,7 @@ export class SavingsManagerService {
       goal.institutionId,
       goal.payoutDate,
       goal.payoutAmount,
+      goal.plannedDestination,
     );
 
     await this.savingsGoalAccessService.update(updateRequest);
@@ -590,97 +593,41 @@ export class SavingsManagerService {
   // ==================== DEPOSITS ====================
 
   /**
-   * Create a free-form deposit (FreeForm goals only)
+   * Create a deposit or a partial withdrawal (FreeForm and MutualFund goals)
    * Flow:
-   * 1. Validate goal is FreeForm and active
-   * 2. Validate amount does not exceed remaining target
-   * 3. Create deposit
-   * 4. Update currentAmount
-   * 5. If currentAmount >= targetAmount, mark goal as completed
+   * 1. Validate type, status and amount (SavingsMovementHelper)
+   *    - FreeForm: deposits cannot exceed the target; withdrawals cannot exceed the balance
+   *    - MutualFund: withdrawals bounded by balance plus maximum accrued interest; no target
+   * 2. Create deposit/withdrawal record
+   * 3. Update currentAmount and, for FreeForm, complete the goal or reopen it
    */
-  public createFreeFormDeposit = async (request: CreateFreeFormDepositRequest): Promise<SavingsDepositModel> => {
-    // 1. Validate goal
+  public createMovement = async (request: CreateSavingsMovementRequest): Promise<SavingsDepositModel> => {
+    // 1. Validate
     const goal = await this.savingsGoalAccessService.getById(request.savingsGoalId, request.userId);
 
-    if (goal.progressionTypeId !== 5) { // FreeForm
-      throw new BadRequestException('This operation is only for FreeForm savings goals');
-    }
-
-    if (goal.statusId !== 1) { // Active
-      throw new BadRequestException('Cannot add deposits to inactive goals');
-    }
-
-    // 2. Validate amount does not exceed target
-    const newTotal = goal.currentAmount + request.amount;
-    if (newTotal > goal.targetAmount) {
-      const remaining = goal.targetAmount - goal.currentAmount;
-      throw new BadRequestException(
-        `Deposit would exceed target. Remaining: ${remaining}`
-      );
-    }
-
-    // 3. Create deposit
-    const depositAccessRequest = new CreateSavingsDepositAccessRequest(
-      request.savingsGoalId,
+    const result = SavingsMovementHelper.apply(
+      {
+        progressionTypeId: goal.progressionTypeId,
+        statusId: goal.statusId,
+        currentAmount: goal.currentAmount,
+        targetAmount: goal.targetAmount,
+        mutualFundMaxWithdrawal: goal.progressionTypeId === ProgressionType.MutualFund
+          ? SavingsCalculatorHelper.calculateMutualFundMaxWithdrawal(goal.currentAmount, goal.annualRatePercentage, goal.startDate)
+          : undefined,
+      },
+      request.movementType,
       request.amount,
-      new Date(),
-      null, // installmentId is null for FreeForm
-      request.description,
     );
-
-    const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
-
-    // 4. Update currentAmount
-    await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, newTotal);
-
-    // 5. Check if goal is completed
-    if (newTotal >= goal.targetAmount) {
-      await this.savingsGoalAccessService.markAsCompleted(request.savingsGoalId, request.userId);
+    if ('error' in result) {
+      throw new BadRequestException(result.error);
     }
 
-    return this.mapDepositAccessModelToModel(depositAccessModel);
-  };
-
-  /**
-   * Create a deposit or withdrawal movement (MutualFund goals only)
-   * Flow:
-   * 1. Validate goal is MutualFund and active
-   * 2. If withdrawal, validate amount does not exceed current balance
-   * 3. Create deposit/withdrawal record
-   * 4. Update currentAmount (add or subtract depending on movement type)
-   * No target/completion check applies — MutualFund never auto-completes.
-   */
-  public createMutualFundMovement = async (request: CreateMutualFundMovementRequest): Promise<SavingsDepositModel> => {
-    // 1. Validate goal
-    const goal = await this.savingsGoalAccessService.getById(request.savingsGoalId, request.userId);
-
-    if (goal.progressionTypeId !== ProgressionType.MutualFund) {
-      throw new BadRequestException('This operation is only for MutualFund savings goals');
-    }
-
-    if (goal.statusId !== 1) { // Active
-      throw new BadRequestException('Cannot add movements to inactive goals');
-    }
-
-    // 2. Withdrawals cannot exceed the current balance plus the maximum accrued interest
-    //    (bounded by the goal's informative annual rate, prorated since the goal started)
-    if (request.movementType === MovementType.Withdrawal) {
-      const maxWithdrawal = SavingsCalculatorHelper.calculateMutualFundMaxWithdrawal(
-        goal.currentAmount,
-        goal.annualRatePercentage,
-        goal.startDate,
-      );
-      if (request.amount > maxWithdrawal) {
-        throw new BadRequestException(`Amount exceeds available balance plus maximum accrued interest (${maxWithdrawal})`);
-      }
-    }
-
-    // 3. Create movement
     const movementDate = request.date ?? new Date();
     if (movementDate > new Date()) {
       throw new BadRequestException('Movement date cannot be in the future');
     }
 
+    // 2. Create movement
     const depositAccessRequest = new CreateSavingsDepositAccessRequest(
       request.savingsGoalId,
       request.amount,
@@ -692,11 +639,13 @@ export class SavingsManagerService {
 
     const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
 
-    // 4. Update currentAmount
-    const newCurrentAmount = request.movementType === MovementType.Withdrawal
-      ? goal.currentAmount - request.amount
-      : goal.currentAmount + request.amount;
-    await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, newCurrentAmount);
+    // 3. Update currentAmount and status
+    await this.savingsGoalAccessService.updateCurrentAmount(request.savingsGoalId, request.userId, result.newCurrentAmount);
+    if (result.newStatusId === 2) { // Completed
+      await this.savingsGoalAccessService.markAsCompleted(request.savingsGoalId, request.userId);
+    } else if (result.newStatusId !== null) {
+      await this.savingsGoalAccessService.updateStatus(request.savingsGoalId, request.userId, result.newStatusId);
+    }
 
     return this.mapDepositAccessModelToModel(depositAccessModel);
   };
@@ -740,6 +689,9 @@ export class SavingsManagerService {
 
     if (goal.statusId === 2 && newCurrentAmount < completionThreshold) { // 2 = Completed
       await this.savingsGoalAccessService.updateStatus(goal.id, userId, 1); // 1 = Active
+    } else if (goal.statusId === 1 && goal.progressionTypeId === ProgressionType.FreeForm && newCurrentAmount >= goal.targetAmount) {
+      // Borrar un retiro de forma libre puede devolverla a la meta
+      await this.savingsGoalAccessService.markAsCompleted(goal.id, userId);
     }
 
     await this.savingsDepositAccessService.delete(depositId);
@@ -824,6 +776,7 @@ export class SavingsManagerService {
       accessModel.institutionId,
       accessModel.payoutDate,
       accessModel.payoutAmount,
+      accessModel.plannedDestination,
       accessModel.paidInstallmentsCount,
     );
   };

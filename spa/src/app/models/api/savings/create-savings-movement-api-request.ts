@@ -1,4 +1,4 @@
-export class CreateMutualFundMovementApiRequest {
+export class CreateSavingsMovementApiRequest {
   constructor(
     public amount: number,
     public movementType: number,

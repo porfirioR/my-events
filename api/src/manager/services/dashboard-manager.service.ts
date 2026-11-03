@@ -9,11 +9,16 @@ import {
 import { IDashboardAccessService } from '../../access/contract/dashboard';
 import { IAccountAccessService, IAccountBalanceSnapshotAccessService, AccountBalanceSnapshotAccessModel } from '../../access/contract/accounts';
 import { ISavingsGoalAccessService } from '../../access/contract/savings';
-import { ILoanAccessService } from '../../access/contract/loans';
+import { ILoanAccessService, ILoanInstallmentAccessService, LoanAccessModel } from '../../access/contract/loans';
 import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
-import { NetWorthCalculatorHelper } from '../../utility/helpers';
+import { DebtsOverviewHelper, MaturityCalendarHelper, NetWorthCalculatorHelper } from '../../utility/helpers';
 import { DashboardSummaryModel } from '../models/dashboard/dashboard-summary.model';
 import { NetWorthCurrencyModel, NetWorthInstitutionModel, NetWorthSummaryModel } from '../models/dashboard/net-worth-summary.model';
+import { MaturityCalendarModel, MaturityEventModel, MaturityMonthModel } from '../models/dashboard/maturity-calendar.model';
+import { DebtsLoanModel, DebtsOverviewModel } from '../models/dashboard/debts-overview.model';
+
+// Meses que muestra el calendario de vencimientos (desde el actual)
+const MATURITY_CALENDAR_MONTHS = 12;
 
 @Injectable()
 export class DashboardManagerService {
@@ -32,6 +37,9 @@ export class DashboardManagerService {
 
     @Inject(LOAN_TOKENS.LOAN_ACCESS_SERVICE)
     private readonly loanAccessService: ILoanAccessService,
+
+    @Inject(LOAN_TOKENS.INSTALLMENT_ACCESS_SERVICE)
+    private readonly loanInstallmentAccessService: ILoanInstallmentAccessService,
 
     @Inject(FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE)
     private readonly financialInstitutionAccessService: IFinancialInstitutionAccessService,
@@ -112,6 +120,102 @@ export class DashboardManagerService {
       activeAccounts.length - accountsWithBalance.length,
     );
   };
+
+  // Lo que vence o se cobra en los próximos meses; today = YYYY-MM-DD del usuario
+  public getMaturityCalendar = async (userId: number, today: string): Promise<MaturityCalendarModel> => {
+    const [savingsGoals, loans, institutionNames] = await Promise.all([
+      this.savingsGoalAccessService.getAll(userId),
+      this.loanAccessService.getAll(userId),
+      this.getInstitutionNames(userId),
+    ]);
+    const installments = await this.getPendingInstallments(loans);
+
+    const calendar = MaturityCalendarHelper.build({
+      savings: savingsGoals.map(g => ({
+        id: g.id,
+        name: g.name,
+        institutionId: g.institutionId,
+        currencyId: g.currencyId,
+        progressionTypeId: g.progressionTypeId,
+        statusId: g.statusId,
+        targetAmount: g.targetAmount,
+        currentAmount: g.currentAmount,
+        expectedEndDate: this.toDateKey(g.expectedEndDate),
+        payoutDate: this.toDateKey(g.payoutDate),
+        plannedDestination: g.plannedDestination,
+      })),
+      loans: loans.map(l => ({
+        id: l.id,
+        name: l.name,
+        institutionId: l.loanEntityId,
+        lenderCustomName: l.lenderCustomName,
+        currencyId: l.currencyId,
+        direction: l.direction,
+        statusId: l.statusId,
+        expectedEndDate: this.toDateKey(l.expectedEndDate),
+        installmentAmount: l.actualInstallmentAmount,
+      })),
+      installments: installments.map(i => ({ loanId: i.loanId, dueDate: this.toDateKey(i.dueDate), totalAmount: i.totalAmount })),
+    }, today, MATURITY_CALENDAR_MONTHS);
+
+    const toModel = (e: typeof calendar.overdue[number]) => {
+      const institutionName = e.institutionId === null ? null : institutionNames.get(e.institutionId) ?? null;
+      return new MaturityEventModel(
+        e.type, e.date, e.currencyId, e.amount, e.sourceId, e.name, e.institutionId, institutionName,
+        e.lenderCustomName ?? institutionName, e.plannedDestination,
+      );
+    };
+    return new MaturityCalendarModel(
+      calendar.months.map(m => new MaturityMonthModel(m.month, m.totals, m.events.map(toModel))),
+      calendar.overdue.map(toModel),
+    );
+  };
+
+  // Lo que debo y lo que me deben, con cuotas restantes, próximo vencimiento y atrasos
+  public getDebtsOverview = async (userId: number, today: string): Promise<DebtsOverviewModel> => {
+    const [loans, institutionNames] = await Promise.all([
+      this.loanAccessService.getAll(userId),
+      this.getInstitutionNames(userId),
+    ]);
+    const installments = await this.getPendingInstallments(loans);
+
+    const overview = DebtsOverviewHelper.build({
+      loans: loans.map(l => ({
+        id: l.id,
+        name: l.name,
+        institutionId: l.loanEntityId,
+        lenderCustomName: l.lenderCustomName,
+        currencyId: l.currencyId,
+        direction: l.direction,
+        statusId: l.statusId,
+        currentBalance: l.currentBalance,
+        expectedEndDate: this.toDateKey(l.expectedEndDate),
+        installmentAmount: l.actualInstallmentAmount,
+      })),
+      installments: installments.map(i => ({ loanId: i.loanId, dueDate: this.toDateKey(i.dueDate), totalAmount: i.totalAmount })),
+    }, today);
+
+    const toModel = (l: typeof overview.borrowed[number]) => {
+      const institutionName = institutionNames.get(l.institutionId) ?? null;
+      return new DebtsLoanModel(
+        l.loanId, l.name, l.institutionId, institutionName, l.lenderCustomName ?? institutionName, l.currencyId,
+        l.currentBalance, l.remainingInstallments, l.nextDueDate, l.nextAmount, l.expectedEndDate, l.overdueCount, l.overdueAmount,
+      );
+    };
+    return new DebtsOverviewModel(overview.borrowed.map(toModel), overview.lent.map(toModel), overview.totals);
+  };
+
+  // Solo de préstamos en curso: los saldados o cancelados no tienen cuotas que mirar
+  private getPendingInstallments = (loans: LoanAccessModel[]) =>
+    this.loanInstallmentAccessService.getPendingByLoanIds(loans.filter(l => l.statusId === 1 || l.statusId === 3).map(l => l.id));
+
+  private getInstitutionNames = async (userId: number): Promise<Map<number, string>> => {
+    const institutions = await this.financialInstitutionAccessService.getAll(userId);
+    return new Map(institutions.map(i => [i.id, i.name]));
+  };
+
+  // Date de la base (medianoche UTC) a YYYY-MM-DD
+  private toDateKey = (date: Date | null): string | null => (date ? new Date(date).toISOString().slice(0, 10) : null);
 
   private getLatestByAccount = (snapshots: AccountBalanceSnapshotAccessModel[]): Map<number, AccountBalanceSnapshotAccessModel> => {
     const latest = new Map<number, AccountBalanceSnapshotAccessModel>();

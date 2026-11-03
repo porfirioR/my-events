@@ -13,6 +13,7 @@ export class LocalService {
   private readonly jwtToken = 'jwt'
   private readonly isEmailVerified = 'isEmailVerified'
   private readonly transactionEntryPreferencesKey = 'transaction-entry-preferences'
+  private readonly preservedKeys = ['app-language', 'theme']
 
   public getEmail = (): string | null => localStorage.getItem(this.emailKey) ?? ''
   public setEmail = (email: string): void => localStorage.setItem(this.emailKey, email)
@@ -31,7 +32,12 @@ export class LocalService {
   public getJwtToken = (): string | null => localStorage.getItem(this.jwtToken)
   public setJwtToken = (token: string): void => localStorage.setItem(this.jwtToken, token)
 
-  public cleanCredentials = (): void => localStorage.clear()
+  // Borra la sesión pero conserva las preferencias del dispositivo (idioma y tema)
+  public cleanCredentials = (): void => {
+    const preserved = this.preservedKeys.map(key => [key, localStorage.getItem(key)] as const);
+    localStorage.clear();
+    preserved.forEach(([key, value]) => value !== null && localStorage.setItem(key, value));
+  }
 
   public setEmailVerified = (isVerified: boolean): void => localStorage.setItem(this.isEmailVerified, JSON.stringify(isVerified));
   public getEmailVerified = (): boolean => {

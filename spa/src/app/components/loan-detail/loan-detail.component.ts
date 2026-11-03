@@ -108,6 +108,10 @@ export class LoanDetailComponent implements OnInit {
       new DetailFieldViewModel(this.key('totalAmount'), money(l.actualTotalAmount)),
       new DetailFieldViewModel('loanDetail.startDate', this.formatDate(l.startDate)),
     ];
+    // Si el banco cobra más que la fórmula (gastos, IVA, seguro), el costo real es total real − capital
+    if (l.actualTotalAmount !== l.calculatedTotalAmount) {
+      fields.splice(3, 0, new DetailFieldViewModel('loanDetail.totalCreditCost', money(l.actualTotalAmount - l.principalAmount), this.isLent() ? 'text-success' : 'text-error'));
+    }
     if (l.expectedEndDate) fields.push(new DetailFieldViewModel('loanDetail.expectedEnd', this.formatDate(l.expectedEndDate)));
     if (l.completedDate) fields.push(new DetailFieldViewModel('loanDetail.completedDate', this.formatDate(l.completedDate), 'text-success'));
     if (l.administrativeFees) fields.push(new DetailFieldViewModel('loanDetail.administrativeFees', money(l.administrativeFees)));

@@ -23,7 +23,6 @@ import { DetailProgressComponent } from '../detail-progress/detail-progress.comp
 import { DetailInfoGridComponent } from '../detail-info-grid/detail-info-grid.component';
 import {
   PayInstallmentApiRequest,
-  CreateFreeFormDepositApiRequest,
   AddInstallmentsApiRequest,
   SavingsInstallmentApiModel,
   WithdrawSavingsGoalApiRequest,
@@ -33,7 +32,7 @@ import { DateInputComponent } from '../inputs/date-input/date-input.component';
 import { TextAreaInputComponent } from '../inputs/text-area-input/text-area-input.component';
 import { ProgressionTypeFormGroup } from '../../models/forms';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
-import { MutualFundMovementModalComponent } from '../mutual-fund-movement-modal/mutual-fund-movement-modal.component';
+import { SavingsMovementModalComponent } from '../savings-movement-modal/savings-movement-modal.component';
 
 @Component({
   selector: 'app-savings-goal-detail',
@@ -49,7 +48,7 @@ import { MutualFundMovementModalComponent } from '../mutual-fund-movement-modal/
     TextAreaInputComponent,
     DateInputComponent,
     ConfirmDialogComponent,
-    MutualFundMovementModalComponent,
+    SavingsMovementModalComponent,
     NextInstallmentAlertComponent,
     InstallmentsTableComponent,
     MovementsListComponent,
@@ -60,7 +59,7 @@ import { MutualFundMovementModalComponent } from '../mutual-fund-movement-modal/
 })
 export class SavingsGoalDetailComponent implements OnInit {
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
-  @ViewChild(MutualFundMovementModalComponent) mutualFundModal!: MutualFundMovementModalComponent;
+  @ViewChild(SavingsMovementModalComponent) movementModal!: SavingsMovementModalComponent;
   private pendingCallback: ((result: ConfirmDialogResult) => void) | null = null;
 
   private destroyRef = inject(DestroyRef);
@@ -133,9 +132,6 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected selectedInstallment = signal<any>(null);
   protected payForm: FormGroup<ProgressionTypeFormGroup>;
 
-  protected showFreeFormModal = signal(false);
-  protected freeFormDepositForm: FormGroup<ProgressionTypeFormGroup>;
-
   protected showAddInstallmentsModal = signal(false);
   protected addInstallmentsForm: FormGroup;
   protected isSubmitting = signal<boolean>(false);
@@ -147,6 +143,23 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected isMutualFund = computed(() => this.goal()?.progressionTypeId === ProgressionType.MutualFund);
   protected isRotating = computed(() => this.goal()?.progressionTypeId === ProgressionType.Rotating);
   protected MovementType = MovementType;
+
+  // Forma libre y fondo mutuo: depósitos y retiros parciales sueltos, el ahorro sigue abierto
+  protected hasMovements = computed(() => this.isFreeForm() || this.isMutualFund());
+  protected canDeposit = computed(() => this.hasMovements() && this.goal()?.statusId === GoalStatus.Active);
+  // Una meta de forma libre completada todavía puede retirar (vuelve a Activa)
+  protected canPartialWithdraw = computed(() => {
+    const goal = this.goal();
+    if (!goal || !this.hasMovements()) return false;
+    if (this.isMutualFund()) return goal.statusId === GoalStatus.Active;
+    return goal.currentAmount > 0 && (goal.statusId === GoalStatus.Active || goal.statusId === GoalStatus.Completed);
+  });
+  protected movementTotals = computed(() => {
+    const deposits = this.deposits();
+    const withdrawn = deposits.filter(d => d.movementType === MovementType.Withdrawal).reduce((sum, d) => sum + d.amount, 0);
+    const contributed = deposits.filter(d => d.movementType !== MovementType.Withdrawal).reduce((sum, d) => sum + d.amount, 0);
+    return { contributed, withdrawn };
+  });
 
   // Cobro registrado: lo ahorrado (capital en plazo fijo/CDA) y la ganancia real = cobrado − ahorrado
   protected payoutSummary = computed(() => {
@@ -173,14 +186,23 @@ export class SavingsGoalDetailComponent implements OnInit {
     if (!goal) return [];
     const money = (amount: number) => this.formatCurrency(amount, goal.currencyId);
 
+    const { contributed, withdrawn } = this.movementTotals();
     if (this.isMutualFund()) {
-      const contributed = this.deposits().filter(d => d.movementType !== MovementType.Withdrawal).reduce((sum, d) => sum + d.amount, 0);
-      const withdrawn = this.deposits().filter(d => d.movementType === MovementType.Withdrawal).reduce((sum, d) => sum + d.amount, 0);
       return [
         new DetailFieldViewModel('savingsGoalDetail.currentBalance', money(goal.currentAmount), 'text-success'),
         new DetailFieldViewModel('savingsGoalDetail.statContributed', money(contributed)),
         new DetailFieldViewModel('savingsGoalDetail.statWithdrawn', money(withdrawn), 'text-warning'),
         new DetailFieldViewModel('savingsGoalDetail.annualRateLabel', goal.annualRatePercentage ? `${goal.annualRatePercentage}%` : '—', 'text-success'),
+      ];
+    }
+
+    // Forma libre con retiros: el saldo, lo aportado y lo retirado (el restante ya se ve en la barra)
+    if (this.isFreeForm() && withdrawn > 0) {
+      return [
+        new DetailFieldViewModel('savingsGoalDetail.statSaved', money(goal.currentAmount), 'text-success'),
+        new DetailFieldViewModel('savingsGoalDetail.statContributed', money(contributed)),
+        new DetailFieldViewModel('savingsGoalDetail.statWithdrawn', money(withdrawn), 'text-warning'),
+        new DetailFieldViewModel('savingsGoalDetail.statTarget', money(this.progressTarget())),
       ];
     }
 
@@ -253,14 +275,18 @@ export class SavingsGoalDetailComponent implements OnInit {
 
     const programmedYield = this.programmedYield();
     if (programmedYield) {
-      fields.push(new DetailFieldViewModel('savingsGoalDetail.estimatedYield', `+ ${money(programmedYield.yieldAmount)}`, 'text-success'));
-      if (realGainField) fields.push(realGainField);
+      // Con el cobro registrado la estimada ya no aporta: se reemplaza por la real
+      fields.push(realGainField ?? new DetailFieldViewModel('savingsGoalDetail.estimatedYield', `+ ${money(programmedYield.yieldAmount)}`, 'text-success'));
       // Cobrado: lo que realmente se recibió, en el color de "Cobrado"
       fields.push(payout
         ? new DetailFieldViewModel('savingsGoalDetail.totalCollected', money(goal.payoutAmount!), 'text-primary')
         : new DetailFieldViewModel('savingsGoalDetail.totalAtMaturity', money(programmedYield.totalAmount), 'text-success'));
     } else if (realGainField) {
       fields.push(realGainField);
+    }
+    // Mientras no se cobró: qué se piensa hacer con la plata al vencer
+    if (goal.plannedDestination && goal.statusId !== GoalStatus.Withdrawn) {
+      fields.push(new DetailFieldViewModel('savingsGoalDetail.plannedDestination', goal.plannedDestination));
     }
     return fields;
   });
@@ -288,7 +314,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     const numberById = new Map(this.installments().map(i => [i.id, i.installmentNumber]));
     return this.deposits().map(d => new MovementViewModel(
       d.id, d.amount, d.depositDate, d.description,
-      this.isMutualFund() && d.movementType === MovementType.Withdrawal,
+      d.movementType === MovementType.Withdrawal,
       d.installmentId !== null ? numberById.get(d.installmentId) ?? null : null,
     ));
   });
@@ -326,11 +352,6 @@ export class SavingsGoalDetailComponent implements OnInit {
 
   constructor() {
     this.payForm = new FormGroup<ProgressionTypeFormGroup>({
-      amount: new FormControl(null, [Validators.required, Validators.min(1)]),
-      description: new FormControl(''),
-    });
-
-    this.freeFormDepositForm = new FormGroup<ProgressionTypeFormGroup>({
       amount: new FormControl(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
     });
@@ -432,55 +453,6 @@ export class SavingsGoalDetailComponent implements OnInit {
     });
   }
 
-  // ==================== FREEFORM DEPOSIT ====================
-
-  protected openFreeFormModal(): void {
-    const maxAmount = this.remaining();
-    this.freeFormDepositForm.reset()
-    this.freeFormDepositForm.patchValue({
-      amount: null,
-      description: '',
-    });
-    this.freeFormDepositForm.controls.amount.addValidators(Validators.max(maxAmount))
-    this.showFreeFormModal.set(true);
-  }
-
-  protected closeFreeFormModal(): void {
-    this.showFreeFormModal.set(false);
-    this.freeFormDepositForm.reset();
-  }
-
-  protected createFreeFormDeposit(): void {
-    if (this.freeFormDepositForm.invalid) return;
-
-    const goalId = this.goal()!.id;
-    const values = this.freeFormDepositForm.value;
-
-    const request = new CreateFreeFormDepositApiRequest(
-      +values.amount!,
-      values.description || undefined
-    );
-    this.isSubmitting.set(true);
-
-    this.savingsStore.createFreeFormDeposit(goalId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.alertService.showSuccess(
-          this.translate.instant('savingsGoalDetail.depositCreatedSuccess')
-        );
-        this.closeFreeFormModal();
-        this.reloadData();
-      },
-      error: (e) => {
-        this.isSubmitting.set(false);
-        this.alertService.showError(
-          this.translate.instant('savingsGoalDetail.depositCreatedError')
-        );
-        throw e;
-      },
-    });
-  }
-
   // ==================== WITHDRAW (REGISTRAR COBRO) ====================
 
   protected openWithdrawModal(): void {
@@ -526,22 +498,24 @@ export class SavingsGoalDetailComponent implements OnInit {
     });
   }
 
-  // ==================== MUTUAL FUND MOVEMENT ====================
+  // ==================== MOVIMIENTOS (FORMA LIBRE Y FONDO MUTUO) ====================
 
-  protected openMutualFundModal(movementType: number): void {
+  protected openMovementModal(movementType: number): void {
     const goal = this.goal();
     if (!goal) return;
-    this.mutualFundModal.open({
+    this.movementModal.open({
       goalId: goal.id,
       currencyId: goal.currencyId,
       currentAmount: goal.currentAmount,
       annualRatePercentage: goal.annualRatePercentage,
       startDate: goal.startDate,
       movementType,
+      progressionTypeId: goal.progressionTypeId,
+      targetAmount: goal.targetAmount,
     });
   }
 
-  protected onMutualFundMovementCompleted(): void {
+  protected onMovementCompleted(): void {
     this.reloadData();
   }
 

@@ -367,6 +367,43 @@
     "loadError": "Net worth could not be loaded.",
     "retry": "Retry"
   },
+  "maturities": {
+    "title": "Upcoming maturities",
+    "subtitle": "What matures or gets collected in the next 12 months, so you can decide in advance what to do with that money.",
+    "summarySubtitle": "Savings, rotating savings and collections in the coming months",
+    "seeAll": "See all",
+    "overdueTitle": "Matured, not collected",
+    "overdueHint": "Savings past their date and late installments of loans you lent. If you already collected them, register it so they stop showing.",
+    "overdueCount": "Matured, not collected: {{count}}",
+    "noEventsInMonth": "Nothing matures this month",
+    "empty": "Nothing matures in the next 12 months.",
+    "releases": "frees {{amount}}/month",
+    "loadError": "Maturities could not be loaded.",
+    "typeSavingsMaturity": "Savings matures",
+    "typeRotatingPayout": "Rotating payout (estimated)",
+    "typeLentCollection": "Loan collection",
+    "typeLoanEnd": "Loan ends"
+  },
+  "debts": {
+    "title": "Debts and loans",
+    "subtitle": "What you owe and what you are owed, with remaining installments and late collections.",
+    "summarySubtitle": "What you owe and what you are owed",
+    "iOwe": "I owe",
+    "theyOweMe": "Owed to me",
+    "monthlyCommitted": "Monthly installments",
+    "borrowedTitle": "What I owe",
+    "lentTitle": "What I am owed",
+    "remainingInstallments": "{{count}} installments left",
+    "next": "Next:",
+    "nextCollection": "Next collection:",
+    "endsOn": "Ends on {{date}}",
+    "overdueInstallments": "Late installments: {{count}}",
+    "overdueCollections": "Late collections: {{count}} ·",
+    "overdueCollectionBadge": "Late: {{count}} ({{amount}})",
+    "moreLoans": "See {{count}} more",
+    "empty": "You have no ongoing debts or lent loans.",
+    "loadError": "Debts could not be loaded."
+  },
   "matchRequests": {
     "title": "Match Requests",
     "received": "Received",
@@ -624,6 +661,7 @@
     "skippedInstallments": "Skipped installments",
     "registerPayoutTitle": "Register payout",
     "registerPayoutDesc": "The saving becomes Withdrawn and no longer counts toward your net worth. Any pending installments (e.g. you won the rotating savings draw) are cancelled.",
+    "registerPayoutPartialHint": "To take out only part of it, use Withdraw: the saving stays open.",
     "payoutAmount": "Amount received (optional)",
     "payoutAmountDesc": "What you actually received; it may be more than what you paid in",
     "payoutDate": "Payout date",
@@ -640,6 +678,7 @@
     "contributeTitle": "Contribute to Mutual Fund",
     "withdrawTitle": "Withdraw from Mutual Fund",
     "availableBalance": "Available to withdraw (includes estimated gain): {{amount}}",
+    "availableToWithdraw": "Available to withdraw: {{amount}}",
     "contributeButton": "Contribute",
     "withdrawButton": "Withdraw",
     "withdrawalCreatedSuccess": "Withdrawal recorded successfully",
@@ -713,7 +752,8 @@
     "fixedDepositTotalAtMaturity": "Total at maturity",
     "maturityDate": "Maturity date",
     "realGain": "Actual gain",
-    "totalCollected": "Total collected"
+    "totalCollected": "Total collected",
+    "plannedDestination": "Planned destination"
   },
   "upsertSavingsGoal": {
     "editTitle": "Edit Savings Goal",
@@ -800,7 +840,10 @@
     "mutualFundTitle": "Mutual Fund",
     "mutualFundDescription": "Deposit and withdraw freely whenever you want. No fixed amount or term.",
     "mutualFundAnnualRateLabel": "Annual rate (%) - informational",
-    "mutualFundAnnualRateDescription": "Optional. For reference only — not used to calculate a final amount."
+    "mutualFundAnnualRateDescription": "Optional. For reference only — not used to calculate a final amount.",
+    "plannedDestination": "Planned destination (optional)",
+    "plannedDestinationPlaceholder": "E.g. pay the credit card, renew as a CDA",
+    "plannedDestinationDesc": "What you plan to do with the money when it matures; shown in the maturities calendar."
   },
   "savingsFrequency": {
     "monthly": "Monthly"
@@ -952,7 +995,9 @@
     "Accounts": "Accounts",
     "New Account": "New Account",
     "Monthly Balances": "Monthly Balances",
-    "Edit Account": "Edit Account"
+    "Edit Account": "Edit Account",
+    "Maturities": "Upcoming maturities",
+    "Debts": "Debts and loans"
   },
   "travels": {
     "title": "Travels",
@@ -1276,6 +1321,7 @@
     "skippedError": "Error skipping installment",
     "administrativeFees": "Administrative fees",
     "ivaOnInterest": "VAT on interest",
+    "totalCreditCost": "Total cost of credit",
     "insurance": "Insurance",
     "totalRate": "Total rate",
     "lent": {

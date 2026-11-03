@@ -46,6 +46,20 @@ export class LoanInstallmentAccessService extends BaseAccessService implements I
     return (data as LoanInstallmentEntity[] ?? []).map(this.mapEntityToModel);
   };
 
+  public getPendingByLoanIds = async (loanIds: number[]): Promise<LoanInstallmentAccessModel[]> => {
+    if (loanIds.length === 0) return [];
+    const { data, error } = await this.dbContext
+      .from(TableEnum.LoanInstallments)
+      .select('*')
+      .in('loanid', loanIds)
+      .eq('statusid', 1)
+      .order('duedate', { ascending: true })
+      .order('installmentnumber', { ascending: true });
+
+    if (error) throw new InternalServerErrorException(error.message);
+    return (data as LoanInstallmentEntity[] ?? []).map(this.mapEntityToModel);
+  };
+
   public markAsPaid = async (id: number, paidAmount: number, paymentDate?: Date | null): Promise<LoanInstallmentAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.LoanInstallments)

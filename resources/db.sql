@@ -1327,3 +1327,19 @@ CREATE TABLE IF NOT EXISTS accountbalancesnapshots (
 CREATE INDEX IF NOT EXISTS idx_accountbalancesnapshots_date ON accountbalancesnapshots(snapshotdate);
 
 ALTER TABLE accountbalancesnapshots DISABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PARTE 25: DESTINO PLANEADO DE CADA AHORRO (#226)
+-- =====================================================
+-- Texto libre opcional: qué se piensa hacer con la plata cuando el ahorro vence o se cobra
+-- (ej. "pagar la tarjeta", "renovar en CDA"). Se muestra en el calendario de vencimientos.
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS planneddestination VARCHAR(200) NULL;
+
+-- =====================================================
+-- PARTE 26: TASAS SUGERIDAS DE PRÉSTAMOS REALES
+-- =====================================================
+-- Las tasas cargadas al crear el módulo eran de ejemplo (Ueno 80–90% TAN) y el formulario las
+-- autocompleta. Se deja solo la tasa confirmada: Ueno 12 meses, 22,71% TAN (préstamo real 2026).
+-- Sin tasa sugerida el campo queda vacío para cargar la del banco.
+DELETE FROM loanentityterms WHERE loanentityid = 1 AND termmonths IN (3, 6);
+UPDATE loanentityterms SET annualratepercentage = 22.71 WHERE loanentityid = 1 AND termmonths = 12;

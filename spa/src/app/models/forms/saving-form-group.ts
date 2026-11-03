@@ -19,4 +19,5 @@ export interface SavingsGoalFormGroup {
   institutionId: FormControl<number | null>;
   payoutDate: FormControl<Date | string | null>;
   initialPaidInstallments: FormControl<number | null>;
+  plannedDestination: FormControl<string | null>;
 }
