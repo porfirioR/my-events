@@ -41,7 +41,7 @@ export class CurrentUserService {
       });
       
       return this.cachedPayload;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid token');
     }
   }

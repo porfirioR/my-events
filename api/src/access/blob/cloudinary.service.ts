@@ -21,25 +21,12 @@ export class CloudinaryService {
     format: string;
   }> {
     try {
-      const result = await cloudinary.uploader.upload_stream(
-        {
-          folder,
-          resource_type: 'auto', // Permite imágenes, videos, documentos
-          use_filename: true,
-          unique_filename: true,
-        },
-        (error, result) => {
-          if (error) throw error;
-          return result;
-        }
-      );
-
       // Convertir el buffer a stream y subir
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder,
-            resource_type: 'auto',
+            resource_type: 'auto', // Permite imágenes, videos, documentos
             use_filename: true,
             unique_filename: true,
           },

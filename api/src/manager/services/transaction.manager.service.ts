@@ -34,7 +34,7 @@ export class TransactionManagerService implements ITransactionManagerService {
     this.validateSplitsStructure(request.splits, request.userId, request.collaboratorId);
 
     // 4. Validar que el pagador es correcto
-    this.validatePayer(request.splits, request.whoPaid, request.userId, request.collaboratorId);
+    this.validatePayer(request.splits, request.whoPaid);
 
     // 5. Validar que los splits sumen correctamente
     this.validateSplitsTotal(request.splits, amountToSplit);
@@ -107,7 +107,7 @@ export class TransactionManagerService implements ITransactionManagerService {
     // 5. Mismas validaciones de splits que al crear
     const amountToSplit = request.totalAmount - reimbursementAmount;
     this.validateSplitsStructure(request.splits, request.userId, request.collaboratorId);
-    this.validatePayer(request.splits, request.whoPaid, request.userId, request.collaboratorId);
+    this.validatePayer(request.splits, request.whoPaid);
     this.validateSplitsTotal(request.splits, amountToSplit);
 
     // 6. Actualizar todo de forma atómica
@@ -503,8 +503,6 @@ export class TransactionManagerService implements ITransactionManagerService {
   private validatePayer(
     splits: TransactionSplitRequest[],
     whoPaid: string,
-    userId: number,
-    collaboratorId: number,
   ): void {
     const payers = splits.filter(x => x.isPayer);
 

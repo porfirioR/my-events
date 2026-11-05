@@ -4,8 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventManagerService, UserManagerService } from '../../manager/services';
 import { ConfigService } from '@nestjs/config';
 import { WEB_PUSH_PRIVATE_KEY, WEB_PUSH_PUBLIC_KEY } from '../../utility/constants';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const webpush = require('web-push');
+import * as webpush from 'web-push';
 
 @Injectable()
 export class TasksService {
@@ -35,9 +34,15 @@ export class TasksService {
         },
         TTL: 60,
       };
+      // web-push espera expirationTime en milisegundos; el token lo guarda como fecha
+      const subscription: webpush.PushSubscription = {
+        endpoint: webPushToken.endpoint,
+        keys: webPushToken.keys,
+        expirationTime: webPushToken.expirationTime ? new Date(webPushToken.expirationTime).getTime() : null,
+      };
       currentDateEvents.forEach(x => {
         webpush.sendNotification(
-          webPushToken,
+          subscription,
           JSON.stringify({
             notification: {
               title: `My Events: ${x.name}`,
