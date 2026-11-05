@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 export class UpdateLoanApiRequest {
   @IsString()
@@ -9,6 +9,12 @@ export class UpdateLoanApiRequest {
   @IsOptional()
   @IsString()
   description?: string;
+
+  // Prestamista (entidad "Otros") o deudor (préstamo otorgado)
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  lenderCustomName?: string;
 
   @IsInt()
   loanTypeId: number;

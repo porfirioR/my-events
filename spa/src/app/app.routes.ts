@@ -1,29 +1,7 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
-import { LoginComponent } from './components/login/login.component';
-import { SignupComponent } from './components/signup/signup.component';
-import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
-import { CollaboratorsComponent } from './components/collaborators/collaborators.component';
-import { UpsertCollaboratorComponent } from './components/upsert-collaborator/upsert-collaborator.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
-import { CollaboratorMatchRequestsComponent } from './components/collaborator-match-requests/collaborator-match-requests.component';
-import { CollaboratorInvitationsComponent } from './components/collaborator-invitations/collaborator-invitations.component';
-import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
-import { VerifyEmailPendingComponent } from './components/verify-email-pending/verify-email-pending.component';
 import { WarningUnsavedChanges } from './guards';
-import { UpsertSavingsGoalComponent } from './components/upsert-savings-goal/upsert-savings-goal.component';
-import { SavingsGoalDetailComponent } from './components/savings-goal-detail/savings-goal-detail.component';
-import { SavingsGoalsListComponent } from './components/savings-goals-list/savings-goals-list.component';
-import { LoansListComponent } from './components/loans-list/loans-list.component';
-import { UpsertLoanComponent } from './components/upsert-loan/upsert-loan.component';
-import { LoanDetailComponent } from './components/loan-detail/loan-detail.component';
-import { AccountsListComponent } from './components/accounts-list/accounts-list.component';
-import { UpsertAccountComponent } from './components/upsert-account/upsert-account.component';
-import { AccountBalancesComponent } from './components/account-balances/account-balances.component';
-import { MaturitiesCalendarComponent } from './components/maturities-calendar/maturities-calendar.component';
-import { DebtsOverviewComponent } from './components/debts-overview/debts-overview.component';
 
 export const routes: Routes = [
   {
@@ -33,7 +11,7 @@ export const routes: Routes = [
       {
         path: '',
         title: 'Principal',
-        loadComponent: () => HomeComponent,
+        loadComponent: () => import('./components/home/home.component').then((x) => x.HomeComponent),
         canActivate: [authGuard],
       },
       {
@@ -43,24 +21,24 @@ export const routes: Routes = [
           {
             path: '',
             title: 'Savings Goals',
-            loadComponent: () => SavingsGoalsListComponent,
+            loadComponent: () => import('./components/savings-goals-list/savings-goals-list.component').then((x) => x.SavingsGoalsListComponent),
           },
           {
             path: 'create',
             title: 'Create Savings Goal',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertSavingsGoalComponent,
+            loadComponent: () => import('./components/upsert-savings-goal/upsert-savings-goal.component').then((x) => x.UpsertSavingsGoalComponent),
           },
           {
             path: ':id',
             title: 'Savings Goal Detail',
-            loadComponent: () => SavingsGoalDetailComponent,
+            loadComponent: () => import('./components/savings-goal-detail/savings-goal-detail.component').then((x) => x.SavingsGoalDetailComponent),
           },
           {
             path: ':id/edit',
             title: 'Edit Savings Goal',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertSavingsGoalComponent,
+            loadComponent: () => import('./components/upsert-savings-goal/upsert-savings-goal.component').then((x) => x.UpsertSavingsGoalComponent),
           },
         ],
       },
@@ -72,24 +50,24 @@ export const routes: Routes = [
           {
             path: '',
             title: 'Loans',
-            loadComponent: () => LoansListComponent
+            loadComponent: () => import('./components/loans-list/loans-list.component').then((x) => x.LoansListComponent)
           },
           {
             path: 'create',
             title: 'New Loan',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertLoanComponent
+            loadComponent: () => import('./components/upsert-loan/upsert-loan.component').then((x) => x.UpsertLoanComponent)
           },
           {
             path: ':id',
             title: 'Loan Detail',
-            loadComponent: () => LoanDetailComponent
+            loadComponent: () => import('./components/loan-detail/loan-detail.component').then((x) => x.LoanDetailComponent)
           },
           {
             path: ':id/edit',
             title: 'Edit Loan',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertLoanComponent
+            loadComponent: () => import('./components/upsert-loan/upsert-loan.component').then((x) => x.UpsertLoanComponent)
           },
         ],
       },
@@ -98,13 +76,13 @@ export const routes: Routes = [
         path: 'maturities',
         title: 'Maturities',
         canActivate: [authGuard],
-        loadComponent: () => MaturitiesCalendarComponent,
+        loadComponent: () => import('./components/maturities-calendar/maturities-calendar.component').then((x) => x.MaturitiesCalendarComponent),
       },
       {
         path: 'debts',
         title: 'Debts',
         canActivate: [authGuard],
-        loadComponent: () => DebtsOverviewComponent,
+        loadComponent: () => import('./components/debts-overview/debts-overview.component').then((x) => x.DebtsOverviewComponent),
       },
       // Accounts
       {
@@ -114,25 +92,25 @@ export const routes: Routes = [
           {
             path: '',
             title: 'Accounts',
-            loadComponent: () => AccountsListComponent
+            loadComponent: () => import('./components/accounts-list/accounts-list.component').then((x) => x.AccountsListComponent)
           },
           {
             path: 'create',
             title: 'New Account',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertAccountComponent
+            loadComponent: () => import('./components/upsert-account/upsert-account.component').then((x) => x.UpsertAccountComponent)
           },
           {
             path: 'balances',
             title: 'Monthly Balances',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => AccountBalancesComponent
+            loadComponent: () => import('./components/account-balances/account-balances.component').then((x) => x.AccountBalancesComponent)
           },
           {
             path: ':id/edit',
             title: 'Edit Account',
             canDeactivate: [WarningUnsavedChanges],
-            loadComponent: () => UpsertAccountComponent
+            loadComponent: () => import('./components/upsert-account/upsert-account.component').then((x) => x.UpsertAccountComponent)
           },
         ],
       },
@@ -140,40 +118,40 @@ export const routes: Routes = [
       {
         path: 'collaborators',
         title: 'Collaborators',
-        loadComponent: () => CollaboratorsComponent,
+        loadComponent: () => import('./components/collaborators/collaborators.component').then((x) => x.CollaboratorsComponent),
         canActivate: [authGuard],
       },
       {
         path: 'collaborators/create',
         title: 'Add Collaborator',
         canDeactivate: [WarningUnsavedChanges],
-        loadComponent: () => UpsertCollaboratorComponent,
+        loadComponent: () => import('./components/upsert-collaborator/upsert-collaborator.component').then((x) => x.UpsertCollaboratorComponent),
         canActivate: [authGuard],
       },
       {
         path: 'collaborators/edit/:id',
         title: 'Edit Collaborator',
         canDeactivate: [WarningUnsavedChanges],
-        loadComponent: () => UpsertCollaboratorComponent,
+        loadComponent: () => import('./components/upsert-collaborator/upsert-collaborator.component').then((x) => x.UpsertCollaboratorComponent),
         canActivate: [authGuard],
       },
       {
         path: 'collaborators/match-requests',
         title: 'Match Requests',
         canDeactivate: [WarningUnsavedChanges],
-        loadComponent: () => CollaboratorMatchRequestsComponent,
+        loadComponent: () => import('./components/collaborator-match-requests/collaborator-match-requests.component').then((x) => x.CollaboratorMatchRequestsComponent),
         canActivate: [authGuard],
       },
       {
         path: 'collaborators/invitations',
         title: 'Invitations Summary',
-        loadComponent: () => CollaboratorInvitationsComponent,
+        loadComponent: () => import('./components/collaborator-invitations/collaborator-invitations.component').then((x) => x.CollaboratorInvitationsComponent),
         canActivate: [authGuard],
       },
       {
         path: 'collaborators/:collaboratorId/invitations',
         title: 'Collaborator Invitations',
-        loadComponent: () => CollaboratorInvitationsComponent,
+        loadComponent: () => import('./components/collaborator-invitations/collaborator-invitations.component').then((x) => x.CollaboratorInvitationsComponent),
         canActivate: [authGuard],
       },
       {
@@ -228,7 +206,7 @@ export const routes: Routes = [
       // {
       //   path: 'collaborators/:collaboratorId/stats',
       //   title: 'Collaborator Statistics',
-      //   loadComponent: () => import('./components/collaborators/collaborator-stats.component').then(m => m.CollaboratorStatsComponent),
+      //   loadComponent: () => import('./components/collaborators/collaborator-stats.component').then((x) => x.CollaboratorStatsComponent),
       //   canActivate: [authGuard]
       // },
       {
@@ -303,33 +281,33 @@ export const routes: Routes = [
   {
     path: 'login',
     title: 'Login',
-    loadComponent: () => LoginComponent,
+    loadComponent: () => import('./components/login/login.component').then((x) => x.LoginComponent),
     canActivate: [guestGuard],
   },
   {
     path: 'signup',
     title: 'Signup',
-    loadComponent: () => SignupComponent,
+    loadComponent: () => import('./components/signup/signup.component').then((x) => x.SignupComponent),
     canActivate: [guestGuard],
   },
   {
     path: 'forgot-password',
     title: 'Forgot password',
-    loadComponent: () => ForgotPasswordComponent,
+    loadComponent: () => import('./components/forgot-password/forgot-password.component').then((x) => x.ForgotPasswordComponent),
     canActivate: [guestGuard],
   },
   {
     path: 'reset-password',
     title: 'Reset password',
-    loadComponent: () => ResetPasswordComponent,
+    loadComponent: () => import('./components/reset-password/reset-password.component').then((x) => x.ResetPasswordComponent),
     canActivate: [guestGuard],
   },
   {
     path: 'verify-email',
-    loadComponent: () => VerifyEmailComponent,
+    loadComponent: () => import('./components/verify-email/verify-email.component').then((x) => x.VerifyEmailComponent),
   },
   {
     path: 'verify-email-pending',
-    loadComponent: () => VerifyEmailPendingComponent,
+    loadComponent: () => import('./components/verify-email-pending/verify-email-pending.component').then((x) => x.VerifyEmailPendingComponent),
   },
 ];

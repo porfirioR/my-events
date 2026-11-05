@@ -365,7 +365,18 @@
     "emptyTitle": "Todavía no hay datos para calcular tu patrimonio",
     "emptyMessage": "Creá tus cuentas y cargá los saldos del mes; los ahorros y préstamos se suman solos.",
     "loadError": "No se pudo calcular el patrimonio.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "filterByLiquidity": "Ver en qué entidades está",
+    "filterHint": "Tocá una liquidez para ver en qué entidades está; tocá una entidad para ver qué tiene.",
+    "clearFilter": "Ver todo",
+    "noneWithLiquidity": "Ninguna entidad tiene montos en esta liquidez.",
+    "availableFrom": "Se libera {{date}}",
+    "noAvailableDate": "Sin fecha estimada",
+    "collectUntil": "Se termina de cobrar {{date}}",
+    "itemAccount": "Cuenta",
+    "itemSavings": "Ahorro",
+    "itemLentLoan": "Préstamo otorgado",
+    "itemBorrowedLoan": "Préstamo"
   },
   "maturities": {
     "title": "Próximos vencimientos",

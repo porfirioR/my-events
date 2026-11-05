@@ -149,6 +149,13 @@ export class LoanManagerService {
   };
 
   public updateLoan = async (request: UpdateLoanRequest): Promise<LoanModel> => {
+    // El nombre solo aplica a préstamos que lo usan (otorgados o de entidad "Otros"); en los demás queda null
+    const current = await this.loanAccessService.getById(request.id, request.userId);
+    const isLent = current.direction === LoanDirection.Lent;
+    const lenderCustomName = request.lenderCustomName?.trim() || null;
+    if (isLent && !lenderCustomName) {
+      throw new BadRequestException('Debtor name is required for a lent loan');
+    }
     const accessRequest = new UpdateLoanAccessRequest(
       request.id,
       request.userId,
@@ -159,6 +166,7 @@ export class LoanManagerService {
       request.administrativeFees,
       request.ivaPercentage,
       request.insuranceAmount,
+      isLent || current.lenderCustomName ? lenderCustomName ?? current.lenderCustomName : null,
     );
     const loan = await this.loanAccessService.update(accessRequest);
     return this.mapToModel(loan);

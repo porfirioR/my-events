@@ -365,7 +365,18 @@
     "emptyTitle": "There is no data to calculate your net worth yet",
     "emptyMessage": "Create your accounts and load this month's balances; savings and loans are added automatically.",
     "loadError": "Net worth could not be loaded.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "filterByLiquidity": "See which institutions hold it",
+    "filterHint": "Tap a liquidity to see which institutions hold it; tap an institution to see what it holds.",
+    "clearFilter": "Show all",
+    "noneWithLiquidity": "No institution has amounts in this liquidity.",
+    "availableFrom": "Released {{date}}",
+    "noAvailableDate": "No estimated date",
+    "collectUntil": "Fully collected {{date}}",
+    "itemAccount": "Account",
+    "itemSavings": "Savings",
+    "itemLentLoan": "Loan given",
+    "itemBorrowedLoan": "Loan"
   },
   "maturities": {
     "title": "Upcoming maturities",

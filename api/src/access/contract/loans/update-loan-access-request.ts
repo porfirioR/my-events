@@ -9,5 +9,6 @@ export class UpdateLoanAccessRequest {
     public readonly administrativeFees: number | null = null,
     public readonly ivaPercentage: number | null = null,
     public readonly insuranceAmount: number | null = null,
+    public readonly lenderCustomName: string | null = null,
   ) {}
 }

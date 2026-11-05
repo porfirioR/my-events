@@ -101,43 +101,131 @@
             }
           }
         </div>
-        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-4" role="list">
+        <!-- La leyenda filtra "Por entidad": tocar una liquidez muestra dónde está esa plata -->
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-4" role="list">
           @for (segment of liquiditySegments(); track segment.liquidity) {
-            <li class="flex items-center justify-between gap-2 text-sm min-w-0">
-              <span class="flex items-center gap-2 min-w-0 text-base-content/70">
-                <span class="w-2.5 h-2.5 shrink-0 rounded-full {{ segment.colorClass }}"></span>
-                <span class="truncate">{{ segment.label | translate }}</span>
-              </span>
-              <span class="text-right shrink-0">
-                <strong class="tabular-nums" [ngClass]="segment.amount < 0 ? 'text-error' : 'text-base-content'">
-                  {{ formatCurrency(segment.amount, current()!.currencyId) }}
-                </strong>
-                <span class="text-xs text-base-content/50 ml-1 tabular-nums">{{ segment.share | number: '1.0-0' }}%</span>
-              </span>
+            <li class="min-w-0">
+              <button type="button"
+                class="w-full flex items-center justify-between gap-2 text-sm min-w-0 rounded-lg px-2 py-1.5 -mx-2 cursor-pointer transition-colors hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-primary"
+                [ngClass]="{
+                  'bg-base-200': selectedLiquidity() === segment.liquidity,
+                  'opacity-50': selectedLiquidity() !== null && selectedLiquidity() !== segment.liquidity
+                }"
+                [attr.aria-pressed]="selectedLiquidity() === segment.liquidity"
+                [attr.title]="'netWorth.filterByLiquidity' | translate"
+                (click)="toggleLiquidity(segment.liquidity)">
+                <span class="flex items-center gap-2 min-w-0 text-base-content/70">
+                  <span class="w-2.5 h-2.5 shrink-0 rounded-full {{ segment.colorClass }}"></span>
+                  <span class="truncate">{{ segment.label | translate }}</span>
+                </span>
+                <span class="text-right shrink-0">
+                  <strong class="tabular-nums" [ngClass]="segment.amount < 0 ? 'text-error' : 'text-base-content'">
+                    {{ formatCurrency(segment.amount, current()!.currencyId) }}
+                  </strong>
+                  <span class="text-xs text-base-content/50 ml-1 tabular-nums">{{ segment.share | number: '1.0-0' }}%</span>
+                </span>
+              </button>
             </li>
           }
         </ul>
+        <p class="text-xs text-base-content/50 mt-2">{{ 'netWorth.filterHint' | translate }}</p>
       </section>
 
       <!-- Por entidad -->
       <section aria-labelledby="net-worth-institution-heading">
-        <h3 id="net-worth-institution-heading" class="text-sm font-semibold text-base-content mb-3">{{ 'netWorth.byInstitution' | translate }}</h3>
-        <ul class="space-y-3" role="list">
-          @for (institution of institutions(); track institution.institutionId) {
-            <li>
-              <div class="flex items-center justify-between gap-2 text-sm">
-                <span class="truncate text-base-content">{{ institution.institutionName ?? ('netWorth.noInstitution' | translate) }}</span>
-                <strong class="tabular-nums shrink-0 text-base-content">{{ formatCurrency(institution.assets, current()!.currencyId) }}</strong>
-              </div>
-              <div class="h-1.5 w-full rounded-full overflow-hidden bg-base-200 dark:bg-base-300 mt-1.5">
-                <div class="h-full bg-primary/70 transition-all duration-500" [style.width.%]="institution.share"></div>
-              </div>
-              @if (institution.liabilities > 0) {
-                <p class="text-xs text-error mt-1 tabular-nums">
-                  {{ 'netWorth.debt' | translate }}: {{ formatCurrency(institution.liabilities, current()!.currencyId) }}
-                </p>
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <h3 id="net-worth-institution-heading" class="text-sm font-semibold text-base-content">
+            {{ 'netWorth.byInstitution' | translate }}
+            @if (selectedLiquidityLabel()) {
+              <span class="font-normal text-base-content/60">· {{ selectedLiquidityLabel()! | translate }}</span>
+            }
+          </h3>
+          @if (selectedLiquidity() !== null) {
+            <button type="button" class="btn btn-ghost btn-xs" (click)="toggleLiquidity(selectedLiquidity()!)">
+              <i class="fas fa-xmark" aria-hidden="true"></i>{{ 'netWorth.clearFilter' | translate }}
+            </button>
+          }
+        </div>
+        <ul class="space-y-2" role="list">
+          @for (institution of institutions(); track institution.key) {
+            <li class="rounded-lg" [ngClass]="{'bg-base-200/50 dark:bg-base-300/40': institution.expanded}">
+              <button type="button"
+                class="w-full text-left rounded-lg px-2 py-1.5 cursor-pointer transition-colors hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-primary"
+                [attr.aria-expanded]="institution.expanded"
+                [attr.aria-controls]="'net-worth-items-' + institution.key"
+                (click)="toggleInstitution(institution.key)">
+                <span class="flex items-center justify-between gap-2 text-sm">
+                  <span class="flex items-center gap-2 min-w-0">
+                    <i class="fas fa-chevron-right text-[10px] text-base-content/50 transition-transform duration-200"
+                      [ngClass]="{'rotate-90': institution.expanded}" aria-hidden="true"></i>
+                    <span class="truncate text-base-content">{{ institution.institutionName ?? ('netWorth.noInstitution' | translate) }}</span>
+                  </span>
+                  <strong class="tabular-nums shrink-0 text-base-content">{{ formatCurrency(institution.displayAmount, current()!.currencyId) }}</strong>
+                </span>
+                <!-- Barra de la entidad dividida por liquidez -->
+                <span class="block h-1.5 w-full rounded-full overflow-hidden bg-base-200 dark:bg-base-300 mt-1.5">
+                  <span class="flex h-full transition-all duration-500" [style.width.%]="institution.share">
+                    @for (segment of institution.segments; track segment.liquidity) {
+                      <span class="h-full transition-opacity {{ segment.colorClass }}" [style.width.%]="segment.share"
+                        [ngClass]="{'opacity-20': segment.dimmed}"
+                        [attr.title]="(segment.label | translate) + ': ' + formatCurrency(segment.amount, current()!.currencyId)"></span>
+                    }
+                  </span>
+                </span>
+                <!-- Cuánto es líquido y cuánto bloqueado en esta entidad -->
+                @if (selectedLiquidity() === null) {
+                  <span class="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-base-content/60">
+                    @for (segment of institution.segments; track segment.liquidity) {
+                      <span class="flex items-center gap-1 tabular-nums">
+                        <span class="w-1.5 h-1.5 rounded-full {{ segment.colorClass }}"></span>
+                        {{ segment.label | translate }} {{ formatCurrency(segment.amount, current()!.currencyId) }}
+                      </span>
+                    }
+                  </span>
+                }
+                @if (institution.liabilities > 0 && selectedLiquidity() === null) {
+                  <span class="block text-xs text-error mt-1 tabular-nums">
+                    {{ 'netWorth.debt' | translate }}: {{ formatCurrency(institution.liabilities, current()!.currencyId) }}
+                  </span>
+                }
+              </button>
+
+              @if (institution.expanded) {
+                <ul [id]="'net-worth-items-' + institution.key" class="px-2 pb-2 pt-1 space-y-2" role="list">
+                  @for (item of institution.items; track item.type + '-' + item.sourceId) {
+                    <li class="flex items-start justify-between gap-3 text-sm pl-5">
+                      <div class="min-w-0">
+                        <a class="link link-hover text-base-content truncate block" [routerLink]="getItemLink(item)">{{ item.name }}</a>
+                        <span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-base-content/60">
+                          @if (item.liquidity !== null) {
+                            <span class="flex items-center gap-1">
+                              <span class="w-1.5 h-1.5 rounded-full {{ getLiquidityColor(item.liquidity) }}"></span>
+                              {{ getLiquidityLabel(item.liquidity) | translate }}
+                            </span>
+                          }
+                          <span>{{ getItemTypeLabel(item.type) | translate }}</span>
+                          @if (item.liquidity === liquidity.Locked) {
+                            <span>
+                              <i class="fas fa-lock text-[10px]" aria-hidden="true"></i>
+                              {{ item.availableDate
+                                ? ('netWorth.availableFrom' | translate: { date: formatMonth(item.availableDate) })
+                                : ('netWorth.noAvailableDate' | translate) }}
+                            </span>
+                          } @else if (item.liquidity === liquidity.Receivable && item.availableDate) {
+                            <span>{{ 'netWorth.collectUntil' | translate: { date: formatMonth(item.availableDate) } }}</span>
+                          }
+                        </span>
+                      </div>
+                      <strong class="tabular-nums shrink-0" [ngClass]="item.liquidity === null || item.amount < 0 ? 'text-error' : 'text-base-content'">
+                        {{ item.liquidity === null ? '−' : '' }}{{ formatCurrency(item.amount, current()!.currencyId) }}
+                      </strong>
+                    </li>
+                  }
+                </ul>
               }
             </li>
+          } @empty {
+            <li class="text-sm text-base-content/60">{{ 'netWorth.noneWithLiquidity' | translate }}</li>
           }
         </ul>
       </section>

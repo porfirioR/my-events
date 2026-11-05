@@ -1,5 +1,17 @@
 import { NetWorthItemType, NetWorthLiquidity } from '../../../utility/enums';
 
+// Cuenta, meta de ahorro o préstamo dentro de una entidad
+export class NetWorthItemModel {
+  constructor(
+    public type: NetWorthItemType,
+    public sourceId: number,
+    public name: string,
+    public liquidity: NetWorthLiquidity | null, // null = deuda
+    public amount: number,
+    public availableDate: string | null, // cuándo se libera lo bloqueado / se termina de cobrar lo prestado
+  ) {}
+}
+
 export class NetWorthInstitutionModel {
   constructor(
     public institutionId: number | null,
@@ -7,6 +19,8 @@ export class NetWorthInstitutionModel {
     public assets: number,
     public liabilities: number,
     public total: number,
+    public byLiquidity: { liquidity: NetWorthLiquidity; amount: number }[],
+    public items: NetWorthItemModel[],
   ) {}
 }
 

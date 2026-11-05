@@ -13,7 +13,7 @@ import { ILoanAccessService, ILoanInstallmentAccessService, LoanAccessModel } fr
 import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import { DebtsOverviewHelper, MaturityCalendarHelper, NetWorthCalculatorHelper } from '../../utility/helpers';
 import { DashboardSummaryModel } from '../models/dashboard/dashboard-summary.model';
-import { NetWorthCurrencyModel, NetWorthInstitutionModel, NetWorthSummaryModel } from '../models/dashboard/net-worth-summary.model';
+import { NetWorthCurrencyModel, NetWorthInstitutionModel, NetWorthItemModel, NetWorthSummaryModel } from '../models/dashboard/net-worth-summary.model';
 import { MaturityCalendarModel, MaturityEventModel, MaturityMonthModel } from '../models/dashboard/maturity-calendar.model';
 import { DebtsLoanModel, DebtsOverviewModel } from '../models/dashboard/debts-overview.model';
 
@@ -73,24 +73,33 @@ export class DashboardManagerService {
 
     const currencies = NetWorthCalculatorHelper.calculate({
       accounts: accountsWithBalance.map(a => ({
+        id: a.id,
+        name: a.name,
         institutionId: a.institutionId,
         currencyId: a.currencyId,
         balance: latestByAccount.get(a.id).balance,
       })),
       savings: savingsGoals.map(g => ({
+        id: g.id,
+        name: g.name,
         institutionId: g.institutionId,
         currencyId: g.currencyId,
         progressionTypeId: g.progressionTypeId,
         statusId: g.statusId,
         currentAmount: g.currentAmount,
+        expectedEndDate: this.toDateKey(g.expectedEndDate),
+        payoutDate: this.toDateKey(g.payoutDate),
       })),
       // En préstamos la entidad es loanEntityId (la columna no se renombró al generalizar a entidades financieras)
       loans: loans.map(l => ({
+        id: l.id,
+        name: l.name,
         institutionId: l.loanEntityId,
         currencyId: l.currencyId,
         direction: l.direction,
         statusId: l.statusId,
         currentBalance: l.currentBalance,
+        expectedEndDate: this.toDateKey(l.expectedEndDate),
       })),
     });
 
@@ -112,6 +121,8 @@ export class DashboardManagerService {
           i.assets,
           i.liabilities,
           i.total,
+          i.byLiquidity,
+          i.items.map(x => new NetWorthItemModel(x.type, x.sourceId, x.name, x.liquidity, x.amount, x.availableDate)),
         )),
         c.byLiquidity,
         c.byType,

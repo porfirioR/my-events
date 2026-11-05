@@ -320,6 +320,19 @@
       }
 
       @if (isEditMode) {
+        <!-- Prestamista (entidad "Otros") o deudor (préstamo otorgado): editable para corregir el nombre -->
+        @if (isOtherEntity() || isLent()) {
+          <app-text
+            formControlName="lenderCustomName"
+            type="text"
+            [label]="(isLent() ? 'upsertLoan.debtorName' : 'upsertLoan.lenderCustomName') | translate"
+            id="lenderCustomName"
+            name="lenderCustomName"
+            [description]="(isLent() ? 'upsertLoan.debtorNameExample' : 'upsertLoan.lenderCustomNameExample') | translate"
+            [disabled]="saving()"
+          />
+        }
+
         <!-- Tipo de préstamo (editable) -->
         <app-select-input
           formControlName="loanTypeId"

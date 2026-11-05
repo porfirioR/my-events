@@ -112,6 +112,7 @@ export class LoansController {
       this.toNumberOrNull(apiRequest.administrativeFees),
       this.toNumberOrNull(apiRequest.ivaPercentage),
       this.toNumberOrNull(apiRequest.insuranceAmount),
+      apiRequest.lenderCustomName ?? null,
     );
     return await this.loanManagerService.updateLoan(request);
   }
