@@ -23,25 +23,34 @@ const SAVINGS_LIQUIDITY: Partial<Record<ProgressionType, NetWorthLiquidity>> = {
 };
 
 export interface NetWorthAccountInput {
+  id: number;
+  name: string;
   institutionId: number;
   currencyId: number;
   balance: number; // último snapshot; puede ser negativo (sobregiro)
 }
 
 export interface NetWorthSavingsInput {
+  id: number;
+  name: string;
   institutionId: number | null;
   currencyId: number;
   progressionTypeId: number;
   statusId: number;
   currentAmount: number;
+  expectedEndDate: string | null; // 'YYYY-MM-DD'
+  payoutDate: string | null;      // cobro estimado de la rueda
 }
 
 export interface NetWorthLoanInput {
+  id: number;
+  name: string;
   institutionId: number;
   currencyId: number;
   direction: number;
   statusId: number;
   currentBalance: number;
+  expectedEndDate: string | null;
 }
 
 export interface NetWorthInput {
@@ -50,16 +59,29 @@ export interface NetWorthInput {
   loans: NetWorthLoanInput[];
 }
 
+export interface NetWorthLiquidityResult {
+  liquidity: NetWorthLiquidity;
+  amount: number;
+}
+
+// Lo que compone el saldo de una entidad (cuenta, meta de ahorro o préstamo)
+export interface NetWorthItemResult {
+  type: NetWorthItemType;
+  sourceId: number;
+  name: string;
+  liquidity: NetWorthLiquidity | null; // null = deuda
+  amount: number;
+  // Cuándo se libera lo bloqueado o se termina de cobrar lo prestado, si se sabe ('YYYY-MM-DD')
+  availableDate: string | null;
+}
+
 export interface NetWorthInstitutionResult {
   institutionId: number | null;
   assets: number;
   liabilities: number;
   total: number;
-}
-
-export interface NetWorthLiquidityResult {
-  liquidity: NetWorthLiquidity;
-  amount: number;
+  byLiquidity: NetWorthLiquidityResult[];
+  items: NetWorthItemResult[];
 }
 
 export interface NetWorthTypeResult {
@@ -77,13 +99,12 @@ export interface NetWorthCurrencyResult {
   byType: NetWorthTypeResult[];
 }
 
-interface NetWorthItem {
+interface NetWorthItem extends NetWorthItemResult {
   currencyId: number;
   institutionId: number | null;
-  type: NetWorthItemType;
-  liquidity: NetWorthLiquidity | null; // null = pasivo
-  amount: number;
 }
+
+const LIQUIDITY_ORDER = [NetWorthLiquidity.Immediate, NetWorthLiquidity.Days, NetWorthLiquidity.Locked, NetWorthLiquidity.Receivable];
 
 export class NetWorthCalculatorHelper {
   // El patrimonio sale siempre de saldos (snapshot, monto actual, saldo pendiente), nunca sumando movimientos.
@@ -114,18 +135,30 @@ export class NetWorthCalculatorHelper {
       currencyId: account.currencyId,
       institutionId: account.institutionId,
       type: NetWorthItemType.Account,
+      sourceId: account.id,
+      name: account.name,
       liquidity: NetWorthLiquidity.Immediate,
-      amount: account.balance,
+      amount: Number(account.balance),
+      availableDate: null,
     };
   }
 
   private static fromSavings(goal: NetWorthSavingsInput): NetWorthItem {
+    const liquidity = NetWorthCalculatorHelper.getSavingsLiquidity(goal.progressionTypeId);
+    // Solo lo bloqueado tiene fecha de liberación. La rueda se libera cuando la cooperativa paga:
+    // sin fecha de cobro cargada no se sabe (el fin de las cuotas no lo dice) → sin fecha estimada
+    const releaseDate = goal.progressionTypeId === ProgressionType.Rotating
+      ? goal.payoutDate
+      : goal.expectedEndDate;
     return {
       currencyId: goal.currencyId,
       institutionId: goal.institutionId,
       type: NetWorthItemType.Savings,
-      liquidity: NetWorthCalculatorHelper.getSavingsLiquidity(goal.progressionTypeId),
-      amount: goal.currentAmount,
+      sourceId: goal.id,
+      name: goal.name,
+      liquidity,
+      amount: Number(goal.currentAmount),
+      availableDate: liquidity === NetWorthLiquidity.Locked ? releaseDate : null,
     };
   }
 
@@ -135,8 +168,11 @@ export class NetWorthCalculatorHelper {
       currencyId: loan.currencyId,
       institutionId: loan.institutionId,
       type: isLent ? NetWorthItemType.LentLoan : NetWorthItemType.BorrowedLoan,
+      sourceId: loan.id,
+      name: loan.name,
       liquidity: isLent ? NetWorthLiquidity.Receivable : null,
-      amount: loan.currentBalance,
+      amount: Number(loan.currentBalance),
+      availableDate: isLent ? loan.expectedEndDate : null,
     };
   }
 
@@ -149,20 +185,45 @@ export class NetWorthCalculatorHelper {
     const institutionIds = [...new Set(items.map(i => i.institutionId))];
     const byInstitution = institutionIds
       .map(institutionId => {
-        const instAssets = NetWorthCalculatorHelper.sum(assetItems.filter(i => i.institutionId === institutionId));
-        const instLiabilities = NetWorthCalculatorHelper.sum(liabilityItems.filter(i => i.institutionId === institutionId));
-        return { institutionId, assets: instAssets, liabilities: instLiabilities, total: instAssets - instLiabilities };
+        const instItems = items.filter(i => i.institutionId === institutionId);
+        const instAssets = NetWorthCalculatorHelper.sum(instItems.filter(i => i.liquidity !== null));
+        const instLiabilities = NetWorthCalculatorHelper.sum(instItems.filter(i => i.liquidity === null));
+        return {
+          institutionId,
+          assets: instAssets,
+          liabilities: instLiabilities,
+          total: instAssets - instLiabilities,
+          byLiquidity: NetWorthCalculatorHelper.byLiquidity(instItems),
+          items: NetWorthCalculatorHelper.sortItems(instItems).map(NetWorthCalculatorHelper.toItemResult),
+        };
       })
       .sort((a, b) => b.assets - a.assets || a.liabilities - b.liabilities);
 
     // Siempre las 4 liquideces y los 4 tipos, en orden fijo (más simple de graficar)
-    const byLiquidity = [NetWorthLiquidity.Immediate, NetWorthLiquidity.Days, NetWorthLiquidity.Locked, NetWorthLiquidity.Receivable]
-      .map(liquidity => ({ liquidity, amount: NetWorthCalculatorHelper.sum(assetItems.filter(i => i.liquidity === liquidity)) }));
+    const byLiquidity = NetWorthCalculatorHelper.byLiquidity(assetItems);
 
     const byType = [NetWorthItemType.Account, NetWorthItemType.Savings, NetWorthItemType.LentLoan, NetWorthItemType.BorrowedLoan]
       .map(type => ({ type, amount: NetWorthCalculatorHelper.sum(items.filter(i => i.type === type)) }));
 
     return { currencyId, total: assets - liabilities, assets, liabilities, byInstitution, byLiquidity, byType };
+  }
+
+  private static byLiquidity(items: NetWorthItem[]): NetWorthLiquidityResult[] {
+    return LIQUIDITY_ORDER.map(liquidity => ({
+      liquidity,
+      amount: NetWorthCalculatorHelper.sum(items.filter(i => i.liquidity === liquidity)),
+    }));
+  }
+
+  // Por liquidez (de lo más disponible a lo menos, las deudas al final) y de mayor a menor monto
+  private static sortItems(items: NetWorthItem[]): NetWorthItem[] {
+    const rank = (i: NetWorthItem) => i.liquidity === null ? LIQUIDITY_ORDER.length : LIQUIDITY_ORDER.indexOf(i.liquidity);
+    return [...items].sort((a, b) => rank(a) - rank(b) || b.amount - a.amount);
+  }
+
+  private static toItemResult(item: NetWorthItem): NetWorthItemResult {
+    const { type, sourceId, name, liquidity, amount, availableDate } = item;
+    return { type, sourceId, name, liquidity, amount, availableDate };
   }
 
   private static sum(items: NetWorthItem[]): number {

@@ -412,6 +412,7 @@ export class UpsertLoanComponent implements OnInit {
         this.toNumberOrNull(values.administrativeFees),
         this.toNumberOrNull(values.ivaPercentage),
         this.toNumberOrNull(values.insuranceAmount),
+        values.lenderCustomName?.trim() || null,
       );
       this.loansStore.updateLoan(values.id!, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {

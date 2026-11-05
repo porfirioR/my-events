@@ -96,6 +96,7 @@ export class LoanAccessService extends BaseAccessService implements ILoanAccessS
         administrativefees: request.administrativeFees ?? null,
         ivapercentage: request.ivaPercentage ?? null,
         insuranceamount: request.insuranceAmount ?? null,
+        lendercustomname: request.lenderCustomName,
         dateupdated: new Date().toISOString(),
       })
       .eq(DatabaseColumns.EntityId, request.id)

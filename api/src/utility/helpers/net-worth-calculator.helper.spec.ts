@@ -8,8 +8,10 @@ const ITAU = 2;
 const COOP = 5;
 const CASH = 6;
 
-const account = (institutionId: number, balance: number, currencyId = GUARANI): NetWorthAccountInput =>
-  ({ institutionId, currencyId, balance });
+let nextId = 1;
+
+const account = (institutionId: number, balance: number, currencyId = GUARANI, name = 'Account'): NetWorthAccountInput =>
+  ({ id: nextId++, name, institutionId, currencyId, balance });
 
 const savings = (
   institutionId: number | null,
@@ -17,7 +19,18 @@ const savings = (
   progressionTypeId = ProgressionType.CDA,
   statusId = 1,
   currencyId = GUARANI,
-): NetWorthSavingsInput => ({ institutionId, currencyId, progressionTypeId, statusId, currentAmount });
+  dates: { expectedEndDate?: string; payoutDate?: string; name?: string } = {},
+): NetWorthSavingsInput => ({
+  id: nextId++,
+  name: dates.name ?? 'Savings',
+  institutionId,
+  currencyId,
+  progressionTypeId,
+  statusId,
+  currentAmount,
+  expectedEndDate: dates.expectedEndDate ?? null,
+  payoutDate: dates.payoutDate ?? null,
+});
 
 const loan = (
   institutionId: number,
@@ -25,7 +38,8 @@ const loan = (
   direction = LoanDirection.Borrowed,
   statusId = 1,
   currencyId = GUARANI,
-): NetWorthLoanInput => ({ institutionId, currencyId, direction, statusId, currentBalance });
+  expectedEndDate: string | null = null,
+): NetWorthLoanInput => ({ id: nextId++, name: 'Loan', institutionId, currencyId, direction, statusId, currentBalance, expectedEndDate });
 
 const liquidityOf = (result: ReturnType<typeof NetWorthCalculatorHelper.calculate>[number], liquidity: NetWorthLiquidity) =>
   result.byLiquidity.find(l => l.liquidity === liquidity).amount;
@@ -118,7 +132,7 @@ describe('NetWorthCalculatorHelper', () => {
     });
 
     const ueno = result.byInstitution.find(i => i.institutionId === UENO);
-    expect(ueno).toEqual({ institutionId: UENO, assets: 3_000, liabilities: 1_500, total: 1_500 });
+    expect(ueno).toMatchObject({ institutionId: UENO, assets: 3_000, liabilities: 1_500, total: 1_500 });
     expect(result.byInstitution.find(i => i.institutionId === ITAU).total).toBe(300);
     // Ahorros sin entidad quedan en su propio grupo
     expect(result.byInstitution.find(i => i.institutionId === null).assets).toBe(50);
@@ -175,5 +189,75 @@ describe('NetWorthCalculatorHelper', () => {
     });
 
     expect(result.assets).toBe(3_000);
+  });
+
+  describe('breakdown by institution', () => {
+    const build = () => NetWorthCalculatorHelper.calculate({
+      accounts: [account(COOP, 2_000_000, GUARANI, 'CU vista')],
+      savings: [
+        savings(COOP, 3_000_000, ProgressionType.FreeForm, 1, GUARANI, { name: 'Ahorro Casa' }),
+        savings(COOP, 13_200_000, ProgressionType.Rotating, 2, GUARANI, { name: 'Rueda CU', expectedEndDate: '2026-11-01', payoutDate: '2027-06-01' }),
+        savings(COOP, 1_200_000, ProgressionType.Scheduled, 1, GUARANI, { name: 'Ña 9', expectedEndDate: '2027-04-01' }),
+        savings(UENO, 1_000_000, ProgressionType.MutualFund, 1, GUARANI, { name: 'Fondo', expectedEndDate: '2027-01-01' }),
+      ],
+      loans: [loan(UENO, 4_000_000), loan(3, 500_000, LoanDirection.Lent, 1, GUARANI, '2027-02-05')],
+    })[0];
+
+    it('splits each institution by liquidity and the parts add up to its assets and to the global totals', () => {
+      const result = build();
+      const coop = result.byInstitution.find(i => i.institutionId === COOP);
+      expect(coop.byLiquidity).toEqual([
+        { liquidity: NetWorthLiquidity.Immediate, amount: 5_000_000 },
+        { liquidity: NetWorthLiquidity.Days, amount: 0 },
+        { liquidity: NetWorthLiquidity.Locked, amount: 14_400_000 },
+        { liquidity: NetWorthLiquidity.Receivable, amount: 0 },
+      ]);
+      result.byInstitution.forEach(i =>
+        expect(i.byLiquidity.reduce((s, l) => s + l.amount, 0)).toBe(i.assets));
+      result.byLiquidity.forEach(l => {
+        const fromInstitutions = result.byInstitution
+          .reduce((s, i) => s + i.byLiquidity.find(x => x.liquidity === l.liquidity).amount, 0);
+        expect(fromInstitutions).toBe(l.amount);
+      });
+    });
+
+    it('lists the items of each institution, most liquid first and larger amounts first', () => {
+      const coop = build().byInstitution.find(i => i.institutionId === COOP);
+      expect(coop.items.map(i => i.name)).toEqual(['Ahorro Casa', 'CU vista', 'Rueda CU', 'Ña 9']);
+      expect(coop.items[1]).toMatchObject({ type: NetWorthItemType.Account, liquidity: NetWorthLiquidity.Immediate, amount: 2_000_000 });
+    });
+
+    it('keeps debts as items without liquidity, after the assets', () => {
+      const ueno = build().byInstitution.find(i => i.institutionId === UENO);
+      expect(ueno.items.map(i => [i.type, i.liquidity])).toEqual([
+        [NetWorthItemType.Savings, NetWorthLiquidity.Days],
+        [NetWorthItemType.BorrowedLoan, null],
+      ]);
+      expect(ueno.byLiquidity.reduce((s, l) => s + l.amount, 0)).toBe(1_000_000);
+      expect(ueno.liabilities).toBe(4_000_000);
+    });
+
+    it('gives an available date only to locked savings (rotating uses its payout date) and lent loans', () => {
+      const result = build();
+      const items = result.byInstitution.flatMap(i => i.items);
+      const dateOf = (name: string) => items.find(i => i.name === name).availableDate;
+      expect(dateOf('Rueda CU')).toBe('2027-06-01');
+      expect(dateOf('Ña 9')).toBe('2027-04-01');
+      expect(dateOf('Fondo')).toBeNull();       // fondo mutuo: se rescata en días
+      expect(dateOf('Ahorro Casa')).toBeNull();
+      expect(dateOf('CU vista')).toBeNull();
+      const loans = items.filter(i => i.name === 'Loan');
+      expect(loans.find(i => i.type === NetWorthItemType.LentLoan).availableDate).toBe('2027-02-05');
+      expect(loans.find(i => i.type === NetWorthItemType.BorrowedLoan).availableDate).toBeNull();
+    });
+
+    it('has no available date for a rotating savings without payout date, even if its installments ended', () => {
+      const [result] = NetWorthCalculatorHelper.calculate({
+        accounts: [],
+        savings: [savings(COOP, 100, ProgressionType.Rotating, 1, GUARANI, { expectedEndDate: '2027-03-01' })],
+        loans: [],
+      });
+      expect(result.byInstitution[0].items[0].availableDate).toBeNull();
+    });
   });
 });
