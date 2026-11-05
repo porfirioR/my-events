@@ -58,6 +58,9 @@ export class UpsertTransactionComponent implements OnInit {
   protected errorMessage = signal<string | null>(null);
   protected customUserAmount = signal<number>(0);
   protected customCollaboratorAmount = signal<number>(0);
+  // Inputs de la división personalizada/porcentaje (los signals de arriba son la fuente para los cálculos)
+  protected customUserControl = new FormControl<number | null>(0);
+  protected customCollaboratorControl = new FormControl<number | null>(0);
   protected mode = signal<TransactionEntryModeType>('expense');
   protected paymentDirection = signal<PaymentDirectionType>('theyPaidMe');
   protected entryModes = TransactionEntryModes;
@@ -131,6 +134,15 @@ export class UpsertTransactionComponent implements OnInit {
       this.recalculateSplits(splitType!);
     });
     this.formGroup.controls.hasReimbursement.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(x => this.onReimbursementToggle(x));
+    this.customUserControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(x => this.onCustomUserAmountChange(x));
+    this.customCollaboratorControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(x => this.onCustomCollaboratorAmountChange(x));
+    // Signals → inputs (recalcular, precargar, la otra parte o el valor acotado al máximo)
+    effect(() => {
+      const user = this.customUserAmount();
+      const collaborator = this.customCollaboratorAmount();
+      if (this.customUserControl.value !== user) this.customUserControl.setValue(user, { emitEvent: false });
+      if (this.customCollaboratorControl.value !== collaborator) this.customCollaboratorControl.setValue(collaborator, { emitEvent: false });
+    });
 
     const collaboratorId = toSignal(
       this.formGroup.controls.collaboratorId.valueChanges.pipe(startWith(this.formGroup.controls.collaboratorId.value)),
@@ -340,26 +352,26 @@ export class UpsertTransactionComponent implements OnInit {
     }
   }
 
-  protected onCustomUserAmountChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const [value, maxValue] = this.getValueAndMaxValue(input.value)
+  private onCustomUserAmountChange(inputValue: number | null): void {
+    const [value, maxValue] = this.getValueAndMaxValue(inputValue)
 
     this.customUserAmount.set(value);
     this.customCollaboratorAmount.set(maxValue - value);
-    input.value = value.toString()
+    // Si se pasó del máximo, el input muestra el valor acotado (el signal pudo no cambiar)
+    if (inputValue !== null && value !== inputValue) this.customUserControl.setValue(value, { emitEvent: false });
   }
 
-  protected onCustomCollaboratorAmountChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const [value, maxValue] = this.getValueAndMaxValue(input.value)
+  private onCustomCollaboratorAmountChange(inputValue: number | null): void {
+    const [value, maxValue] = this.getValueAndMaxValue(inputValue)
 
     this.customCollaboratorAmount.set(value);
     this.customUserAmount.set(maxValue - value);
-    input.value = value.toString()
+    if (inputValue !== null && value !== inputValue) this.customCollaboratorControl.setValue(value, { emitEvent: false });
   }
 
-  private getValueAndMaxValue(inputValue: string):[number, number] {
-    let value = parseInt(inputValue) || 0;
+  // Monto (con decimales) o porcentaje (entero, el input no acepta decimales), acotado entre 0 y el máximo
+  private getValueAndMaxValue(inputValue: number | null):[number, number] {
+    let value = Math.max(0, inputValue ?? 0);
 
     const splitType = this.formGroup.value.splitType;
     const netAmount = this.calculateNetAmount();

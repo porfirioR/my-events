@@ -149,6 +149,7 @@
         <app-text
           formControlName="numberOfInstallments"
           type="number"
+          [allowDecimals]="false"
           [label]="'upsertLoan.numberOfInstallments' | translate"
           id="numberOfInstallments"
           name="numberOfInstallments"

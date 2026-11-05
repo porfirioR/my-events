@@ -45,9 +45,9 @@ interface LoanFormGroup {
   totalRatePercentage: FormControl<number | null>;
 }
 
-// Guaraní: la cuota 'flat' se redondea hacia arriba a múltiplos de 1.000 (igual que la api)
+// Guaraní: la cuota 'flat' se redondea hacia arriba a múltiplos de 500 (igual que la api)
 const GUARANI_CURRENCY_ID = 4;
-const GUARANI_ROUNDING_STEP = 1000;
+const GUARANI_ROUNDING_STEP = 500;
 
 @Component({
   selector: 'app-upsert-loan',

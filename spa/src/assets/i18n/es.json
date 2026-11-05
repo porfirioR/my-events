@@ -1398,7 +1398,7 @@
     "totalRateDesc": "Interés por todo el plazo, no anual. Ej: 10 = 10% del capital",
     "calculatedProfit": "Ganancia",
     "calculatedTotalToCollect": "Total a cobrar",
-    "flatRoundingNote": "La cuota se redondea hacia arriba (a 1.000 en guaraníes); la diferencia queda como interés."
+    "flatRoundingNote": "La cuota se redondea hacia arriba (a múltiplos de 500 en guaraníes); la diferencia queda como interés."
   },
   "currencies": {
     "1": "Dólar estadounidense",

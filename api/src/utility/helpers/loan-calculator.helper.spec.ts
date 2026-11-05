@@ -32,3 +32,43 @@ describe('LoanCalculatorHelper.applyActualAmounts', () => {
     expect(LoanCalculatorHelper.applyActualAmounts(calc.schedule, null, 7_756_163)).toBe(calc.schedule);
   });
 });
+
+describe('LoanCalculatorHelper.calculateFlat', () => {
+  // Redondeo guaraní: hacia arriba a múltiplos de 500
+  it.each([
+    [508_000, 266_700, 267_000],
+    [500_000, 262_500, 262_500],
+    [506_000, 265_650, 266_000],
+    [502_000, 263_550, 264_000],
+    [504_000, 264_600, 265_000],
+  ])('rounds %d at 5%% in 2 (%d) up to %d', (principal, _raw, expected) => {
+    const calc = LoanCalculatorHelper.calculateFlat(principal, 5, 2, START, 500);
+    expect(calc.calculatedInstallmentAmount).toBe(expected);
+    expect(calc.calculatedTotalAmount).toBe(expected * 2);
+    expect(calc.calculatedTotalInterest).toBe(expected * 2 - principal);
+  });
+
+  // Igual que la planilla: resto 0 queda, resto 1–500 sube a 500, resto 501–999 sube a 1.000
+  it.each([
+    [263_000, 263_000],
+    [263_001, 263_500],
+    [263_300, 263_500],
+    [263_500, 263_500],
+    [263_501, 264_000],
+    [263_999, 264_000],
+  ])('rounds an installment of %d up to %d', (installment, expected) => {
+    const calc = LoanCalculatorHelper.calculateFlat(installment, 0, 1, START, 500);
+    expect(calc.calculatedInstallmentAmount).toBe(expected);
+  });
+
+  it('keeps every installment equal and principal summing to the loan', () => {
+    const calc = LoanCalculatorHelper.calculateFlat(508_000, 5, 2, START, 500);
+    expect(calc.schedule.every(s => s.totalAmount === 267_000)).toBe(true);
+    expect(calc.schedule.reduce((sum, s) => sum + s.principalAmount, 0)).toBe(508_000);
+  });
+
+  it('applies the guaraní step through calculate()', () => {
+    const calc = LoanCalculatorHelper.calculate(500_000, 0, 2, 'flat', START, 5, 4);
+    expect(calc.calculatedInstallmentAmount).toBe(262_500);
+  });
+});

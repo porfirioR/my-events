@@ -17,9 +17,10 @@ export interface LoanCalculationResult {
   schedule: LoanInstallmentSchedule[];
 }
 
-// Guaraní: la cuota 'flat' se redondea hacia arriba a múltiplos de 1.000
+// Guaraní: la cuota 'flat' se redondea hacia arriba a múltiplos de 500
+// (resto 300 → sube a 500, resto 700 → sube a 1.000, resto 0 o 500 → queda igual)
 const GUARANI_CURRENCY_ID = 4;
-const GUARANI_ROUNDING_STEP = 1000;
+const GUARANI_ROUNDING_STEP = 500;
 
 export class LoanCalculatorHelper {
   static calculate(
@@ -156,7 +157,8 @@ export class LoanCalculatorHelper {
 
   // Tasa total sobre el capital (préstamos entre personas). La cuota se redondea hacia
   // arriba y pasa a ser la cuota real: todas las cuotas son iguales y el redondeo queda
-  // como interés (ej. 508.000 al 5% en 2 → 266.700 → 267.000, total 534.000, interés 26.000)
+  // como interés (ej. 508.000 al 5% en 2 → 266.700 → 267.000, total 534.000, interés 26.000;
+  // 500.000 al 5% en 2 → 262.500 queda igual, total 525.000, interés 25.000)
   static calculateFlat(
     principal: number,
     totalRatePercentage: number,
