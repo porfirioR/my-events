@@ -20,7 +20,6 @@ export { TransactionSplitEntity } from './transaction-split.entity';
 export { TransactionEntity } from './transaction.entity';
 export { TypeEntity } from './type.entity';
 export { UserEntity } from './user.entity';
-export { WebPushTokenEntity } from './web-push-token.Entity';
 export { PaymentMethodEntity } from './payment-method.entity';
 export { TravelEntity } from './travel.entity';
 export { TravelMemberEntity } from './travel-member.entity';

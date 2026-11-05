@@ -1350,3 +1350,10 @@ UPDATE loanentityterms SET annualratepercentage = 22.71 WHERE loanentityid = 1 A
 -- Valores provisorios hasta tener préstamos reales: 15% a 12 meses, 28% para plazos más largos.
 UPDATE loanentityterms SET annualratepercentage = 15.00 WHERE loanentityid = 2 AND termmonths = 12;
 UPDATE loanentityterms SET annualratepercentage = 28.00 WHERE loanentityid = 2 AND termmonths IN (24, 36, 48, 60);
+
+-- =====================================================
+-- PARTE 28: SE QUITAN LAS NOTIFICACIONES PUSH
+-- =====================================================
+-- El cron con web-push nunca funcionó en Azure Functions (disparador HTTP) y se eliminó del código.
+-- La tabla solo guardaba una suscripción de prueba.
+DROP TABLE IF EXISTS webpushtoken;

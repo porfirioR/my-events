@@ -15,7 +15,6 @@ import {
   UserRequest,
   VerifyEmailRequest,
   ResendVerificationEmailRequest,
-  WebPushModel,
 } from '../models/users';
 import { TokenGenerator } from '../../utility/helpers/token-generator.helper';
 import { PasswordValidator } from '../../utility/helpers/password-validator.helper';
@@ -335,12 +334,6 @@ export class UserManagerService {
     );
     return signModel;
   };
-
-  public getWebPushToken = async (): Promise<WebPushModel> => {
-    const accessModel = await this.userAccessService.getWebPushToken();
-    const model = new WebPushModel(accessModel.id, accessModel.endpoint, accessModel.expirationTime, accessModel.keys)
-    return model;
-  }
 
   /**
    * Mapea AccessModel a UserModel
