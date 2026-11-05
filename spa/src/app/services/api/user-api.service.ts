@@ -4,8 +4,6 @@ import { Observable, tap } from 'rxjs';
 import {
   ForgotPasswordApiRequest,
   LoginUserApiRequest,
-  PushTokenApiModel,
-  PushTokenApiRequest,
 } from '../../models/api';
 import { LocalService } from '../local.service';
 import { ResendVerificationEmailApiRequest, ResetPasswordApiRequest, SignApiModel, VerifyEmailApiRequest } from '../../models/api/auth';
@@ -84,9 +82,6 @@ export class UserApiService {
 
   public getUserInformation = (userId: number): Observable<unknown> =>
     this.httpClient.get<unknown>(`${this.section}/user-information/${userId}`);
-
-  public saveToken = (request: PushTokenApiRequest): Observable<PushTokenApiModel> =>
-    this.httpClient.post<PushTokenApiModel>(`${this.section}/save-token`, request);
 
   private setInLocaleStorage = (user: SignApiModel): void => {
     this.localService.setEmail(user.email);

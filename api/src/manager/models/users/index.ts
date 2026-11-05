@@ -3,8 +3,5 @@ export { UpdateUserRequest } from './update-user-request';
 export { UserModel } from './user-model';
 export { UserRequest } from './user-request';
 export { ResetUserPasswordRequest } from './reset-user-password-request';
-export { WebPushRequest } from './web-push-request';
-export { WebPushModel } from './web-push-model';
-export { WebPushTokenKeyModel } from './web-push-token-key-model';
 export { VerifyEmailRequest } from './verify-email-request';
 export { ResendVerificationEmailRequest } from './resend-verification-email-request';
