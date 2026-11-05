@@ -1343,3 +1343,10 @@ ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS planneddestination VARCHAR(200
 -- Sin tasa sugerida el campo queda vacío para cargar la del banco.
 DELETE FROM loanentityterms WHERE loanentityid = 1 AND termmonths IN (3, 6);
 UPDATE loanentityterms SET annualratepercentage = 22.71 WHERE loanentityid = 1 AND termmonths = 12;
+
+-- =====================================================
+-- PARTE 27: TASAS SUGERIDAS DE ITAÚ
+-- =====================================================
+-- Valores provisorios hasta tener préstamos reales: 15% a 12 meses, 28% para plazos más largos.
+UPDATE loanentityterms SET annualratepercentage = 15.00 WHERE loanentityid = 2 AND termmonths = 12;
+UPDATE loanentityterms SET annualratepercentage = 28.00 WHERE loanentityid = 2 AND termmonths IN (24, 36, 48, 60);

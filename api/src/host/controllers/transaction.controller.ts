@@ -19,7 +19,7 @@ import {
 } from '../models/transactions';
 import { MessageModel } from '../models/message.model';
 import { AddReimbursementRequest, BalanceModel, CreateTransactionRequest, ITransactionManagerService, ReimbursementRequest, TransactionDetailModel, TransactionModel, TransactionReimbursementModel, TransactionSplitRequest, TransactionViewModel, UpdateTransactionRequest } from '../../manager/models/transactions';
-import { ParticipantType, WhoPaid } from '../../utility/enums';
+import { ParticipantType } from '../../utility/enums';
 import { TRANSACTION_TOKENS } from 'src/utility/constants';
 
 @Controller('transactions')
