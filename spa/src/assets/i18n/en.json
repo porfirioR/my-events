@@ -1398,7 +1398,7 @@
     "totalRateDesc": "Interest for the whole term, not annual. E.g.: 10 = 10% of the principal",
     "calculatedProfit": "Profit",
     "calculatedTotalToCollect": "Total to collect",
-    "flatRoundingNote": "The installment is rounded up (to 1,000 in guaraníes); the difference counts as interest."
+    "flatRoundingNote": "The installment is rounded up (to multiples of 500 in guaraníes); the difference counts as interest."
   },
   "currencies": {
     "1": "US Dollar",

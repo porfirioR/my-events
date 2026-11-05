@@ -169,6 +169,7 @@
             <app-text
               formControlName="numberOfInstallments"
               type="number"
+              [allowDecimals]="false"
               [label]="'upsertSavingsGoal.numberOfInstallments' | translate"
               id="numberOfInstallments"
               name="numberOfInstallments"
@@ -312,6 +313,7 @@
               <app-text
                 formControlName="initialPaidInstallments"
                 type="number"
+                [allowDecimals]="false"
                 [label]="'upsertSavingsGoal.initialPaidInstallments' | translate"
                 id="initialPaidInstallments"
                 name="initialPaidInstallments"
