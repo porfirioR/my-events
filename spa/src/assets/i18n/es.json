@@ -1452,9 +1452,9 @@
     "months": "{{value}} meses",
     "missingExpense": "Falta el gasto esencial mensual.",
     "missingIncome": "Falta el ingreso neto mensual.",
-    "cushionThresholds": "verde ≥ {{green}}, amarillo ≥ {{yellow}} meses",
-    "savingsThresholds": "verde ≥ {{green}} %, amarillo ≥ {{yellow}} %",
-    "debtThresholds": "verde ≤ {{green}} %, amarillo ≤ {{yellow}} %",
+    "cushionThresholds": "verde ≥ {{green}}, amarillo ≥ {{yellow}} meses",
+    "savingsThresholds": "verde ≥ {{green}} %, amarillo ≥ {{yellow}} %",
+    "debtThresholds": "verde ≤ {{green}} %, amarillo ≤ {{yellow}} %",
     "status": {
       "good": "Bien",
       "warning": "Atención",

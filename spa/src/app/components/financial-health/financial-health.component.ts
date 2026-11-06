@@ -109,5 +109,5 @@ export class FinancialHealthComponent {
   };
 
   private formatPercentage = (value: number | null): string | null =>
-    value === null ? null : `${this.formatNumber(value)} %`;
+    value === null ? null : `${this.formatNumber(value)} %`;
 }
