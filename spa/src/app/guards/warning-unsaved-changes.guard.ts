@@ -10,6 +10,7 @@ import { UpsertLoanComponent } from '../components/upsert-loan/upsert-loan.compo
 import { UpsertSavingsGoalComponent } from '../components/upsert-savings-goal/upsert-savings-goal.component';
 import { UpsertAccountComponent } from '../components/upsert-account/upsert-account.component';
 import { AccountBalancesComponent } from '../components/account-balances/account-balances.component';
+import { FinancialSettingsComponent } from '../components/financial-settings/financial-settings.component';
 
 export const WarningUnsavedChanges: CanDeactivateFn<
   | UpsertTransactionComponent
@@ -20,6 +21,7 @@ export const WarningUnsavedChanges: CanDeactivateFn<
   | UpsertSavingsGoalComponent
   | UpsertAccountComponent
   | AccountBalancesComponent
+  | FinancialSettingsComponent
 > = (
   component:
     | UpsertTransactionComponent
@@ -30,6 +32,7 @@ export const WarningUnsavedChanges: CanDeactivateFn<
     | UpsertSavingsGoalComponent
     | UpsertAccountComponent
     | AccountBalancesComponent
+    | FinancialSettingsComponent
 ): boolean | Promise<boolean> => {
   const alertService = inject(AlertService);
   const translate = inject(TranslateService);

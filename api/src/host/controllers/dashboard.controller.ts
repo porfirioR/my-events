@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Put, Query, UseGuards } from '@nestjs/common';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
 import { CurrentUserService } from '../services/current-user.service';
 import { DashboardManagerService } from '../../manager/services/dashboard-manager.service';
@@ -6,6 +6,9 @@ import { DashboardSummaryModel } from '../../manager/models/dashboard/dashboard-
 import { NetWorthSummaryModel } from '../../manager/models/dashboard/net-worth-summary.model';
 import { MaturityCalendarModel } from '../../manager/models/dashboard/maturity-calendar.model';
 import { DebtsOverviewModel } from '../../manager/models/dashboard/debts-overview.model';
+import { FinancialHealthModel, FinancialSettingsModel } from '../../manager/models/dashboard/financial-health.model';
+import { UpsertFinancialSettingsRequest } from '../../manager/models/dashboard/upsert-financial-settings-request';
+import { UpsertFinancialSettingsApiRequest } from '../models/dashboard/upsert-financial-settings-api-request';
 import { DASHBOARD_TOKENS } from '../../utility/constants/injection-tokens.const';
 
 @Controller('dashboard')
@@ -41,6 +44,40 @@ export class DashboardController {
     const userId = await this.currentUserService.getCurrentUserId();
     return this.dashboardManagerService.getDebtsOverview(userId, this.toToday(today));
   }
+
+  // Indicadores de salud financiera del mes de today (#228)
+  @Get('health')
+  async getFinancialHealth(@Query('today') today?: string): Promise<FinancialHealthModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return this.dashboardManagerService.getFinancialHealth(userId, this.toToday(today));
+  }
+
+  // Ingreso neto, gasto esencial y umbrales cargados en el perfil
+  @Get('financial-settings')
+  async getFinancialSettings(): Promise<FinancialSettingsModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return this.dashboardManagerService.getFinancialSettings(userId);
+  }
+
+  @Put('financial-settings')
+  async upsertFinancialSettings(@Body() apiRequest: UpsertFinancialSettingsApiRequest): Promise<FinancialSettingsModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    const request = new UpsertFinancialSettingsRequest(
+      userId,
+      this.toNumberOrNull(apiRequest.monthlyNetIncome),
+      this.toNumberOrNull(apiRequest.monthlyEssentialExpense),
+      +apiRequest.cushionGreenMonths,
+      +apiRequest.cushionYellowMonths,
+      +apiRequest.savingsGreenPercentage,
+      +apiRequest.savingsYellowPercentage,
+      +apiRequest.debtGreenPercentage,
+      +apiRequest.debtYellowPercentage,
+    );
+    return this.dashboardManagerService.upsertFinancialSettings(request);
+  }
+
+  private toNumberOrNull = (value: number | string | null | undefined): number | null =>
+    value === null || value === undefined || value === '' ? null : +value;
 
   private toToday = (today?: string): string =>
     today && /^\d{4}-\d{2}-\d{2}$/.test(today) ? today : new Date().toISOString().slice(0, 10);

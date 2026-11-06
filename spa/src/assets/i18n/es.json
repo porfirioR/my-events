@@ -1442,6 +1442,59 @@
     "updatedSuccess": "Cuenta actualizada",
     "updatedError": "No se pudo actualizar la cuenta"
   },
+  "financialHealth": {
+    "title": "Salud financiera",
+    "subtitle": "Indicadores de este mes, en guaraníes",
+    "configure": "Configurar",
+    "loadError": "No se pudieron cargar los indicadores.",
+    "emptyTitle": "Cargá tu ingreso y tu gasto",
+    "emptyDescription": "Con tu ingreso neto y tu gasto esencial del mes calculamos los meses de colchón, el % de ahorro y el % de cuotas.",
+    "months": "{{value}} meses",
+    "missingExpense": "Falta el gasto esencial mensual.",
+    "missingIncome": "Falta el ingreso neto mensual.",
+    "cushionThresholds": "verde ≥ {{green}}, amarillo ≥ {{yellow}} meses",
+    "savingsThresholds": "verde ≥ {{green}} %, amarillo ≥ {{yellow}} %",
+    "debtThresholds": "verde ≤ {{green}} %, amarillo ≤ {{yellow}} %",
+    "status": {
+      "good": "Bien",
+      "warning": "Atención",
+      "bad": "Mal"
+    },
+    "cushion": {
+      "title": "Meses de colchón",
+      "description": "Líquido inmediato ÷ gasto esencial"
+    },
+    "savings": {
+      "title": "% de ahorro",
+      "description": "Cuotas de ahorro del mes ÷ ingreso neto"
+    },
+    "debt": {
+      "title": "% de cuotas",
+      "description": "Cuotas de préstamos del mes ÷ ingreso neto"
+    }
+  },
+  "financialSettings": {
+    "title": "Parámetros financieros",
+    "subtitle": "Se usan para los indicadores de salud financiera del tablero. Más adelante el ingreso y el gasto se van a tomar de MyMoney.",
+    "monthlySection": "Ingreso y gasto mensual",
+    "monthlyNetIncome": "Ingreso neto mensual",
+    "monthlyNetIncomeHint": "Lo que cobrás por mes después de descuentos (IPS, impuestos)",
+    "monthlyEssentialExpense": "Gasto esencial mensual",
+    "monthlyEssentialExpenseHint": "Lo mínimo para vivir un mes: alquiler, comida, servicios, transporte",
+    "guaraniNote": "Por ahora los montos y los indicadores son solo en guaraníes; lo que tengas en otras monedas no se cuenta.",
+    "thresholdsSection": "Umbrales de los colores",
+    "thresholdsHint": "Desde qué valor cada indicador se ve verde o amarillo; por debajo (o por encima, en cuotas) se ve rojo.",
+    "greenFrom": "Verde desde",
+    "yellowFrom": "Amarillo desde",
+    "greenUpTo": "Verde hasta",
+    "yellowUpTo": "Amarillo hasta",
+    "monthsSuffix": "meses",
+    "higherOrderError": "El verde tiene que ser mayor o igual al amarillo.",
+    "lowerOrderError": "El verde tiene que ser menor o igual al amarillo.",
+    "loadError": "No se pudieron cargar los parámetros.",
+    "savedSuccess": "Parámetros guardados",
+    "savedError": "No se pudieron guardar los parámetros."
+  },
   "accountMovement": {
     "noAccount": "No actualizar saldos",
     "noAccountHint": "Ningún saldo de cuenta cambia; podés cargarlo después en Actualizar saldos",

@@ -1442,6 +1442,59 @@
     "updatedSuccess": "Account updated",
     "updatedError": "Could not update the account"
   },
+  "financialHealth": {
+    "title": "Financial health",
+    "subtitle": "This month's indicators, in guaraníes",
+    "configure": "Configure",
+    "loadError": "The indicators could not be loaded.",
+    "emptyTitle": "Add your income and expenses",
+    "emptyDescription": "With your monthly net income and essential expenses we calculate your cushion months, savings rate and debt rate.",
+    "months": "{{value}} months",
+    "missingExpense": "Monthly essential expenses are missing.",
+    "missingIncome": "Monthly net income is missing.",
+    "cushionThresholds": "green ≥ {{green}}, yellow ≥ {{yellow}} months",
+    "savingsThresholds": "green ≥ {{green}} %, yellow ≥ {{yellow}} %",
+    "debtThresholds": "green ≤ {{green}} %, yellow ≤ {{yellow}} %",
+    "status": {
+      "good": "Good",
+      "warning": "Watch",
+      "bad": "Bad"
+    },
+    "cushion": {
+      "title": "Cushion months",
+      "description": "Immediate liquidity ÷ essential expenses"
+    },
+    "savings": {
+      "title": "Savings rate",
+      "description": "This month's savings installments ÷ net income"
+    },
+    "debt": {
+      "title": "Debt rate",
+      "description": "This month's loan installments ÷ net income"
+    }
+  },
+  "financialSettings": {
+    "title": "Financial settings",
+    "subtitle": "Used for the financial health indicators on the dashboard. Later on, income and expenses will come from MyMoney.",
+    "monthlySection": "Monthly income and expenses",
+    "monthlyNetIncome": "Monthly net income",
+    "monthlyNetIncomeHint": "What you get paid per month after deductions (social security, taxes)",
+    "monthlyEssentialExpense": "Monthly essential expenses",
+    "monthlyEssentialExpenseHint": "The minimum to live for a month: rent, food, utilities, transport",
+    "guaraniNote": "For now amounts and indicators are in guaraníes only; money in other currencies is not counted.",
+    "thresholdsSection": "Color thresholds",
+    "thresholdsHint": "From which value each indicator shows green or yellow; below it (or above it, for debt) it shows red.",
+    "greenFrom": "Green from",
+    "yellowFrom": "Yellow from",
+    "greenUpTo": "Green up to",
+    "yellowUpTo": "Yellow up to",
+    "monthsSuffix": "months",
+    "higherOrderError": "Green must be greater than or equal to yellow.",
+    "lowerOrderError": "Green must be less than or equal to yellow.",
+    "loadError": "The settings could not be loaded.",
+    "savedSuccess": "Settings saved",
+    "savedError": "The settings could not be saved."
+  },
   "accountMovement": {
     "noAccount": "Don't update balances",
     "noAccountHint": "No account balance changes; you can load it later in Update balances",

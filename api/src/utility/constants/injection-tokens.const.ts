@@ -32,6 +32,7 @@ export const LOAN_TOKENS = {
 export const DASHBOARD_TOKENS = {
   ACCESS_SERVICE: Symbol('IDashboardAccessService'),
   MANAGER_SERVICE: Symbol('IDashboardManagerService'),
+  FINANCIAL_SETTINGS_ACCESS_SERVICE: Symbol('IUserFinancialSettingsAccessService'),
 } as const;
 
 export const TRAVEL_TOKENS = {

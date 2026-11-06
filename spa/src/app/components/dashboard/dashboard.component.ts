@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { useDashboardStore } from '../../store';
 import { NetWorthSectionComponent } from '../net-worth-section/net-worth-section.component';
+import { FinancialHealthComponent } from '../financial-health/financial-health.component';
 import { MaturitiesCalendarComponent } from '../maturities-calendar/maturities-calendar.component';
 import { DebtsOverviewComponent } from '../debts-overview/debts-overview.component';
 
@@ -39,6 +40,7 @@ interface DashboardQuickAction {
     RouterModule,
     TranslateModule,
     NetWorthSectionComponent,
+    FinancialHealthComponent,
     MaturitiesCalendarComponent,
     DebtsOverviewComponent,
   ],

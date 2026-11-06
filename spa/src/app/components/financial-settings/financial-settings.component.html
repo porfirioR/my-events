@@ -1,0 +1,112 @@
+<section>
+  <article class="max-w-3xl mx-auto bg-base-100 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
+    <header class="mb-6">
+      <div class="flex items-center justify-between">
+        <button type="button" class="btn btn-sm btn-ghost btn-circle" [routerLink]="['/']" [attr.aria-label]="'common.cancel' | translate">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl">
+          {{ 'financialSettings.title' | translate }}
+        </h1>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" (click)="exit()" [attr.aria-label]="'common.close' | translate">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+      <p class="text-sm text-base-content/60 mt-3">{{ 'financialSettings.subtitle' | translate }}</p>
+    </header>
+
+    <form [formGroup]="formGroup" (submit)="save($event)" class="space-y-6">
+
+      <!-- Ingreso y gasto -->
+      <fieldset class="space-y-2">
+        <legend class="font-semibold text-base-content mb-2">{{ 'financialSettings.monthlySection' | translate }}</legend>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          <app-text
+            formControlName="monthlyNetIncome"
+            type="number"
+            [allowDecimals]="false"
+            [label]="'financialSettings.monthlyNetIncome' | translate"
+            id="monthlyNetIncome"
+            name="monthlyNetIncome"
+            [description]="'financialSettings.monthlyNetIncomeHint' | translate"
+            [disabled]="saving()"
+          />
+          <app-text
+            formControlName="monthlyEssentialExpense"
+            type="number"
+            [allowDecimals]="false"
+            [label]="'financialSettings.monthlyEssentialExpense' | translate"
+            id="monthlyEssentialExpense"
+            name="monthlyEssentialExpense"
+            [description]="'financialSettings.monthlyEssentialExpenseHint' | translate"
+            [disabled]="saving()"
+          />
+        </div>
+        <div role="note" class="alert alert-info alert-soft text-sm">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+          <span>{{ 'financialSettings.guaraniNote' | translate }}</span>
+        </div>
+      </fieldset>
+
+      <!-- Umbrales -->
+      <fieldset class="space-y-4">
+        <legend class="font-semibold text-base-content mb-1">{{ 'financialSettings.thresholdsSection' | translate }}</legend>
+        <p class="text-sm text-base-content/60">{{ 'financialSettings.thresholdsHint' | translate }}</p>
+
+        <div class="rounded-xl border border-base-300/60 p-4">
+          <h3 class="text-sm font-medium mb-3">{{ 'financialHealth.cushion.title' | translate }}</h3>
+          <div class="grid grid-cols-2 gap-4 items-start">
+            <app-text formControlName="cushionGreenMonths" type="number" [label]="'financialSettings.greenFrom' | translate"
+              id="cushionGreenMonths" name="cushionGreenMonths" [suffix]="'financialSettings.monthsSuffix' | translate" [disabled]="saving()" />
+            <app-text formControlName="cushionYellowMonths" type="number" [label]="'financialSettings.yellowFrom' | translate"
+              id="cushionYellowMonths" name="cushionYellowMonths" [suffix]="'financialSettings.monthsSuffix' | translate" [disabled]="saving()" />
+          </div>
+          @if (formGroup.hasError('cushionOrder')) {
+            <p class="text-xs text-error">{{ 'financialSettings.higherOrderError' | translate }}</p>
+          }
+        </div>
+
+        <div class="rounded-xl border border-base-300/60 p-4">
+          <h3 class="text-sm font-medium mb-3">{{ 'financialHealth.savings.title' | translate }}</h3>
+          <div class="grid grid-cols-2 gap-4 items-start">
+            <app-text formControlName="savingsGreenPercentage" type="number" [label]="'financialSettings.greenFrom' | translate"
+              id="savingsGreenPercentage" name="savingsGreenPercentage" suffix="%" [disabled]="saving()" />
+            <app-text formControlName="savingsYellowPercentage" type="number" [label]="'financialSettings.yellowFrom' | translate"
+              id="savingsYellowPercentage" name="savingsYellowPercentage" suffix="%" [disabled]="saving()" />
+          </div>
+          @if (formGroup.hasError('savingsOrder')) {
+            <p class="text-xs text-error">{{ 'financialSettings.higherOrderError' | translate }}</p>
+          }
+        </div>
+
+        <div class="rounded-xl border border-base-300/60 p-4">
+          <h3 class="text-sm font-medium mb-3">{{ 'financialHealth.debt.title' | translate }}</h3>
+          <div class="grid grid-cols-2 gap-4 items-start">
+            <app-text formControlName="debtGreenPercentage" type="number" [label]="'financialSettings.greenUpTo' | translate"
+              id="debtGreenPercentage" name="debtGreenPercentage" suffix="%" [disabled]="saving()" />
+            <app-text formControlName="debtYellowPercentage" type="number" [label]="'financialSettings.yellowUpTo' | translate"
+              id="debtYellowPercentage" name="debtYellowPercentage" suffix="%" [disabled]="saving()" />
+          </div>
+          @if (formGroup.hasError('debtOrder')) {
+            <p class="text-xs text-error">{{ 'financialSettings.lowerOrderError' | translate }}</p>
+          }
+        </div>
+      </fieldset>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" class="btn btn-ghost" (click)="exit()" [disabled]="saving()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving() || formGroup.invalid">
+          @if (saving()) {
+            <span class="loading loading-spinner loading-sm"></span>
+          } @else {
+            <i class="fas fa-save mr-1" aria-hidden="true"></i>
+          }
+          {{ 'common.save' | translate }}
+        </button>
+      </div>
+    </form>
+  </article>
+</section>

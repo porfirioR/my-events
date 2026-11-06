@@ -6,6 +6,7 @@ import { DashboardSummaryApiModel } from '../models/api/dashboard/dashboard-summ
 import { NetWorthSummaryApiModel } from '../models/api/dashboard/net-worth-summary-api.model';
 import { MaturityCalendarApiModel } from '../models/api/dashboard/maturity-calendar-api.model';
 import { DebtsOverviewApiModel } from '../models/api/dashboard/debts-overview-api.model';
+import { FinancialHealthApiModel, FinancialSettingsApiModel, UpsertFinancialSettingsApiRequest } from '../models/api/dashboard/financial-health-api.model';
 import { DashboardApiService } from '../services/api/dashboard-api.service';
 import { useLoadingStore } from './loading.store';
 
@@ -22,6 +23,10 @@ export interface DashboardState {
   debts: DebtsOverviewApiModel | null;
   isDebtsLoading: boolean;
   debtsError: string | null;
+  health: FinancialHealthApiModel | null;
+  isHealthLoading: boolean;
+  healthError: string | null;
+  financialSettings: FinancialSettingsApiModel | null;
 }
 
 const initialState: DashboardState = {
@@ -37,6 +42,10 @@ const initialState: DashboardState = {
   debts: null,
   isDebtsLoading: false,
   debtsError: null,
+  health: null,
+  isHealthLoading: false,
+  healthError: null,
+  financialSettings: null,
 };
 
 // Fecha local 'YYYY-MM-DD' (no toISOString: de noche en Paraguay ya sería mañana en UTC)
@@ -148,7 +157,53 @@ export const DashboardStore = signalStore(
       )
     ),
 
-    clearFinancialData: () => patchState(store, { netWorth: null, netWorthError: null, maturities: null, maturitiesError: null, debts: null, debtsError: null }),
+    // Igual que el patrimonio: sin caché y sin loading global
+    loadHealth: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { isHealthLoading: true, healthError: null })),
+        switchMap(() =>
+          dashboardApiService.getHealth(localToday()).pipe(
+            tap(health => patchState(store, { health, isHealthLoading: false })),
+            catchError(() => {
+              patchState(store, { healthError: 'Failed to load financial health', isHealthLoading: false });
+              return of(null);
+            })
+          )
+        )
+      )
+    ),
+
+    // Parámetros del usuario para los indicadores (si no los cargó, vienen los umbrales por defecto)
+    loadFinancialSettings: () => {
+      loadingStore.setLoading();
+      return dashboardApiService.getFinancialSettings().pipe(
+        tap(financialSettings => {
+          patchState(store, { financialSettings });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          loadingStore.setLoadingSuccess();
+          throw error;
+        }),
+      );
+    },
+
+    saveFinancialSettings: (request: UpsertFinancialSettingsApiRequest) => {
+      loadingStore.setLoading();
+      return dashboardApiService.upsertFinancialSettings(request).pipe(
+        tap(financialSettings => {
+          // Los indicadores cambian con los nuevos parámetros: se vuelven a pedir al abrir el dashboard
+          patchState(store, { financialSettings, health: null });
+          loadingStore.setLoadingSuccess();
+        }),
+        catchError(error => {
+          loadingStore.setLoadingSuccess();
+          throw error;
+        }),
+      );
+    },
+
+    clearFinancialData: () => patchState(store, { netWorth: null, netWorthError: null, maturities: null, maturitiesError: null, debts: null, debtsError: null, health: null, healthError: null, financialSettings: null }),
   }))
 );
 

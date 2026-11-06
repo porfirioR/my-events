@@ -202,6 +202,7 @@ En el patrimonio la rueda suma `currentamount` (lo aportado) hasta que pasa a `W
 | 23 | #220 | `CREATE TABLE accounts` (ver el diagrama), `CHECK (type IN (1,2,3))`, índice `(userid, isactive)`. |
 | 24 | #221 | `CREATE TABLE accountbalancesnapshots`, `UNIQUE (accountid, snapshotdate)`, `CHECK (snapshotdate = date_trunc('month', snapshotdate)::date)`, `ON DELETE CASCADE` desde `accounts`. |
 | 29 | cuenta en cobros y pagos | `loanpayments.accountid` y `savingsdeposits.accountid` `INT NULL REFERENCES accounts(id) ON DELETE SET NULL` + índices. |
+| 30 | #228 | `CREATE TABLE userfinancialsettings` (1 fila por usuario): `monthlynetincome`, `monthlyessentialexpense` (NULL), umbrales de colchón, ahorro y cuotas con valores por defecto 6/3 meses, 20/10 % y 30/40 %, `currencyid` 4 (solo guaraníes por ahora). |
 
 ## Ajustes a otros issues
 
