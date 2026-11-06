@@ -113,6 +113,13 @@
         id="paymentDate"
         name="paymentDate"
       />
+      <app-select-input
+        formControlName="accountId"
+        [label]="key('payAccount') | translate"
+        id="payAccount"
+        name="payAccount"
+        [list]="accountList()"
+      />
       <app-text-area-input
         formControlName="description"
         [label]="'loanDetail.payDescription' | translate"

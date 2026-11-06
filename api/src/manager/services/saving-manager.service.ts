@@ -26,7 +26,8 @@ import {
 } from '../models/savings';
 import { SavingsCalculatorHelper } from '../../utility/helpers/savings-calculator.helper';
 import { SavingsMovementHelper } from '../../utility/helpers/savings-movement.helper';
-import { FINANCIAL_INSTITUTION_TOKENS, SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { ACCOUNT_TOKENS, FINANCIAL_INSTITUTION_TOKENS, SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { AccountManagerService } from './account-manager.service';
 import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import { ProgressionType, MovementType } from 'src/utility/enums';
 
@@ -47,6 +48,9 @@ export class SavingsManagerService {
 
     @Inject(FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE)
     private readonly financialInstitutionAccessService: IFinancialInstitutionAccessService,
+
+    @Inject(ACCOUNT_TOKENS.MANAGER_SERVICE)
+    private readonly accountManagerService: AccountManagerService,
   ) {}
 
   // ==================== SAVINGS GOALS ====================
@@ -363,6 +367,12 @@ export class SavingsManagerService {
       throw new BadRequestException('Payout date cannot be in the future');
     }
 
+    // Con cuenta, entra lo cobrado (o lo aportado si no se informa el monto real)
+    if (request.accountId) {
+      await this.accountManagerService.applyMovement(
+        request.userId, request.accountId, goal.currencyId, request.payoutAmount ?? goal.currentAmount);
+    }
+
     const pendingInstallments = await this.savingsInstallmentAccessService.getPendingInstallments(goal.id);
     for (const installment of pendingInstallments) {
       await this.savingsInstallmentAccessService.markAsSkipped(installment.id);
@@ -442,6 +452,11 @@ export class SavingsManagerService {
       throw new BadRequestException(`Amount cannot exceed installment amount (${installment.amount})`);
     }
 
+    // Con cuenta, la cuota sale de ese saldo (se ajusta antes de registrar nada)
+    if (request.accountId) {
+      await this.accountManagerService.applyMovement(request.userId, request.accountId, goal.currencyId, -request.amount);
+    }
+
     // 3. Create deposit
     const depositAccessRequest = new CreateSavingsDepositAccessRequest(
       request.savingsGoalId,
@@ -449,6 +464,8 @@ export class SavingsManagerService {
       new Date(),
       request.installmentId,
       request.description,
+      MovementType.Deposit,
+      request.accountId,
     );
 
     const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
@@ -627,6 +644,12 @@ export class SavingsManagerService {
       throw new BadRequestException('Movement date cannot be in the future');
     }
 
+    // Con cuenta: un depósito sale de ese saldo y un retiro entra
+    if (request.accountId) {
+      const delta = request.movementType === MovementType.Withdrawal ? request.amount : -request.amount;
+      await this.accountManagerService.applyMovement(request.userId, request.accountId, goal.currencyId, delta);
+    }
+
     // 2. Create movement
     const depositAccessRequest = new CreateSavingsDepositAccessRequest(
       request.savingsGoalId,
@@ -635,6 +658,7 @@ export class SavingsManagerService {
       null,
       request.description,
       request.movementType,
+      request.accountId,
     );
 
     const depositAccessModel = await this.savingsDepositAccessService.create(depositAccessRequest);
@@ -692,6 +716,12 @@ export class SavingsManagerService {
     } else if (goal.statusId === 1 && goal.progressionTypeId === ProgressionType.FreeForm && newCurrentAmount >= goal.targetAmount) {
       // Borrar un retiro de forma libre puede devolverla a la meta
       await this.savingsGoalAccessService.markAsCompleted(goal.id, userId);
+    }
+
+    // Si el movimiento ajustó una cuenta, se revierte: el depósito vuelve a la cuenta y el retiro sale
+    if (deposit.accountId) {
+      const accountDelta = deposit.movementType === MovementType.Withdrawal ? -deposit.amount : deposit.amount;
+      await this.accountManagerService.applyMovement(userId, deposit.accountId, goal.currencyId, accountDelta, true);
     }
 
     await this.savingsDepositAccessService.delete(depositId);
@@ -803,6 +833,7 @@ export class SavingsManagerService {
       accessModel.installmentId,
       accessModel.description,
       accessModel.movementType,
+      accessModel.accountId,
     );
   };
 }

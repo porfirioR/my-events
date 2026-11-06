@@ -657,6 +657,8 @@
     "totalDeposits": "Total deposits"
   },
   "savingsGoalDetail": {
+    "payAccount": "Account the money comes from",
+    "payoutAccount": "Account the money goes to",
     "statTarget": "Target",
     "statRemaining": "Remaining",
     "statSaved": "Saved",
@@ -1295,6 +1297,7 @@
     "linkedToInstallment": "Installment #{{number}}"
   },
   "loanDetail": {
+    "payAccount": "Account the money comes from",
     "principal": "Principal",
     "remaining": "Remaining balance",
     "totalPaid": "Total paid",
@@ -1336,6 +1339,7 @@
     "insurance": "Insurance",
     "totalRate": "Total rate",
     "lent": {
+      "payAccount": "Account the money goes to",
       "remaining": "Remaining to collect",
       "totalPaid": "Total collected",
       "totalInterest": "Profit",
@@ -1437,6 +1441,12 @@
     "createdError": "Could not create the account",
     "updatedSuccess": "Account updated",
     "updatedError": "Could not update the account"
+  },
+  "accountMovement": {
+    "noAccount": "Don't update balances",
+    "noAccountHint": "No account balance changes; you can load it later in Update balances",
+    "noBalance": "No balance loaded yet; 0 is used as the starting point",
+    "currentBalance": "Current balance: {{amount}}. Adjusted on save"
   },
   "accountBalances": {
     "title": "Monthly balances",

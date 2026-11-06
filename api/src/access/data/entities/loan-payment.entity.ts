@@ -5,4 +5,5 @@ export interface LoanPaymentEntity {
   amount: number;
   description: string | null;
   paymentdate: string;
+  accountid: number | null;
 }

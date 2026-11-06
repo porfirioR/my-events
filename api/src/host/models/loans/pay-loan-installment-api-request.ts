@@ -1,4 +1,4 @@
-import { IsDateString, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsDateString, IsInt, IsNumber, IsOptional, IsPositive, IsString, Min } from 'class-validator';
 
 export class PayLoanInstallmentApiRequest {
   @IsNumber()
@@ -12,4 +12,10 @@ export class PayLoanInstallmentApiRequest {
   @IsOptional()
   @IsDateString()
   paymentDate?: string;
+
+  // Cuenta por la que entró (otorgado) o salió (recibido) la plata; sin cuenta no se toca ningún saldo
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  accountId?: number;
 }

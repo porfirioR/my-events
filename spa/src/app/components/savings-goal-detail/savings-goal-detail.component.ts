@@ -12,6 +12,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { useSavingsStore } from '../../store/savings.store';
 import { useCurrencyStore } from '../../store/currency.store';
 import { useFinancialInstitutionsStore } from '../../store/financial-institutions.store';
+import { useAccountsStore } from '../../store/accounts.store';
+import { NO_ACCOUNT } from '../../services/helpers/formatter-helper.service';
+import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { AlertService, BreadcrumbService, FormatterHelperService } from '../../services';
 import { GoalStatus, InstallmentStatus, MovementType, ProgressionType } from '../../models/enums';
 import { DetailFieldViewModel, InstallmentColumnViewModel, InstallmentRowViewModel, MovementViewModel } from '../../models/view';
@@ -47,6 +50,7 @@ import { SavingsMovementModalComponent } from '../savings-movement-modal/savings
     TextComponent,
     TextAreaInputComponent,
     DateInputComponent,
+    SelectInputComponent,
     ConfirmDialogComponent,
     SavingsMovementModalComponent,
     NextInstallmentAlertComponent,
@@ -71,8 +75,13 @@ export class SavingsGoalDetailComponent implements OnInit {
   private savingsStore = useSavingsStore();
   private currencyStore = useCurrencyStore();
   private financialInstitutionsStore = useFinancialInstitutionsStore();
+  private accountsStore = useAccountsStore();
 
   protected goal = this.savingsStore.selectedGoal;
+
+  // Cuentas de la moneda del ahorro para elegir de dónde sale (cuota) o adónde entra (cobro) la plata
+  protected accountList = computed(() =>
+    this.formatterService.accountOptions(this.accountsStore.accounts(), this.goal()?.currencyId));
   private goalId: number | null = null;
   private openPayoutOnLoad = false;
   private breadcrumbService = inject(BreadcrumbService);
@@ -333,6 +342,7 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected withdrawForm = new FormGroup({
     payoutAmount: new FormControl<number | null>(null, [Validators.min(1)]),
     payoutDate: new FormControl<string | null>(null, [Validators.required]),
+    accountId: new FormControl<number>(NO_ACCOUNT, { nonNullable: true }),
   });
 
   protected canAddInstallments = computed(() => {
@@ -354,6 +364,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.payForm = new FormGroup<ProgressionTypeFormGroup>({
       amount: new FormControl(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
+      accountId: new FormControl<number>(NO_ACCOUNT, { nonNullable: true }),
     });
 
     this.addInstallmentsForm = new FormGroup({
@@ -391,6 +402,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadProgrammedTerms();
     this.currencyStore.loadCurrencies();
     this.financialInstitutionsStore.loadFinancialInstitutions();
+    this.accountsStore.loadAccounts();
   }
 
   protected setActiveTab(tab: 'installments' | 'deposits'): void {
@@ -431,7 +443,8 @@ export class SavingsGoalDetailComponent implements OnInit {
 
     const request = new PayInstallmentApiRequest(
       values.amount!,
-      values.description || undefined
+      values.description || undefined,
+      +values.accountId || undefined,
     );
     this.isSubmitting.set(true);
     this.savingsStore.payInstallment(goalId, installmentId, request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -464,6 +477,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.withdrawForm.reset({
       payoutAmount: (hasMaturityAmount ? goal.targetAmount : goal.currentAmount) || null,
       payoutDate: new Date().toISOString().substring(0, 10),
+      accountId: NO_ACCOUNT,
     });
     this.showWithdrawModal.set(true);
   }
@@ -481,6 +495,7 @@ export class SavingsGoalDetailComponent implements OnInit {
     const request = new WithdrawSavingsGoalApiRequest(
       values.payoutDate!,
       values.payoutAmount ? +values.payoutAmount : undefined,
+      values.accountId ? +values.accountId : undefined,
     );
     this.isSubmitting.set(true);
 
@@ -488,6 +503,7 @@ export class SavingsGoalDetailComponent implements OnInit {
       next: () => {
         this.isSubmitting.set(false);
         this.alertService.showSuccess(this.translate.instant('savingsGoalDetail.withdrawnSuccess'));
+        if (values.accountId) this.accountsStore.reloadAccounts();
         this.closeWithdrawModal();
       },
       error: (e) => {
@@ -601,6 +617,8 @@ export class SavingsGoalDetailComponent implements OnInit {
     this.savingsStore.loadGoalById(goalId);
     this.savingsStore.loadInstallments(goalId);
     this.savingsStore.loadDeposits(goalId);
+    // Un pago o movimiento con cuenta cambia su saldo
+    this.accountsStore.reloadAccounts();
   }
 
   protected getGoalStatusLabel = FormatterHelperService.getGoalStatusLabel.bind(this.formatterService);

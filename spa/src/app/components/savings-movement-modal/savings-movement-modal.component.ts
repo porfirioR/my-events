@@ -1,9 +1,11 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, Output, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, Output, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useSavingsStore } from '../../store';
+import { useAccountsStore, useSavingsStore } from '../../store';
+import { NO_ACCOUNT } from '../../services/helpers/formatter-helper.service';
+import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { AlertService, FormatterHelperService } from '../../services';
 import { MovementType, ProgressionType } from '../../models/enums';
 import { CreateSavingsMovementApiRequest } from '../../models/api/savings';
@@ -27,6 +29,7 @@ interface SavingsMovementFormGroup {
   amount: FormControl<number | null>;
   description: FormControl<string | null>;
   date: FormControl<string | null>;
+  accountId: FormControl<number>;
 }
 
 @Component({
@@ -40,6 +43,7 @@ interface SavingsMovementFormGroup {
     TextComponent,
     TextAreaInputComponent,
     DateInputComponent,
+    SelectInputComponent,
   ],
 })
 export class SavingsMovementModalComponent {
@@ -48,6 +52,7 @@ export class SavingsMovementModalComponent {
   private translate = inject(TranslateService);
   private formatterService = inject(FormatterHelperService);
   private savingsStore = useSavingsStore();
+  private accountsStore = useAccountsStore();
 
   private goalId: number | null = null;
 
@@ -60,6 +65,9 @@ export class SavingsMovementModalComponent {
   protected maxAmount = signal<number | null>(null);
   protected maxAmountHint = signal('');
   protected form: FormGroup<SavingsMovementFormGroup>;
+  // Un depósito sale de la cuenta elegida y un retiro entra a ella
+  protected accountList = computed(() =>
+    this.formatterService.accountOptions(this.accountsStore.accounts(), this.currencyId()));
 
   protected MovementType = MovementType;
   protected formatCurrency = this.formatterService.formatCurrency.bind(this.formatterService);
@@ -69,7 +77,9 @@ export class SavingsMovementModalComponent {
       amount: new FormControl(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
       date: new FormControl(this.todayAsString(), [Validators.required]),
+      accountId: new FormControl<number>(NO_ACCOUNT, { nonNullable: true }),
     });
+    this.accountsStore.loadAccounts();
   }
 
   public open(data: SavingsMovementModalData): void {
@@ -78,7 +88,7 @@ export class SavingsMovementModalComponent {
     this.movementType.set(data.movementType);
 
     this.form.reset();
-    this.form.patchValue({ amount: null, description: '', date: this.todayAsString() });
+    this.form.patchValue({ amount: null, description: '', date: this.todayAsString(), accountId: NO_ACCOUNT });
 
     this.form.controls.amount.clearValidators();
     this.form.controls.amount.addValidators([Validators.required, Validators.min(1)]);
@@ -127,6 +137,7 @@ export class SavingsMovementModalComponent {
       this.movementType(),
       values.description || undefined,
       values.date || undefined,
+      values.accountId ? +values.accountId : undefined,
     );
     this.isSubmitting.set(true);
 

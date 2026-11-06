@@ -5,5 +5,6 @@ export class PayInstallmentRequest {
     public readonly installmentId: number,
     public readonly amount: number,
     public readonly description?: string | null,
+    public readonly accountId: number | null = null,
   ) {}
 }

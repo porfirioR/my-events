@@ -200,6 +200,7 @@ export class SavingsGoalsController {
       id,
       apiRequest.payoutAmount ? +apiRequest.payoutAmount : null,
       new Date(apiRequest.payoutDate),
+      apiRequest.accountId ? +apiRequest.accountId : null,
     );
 
     return await this.savingsManagerService.withdrawSavingsGoal(request);
@@ -249,6 +250,7 @@ export class SavingsGoalsController {
       installmentId,
       apiRequest.amount,
       apiRequest.description,
+      apiRequest.accountId ? +apiRequest.accountId : null,
     );
 
     return await this.savingsManagerService.payInstallment(request);
@@ -323,6 +325,7 @@ export class SavingsGoalsController {
       apiRequest.movementType,
       apiRequest.description,
       apiRequest.date ? new Date(apiRequest.date) : undefined,
+      apiRequest.accountId ? +apiRequest.accountId : null,
     );
 
     return await this.savingsManagerService.createMovement(request);

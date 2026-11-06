@@ -23,6 +23,7 @@ export class LoanPaymentAccessService extends BaseAccessService implements ILoan
         amount: request.amount,
         description: request.description,
         paymentdate: (request.paymentDate ?? new Date()).toISOString(),
+        accountid: request.accountId,
       })
       .select()
       .single<LoanPaymentEntity>();
@@ -50,5 +51,6 @@ export class LoanPaymentAccessService extends BaseAccessService implements ILoan
       entity.amount,
       entity.description,
       new Date(entity.paymentdate),
+      entity.accountid ?? null,
     );
 }

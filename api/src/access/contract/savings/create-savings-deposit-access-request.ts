@@ -6,5 +6,6 @@ export class CreateSavingsDepositAccessRequest {
     public readonly installmentId?: number | null,
     public readonly description?: string | null,
     public readonly movementType: number = 1,
+    public readonly accountId: number | null = null,
   ) {}
 }

@@ -1357,3 +1357,15 @@ UPDATE loanentityterms SET annualratepercentage = 28.00 WHERE loanentityid = 2 A
 -- El cron con web-push nunca funcionó en Azure Functions (disparador HTTP) y se eliminó del código.
 -- La tabla solo guardaba una suscripción de prueba.
 DROP TABLE IF EXISTS webpushtoken;
+
+-- =====================================================
+-- PARTE 29: CUENTA DE ORIGEN O DESTINO EN COBROS Y PAGOS
+-- =====================================================
+-- Al cobrar o pagar una cuota (préstamo o ahorro) o al registrar un movimiento de un ahorro, se
+-- puede elegir la cuenta por la que entró o salió la plata. Ese saldo se ajusta en el momento
+-- (snapshot del mes actual) y la cuenta queda guardada para revertir el ajuste si se borra el
+-- movimiento y para la futura conciliación con MyMoney (#233). NULL = no se tocó ningún saldo.
+ALTER TABLE loanpayments ADD COLUMN IF NOT EXISTS accountid INT NULL REFERENCES accounts(id) ON DELETE SET NULL;
+ALTER TABLE savingsdeposits ADD COLUMN IF NOT EXISTS accountid INT NULL REFERENCES accounts(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_loanpayments_account ON loanpayments(accountid);
+CREATE INDEX IF NOT EXISTS idx_savingsdeposits_account ON savingsdeposits(accountid);
