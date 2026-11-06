@@ -79,6 +79,13 @@ export const routes: Routes = [
         loadComponent: () => import('./components/maturities-calendar/maturities-calendar.component').then((x) => x.MaturitiesCalendarComponent),
       },
       {
+        path: 'financial-settings',
+        title: 'Financial Settings',
+        canActivate: [authGuard],
+        canDeactivate: [WarningUnsavedChanges],
+        loadComponent: () => import('./components/financial-settings/financial-settings.component').then((x) => x.FinancialSettingsComponent),
+      },
+      {
         path: 'debts',
         title: 'Debts',
         canActivate: [authGuard],

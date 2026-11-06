@@ -60,6 +60,20 @@ export class LoanInstallmentAccessService extends BaseAccessService implements I
     return (data as LoanInstallmentEntity[] ?? []).map(this.mapEntityToModel);
   };
 
+  public getDueBetweenByLoanIds = async (loanIds: number[], from: string, to: string): Promise<LoanInstallmentAccessModel[]> => {
+    if (loanIds.length === 0) return [];
+    const { data, error } = await this.dbContext
+      .from(TableEnum.LoanInstallments)
+      .select('*')
+      .in('loanid', loanIds)
+      .in('statusid', [1, 2])
+      .gte('duedate', from)
+      .lte('duedate', to);
+
+    if (error) throw new InternalServerErrorException(error.message);
+    return (data as LoanInstallmentEntity[] ?? []).map(this.mapEntityToModel);
+  };
+
   public markAsPaid = async (id: number, paidAmount: number, paymentDate?: Date | null): Promise<LoanInstallmentAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.LoanInstallments)

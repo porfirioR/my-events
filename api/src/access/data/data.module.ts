@@ -18,6 +18,7 @@ import { LoanInstallmentAccessService } from './services/loan-installment-access
 import { LoanPaymentAccessService } from './services/loan-payment-access.service';
 import { LoanEntityTermAccessService } from './services/loan-entity-term-access.service';
 import { DashboardAccessService } from './services/dashboard-access.service';
+import { UserFinancialSettingsAccessService } from './services/user-financial-settings-access.service';
 import { FinancialInstitutionAccessService } from './services/financial-institution-access.service';
 import { AccountAccessService } from './services/account-access.service';
 import { AccountBalanceSnapshotAccessService } from './services/account-balance-snapshot-access.service';
@@ -78,6 +79,11 @@ import { AccountBalanceSnapshotAccessService } from './services/account-balance-
     {
       provide: DASHBOARD_TOKENS.ACCESS_SERVICE,
       useExisting: DashboardAccessService,
+    },
+    UserFinancialSettingsAccessService,
+    {
+      provide: DASHBOARD_TOKENS.FINANCIAL_SETTINGS_ACCESS_SERVICE,
+      useExisting: UserFinancialSettingsAccessService,
     },
     {
       provide: LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE,
@@ -203,6 +209,7 @@ import { AccountBalanceSnapshotAccessService } from './services/account-balance-
     LOAN_TOKENS.PAYMENT_ACCESS_SERVICE,
     LOAN_TOKENS.ENTITY_TERM_ACCESS_SERVICE,
     DASHBOARD_TOKENS.ACCESS_SERVICE,
+    DASHBOARD_TOKENS.FINANCIAL_SETTINGS_ACCESS_SERVICE,
     FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE,
     ACCOUNT_TOKENS.ACCOUNT_ACCESS_SERVICE,
     ACCOUNT_TOKENS.BALANCE_SNAPSHOT_ACCESS_SERVICE,

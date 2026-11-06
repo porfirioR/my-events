@@ -1369,3 +1369,37 @@ ALTER TABLE loanpayments ADD COLUMN IF NOT EXISTS accountid INT NULL REFERENCES 
 ALTER TABLE savingsdeposits ADD COLUMN IF NOT EXISTS accountid INT NULL REFERENCES accounts(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS idx_loanpayments_account ON loanpayments(accountid);
 CREATE INDEX IF NOT EXISTS idx_savingsdeposits_account ON savingsdeposits(accountid);
+
+-- =====================================================
+-- PARTE 30: PARÁMETROS FINANCIEROS PARA INDICADORES DE SALUD (#228)
+-- =====================================================
+-- Ingreso neto y gasto esencial mensuales cargados a mano en el perfil (en la fase 5 se reemplazan
+-- por lo importado de MyMoney), más los umbrales de los colores verde/amarillo/rojo.
+-- Por ahora todo es en guaraníes (currencyid 4): los indicadores solo miran esa moneda.
+CREATE TABLE IF NOT EXISTS userfinancialsettings (
+    userid INT PRIMARY KEY,
+    currencyid INT NOT NULL DEFAULT 4,
+    monthlynetincome BIGINT NULL CHECK (monthlynetincome IS NULL OR monthlynetincome > 0),
+    monthlyessentialexpense BIGINT NULL CHECK (monthlyessentialexpense IS NULL OR monthlyessentialexpense > 0),
+
+    -- Meses de colchón: verde si >= green, amarillo si >= yellow, rojo debajo
+    cushiongreenmonths DECIMAL(4,1) NOT NULL DEFAULT 6,
+    cushionyellowmonths DECIMAL(4,1) NOT NULL DEFAULT 3,
+    -- % de ahorro: verde si >= green, amarillo si >= yellow, rojo debajo
+    savingsgreenpercentage DECIMAL(5,2) NOT NULL DEFAULT 20,
+    savingsyellowpercentage DECIMAL(5,2) NOT NULL DEFAULT 10,
+    -- % de cuotas (más bajo es mejor): verde si <= green, amarillo si <= yellow, rojo arriba
+    debtgreenpercentage DECIMAL(5,2) NOT NULL DEFAULT 30,
+    debtyellowpercentage DECIMAL(5,2) NOT NULL DEFAULT 40,
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (currencyid) REFERENCES currencies(id),
+    CONSTRAINT check_financialsettings_cushion CHECK (cushiongreenmonths >= cushionyellowmonths AND cushionyellowmonths >= 0),
+    CONSTRAINT check_financialsettings_savings CHECK (savingsgreenpercentage >= savingsyellowpercentage AND savingsyellowpercentage >= 0),
+    CONSTRAINT check_financialsettings_debt CHECK (debtgreenpercentage <= debtyellowpercentage AND debtgreenpercentage >= 0)
+);
+
+ALTER TABLE userfinancialsettings DISABLE ROW LEVEL SECURITY;

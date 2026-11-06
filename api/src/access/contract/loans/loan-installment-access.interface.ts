@@ -6,6 +6,8 @@ export interface ILoanInstallmentAccessService {
   getByLoanId(loanId: number): Promise<LoanInstallmentAccessModel[]>;
   // Cuotas pendientes de varios préstamos en una sola consulta, ordenadas por vencimiento
   getPendingByLoanIds(loanIds: number[]): Promise<LoanInstallmentAccessModel[]>;
+  // Cuotas pendientes o pagadas (no omitidas) que vencen entre from y to ('YYYY-MM-DD', inclusive)
+  getDueBetweenByLoanIds(loanIds: number[], from: string, to: string): Promise<LoanInstallmentAccessModel[]>;
   markAsPaid(id: number, paidAmount: number, paymentDate?: Date | null): Promise<LoanInstallmentAccessModel>;
   markAsSkipped(id: number): Promise<LoanInstallmentAccessModel>;
 }

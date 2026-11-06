@@ -47,6 +47,12 @@ export interface ISavingsInstallmentAccessService {
   getPendingInstallments(savingsGoalId: number): Promise<SavingsInstallmentAccessModel[]>;
 
   /**
+   * Cuotas pendientes o pagadas (no omitidas) de varios ahorros que vencen entre from y to
+   * ('YYYY-MM-DD', inclusive)
+   */
+  getDueBetweenByGoalIds(savingsGoalIds: number[], from: string, to: string): Promise<SavingsInstallmentAccessModel[]>;
+
+  /**
    * Actualiza una cuota existente
    * @param accessRequest - Datos actualizados de la cuota
    * @returns Promise con la cuota actualizada

@@ -43,4 +43,5 @@ export enum TableEnum {
   // ===== ACCOUNTS MODULE TABLES =====
   Accounts = 'accounts',
   AccountBalanceSnapshots = 'accountbalancesnapshots',
+  UserFinancialSettings = 'userfinancialsettings',
 }

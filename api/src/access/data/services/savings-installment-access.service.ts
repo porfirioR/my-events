@@ -85,6 +85,24 @@ export class SavingsInstallmentAccessService extends BaseAccessService implement
     return data?.map(this.mapEntityToAccessModel) || [];
   };
 
+  public getDueBetweenByGoalIds = async (
+    savingsGoalIds: number[],
+    from: string,
+    to: string,
+  ): Promise<SavingsInstallmentAccessModel[]> => {
+    if (savingsGoalIds.length === 0) return [];
+    const { data, error } = await this.dbContext
+      .from(TableEnum.SavingsInstallments)
+      .select(DatabaseColumns.All)
+      .in(DatabaseColumns.SavingsGoalId, savingsGoalIds)
+      .in(DatabaseColumns.StatusId, [1, 2])
+      .gte('duedate', from)
+      .lte('duedate', to);
+
+    if (error) throw new InternalServerErrorException(error.message);
+    return data?.map(this.mapEntityToAccessModel) || [];
+  };
+
   public getPendingInstallments = async (
     savingsGoalId: number,
   ): Promise<SavingsInstallmentAccessModel[]> => {

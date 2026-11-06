@@ -5,6 +5,7 @@ import { DashboardSummaryApiModel } from '../../models/api/dashboard/dashboard-s
 import { NetWorthSummaryApiModel } from '../../models/api/dashboard/net-worth-summary-api.model';
 import { MaturityCalendarApiModel } from '../../models/api/dashboard/maturity-calendar-api.model';
 import { DebtsOverviewApiModel } from '../../models/api/dashboard/debts-overview-api.model';
+import { FinancialHealthApiModel, FinancialSettingsApiModel, UpsertFinancialSettingsApiRequest } from '../../models/api/dashboard/financial-health-api.model';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardApiService {
@@ -24,4 +25,13 @@ export class DashboardApiService {
 
   getDebts = (today: string): Observable<DebtsOverviewApiModel> =>
     this.httpClient.get<DebtsOverviewApiModel>(`${this.section}/debts`, { params: { today } });
+
+  getHealth = (today: string): Observable<FinancialHealthApiModel> =>
+    this.httpClient.get<FinancialHealthApiModel>(`${this.section}/health`, { params: { today } });
+
+  getFinancialSettings = (): Observable<FinancialSettingsApiModel> =>
+    this.httpClient.get<FinancialSettingsApiModel>(`${this.section}/financial-settings`);
+
+  upsertFinancialSettings = (request: UpsertFinancialSettingsApiRequest): Observable<FinancialSettingsApiModel> =>
+    this.httpClient.put<FinancialSettingsApiModel>(`${this.section}/financial-settings`, request);
 }

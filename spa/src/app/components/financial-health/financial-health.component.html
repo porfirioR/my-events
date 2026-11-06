@@ -1,0 +1,76 @@
+<section aria-labelledby="financial-health-heading" class="bg-base-100 rounded-2xl border border-base-300/60 shadow-sm p-5">
+  <header class="flex items-start justify-between flex-wrap gap-3">
+    <div class="flex-1 min-w-48">
+      <h2 id="financial-health-heading" class="text-base font-semibold text-base-content flex items-center gap-2">
+        <i class="fas fa-heart-pulse text-rose-500" aria-hidden="true"></i>
+        {{ 'financialHealth.title' | translate }}
+      </h2>
+      <p class="text-xs text-base-content/60 mt-1">{{ 'financialHealth.subtitle' | translate }}</p>
+    </div>
+    <a class="btn btn-sm btn-outline btn-primary" routerLink="/financial-settings">
+      <i class="fas fa-sliders mr-1" aria-hidden="true"></i>
+      {{ 'financialHealth.configure' | translate }}
+    </a>
+  </header>
+
+  @if (isLoading()) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton h-28 rounded-xl"></div>
+      }
+    </div>
+  } @else if (hasError()) {
+    <div class="flex flex-wrap items-center gap-3 mt-5 text-sm text-error">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+      <span>{{ 'financialHealth.loadError' | translate }}</span>
+      <button type="button" class="btn btn-sm btn-ghost" (click)="reload()">
+        <i class="fas fa-rotate-right mr-1" aria-hidden="true"></i>{{ 'netWorth.retry' | translate }}
+      </button>
+    </div>
+  } @else if (isUnconfigured()) {
+    <div class="text-center py-6">
+      <figure class="mx-auto w-14 h-14 bg-base-content/10 rounded-full grid place-items-center mb-3">
+        <i class="fas fa-heart-pulse text-xl text-base-content/50" aria-hidden="true"></i>
+      </figure>
+      <h3 class="font-medium text-base-content mb-1">{{ 'financialHealth.emptyTitle' | translate }}</h3>
+      <p class="text-sm text-base-content/70 mb-4">{{ 'financialHealth.emptyDescription' | translate }}</p>
+      <a class="btn btn-sm btn-primary" routerLink="/financial-settings">
+        <i class="fas fa-sliders mr-1" aria-hidden="true"></i>{{ 'financialHealth.configure' | translate }}
+      </a>
+    </div>
+  } @else if (health()) {
+    <ul class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5" role="list">
+      @for (item of indicators(); track item.key) {
+        @let classes = statusClasses(item.indicator.status);
+        <li class="rounded-xl border p-4 flex flex-col gap-2"
+          [ngClass]="classes?.ring ?? 'border-base-300/60'">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-sm text-base-content/70 flex items-center gap-2">
+              <i class="fas {{ item.icon }} text-base-content/50" aria-hidden="true"></i>
+              {{ 'financialHealth.' + item.key + '.title' | translate }}
+            </span>
+            @if (item.indicator.status) {
+              <span class="badge badge-sm badge-soft" [ngClass]="classes?.badge">
+                {{ 'financialHealth.status.' + item.indicator.status | translate }}
+              </span>
+            }
+          </div>
+
+          @if (item.display) {
+            <p class="text-2xl font-bold tabular-nums" [ngClass]="classes?.text">{{ item.display }}</p>
+            <p class="text-xs text-base-content/60 tabular-nums">{{ item.formula }}</p>
+          } @else {
+            <p class="text-sm text-base-content/60">
+              {{ item.missingKey | translate }}
+              <a class="link link-primary" routerLink="/financial-settings">{{ 'financialHealth.configure' | translate }}</a>
+            </p>
+          }
+
+          <p class="text-xs text-base-content/50 mt-auto">
+            {{ 'financialHealth.' + item.key + '.description' | translate }} · {{ item.thresholds }}
+          </p>
+        </li>
+      }
+    </ul>
+  }
+</section>
