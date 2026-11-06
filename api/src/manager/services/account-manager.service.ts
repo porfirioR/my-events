@@ -107,6 +107,30 @@ export class AccountManagerService {
     return snapshots.map(this.mapSnapshotToModel);
   };
 
+  /**
+   * Registra en el saldo de una cuenta la plata que entró o salió por un cobro o un pago
+   * (cuota de préstamo, depósito o cobro de un ahorro). `delta` positivo suma y negativo resta.
+   * Parte del último saldo cargado de la cuenta (0 si nunca se cargó) y lo guarda en el mes
+   * actual, o en el último mes cargado si es posterior, para no dejar un mes futuro desactualizado.
+   * `isReversal`: deshace un ajuste anterior (ej. al borrar un movimiento), aunque la cuenta ya esté inactiva.
+   */
+  public applyMovement = async (userId: number, accountId: number, currencyId: number, delta: number, isReversal = false): Promise<void> => {
+    if (!Number.isInteger(delta)) throw new BadRequestException('Invalid amount for the account movement');
+    const account = await this.accountAccessService.getById(accountId, userId);
+    if (!account.isActive && !isReversal) throw new BadRequestException('The account is inactive');
+    if (account.currencyId !== currencyId) throw new BadRequestException('The account currency does not match');
+
+    const snapshots = await this.balanceSnapshotAccessService.getByAccountIds([accountId], null, null);
+    const latest = this.getLatestByAccount(snapshots).get(accountId) ?? null;
+    const currentMonth = this.toMonthStart(new Date().toISOString().substring(0, 7));
+    const snapshotDate = latest && latest.snapshotDate > currentMonth ? latest.snapshotDate : currentMonth;
+
+    const balance = +(latest?.balance ?? 0) + delta;
+    await this.balanceSnapshotAccessService.upsertMany([
+      new UpsertAccountBalanceSnapshotAccessRequest(accountId, snapshotDate, balance),
+    ]);
+  };
+
   // Histórico de saldos de las cuentas del usuario; from/to aceptan 'YYYY-MM' o 'YYYY-MM-DD'
   public getBalances = async (userId: number, from: string | null, to: string | null): Promise<AccountBalanceSnapshotModel[]> => {
     const fromDate = from ? this.toMonthStart(from) : null;

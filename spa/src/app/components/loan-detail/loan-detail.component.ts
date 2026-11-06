@@ -8,7 +8,9 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertService, BreadcrumbService, FormatterHelperService } from '../../services';
-import { useCurrencyStore, useFinancialInstitutionsStore, useLoansStore } from '../../store';
+import { useAccountsStore, useCurrencyStore, useFinancialInstitutionsStore, useLoansStore } from '../../store';
+import { NO_ACCOUNT } from '../../services/helpers/formatter-helper.service';
+import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { PayLoanInstallmentApiRequest } from '../../models/api/loans';
 import { TextComponent } from '../inputs/text/text.component';
 import { DateInputComponent } from '../inputs/date-input/date-input.component';
@@ -25,7 +27,7 @@ import { LoanType, LoanTypeLabels, LoanDirection, LoanDirectionLabels, LoanDirec
 // Textos que cambian en un préstamo otorgado: los pagos son cobros (loanDetail.lent.*)
 const LENT_KEYS = new Set([
   'remaining', 'totalPaid', 'totalInterest', 'totalAmount', 'pay', 'paymentHistory', 'noPayments',
-  'payInstallment', 'payAmount', 'paymentDate', 'confirmPay', 'paidSuccess', 'paidError',
+  'payInstallment', 'payAmount', 'paymentDate', 'confirmPay', 'paidSuccess', 'paidError', 'payAccount',
 ]);
 
 @Component({
@@ -33,7 +35,7 @@ const LENT_KEYS = new Set([
   templateUrl: './loan-detail.component.html',
   styleUrls: ['./loan-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, TranslateModule, TextComponent, DateInputComponent, TextAreaInputComponent,
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, TranslateModule, TextComponent, DateInputComponent, TextAreaInputComponent, SelectInputComponent,
     NextInstallmentAlertComponent, InstallmentsTableComponent, MovementsListComponent,
     DetailStatCardsComponent, DetailProgressComponent, DetailInfoGridComponent],
 })
@@ -47,6 +49,7 @@ export class LoanDetailComponent implements OnInit {
   private loansStore = useLoansStore();
   private currencyStore = useCurrencyStore();
   private financialInstitutionsStore = useFinancialInstitutionsStore();
+  private accountsStore = useAccountsStore();
 
   protected loan = this.loansStore.selectedLoan;
   protected installments = this.loansStore.installments;
@@ -70,9 +73,14 @@ export class LoanDetailComponent implements OnInit {
       new Date().toISOString().substring(0, 10),
       [Validators.required]
     ),
+    // Cuenta por la que entró (otorgado) o salió (recibido) la plata; NO_ACCOUNT = no tocar saldos
+    accountId: new FormControl<number>(NO_ACCOUNT, { nonNullable: true }),
   });
 
   protected isLent = computed(() => this.loan()?.direction === LoanDirection.Lent);
+
+  protected accountList = computed(() =>
+    this.formatterService.accountOptions(this.accountsStore.accounts(), this.loan()?.currencyId));
 
   protected key = (key: string): string =>
     this.isLent() && LENT_KEYS.has(key) ? `loanDetail.lent.${key}` : `loanDetail.${key}`;
@@ -161,6 +169,7 @@ export class LoanDetailComponent implements OnInit {
     this.loansStore.loadPayments(+id);
     this.currencyStore.loadCurrencies();
     this.financialInstitutionsStore.loadFinancialInstitutions();
+    this.accountsStore.loadAccounts();
   }
 
   protected setTab(tab: 'table' | 'payments'): void {
@@ -173,6 +182,7 @@ export class LoanDetailComponent implements OnInit {
       amount: inst?.totalAmount ?? null,
       description: '',
       paymentDate: new Date().toISOString().substring(0, 10),
+      accountId: NO_ACCOUNT,
     });
     this.payingInstallmentId.set(installmentId);
     (document.getElementById('pay-modal') as HTMLDialogElement)?.showModal();
@@ -191,7 +201,8 @@ export class LoanDetailComponent implements OnInit {
 
     this.isSaving.set(true);
     const vals = this.payForm.getRawValue();
-    const request = new PayLoanInstallmentApiRequest(+vals.amount!,vals.description ?? null, vals.paymentDate!);
+    const accountId = +vals.accountId || null;
+    const request = new PayLoanInstallmentApiRequest(+vals.amount!, vals.description ?? null, vals.paymentDate!, accountId);
 
     this.loansStore.payInstallment(loanId, installmentId, request)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -199,6 +210,8 @@ export class LoanDetailComponent implements OnInit {
         next: () => {
           this.isSaving.set(false);
           this.alertService.showSuccess(this.translate.instant(this.key('paidSuccess')));
+          // El saldo de la cuenta cambió
+          if (accountId) this.accountsStore.reloadAccounts();
           this.closePayModal();
         },
         error: (e) => {

@@ -22,6 +22,14 @@
         name="date"
       />
 
+      <app-select-input
+        formControlName="accountId"
+        [label]="(movementType() === MovementType.Withdrawal ? 'savingsGoalDetail.payoutAccount' : 'savingsGoalDetail.payAccount') | translate"
+        id="movementAccount"
+        name="movementAccount"
+        [list]="accountList()"
+      />
+
       <app-text-area-input
         formControlName="description"
         [label]="'savingsGoalDetail.descriptionOptional' | translate"

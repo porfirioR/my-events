@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { ACCOUNT_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { AccountManagerService } from './account-manager.service';
 import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
 import {
   ILoanAccessService,
@@ -43,6 +44,9 @@ export class LoanManagerService {
 
     @Inject(FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE)
     private readonly financialInstitutionAccessService: IFinancialInstitutionAccessService,
+
+    @Inject(ACCOUNT_TOKENS.MANAGER_SERVICE)
+    private readonly accountManagerService: AccountManagerService,
   ) {}
 
   // ==================== ENTITY TERMS ====================
@@ -195,6 +199,13 @@ export class LoanManagerService {
       throw new BadRequestException('Payment amount must be greater than zero');
     }
 
+    // Con cuenta, el saldo se ajusta antes de registrar el pago: si la cuenta no es válida no se marca nada.
+    // Un otorgado es plata que entra (+); un recibido, plata que sale (−).
+    if (request.accountId) {
+      const delta = loan.direction === LoanDirection.Lent ? request.amount : -request.amount;
+      await this.accountManagerService.applyMovement(request.userId, request.accountId, loan.currencyId, delta);
+    }
+
     await this.installmentAccessService.markAsPaid(request.installmentId, request.amount, request.paymentDate);
 
     const newTotalPaid = loan.totalPaid + request.amount;
@@ -207,6 +218,7 @@ export class LoanManagerService {
       request.amount,
       request.description,
       request.paymentDate,
+      request.accountId,
     );
     const payment = await this.paymentAccessService.create(paymentAccessRequest);
     return this.mapPaymentToModel(payment);
@@ -269,5 +281,5 @@ export class LoanManagerService {
     );
 
   private mapPaymentToModel = (p: any): LoanPaymentModel =>
-    new LoanPaymentModel(p.id, p.loanId, p.installmentId, p.amount, p.description, p.paymentDate);
+    new LoanPaymentModel(p.id, p.loanId, p.installmentId, p.amount, p.description, p.paymentDate, p.accountId ?? null);
 }

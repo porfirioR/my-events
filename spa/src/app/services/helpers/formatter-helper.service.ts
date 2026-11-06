@@ -6,6 +6,10 @@ import { Configurations, GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStat
 import { useCurrencyStore } from '../../store';
 import { PaymentMethodApiModel } from '../../models/api/travels';
 import { LanguageLocales } from '../../constants';
+import { AccountApiModel } from '../../models/api/accounts';
+
+// Clave de la opción "No actualizar saldos" en el selector de cuenta de cobros y pagos
+export const NO_ACCOUNT = 0;
 
 @Injectable({
   providedIn: 'root'
@@ -114,6 +118,24 @@ export class FormatterHelperService {
   public formatCurrency = (amount: number, currencyId?: number | null): string => {
     return this.currencyStore.formatCurrency()(amount, currencyId ?? 1);
   }
+
+  /**
+   * Opciones para elegir por qué cuenta entró o salió la plata de un cobro o pago.
+   * La primera (clave 0) es "No actualizar saldos"; luego las cuentas activas de la moneda,
+   * con su saldo actual como ayuda.
+   */
+  public accountOptions = (accounts: AccountApiModel[], currencyId: number | null | undefined): KeyValueViewModel[] => [
+    new KeyValueViewModel(NO_ACCOUNT, this.translate.instant('accountMovement.noAccount'), this.translate.instant('accountMovement.noAccountHint')),
+    ...accounts
+      .filter(a => a.isActive && a.currencyId === currencyId)
+      .map(a => new KeyValueViewModel(
+        a.id,
+        a.name,
+        a.currentBalance === null
+          ? this.translate.instant('accountMovement.noBalance')
+          : this.translate.instant('accountMovement.currentBalance', { amount: this.formatCurrency(a.currentBalance, a.currencyId) }),
+      )),
+  ]
 
   public getCurrency = (currencyId: number): CurrencyApiModel | undefined => {
     return this.currencyStore.getCurrencyById()(currencyId);

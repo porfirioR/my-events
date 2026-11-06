@@ -229,6 +229,14 @@
         [description]="'savingsGoalDetail.installmentAmountDescription' | translate: { amount: formatCurrency(selectedInstallment()?.amount, goal()?.currencyId) }" 
       />
 
+      <app-select-input
+        formControlName="accountId"
+        [label]="'savingsGoalDetail.payAccount' | translate"
+        id="payAccount"
+        name="payAccount"
+        [list]="accountList()"
+      />
+
       <app-text-area-input 
         formControlName="description" 
         [label]="'savingsGoalDetail.descriptionOptional' | translate"
@@ -290,6 +298,14 @@
         [label]="'savingsGoalDetail.payoutDate' | translate"
         id="payoutDate"
         name="payoutDate"
+      />
+
+      <app-select-input
+        formControlName="accountId"
+        [label]="'savingsGoalDetail.payoutAccount' | translate"
+        id="payoutAccount"
+        name="payoutAccount"
+        [list]="accountList()"
       />
 
       <div class="modal-action">

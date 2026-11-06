@@ -6,5 +6,6 @@ export class CreateSavingsMovementRequest {
     public readonly movementType: number,
     public readonly description?: string | null,
     public readonly date?: Date | null,
+    public readonly accountId: number | null = null,
   ) {}
 }

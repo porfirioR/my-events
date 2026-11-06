@@ -6,5 +6,6 @@ export class LoanPaymentAccessModel {
     public readonly amount: number,
     public readonly description: string | null,
     public readonly paymentDate: Date,
+    public readonly accountId: number | null = null,
   ) {}
 }

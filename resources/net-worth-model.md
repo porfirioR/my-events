@@ -148,6 +148,7 @@ Notas:
 - **Se usa el capital, no el rendimiento.** `currentamount` es lo depositado menos lo retirado. El interés de Scheduled, CDA y FixedDeposit se muestra como proyección en el calendario de vencimientos (#226), no en el patrimonio.
 - `loans.currentbalance` ya es el **capital pendiente**, porque cada pago descuenta `principalAmount`.
 - **Rueda:** suma las cuotas pagadas (`currentamount`) hasta la devolución, y al cobrar pasa a `Withdrawn` (ver la sección siguiente).
+- **Cuenta en cobros y pagos (Parte 29):** al cobrar o pagar una cuota, depositar o retirar de un ahorro, o cobrar un ahorro, se puede elegir la cuenta. Su saldo se ajusta en el momento sobre el último snapshot y se guarda en el mes actual: entra plata (+) al cobrar una cuota de un préstamo otorgado, retirar o cobrar un ahorro; sale (−) al pagar una cuota de un préstamo recibido o depositar en un ahorro. Sin cuenta no se toca ningún saldo. Sigue valiendo que el patrimonio sale de saldos: el ajuste solo adelanta el snapshot, y si después se carga el saldo real del mes, ese valor manda. Al borrar un movimiento de ahorro con cuenta, el ajuste se revierte.
 
 ## Rueda (`Rotating`, tipo 10)
 
@@ -200,6 +201,7 @@ En el patrimonio la rueda suma `currentamount` (lo aportado) hasta que pasa a `W
 | 22 | #219 | `loans.direction SMALLINT NOT NULL DEFAULT 1 CHECK (direction IN (1,2))`; `CHECK (direction = 1 OR lendercustomname IS NOT NULL)`; `loans.totalratepercentage DECIMAL(5,2) NULL`; `amortizationtype` admite `'flat'`; `CHECK (amortizationtype <> 'flat' OR totalratepercentage IS NOT NULL)`; índice `(userid, direction, statusid)`. |
 | 23 | #220 | `CREATE TABLE accounts` (ver el diagrama), `CHECK (type IN (1,2,3))`, índice `(userid, isactive)`. |
 | 24 | #221 | `CREATE TABLE accountbalancesnapshots`, `UNIQUE (accountid, snapshotdate)`, `CHECK (snapshotdate = date_trunc('month', snapshotdate)::date)`, `ON DELETE CASCADE` desde `accounts`. |
+| 29 | cuenta en cobros y pagos | `loanpayments.accountid` y `savingsdeposits.accountid` `INT NULL REFERENCES accounts(id) ON DELETE SET NULL` + índices. |
 
 ## Ajustes a otros issues
 

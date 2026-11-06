@@ -8,5 +8,6 @@ export class SavingsDepositEntity {
     public installmentid?: number | null,
     public description?: string | null,
     public movementtype: number = 1,
+    public accountid: number | null = null,
   ) {}
 }

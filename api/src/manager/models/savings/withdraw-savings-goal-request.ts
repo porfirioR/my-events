@@ -4,5 +4,6 @@ export class WithdrawSavingsGoalRequest {
     public readonly savingsGoalId: number,
     public readonly payoutAmount: number | null,
     public readonly payoutDate: Date,
+    public readonly accountId: number | null = null,
   ) {}
 }

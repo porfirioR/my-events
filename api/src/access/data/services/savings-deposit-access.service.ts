@@ -109,6 +109,7 @@ export class SavingsDepositAccessService
     entity.installmentid ?? null,
     entity.description ?? null,
     entity.movementtype ?? 1,
+    entity.accountid ?? null,
   );
 
   private mapAccessRequestToEntity = (
@@ -120,5 +121,6 @@ export class SavingsDepositAccessService
     accessRequest.installmentId,
     accessRequest.description,
     accessRequest.movementType ?? 1,
+    accessRequest.accountId ?? null,
   );
 }

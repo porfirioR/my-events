@@ -17,4 +17,10 @@ export class CreateSavingsMovementApiRequest {
   @IsOptional()
   @IsDateString()
   date?: string;
+
+  // Cuenta por la que salió o entró la plata; sin cuenta no se toca ningún saldo
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  accountId?: number;
 }

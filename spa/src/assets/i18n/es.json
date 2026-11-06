@@ -657,6 +657,8 @@
     "totalDeposits": "Total a depositar"
   },
   "savingsGoalDetail": {
+    "payAccount": "Cuenta de la que sale la plata",
+    "payoutAccount": "Cuenta a la que entra la plata",
     "statTarget": "Meta",
     "statRemaining": "Restante",
     "statSaved": "Ahorrado",
@@ -1295,6 +1297,7 @@
     "linkedToInstallment": "Cuota #{{number}}"
   },
   "loanDetail": {
+    "payAccount": "Cuenta de la que sale la plata",
     "principal": "Capital inicial",
     "remaining": "Saldo restante",
     "totalPaid": "Total pagado",
@@ -1336,6 +1339,7 @@
     "insurance": "Seguro",
     "totalRate": "Tasa total",
     "lent": {
+      "payAccount": "Cuenta a la que entra la plata",
       "remaining": "Saldo por cobrar",
       "totalPaid": "Total cobrado",
       "totalInterest": "Ganancia",
@@ -1437,6 +1441,12 @@
     "createdError": "No se pudo crear la cuenta",
     "updatedSuccess": "Cuenta actualizada",
     "updatedError": "No se pudo actualizar la cuenta"
+  },
+  "accountMovement": {
+    "noAccount": "No actualizar saldos",
+    "noAccountHint": "Ningún saldo de cuenta cambia; podés cargarlo después en Actualizar saldos",
+    "noBalance": "Todavía sin saldo cargado; se toma 0 como punto de partida",
+    "currentBalance": "Saldo actual: {{amount}}. Se ajusta al guardar"
   },
   "accountBalances": {
     "title": "Saldos del mes",
