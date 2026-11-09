@@ -9,3 +9,4 @@ export { DashboardController } from './dashboard.controller';
 
 export { FinancialInstitutionsController } from './financial-institutions.controller';
 export { AccountsController } from './accounts.controller';
+export { ImportsController } from './imports.controller';

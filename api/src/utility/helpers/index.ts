@@ -6,3 +6,4 @@ export { MaturityCalendarHelper } from './maturity-calendar.helper';
 export { DebtsOverviewHelper } from './debts-overview.helper';
 export { SavingsMovementHelper } from './savings-movement.helper';
 export { FinancialHealthHelper } from './financial-health.helper';
+export { MyMoneyExportHelper } from './mymoney-export.helper';

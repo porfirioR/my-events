@@ -51,6 +51,9 @@ export const FINANCIAL_INSTITUTION_TOKENS = {
   ACCESS_SERVICE: Symbol('IFinancialInstitutionAccessService'),
   MANAGER_SERVICE: Symbol('IFinancialInstitutionManagerService'),
 } as const;
+export const IMPORT_TOKENS = {
+  MANAGER_SERVICE: Symbol('IImportManagerService'),
+} as const;
 export const ACCOUNT_TOKENS = {
   ACCOUNT_ACCESS_SERVICE: Symbol('IAccountAccessService'),
   BALANCE_SNAPSHOT_ACCESS_SERVICE: Symbol('IAccountBalanceSnapshotAccessService'),
