@@ -22,23 +22,23 @@
       <div class="flex flex-col items-center gap-2">
         <i class="fas fa-cloud-upload-alt text-3xl opacity-50"></i>
         <p class="text-sm opacity-75">
-          {{ 'operations.dragDropFile' | translate }} 
+          {{ dropLabel() | translate }} 
           <label class="link link-primary cursor-pointer">
             {{ 'operations.selectFile' | translate }}
             <input
               type="file"
               class="hidden"
-              accept="image/*"
+              [accept]="accept()"
               [disabled]="disabled()"
               (change)="onFileSelect($event)">
           </label>
         </p>
-        <p class="text-xs opacity-50">{{ 'operations.supportedFormats' | translate }}</p>
+        <p class="text-xs opacity-50">{{ formatsLabel() | translate }}</p>
       </div>
     } @else {
       <!-- File Preview -->
       <div class="flex items-center gap-3">
-        <i class="fas fa-file-image text-2xl text-success"></i>
+        <i class="fas text-2xl text-success" [ngClass]="fileIcon(selectedFile()!)"></i>
         <div class="flex-1 text-left">
           <p class="font-medium text-sm">{{ selectedFile()!.name }}</p>
           <p class="text-xs opacity-75">{{ formatFileSize(selectedFile()!.size) }}</p>

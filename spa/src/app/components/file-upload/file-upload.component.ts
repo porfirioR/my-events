@@ -14,6 +14,13 @@ export class FileUploadComponent {
   maxSize = input(10 * 1024 * 1024); // 10MB default
   label = input('operations.attachReceipt');
   required = input(false);
+  // Igual que el atributo accept del input: 'image/*', '.json,application/json', etc.
+  accept = input('image/*');
+  // Claves de traducción de los textos que dependen del tipo de archivo
+  dropLabel = input('operations.dragDropFile');
+  formatsLabel = input('operations.supportedFormats');
+  invalidTypeLabel = input('operations.invalidFileType');
+  tooLargeLabel = input('operations.fileTooLarge');
 
   // Outputs
   fileSelected = output<File | undefined>();
@@ -54,8 +61,8 @@ export class FileUploadComponent {
     if (this.disabled()) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      this.error.set('operations.invalidFileType');
+    if (!this.matchesAccept(file)) {
+      this.error.set(this.invalidTypeLabel());
       this.selectedFile.set(undefined);
       this.fileSelected.emit(undefined);
       return;
@@ -63,7 +70,7 @@ export class FileUploadComponent {
 
     // Validate file size
     if (file.size > this.maxSize()) {
-      this.error.set('operations.fileTooLarge');
+      this.error.set(this.tooLargeLabel());
       this.selectedFile.set(undefined);
       this.fileSelected.emit(undefined);
       return;
@@ -73,6 +80,19 @@ export class FileUploadComponent {
     this.selectedFile.set(file);
     this.fileSelected.emit(file);
   }
+
+  // Algunos navegadores no informan el tipo de un .json: por eso también se acepta por extensión
+  private matchesAccept(file: File): boolean {
+    const name = file.name.toLowerCase();
+    const type = file.type.toLowerCase();
+    return this.accept().split(',').map(a => a.trim().toLowerCase()).filter(a => !!a).some(a => {
+      if (a.startsWith('.')) return name.endsWith(a);
+      if (a.endsWith('/*')) return type.startsWith(a.slice(0, -1));
+      return type === a;
+    });
+  }
+
+  protected fileIcon = (file: File): string => (file.type.startsWith('image/') ? 'fa-file-image' : 'fa-file-lines');
 
   protected removeFile(): void {
     if (this.disabled()) return;

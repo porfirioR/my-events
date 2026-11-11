@@ -86,6 +86,12 @@ export const routes: Routes = [
         loadComponent: () => import('./components/financial-settings/financial-settings.component').then((x) => x.FinancialSettingsComponent),
       },
       {
+        path: 'imports/mymoney',
+        title: 'MyMoney Import',
+        canActivate: [authGuard],
+        loadComponent: () => import('./components/mymoney-import/mymoney-import.component').then((x) => x.MyMoneyImportComponent),
+      },
+      {
         path: 'debts',
         title: 'Debts',
         canActivate: [authGuard],
