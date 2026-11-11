@@ -18,3 +18,5 @@ export { AccountType } from './account-type.enum';
 export { NetWorthLiquidity } from './net-worth-liquidity.enum';
 export { NetWorthItemType } from './net-worth-item-type.enum';
 export { MaturityEventType } from './maturity-event-type.enum';
+export { MyMoneyMovementTypeEnum } from './mymoney-movement-type.enum';
+export { MyMoneyCategoryKind } from './mymoney-category-kind.enum';

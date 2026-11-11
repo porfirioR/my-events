@@ -1403,3 +1403,78 @@ CREATE TABLE IF NOT EXISTS userfinancialsettings (
 );
 
 ALTER TABLE userfinancialsettings DISABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PARTE 31: MAPEO DE CATEGORÍAS DE MYMONEY (#231)
+-- =====================================================
+-- Cada categoría de MyMoney (por su id de Firestore) se clasifica para no contar dos veces:
+-- un "gasto" que en realidad es plata que va a un ahorro o paga un préstamo es una transferencia,
+-- no consumo. La importación mensual (#232) usa esta tabla para decidir qué hacer con cada movimiento.
+--   movementtype: 1 Expense (gasto), 2 Income (ingreso). Loans gasto y Loans ingreso son categorías
+--                 distintas en MyMoney, con ids distintos, así que se clasifican por separado.
+--   kind:         1 Consumption, 2 Transfer, 3 Income, 4 Refund
+--                 (gasto: Consumption o Transfer; ingreso: Income, Transfer o Refund)
+--   isessential:  solo para Consumption; isextraordinary: solo para Income.
+--   accountid / savingsgoalid / loanid: destino opcional de una transferencia (a lo sumo uno).
+--   needsreview:  categoría que apareció después de la primera sincronización; se clasificó con el
+--                 default de su tipo y se muestra marcada hasta que el usuario la guarde.
+CREATE TABLE IF NOT EXISTS mymoneycategorymappings (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    categoryexternalid VARCHAR(64) NOT NULL,
+    categoryname VARCHAR(100) NOT NULL,
+    movementtype SMALLINT NOT NULL CHECK (movementtype IN (1, 2)),
+    kind SMALLINT NOT NULL,
+    isessential BOOLEAN NOT NULL DEFAULT FALSE,
+    isextraordinary BOOLEAN NOT NULL DEFAULT FALSE,
+    accountid INT NULL,
+    savingsgoalid INT NULL,
+    loanid INT NULL,
+    needsreview BOOLEAN NOT NULL DEFAULT FALSE,
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (accountid) REFERENCES accounts(id) ON DELETE SET NULL,
+    FOREIGN KEY (savingsgoalid) REFERENCES savingsgoals(id) ON DELETE SET NULL,
+    FOREIGN KEY (loanid) REFERENCES loans(id) ON DELETE SET NULL,
+    CONSTRAINT ux_mymoneycategorymappings_user_category UNIQUE (userid, categoryexternalid),
+    CONSTRAINT check_mymoneycategorymappings_kind CHECK (
+        (movementtype = 1 AND kind IN (1, 2)) OR (movementtype = 2 AND kind IN (2, 3, 4))
+    ),
+    CONSTRAINT check_mymoneycategorymappings_essential CHECK (NOT isessential OR kind = 1),
+    CONSTRAINT check_mymoneycategorymappings_extraordinary CHECK (NOT isextraordinary OR kind = 3),
+    CONSTRAINT check_mymoneycategorymappings_single_target CHECK (
+        num_nonnulls(accountid, savingsgoalid, loanid) <= 1
+    )
+);
+
+ALTER TABLE mymoneycategorymappings DISABLE ROW LEVEL SECURITY;
+
+-- Mapeo por descripción: el memorándum de un movimiento que empieza con el patrón (sin distinguir
+-- mayúsculas, como palabra completa: "Ña 1" no toma "Ña 12") se vincula a una cuenta, un ahorro o un
+-- préstamo. Ej. "Ña 12" → programado Itaú, "Aho3" → Aho3, "Rueda" → rueda. Lo usan #232 y #233.
+CREATE TABLE IF NOT EXISTS mymoneydescriptionrules (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    pattern VARCHAR(100) NOT NULL CHECK (length(trim(pattern)) > 0),
+    accountid INT NULL,
+    savingsgoalid INT NULL,
+    loanid INT NULL,
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (accountid) REFERENCES accounts(id) ON DELETE CASCADE,
+    FOREIGN KEY (savingsgoalid) REFERENCES savingsgoals(id) ON DELETE CASCADE,
+    FOREIGN KEY (loanid) REFERENCES loans(id) ON DELETE CASCADE,
+    CONSTRAINT check_mymoneydescriptionrules_single_target CHECK (
+        num_nonnulls(accountid, savingsgoalid, loanid) = 1
+    )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mymoneydescriptionrules_user_pattern ON mymoneydescriptionrules(userid, lower(pattern));
+
+ALTER TABLE mymoneydescriptionrules DISABLE ROW LEVEL SECURITY;

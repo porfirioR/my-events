@@ -31,3 +31,5 @@ export { OperationCategoryEntity } from './operation-category.entity';
 export { FinancialInstitutionEntity } from './financial-institution.entity';export { AccountEntity } from './account.entity';
 export { AccountBalanceSnapshotEntity } from './account-balance-snapshot.entity';
 export { UserFinancialSettingsEntity } from './user-financial-settings.entity';
+export { MyMoneyCategoryMappingEntity } from './mymoney-category-mapping.entity';
+export { MyMoneyDescriptionRuleEntity } from './mymoney-description-rule.entity';

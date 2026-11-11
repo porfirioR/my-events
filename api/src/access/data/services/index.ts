@@ -47,3 +47,5 @@ export { LoanEntityTermAccessService } from './loan-entity-term-access.service';
 export { FinancialInstitutionAccessService } from './financial-institution-access.service';export { AccountAccessService } from './account-access.service';
 export { AccountBalanceSnapshotAccessService } from './account-balance-snapshot-access.service';
 export { UserFinancialSettingsAccessService } from './user-financial-settings-access.service';
+export { MyMoneyCategoryMappingAccessService } from './mymoney-category-mapping-access.service';
+export { MyMoneyDescriptionRuleAccessService } from './mymoney-description-rule-access.service';
