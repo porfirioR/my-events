@@ -76,6 +76,16 @@ export class MyMoneyImportComponent {
     return [...byYear.values()];
   });
 
+  // MyMoney guarda las categorías predeterminadas con su clave en inglés y las traduce al mostrarlas;
+  // las creadas por el usuario tienen el nombre tal cual lo escribió y no tienen traducción
+  private categoryNames = computed<Record<string, string>>(() => {
+    this.language();
+    const names = this.translate.instant('myMoneyImport.categoryNames');
+    return typeof names === 'object' && names ? names : {};
+  });
+
+  protected categoryName = (name: string): string => this.categoryNames()[name] ?? name;
+
   protected incomeCategories = computed(() => (this.summary()?.categories ?? []).filter(c => c.type === 'income'));
   protected expenseCategories = computed(() => (this.summary()?.categories ?? []).filter(c => c.type === 'expense'));
 

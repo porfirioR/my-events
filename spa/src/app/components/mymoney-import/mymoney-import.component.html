@@ -177,7 +177,7 @@
                 @for (c of group.items; track c.id) {
                   <li class="flex items-center justify-between gap-3 py-2" [ngClass]="c.movementCount === 0 ? 'text-base-content/40' : ''">
                     <span class="min-w-0 truncate">
-                      {{ c.name }}
+                      {{ categoryName(c.name) }}
                       @if (!c.active) {
                         <span class="badge badge-ghost badge-xs ml-1">{{ 'myMoneyImport.inactive' | translate }}</span>
                       }
