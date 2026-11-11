@@ -1613,6 +1613,8 @@
     "expenseHint": "Transferencia: plata que va a un ahorro, una inversión o a pagar un préstamo. No cuenta como consumo.",
     "incomeCategories": "Ingresos",
     "incomeHint": "Transferencia: plata que vuelve de un ahorro o de un préstamo. Reembolso: devolución de un gasto.",
+    "categoryColumn": "Categoría",
+    "detailColumn": "Detalle",
     "kind": "Clasificación",
     "essential": "Esencial",
     "extraordinary": "Extraordinario",

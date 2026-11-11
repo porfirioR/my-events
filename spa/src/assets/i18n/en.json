@@ -1613,6 +1613,8 @@
     "expenseHint": "Transfer: money that goes to a savings goal, an investment or a loan payment. It is not consumption.",
     "incomeCategories": "Income",
     "incomeHint": "Transfer: money coming back from a savings goal or a loan. Refund: an expense given back.",
+    "categoryColumn": "Category",
+    "detailColumn": "Details",
     "kind": "Classification",
     "essential": "Essential",
     "extraordinary": "Extraordinary",

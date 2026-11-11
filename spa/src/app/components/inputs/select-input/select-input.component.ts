@@ -23,6 +23,8 @@ export class SelectInputComponent implements ControlValueAccessor {
   @Input({required: true}) name: string = ''
   @Input() description?: string | null
   @Input({required: true}) list: KeyValueViewModel[] | undefined = []
+  // Para listas con títulos de columna: la etiqueta queda solo para lectores de pantalla y sin margen inferior
+  @Input() compact = false
 
   constructor(@Self() public ngControl: NgControl) {
     this.ngControl.valueAccessor = this

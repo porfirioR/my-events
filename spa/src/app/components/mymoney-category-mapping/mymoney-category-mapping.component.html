@@ -58,85 +58,84 @@
       <span>{{ 'myMoneyMapping.loadError' | translate }}</span>
     </div>
   } @else {
-    <!-- Categorías -->
-    <article class="bg-base-100 rounded-xl shadow-sm border border-base-300/60 p-5" aria-labelledby="categories-heading">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h2 id="categories-heading" class="font-semibold text-base-content">{{ 'myMoneyMapping.categoriesTitle' | translate }}</h2>
-        @if (mappings().length > 0) {
-          <label class="label cursor-pointer gap-2 text-sm">
-            <input type="checkbox" class="toggle toggle-sm toggle-warning" [checked]="onlyPending()" (change)="toggleOnlyPending()" />
-            {{ 'myMoneyMapping.onlyPending' | translate: { count: pendingCount() } }}
-          </label>
-        }
+    <!-- Categorías: una card para gastos y otra para ingresos -->
+    @if (mappings().length === 0) {
+      <div class="alert alert-info alert-soft text-sm">
+        <i class="fas fa-circle-info" aria-hidden="true"></i>
+        <span>{{ 'myMoneyMapping.empty' | translate }}</span>
       </div>
-      <p class="text-xs text-base-content/60 mt-1">{{ 'myMoneyMapping.categoriesHint' | translate }}</p>
+    } @else {
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1">
+        <p class="text-xs text-base-content/60">{{ 'myMoneyMapping.categoriesHint' | translate }}</p>
+        <label class="label cursor-pointer gap-2 text-sm shrink-0">
+          <input type="checkbox" class="toggle toggle-sm toggle-warning" [checked]="onlyPending()" (change)="toggleOnlyPending()" />
+          {{ 'myMoneyMapping.onlyPending' | translate: { count: pendingCount() } }}
+        </label>
+      </div>
 
-      @if (mappings().length === 0) {
-        <div class="alert alert-info alert-soft text-sm mt-4">
-          <i class="fas fa-circle-info" aria-hidden="true"></i>
-          <span>{{ 'myMoneyMapping.empty' | translate }}</span>
-        </div>
-      } @else {
-        @for (group of groups(); track group.title) {
-          <h3 class="text-sm font-medium mt-6">{{ group.title | translate }}</h3>
-          <p class="text-xs text-base-content/60">{{ group.hint | translate }}</p>
-          <ul class="divide-y divide-base-300/60 mt-2">
-            @for (m of group.items; track m.id) {
-              <li class="py-3 grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-3 md:items-center" [attr.aria-busy]="isSaving(m.id)">
+      @for (group of groups(); track group.title; let groupIndex = $index) {
+        <article class="bg-base-100 rounded-xl shadow-sm border border-base-300/60 p-5" [attr.aria-labelledby]="'mapping-group-' + groupIndex">
+          <h2 [id]="'mapping-group-' + groupIndex" class="font-semibold text-base-content">{{ group.title | translate }}</h2>
+          <p class="text-xs text-base-content/60 mt-1">{{ group.hint | translate }}</p>
+
+          <div class="hidden md:grid grid-cols-12 gap-3 mt-4 pb-2 border-b border-base-300/60 text-xs font-medium text-base-content/60" aria-hidden="true">
+            <span class="col-span-3">{{ 'myMoneyMapping.categoryColumn' | translate }}</span>
+            <span class="col-span-3">{{ 'myMoneyMapping.kind' | translate }}</span>
+            <span class="col-span-4">{{ 'myMoneyMapping.detailColumn' | translate }}</span>
+          </div>
+          <ul class="divide-y divide-base-300/60">
+            @for (row of group.rows; track row.mapping.id) {
+              <li class="py-2 grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-3 md:items-center" [formGroup]="row.form" [attr.aria-busy]="isSaving(row.mapping.id)">
                 <div class="md:col-span-3 min-w-0">
-                  <span class="font-medium break-words">{{ categoryName(m.categoryName) }}</span>
-                  @if (categoryName(m.categoryName) !== m.categoryName) {
-                    <span class="block text-xs text-base-content/50">{{ m.categoryName }}</span>
+                  <span class="font-medium break-words">{{ categoryName(row.mapping.categoryName) }}</span>
+                  @if (categoryName(row.mapping.categoryName) !== row.mapping.categoryName) {
+                    <span class="text-xs text-base-content/50 ml-1">{{ row.mapping.categoryName }}</span>
                   }
-                  @if (m.needsReview) {
-                    <span class="badge badge-warning badge-sm mt-1">{{ 'myMoneyMapping.needsReview' | translate }}</span>
+                  @if (row.mapping.needsReview) {
+                    <span class="badge badge-warning badge-sm ml-1">{{ 'myMoneyMapping.needsReview' | translate }}</span>
                   }
                 </div>
 
                 <div class="md:col-span-3">
-                  <label class="sr-only" [attr.for]="'kind-' + m.id">{{ 'myMoneyMapping.kind' | translate }}</label>
-                  <select [id]="'kind-' + m.id" class="select select-sm w-full" [disabled]="isSaving(m.id)" (change)="changeKind(m, $any($event.target).value)">
-                    @for (kind of kindsFor(m); track kind) {
-                      <option [value]="kind" [selected]="kind === m.kind">{{ kindLabels[kind] | translate }}</option>
-                    }
-                  </select>
+                  <app-select-input
+                    formControlName="kind"
+                    [compact]="true"
+                    [id]="'kind-' + row.mapping.id"
+                    [name]="'kind-' + row.mapping.id"
+                    [label]="'myMoneyMapping.kind' | translate"
+                    [list]="kindOptions()[row.mapping.movementType]"
+                  />
                 </div>
 
                 <div class="md:col-span-4">
-                  @if (m.kind === Kind.Consumption) {
-                    <label class="label cursor-pointer justify-start gap-2 text-sm">
-                      <input type="checkbox" class="checkbox checkbox-sm" [checked]="m.isEssential" [disabled]="isSaving(m.id)"
-                        (change)="changeEssential(m, $any($event.target).checked)" />
-                      {{ 'myMoneyMapping.essential' | translate }}
-                    </label>
-                  } @else if (m.kind === Kind.Income) {
-                    <label class="label cursor-pointer justify-start gap-2 text-sm">
-                      <input type="checkbox" class="checkbox checkbox-sm" [checked]="m.isExtraordinary" [disabled]="isSaving(m.id)"
-                        (change)="changeExtraordinary(m, $any($event.target).checked)" />
-                      {{ 'myMoneyMapping.extraordinary' | translate }}
-                    </label>
-                  } @else if (m.kind === Kind.Transfer) {
-                    <label class="sr-only" [attr.for]="'target-' + m.id">{{ 'myMoneyMapping.target' | translate }}</label>
-                    <select [id]="'target-' + m.id" class="select select-sm w-full" [disabled]="isSaving(m.id)" (change)="changeTarget(m, $any($event.target).value)">
-                      <option value="" [selected]="targetValue(m) === ''">{{ 'myMoneyMapping.noTarget' | translate }}</option>
-                      @for (targetGroup of targetGroups(); track targetGroup.label) {
-                        <optgroup [label]="targetGroup.label">
-                          @for (option of targetGroup.options; track option.value) {
-                            <option [value]="option.value" [selected]="option.value === targetValue(m)">{{ option.label }}</option>
-                          }
-                        </optgroup>
-                      }
-                    </select>
-                  } @else {
-                    <span class="text-xs text-base-content/60">{{ 'myMoneyMapping.refundHint' | translate }}</span>
+                  @switch (+row.form.controls.kind.value) {
+                    @case (Kind.Consumption) {
+                      <app-check-box-input formControlName="isEssential" [compact]="true" [label]="'myMoneyMapping.essential' | translate" />
+                    }
+                    @case (Kind.Income) {
+                      <app-check-box-input formControlName="isExtraordinary" [compact]="true" [label]="'myMoneyMapping.extraordinary' | translate" />
+                    }
+                    @case (Kind.Transfer) {
+                      <app-select-input
+                        formControlName="target"
+                        [compact]="true"
+                        [id]="'target-' + row.mapping.id"
+                        [name]="'target-' + row.mapping.id"
+                        [label]="'myMoneyMapping.target' | translate"
+                        [list]="mappingTargetOptions()"
+                      />
+                    }
+                    @default {
+                      <p class="text-xs text-base-content/60">{{ 'myMoneyMapping.refundHint' | translate }}</p>
+                    }
                   }
                 </div>
 
                 <div class="md:col-span-2 flex md:justify-end">
-                  @if (isSaving(m.id)) {
+                  @if (isSaving(row.mapping.id)) {
                     <span class="loading loading-spinner loading-sm" [attr.aria-label]="'common.loading' | translate"></span>
-                  } @else if (m.needsReview) {
-                    <button type="button" class="btn btn-ghost btn-xs" (click)="markReviewed(m)">
+                  } @else if (row.mapping.needsReview) {
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="markReviewed(row)">
                       <i class="fas fa-check" aria-hidden="true"></i>
                       {{ 'myMoneyMapping.markReviewed' | translate }}
                     </button>
@@ -147,37 +146,37 @@
               <li class="py-2 text-sm text-base-content/60">{{ 'myMoneyMapping.noPending' | translate }}</li>
             }
           </ul>
-        }
+        </article>
       }
-    </article>
+    }
 
     <!-- Patrones de descripción -->
     <article class="bg-base-100 rounded-xl shadow-sm border border-base-300/60 p-5" aria-labelledby="rules-heading">
       <h2 id="rules-heading" class="font-semibold text-base-content">{{ 'myMoneyMapping.rulesTitle' | translate }}</h2>
       <p class="text-xs text-base-content/60 mt-1">{{ 'myMoneyMapping.rulesHint' | translate }}</p>
 
-      <form class="grid grid-cols-1 md:grid-cols-12 gap-2 mt-4" (submit)="$event.preventDefault(); saveRule()">
+      <form class="grid grid-cols-1 md:grid-cols-12 gap-x-3 mt-4" [formGroup]="ruleForm" (ngSubmit)="saveRule()">
         <div class="md:col-span-4">
-          <label class="label text-xs" for="rule-pattern">{{ 'myMoneyMapping.pattern' | translate }}</label>
-          <input id="rule-pattern" type="text" class="input input-sm w-full" maxlength="100"
+          <app-text
+            formControlName="pattern"
+            type="text"
+            id="rule-pattern"
+            name="rule-pattern"
+            [label]="'myMoneyMapping.pattern' | translate"
             [placeholder]="'myMoneyMapping.patternPlaceholder' | translate"
-            [value]="rulePattern()" (input)="rulePattern.set($any($event.target).value)" />
+          />
         </div>
         <div class="md:col-span-5">
-          <label class="label text-xs" for="rule-target">{{ 'myMoneyMapping.target' | translate }}</label>
-          <select id="rule-target" class="select select-sm w-full" (change)="ruleTarget.set($any($event.target).value)">
-            <option value="" [selected]="ruleTarget() === ''" disabled>{{ 'myMoneyMapping.chooseTarget' | translate }}</option>
-            @for (targetGroup of targetGroups(); track targetGroup.label) {
-              <optgroup [label]="targetGroup.label">
-                @for (option of targetGroup.options; track option.value) {
-                  <option [value]="option.value" [selected]="option.value === ruleTarget()">{{ option.label }}</option>
-                }
-              </optgroup>
-            }
-          </select>
+          <app-select-input
+            formControlName="target"
+            id="rule-target"
+            name="rule-target"
+            [label]="'myMoneyMapping.target' | translate"
+            [list]="targetOptions()"
+          />
         </div>
-        <div class="md:col-span-3 flex items-end gap-2">
-          <button type="submit" class="btn btn-primary btn-sm" [disabled]="!canSaveRule()">
+        <div class="md:col-span-3 flex gap-2 pb-6 md:pt-7">
+          <button type="submit" class="btn btn-primary btn-sm" [disabled]="isRuleSaving()">
             @if (isRuleSaving()) {
               <span class="loading loading-spinner loading-xs"></span>
             }
@@ -189,7 +188,7 @@
         </div>
       </form>
 
-      <ul class="divide-y divide-base-300/60 mt-4 text-sm">
+      <ul class="divide-y divide-base-300/60 text-sm">
         @for (rule of rules(); track rule.id) {
           <li class="py-2 flex items-center justify-between gap-3" [ngClass]="{ 'bg-base-200/60': editingRuleId() === rule.id }">
             <span class="min-w-0">
