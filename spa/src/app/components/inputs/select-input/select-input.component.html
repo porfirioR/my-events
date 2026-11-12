@@ -1,5 +1,5 @@
-<fieldset [ngClass]="ngControl.control?.invalid && ngControl.control?.touched ? 'mb-0': 'mb-6'">
-  <label class="label p-0 pb-2 justify-start" [for]="id">
+<fieldset [ngClass]="compact || (ngControl.control?.invalid && ngControl.control?.touched) ? 'mb-0': 'mb-6'">
+  <label class="label p-0 pb-2 justify-start" [class.sr-only]="compact" [for]="id">
     <span class="label-text text-base-content font-medium text-sm transition-colors duration-200 dark:text-white">{{label}}</span>
   </label>
   <select

@@ -765,6 +765,7 @@
     "fixedDepositTotalAtMaturity": "Total al vencimiento",
     "maturityDate": "Fecha de vencimiento",
     "realGain": "Ganancia real",
+    "creditedTo": "Acreditado en {{account}}",
     "totalCollected": "Total cobrado",
     "plannedDestination": "Destino planeado"
   },
@@ -1010,7 +1011,12 @@
     "Monthly Balances": "Saldos del mes",
     "Edit Account": "Editar cuenta",
     "Maturities": "Próximos vencimientos",
-    "Debts": "Deudas y préstamos"
+    "Debts": "Deudas y préstamos",
+    "Financial Settings": "Parámetros financieros",
+    "My Money": "My Money",
+    "My Money Import": "My Money · Importar",
+    "My Money Categories": "My Money · Categorías",
+    "Collaborator Statistics": "Estadísticas del colaborador"
   },
   "travels": {
     "title": "Viajes",
@@ -1475,7 +1481,7 @@
   },
   "financialSettings": {
     "title": "Parámetros financieros",
-    "subtitle": "Se usan para los indicadores de salud financiera del tablero. Más adelante el ingreso y el gasto se van a tomar de MyMoney.",
+    "subtitle": "Se usan para los indicadores de salud financiera del tablero. Más adelante el ingreso y el gasto se van a tomar de My Money.",
     "monthlySection": "Ingreso y gasto mensual",
     "monthlyNetIncome": "Ingreso neto mensual",
     "monthlyNetIncomeHint": "Lo que cobrás por mes después de descuentos (IPS, impuestos)",
@@ -1494,6 +1500,21 @@
     "loadError": "No se pudieron cargar los parámetros.",
     "savedSuccess": "Parámetros guardados",
     "savedError": "No se pudieron guardar los parámetros."
+  },
+  "myMoney": {
+    "menu": "My Money",
+    "title": "My Money",
+    "subtitle": "Traé tus ingresos y gastos de My Money sin contar dos veces la plata que solo cambia de lugar (ahorros, préstamos).",
+    "stepsLabel": "Pasos de cada mes",
+    "stepExport": "Exportá en My Money",
+    "stepUpload": "Subí el archivo",
+    "stepReview": "Revisá las categorías",
+    "stepImport": "Importá",
+    "tabImport": "Importar",
+    "tabCategories": "Categorías",
+    "pendingBadge": "{{count}} categorías a revisar",
+    "pendingAlert": "Hay {{count}} categorías sin revisar: usan la clasificación por defecto hasta que las confirmes.",
+    "reviewCategories": "Revisar categorías"
   },
   "myMoneyImport": {
     "categoryNames": {
@@ -1532,6 +1553,7 @@
       "Transport": "Transporte",
       "Travels": "Viajes",
       "Wine": "Vino",
+      "Dates": "Citas",
       "Accounts": "Cuentas",
       "Awards": "Premios",
       "Extra work": "Trabajos extras",
@@ -1540,15 +1562,12 @@
       "Sale": "Venta",
       "Teaching": "Enseñanza"
     },
-    "menu": "Importar MyMoney",
-    "title": "Importar de MyMoney",
-    "subtitle": "Subí el archivo que genera \"Exportar para my-events\" en MyMoney para revisar sus movimientos antes de importarlos.",
-    "fileLabel": "Archivo de MyMoney",
+    "fileLabel": "Archivo de My Money",
     "dragDropFile": "Arrastrá el archivo .json aquí o",
-    "supportedFormats": "JSON exportado desde MyMoney, hasta 10 MB",
+    "supportedFormats": "JSON exportado desde My Money, hasta 10 MB",
     "invalidFileType": "Tipo de archivo inválido. Solo se aceptan archivos .json.",
     "fileTooLarge": "El archivo es muy grande. Tamaño máximo de 10 MB.",
-    "readOnlyNote": "Por ahora solo se lee el archivo y se muestra el resumen: no se guarda nada.",
+    "readOnlyNote": "Al subir el archivo se agregan las categorías nuevas al mapeo. Los movimientos todavía no se guardan: por ahora solo se muestra el resumen.",
     "loadError": "No se pudo leer el archivo. Probá de nuevo.",
     "rejectedTitle": "El archivo no se puede importar",
     "rejectedDescription": "Se encontraron estos problemas en {{file}}:",
@@ -1565,7 +1584,7 @@
     "categoriesAndGroups": "{{categories}} categorías · {{groups}} grupos",
     "warningsTitle": "{{count}} avisos (no impiden la importación)",
     "monthsTitle": "Resumen por mes",
-    "monthsHint": "Los totales de cada año tienen que coincidir con el reporte anual de MyMoney.",
+    "monthsHint": "Los totales de cada año tienen que coincidir con el reporte anual de My Money.",
     "month": "Mes",
     "yearTotal": "Total {{year}}",
     "categoriesTitle": "Por categoría",
@@ -1574,7 +1593,7 @@
     "issues": {
       "invalidJson": "El archivo no es un JSON válido.",
       "notAnObject": "Se esperaba un objeto.",
-      "invalidFormat": "No es un export de MyMoney: el formato es {{value}} y se esperaba \"{{expected}}\".",
+      "invalidFormat": "No es un export de My Money: el formato es {{value}} y se esperaba \"{{expected}}\".",
       "unsupportedVersion": "Versión {{value}} no soportada: my-events lee la versión {{expected}}.",
       "invalidCurrency": "Moneda {{value}} no soportada: se esperaba {{expected}}.",
       "required": "Falta este campo o está vacío.",
@@ -1591,6 +1610,48 @@
       "unknownMovement": "El movimiento {{value}} no está en el archivo.",
       "categoryTypeMismatch": "El movimiento es {{type}} pero la categoría \"{{value}}\" es {{categoryType}}; se cuenta como {{type}}.",
       "tooManyIssues": "Y {{count}} problemas más."
+    }
+  },
+  "myMoneyMapping": {
+    "syncResult": "Listo: {{created}} categorías nuevas, {{renamed}} renombradas.",
+    "loadError": "No se pudo cargar el mapeo de My Money.",
+    "categoriesTitle": "Categorías",
+    "categoriesHint": "Cada cambio se guarda solo. Las categorías nuevas usan la clasificación por defecto y quedan marcadas \"A revisar\".",
+    "onlyPending": "Solo a revisar ({{count}})",
+    "empty": "Todavía no hay categorías: subí un export de My Money en la pestaña Importar para cargarlas.",
+    "noPending": "No hay categorías a revisar.",
+    "expenseCategories": "Gastos",
+    "expenseHint": "Transferencia: plata que va a un ahorro, una inversión o a pagar un préstamo. No cuenta como consumo.",
+    "incomeCategories": "Ingresos",
+    "incomeHint": "Transferencia: plata que vuelve de un ahorro o de un préstamo. Reembolso: devolución de un gasto.",
+    "categoryColumn": "Categoría",
+    "detailColumn": "Detalle",
+    "kind": "Clasificación",
+    "essential": "Esencial",
+    "extraordinary": "Extraordinario",
+    "target": "Destino",
+    "noTarget": "Sin destino",
+    "chooseTarget": "Elegí cuenta, ahorro o préstamo",
+    "refundHint": "Se descuenta del gasto.",
+    "needsReview": "A revisar",
+    "markReviewed": "Está bien",
+    "rulesTitle": "Patrones de descripción",
+    "rulesHint": "Si la descripción del movimiento empieza con el patrón (como palabra completa, sin importar mayúsculas), se vincula al destino. Ej. \"Aho3\" toma \"Aho3 6/12\".",
+    "pattern": "Patrón",
+    "patternPlaceholder": "Ej. Ña 12",
+    "noRules": "Todavía no hay patrones.",
+    "deleteRuleTitle": "Eliminar patrón",
+    "deleteRuleMessage": "¿Eliminar el patrón \"{{pattern}}\"?",
+    "kinds": {
+      "consumption": "Consumo",
+      "transfer": "Transferencia",
+      "income": "Ingreso",
+      "refund": "Reembolso"
+    },
+    "targets": {
+      "accounts": "Cuentas",
+      "savingsGoals": "Ahorros",
+      "loans": "Préstamos"
     }
   },
   "accountMovement": {

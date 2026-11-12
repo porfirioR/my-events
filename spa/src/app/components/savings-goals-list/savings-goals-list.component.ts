@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { useCurrencyStore, useFinancialInstitutionsStore, useSavingsStore } from '../../store';
+import { useAccountsStore, useCurrencyStore, useFinancialInstitutionsStore, useSavingsStore } from '../../store';
 import { AlertService, FormatterHelperService } from '../../services';
 import { GoalStatus, GoalStatusColors, GoalStatusIcons, GoalStatusLabels, MovementType, ProgressionType, ProgressionTypeIcons, ProgressionTypeLabels } from '../../models/enums';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
@@ -41,6 +41,7 @@ export class SavingsGoalsListComponent implements OnInit {
   private savingsStore = useSavingsStore();
   private currencyStore = useCurrencyStore();
   private financialInstitutionsStore = useFinancialInstitutionsStore();
+  private accountsStore = useAccountsStore();
 
   // Flag del store y no el loading global (otros pedidos lo apagan antes de tiempo)
   protected isLoading = this.savingsStore.needsLoadingGoals;
@@ -110,6 +111,13 @@ export class SavingsGoalsListComponent implements OnInit {
     this.savingsStore.reloadGoals();
     this.currencyStore.loadCurrencies();
     this.financialInstitutionsStore.loadFinancialInstitutions();
+    this.accountsStore.loadAccounts();
+  }
+
+  // Cuenta donde se acreditó el cobro (null si no se eligió o ya no existe)
+  protected getPayoutAccountName(accountId: number | null): string | null {
+    if (!accountId) return null;
+    return this.accountsStore.accounts().find(a => a.id === accountId)?.name ?? null;
   }
 
   protected getFinancialInstitutionName(institutionId: number | null): string {

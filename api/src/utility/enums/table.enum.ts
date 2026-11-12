@@ -44,4 +44,8 @@ export enum TableEnum {
   Accounts = 'accounts',
   AccountBalanceSnapshots = 'accountbalancesnapshots',
   UserFinancialSettings = 'userfinancialsettings',
+
+  // ===== MYMONEY IMPORT TABLES =====
+  MyMoneyCategoryMappings = 'mymoneycategorymappings',
+  MyMoneyDescriptionRules = 'mymoneydescriptionrules',
 }

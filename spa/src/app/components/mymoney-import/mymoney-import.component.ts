@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -41,7 +41,9 @@ export class MyMoneyImportComponent {
 
   protected readonly maxSize = MAX_EXPORT_SIZE;
   protected preview = this.importsStore.myMoneyPreview;
-  protected isLoading = this.importsStore.isMyMoneyPreviewLoading;
+  protected isLoading = computed(() => this.importsStore.isMyMoneyPreviewLoading() || this.importsStore.isCategorySyncLoading());
+  protected sync = this.importsStore.categorySync;
+  protected pendingCount = computed(() => this.importsStore.categoryMappings().filter(mapping => mapping.needsReview).length);
   protected hasError = computed(() => !!this.importsStore.myMoneyPreviewError());
   protected summary = computed(() => this.preview()?.summary ?? null);
 
@@ -91,15 +93,17 @@ export class MyMoneyImportComponent {
 
   constructor() {
     this.currencyStore.loadCurrencies();
-    // Los datos del archivo son solo para mirar: no quedan en memoria al salir de la pantalla
-    inject(DestroyRef).onDestroy(() => this.importsStore.clearMyMoneyPreview());
   }
 
+  // El mismo archivo sirve para revisar los movimientos y para sumar las categorías nuevas al mapeo
+  // (un archivo inválido no guarda nada)
   protected onFileSelected = (file: File | undefined): void => {
     if (file) {
       this.importsStore.previewMyMoney(file);
+      this.importsStore.syncCategoryMappings(file);
     } else {
       this.importsStore.clearMyMoneyPreview();
+      this.importsStore.clearCategorySync();
     }
   };
 

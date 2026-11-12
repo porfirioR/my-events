@@ -10,7 +10,7 @@ import { CollaboratorAccessService } from './services/collaborator-access.servic
 import { CollaboratorMatchRequestAccessService } from './services/collaborator-match-request-access.service';
 import { PaymentAccessService } from './services/payment-access.service';
 import { UserAccessService } from './services/user-access.service';
-import { ACCOUNT_TOKENS, DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
+import { ACCOUNT_TOKENS, DASHBOARD_TOKENS, FINANCIAL_INSTITUTION_TOKENS, IMPORT_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS, TRAVEL_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { SavingsInstallmentAccessService } from './services/savings-installment-access.service';
 import { SavingsDepositAccessService } from './services/savings-deposit-access.service';
 import { LoanAccessService } from './services/loan-access.service';
@@ -22,6 +22,8 @@ import { UserFinancialSettingsAccessService } from './services/user-financial-se
 import { FinancialInstitutionAccessService } from './services/financial-institution-access.service';
 import { AccountAccessService } from './services/account-access.service';
 import { AccountBalanceSnapshotAccessService } from './services/account-balance-snapshot-access.service';
+import { MyMoneyCategoryMappingAccessService } from './services/mymoney-category-mapping-access.service';
+import { MyMoneyDescriptionRuleAccessService } from './services/mymoney-description-rule-access.service';
 
 @Module({
   imports: [
@@ -79,6 +81,16 @@ import { AccountBalanceSnapshotAccessService } from './services/account-balance-
     {
       provide: DASHBOARD_TOKENS.ACCESS_SERVICE,
       useExisting: DashboardAccessService,
+    },
+    MyMoneyCategoryMappingAccessService,
+    {
+      provide: IMPORT_TOKENS.CATEGORY_MAPPING_ACCESS_SERVICE,
+      useExisting: MyMoneyCategoryMappingAccessService,
+    },
+    MyMoneyDescriptionRuleAccessService,
+    {
+      provide: IMPORT_TOKENS.DESCRIPTION_RULE_ACCESS_SERVICE,
+      useExisting: MyMoneyDescriptionRuleAccessService,
     },
     UserFinancialSettingsAccessService,
     {
@@ -213,6 +225,8 @@ import { AccountBalanceSnapshotAccessService } from './services/account-balance-
     FINANCIAL_INSTITUTION_TOKENS.ACCESS_SERVICE,
     ACCOUNT_TOKENS.ACCOUNT_ACCESS_SERVICE,
     ACCOUNT_TOKENS.BALANCE_SNAPSHOT_ACCESS_SERVICE,
+    IMPORT_TOKENS.CATEGORY_MAPPING_ACCESS_SERVICE,
+    IMPORT_TOKENS.DESCRIPTION_RULE_ACCESS_SERVICE,
   ],
 })
 export class DataModule {}

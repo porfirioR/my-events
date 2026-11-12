@@ -25,5 +25,7 @@ export class SavingsGoalAccessModel {
     public readonly payoutAmount: number | null,
     public readonly plannedDestination: string | null,
     public readonly paidInstallmentsCount: number = 0,
+    // Cuenta donde se acreditó el cobro (null si no se eligió)
+    public readonly payoutAccountId: number | null = null,
   ) {}
 }

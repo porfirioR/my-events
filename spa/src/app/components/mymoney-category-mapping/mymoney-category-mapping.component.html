@@ -1,0 +1,168 @@
+<div class="space-y-6">
+  @if (isLoading()) {
+    <div class="space-y-3" aria-busy="true">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton h-16 rounded-xl"></div>
+      }
+    </div>
+  } @else if (hasError()) {
+    <div role="alert" class="alert alert-error alert-soft">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+      <span>{{ 'myMoneyMapping.loadError' | translate }}</span>
+    </div>
+  } @else {
+    <!-- Categorías: una card para gastos y otra para ingresos -->
+    @if (mappings().length === 0) {
+      <div class="alert alert-info alert-soft text-sm">
+        <i class="fas fa-circle-info" aria-hidden="true"></i>
+        <span>{{ 'myMoneyMapping.empty' | translate }}</span>
+      </div>
+    } @else {
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1">
+        <p class="text-xs text-base-content/60">{{ 'myMoneyMapping.categoriesHint' | translate }}</p>
+        <label class="label cursor-pointer gap-2 text-sm shrink-0">
+          <input type="checkbox" class="toggle toggle-sm toggle-warning" [checked]="onlyPending()" (change)="toggleOnlyPending()" />
+          {{ 'myMoneyMapping.onlyPending' | translate: { count: pendingCount() } }}
+        </label>
+      </div>
+
+      @for (group of groups(); track group.title; let groupIndex = $index) {
+        <article class="bg-base-100 rounded-xl shadow-sm border border-base-300/60 p-5" [attr.aria-labelledby]="'mapping-group-' + groupIndex">
+          <h2 [id]="'mapping-group-' + groupIndex" class="font-semibold text-base-content">{{ group.title | translate }}</h2>
+          <p class="text-xs text-base-content/60 mt-1">{{ group.hint | translate }}</p>
+
+          <div class="hidden md:grid grid-cols-12 gap-3 mt-4 pb-2 border-b border-base-300/60 text-xs font-medium text-base-content/60" aria-hidden="true">
+            <span class="col-span-3">{{ 'myMoneyMapping.categoryColumn' | translate }}</span>
+            <span class="col-span-3">{{ 'myMoneyMapping.kind' | translate }}</span>
+            <span class="col-span-4">{{ 'myMoneyMapping.detailColumn' | translate }}</span>
+          </div>
+          <ul class="divide-y divide-base-300/60">
+            @for (row of group.rows; track row.mapping.id) {
+              <li class="py-2 grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-3 md:items-center" [formGroup]="row.form" [attr.aria-busy]="isSaving(row.mapping.id)">
+                <div class="md:col-span-3 min-w-0">
+                  <span class="font-medium break-words">{{ categoryName(row.mapping.categoryName) }}</span>
+                  @if (categoryName(row.mapping.categoryName) !== row.mapping.categoryName) {
+                    <span class="text-xs text-base-content/50 ml-1">{{ row.mapping.categoryName }}</span>
+                  }
+                  @if (row.mapping.needsReview) {
+                    <span class="badge badge-warning badge-sm ml-1">{{ 'myMoneyMapping.needsReview' | translate }}</span>
+                  }
+                </div>
+
+                <div class="md:col-span-3">
+                  <app-select-input
+                    formControlName="kind"
+                    [compact]="true"
+                    [id]="'kind-' + row.mapping.id"
+                    [name]="'kind-' + row.mapping.id"
+                    [label]="'myMoneyMapping.kind' | translate"
+                    [list]="kindOptions()[row.mapping.movementType]"
+                  />
+                </div>
+
+                <div class="md:col-span-4">
+                  @switch (+row.form.controls.kind.value) {
+                    @case (Kind.Consumption) {
+                      <app-check-box-input formControlName="isEssential" [compact]="true" [label]="'myMoneyMapping.essential' | translate" />
+                    }
+                    @case (Kind.Income) {
+                      <app-check-box-input formControlName="isExtraordinary" [compact]="true" [label]="'myMoneyMapping.extraordinary' | translate" />
+                    }
+                    @case (Kind.Transfer) {
+                      <app-select-input
+                        formControlName="target"
+                        [compact]="true"
+                        [id]="'target-' + row.mapping.id"
+                        [name]="'target-' + row.mapping.id"
+                        [label]="'myMoneyMapping.target' | translate"
+                        [list]="mappingTargetOptions()"
+                      />
+                    }
+                    @default {
+                      <p class="text-xs text-base-content/60">{{ 'myMoneyMapping.refundHint' | translate }}</p>
+                    }
+                  }
+                </div>
+
+                <div class="md:col-span-2 flex md:justify-end">
+                  @if (isSaving(row.mapping.id)) {
+                    <span class="loading loading-spinner loading-sm" [attr.aria-label]="'common.loading' | translate"></span>
+                  } @else if (row.mapping.needsReview) {
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="markReviewed(row)">
+                      <i class="fas fa-check" aria-hidden="true"></i>
+                      {{ 'myMoneyMapping.markReviewed' | translate }}
+                    </button>
+                  }
+                </div>
+              </li>
+            } @empty {
+              <li class="py-2 text-sm text-base-content/60">{{ 'myMoneyMapping.noPending' | translate }}</li>
+            }
+          </ul>
+        </article>
+      }
+    }
+
+    <!-- Patrones de descripción -->
+    <article class="bg-base-100 rounded-xl shadow-sm border border-base-300/60 p-5" aria-labelledby="rules-heading">
+      <h2 id="rules-heading" class="font-semibold text-base-content">{{ 'myMoneyMapping.rulesTitle' | translate }}</h2>
+      <p class="text-xs text-base-content/60 mt-1">{{ 'myMoneyMapping.rulesHint' | translate }}</p>
+
+      <form class="grid grid-cols-1 md:grid-cols-12 gap-x-3 mt-4" [formGroup]="ruleForm" (ngSubmit)="saveRule()">
+        <div class="md:col-span-4">
+          <app-text
+            formControlName="pattern"
+            type="text"
+            id="rule-pattern"
+            name="rule-pattern"
+            [label]="'myMoneyMapping.pattern' | translate"
+            [placeholder]="'myMoneyMapping.patternPlaceholder' | translate"
+          />
+        </div>
+        <div class="md:col-span-5">
+          <app-select-input
+            formControlName="target"
+            id="rule-target"
+            name="rule-target"
+            [label]="'myMoneyMapping.target' | translate"
+            [list]="targetOptions()"
+          />
+        </div>
+        <div class="md:col-span-3 flex gap-2 pb-6 md:pt-7">
+          <button type="submit" class="btn btn-primary btn-sm" [disabled]="isRuleSaving()">
+            @if (isRuleSaving()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            }
+            {{ (editingRuleId() === null ? 'common.add' : 'common.save') | translate }}
+          </button>
+          @if (editingRuleId() !== null) {
+            <button type="button" class="btn btn-ghost btn-sm" (click)="resetRuleForm()">{{ 'common.cancel' | translate }}</button>
+          }
+        </div>
+      </form>
+
+      <ul class="divide-y divide-base-300/60 text-sm">
+        @for (rule of rules(); track rule.id) {
+          <li class="py-2 flex items-center justify-between gap-3" [ngClass]="{ 'bg-base-200/60': editingRuleId() === rule.id }">
+            <span class="min-w-0">
+              <code class="font-medium">{{ rule.pattern }}</code>
+              <span class="text-base-content/60"> → {{ targetLabel(rule) }}</span>
+            </span>
+            <span class="shrink-0 flex gap-1">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="editRule(rule)" [attr.aria-label]="('common.edit' | translate) + ' ' + rule.pattern">
+                <i class="fas fa-pen" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRule(rule)" [attr.aria-label]="('common.delete' | translate) + ' ' + rule.pattern">
+                <i class="fas fa-trash" aria-hidden="true"></i>
+              </button>
+            </span>
+          </li>
+        } @empty {
+          <li class="py-2 text-base-content/60">{{ 'myMoneyMapping.noRules' | translate }}</li>
+        }
+      </ul>
+    </article>
+  }
+</div>
+
+<app-confirm-dialog (confirmed)="onConfirmResult($event)" />

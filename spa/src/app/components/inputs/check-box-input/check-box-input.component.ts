@@ -14,6 +14,8 @@ import { ControlValueAccessor, NgControl, ReactiveFormsModule } from '@angular/f
 })
 export class CheckBoxInputComponent implements ControlValueAccessor {
   @Input({required: true}) label: string = ''
+  // Sin margen inferior, para usarlo dentro de una fila
+  @Input() compact = false
 
   constructor(@Self() public ngControl: NgControl) {
     this.ngControl.valueAccessor = this

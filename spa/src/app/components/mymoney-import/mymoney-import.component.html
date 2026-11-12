@@ -1,13 +1,5 @@
-<section class="max-w-5xl mx-auto space-y-6">
-  <article class="bg-base-100 rounded-xl shadow-lg p-6 border-indigo-500 ring-indigo-500 ring-1">
-    <header class="mb-4">
-      <h1 class="text-xl font-bold leading-tight tracking-tight text-base-content md:text-2xl flex items-center gap-2">
-        <i class="fas fa-file-import text-primary" aria-hidden="true"></i>
-        {{ 'myMoneyImport.title' | translate }}
-      </h1>
-      <p class="text-sm text-base-content/60 mt-2">{{ 'myMoneyImport.subtitle' | translate }}</p>
-    </header>
-
+<div class="space-y-6">
+  <article class="bg-base-100 rounded-xl shadow-sm border border-base-300/60 p-6">
     <app-file-upload
       label="myMoneyImport.fileLabel"
       accept=".json,application/json"
@@ -24,6 +16,23 @@
       <i class="fas fa-circle-info" aria-hidden="true"></i>
       <span>{{ 'myMoneyImport.readOnlyNote' | translate }}</span>
     </div>
+
+    <!-- Categorías del archivo: las nuevas se agregan con su clasificación por defecto -->
+    @if (sync(); as s) {
+      @if (s.valid && (s.created > 0 || s.renamed > 0)) {
+        <div role="status" class="alert alert-success alert-soft text-sm mt-4">
+          <i class="fas fa-circle-check" aria-hidden="true"></i>
+          <span>{{ 'myMoneyMapping.syncResult' | translate: { created: s.created, renamed: s.renamed } }}</span>
+        </div>
+      }
+    }
+    @if (pendingCount() > 0) {
+      <div role="status" class="alert alert-warning alert-soft text-sm mt-4 flex flex-wrap">
+        <i class="fas fa-tags" aria-hidden="true"></i>
+        <span class="flex-1">{{ 'myMoney.pendingAlert' | translate: { count: pendingCount() } }}</span>
+        <a routerLink="../categories" class="btn btn-sm btn-warning btn-outline">{{ 'myMoney.reviewCategories' | translate }}</a>
+      </div>
+    }
   </article>
 
   @if (isLoading()) {
@@ -197,4 +206,4 @@
       </article>
     }
   }
-</section>
+</div>

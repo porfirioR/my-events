@@ -80,6 +80,12 @@ export class SavingsGoalDetailComponent implements OnInit {
   protected goal = this.savingsStore.selectedGoal;
 
   // Cuentas de la moneda del ahorro para elegir de dónde sale (cuota) o adónde entra (cobro) la plata
+  // Cuenta donde se acreditó el cobro (null si no se eligió o ya no existe)
+  protected payoutAccountName = computed(() => {
+    const accountId = this.goal()?.payoutAccountId;
+    return accountId ? this.accountsStore.accounts().find(a => a.id === accountId)?.name ?? null : null;
+  });
+
   protected accountList = computed(() =>
     this.formatterService.accountOptions(this.accountsStore.accounts(), this.goal()?.currencyId));
   private goalId: number | null = null;

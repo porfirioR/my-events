@@ -383,6 +383,7 @@ export class SavingsManagerService {
       request.userId,
       request.payoutAmount,
       request.payoutDate,
+      request.accountId ?? null,
     );
     return this.mapGoalAccessModelToModel(accessModel);
   };
@@ -808,6 +809,7 @@ export class SavingsManagerService {
       accessModel.payoutAmount,
       accessModel.plannedDestination,
       accessModel.paidInstallmentsCount,
+      accessModel.payoutAccountId,
     );
   };
 
