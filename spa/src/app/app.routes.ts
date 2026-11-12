@@ -85,18 +85,29 @@ export const routes: Routes = [
         canDeactivate: [WarningUnsavedChanges],
         loadComponent: () => import('./components/financial-settings/financial-settings.component').then((x) => x.FinancialSettingsComponent),
       },
+      // MyMoney: un módulo con una pestaña (ruta hija) por paso del flujo mensual
       {
-        path: 'imports/mymoney',
-        title: 'MyMoney Import',
+        path: 'mymoney',
+        title: 'My Money',
         canActivate: [authGuard],
-        loadComponent: () => import('./components/mymoney-import/mymoney-import.component').then((x) => x.MyMoneyImportComponent),
+        loadComponent: () => import('./components/mymoney/mymoney.component').then((x) => x.MyMoneyComponent),
+        children: [
+          { path: '', redirectTo: 'import', pathMatch: 'full' },
+          {
+            path: 'import',
+            title: 'My Money Import',
+            loadComponent: () => import('./components/mymoney-import/mymoney-import.component').then((x) => x.MyMoneyImportComponent),
+          },
+          {
+            path: 'categories',
+            title: 'My Money Categories',
+            loadComponent: () => import('./components/mymoney-category-mapping/mymoney-category-mapping.component').then((x) => x.MyMoneyCategoryMappingComponent),
+          },
+        ],
       },
-      {
-        path: 'imports/mymoney/categories',
-        title: 'MyMoney Categories',
-        canActivate: [authGuard],
-        loadComponent: () => import('./components/mymoney-category-mapping/mymoney-category-mapping.component').then((x) => x.MyMoneyCategoryMappingComponent),
-      },
+      // Rutas anteriores (#230, #231)
+      { path: 'imports/mymoney', redirectTo: 'mymoney/import', pathMatch: 'full' },
+      { path: 'imports/mymoney/categories', redirectTo: 'mymoney/categories', pathMatch: 'full' },
       {
         path: 'debts',
         title: 'Debts',

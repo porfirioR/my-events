@@ -2,10 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { map, startWith } from 'rxjs';
-import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { ConfirmDialogComponent, ConfirmDialogResult } from '../confirm-dialog/confirm-dialog.component';
 import { SelectInputComponent } from '../inputs/select-input/select-input.component';
 import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
@@ -22,7 +20,6 @@ import {
   MyMoneyMappingMovementType,
 } from '../../models/api/imports/mymoney-mapping-api.model';
 
-const MAX_EXPORT_SIZE = 10 * 1024 * 1024;
 // Valor del select de destino cuando no hay cuenta, ahorro ni préstamo
 const NO_TARGET = '';
 
@@ -57,9 +54,7 @@ interface MappingGroup {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterModule,
     TranslateModule,
-    FileUploadComponent,
     ConfirmDialogComponent,
     SelectInputComponent,
     CheckBoxInputComponent,
@@ -80,14 +75,11 @@ export class MyMoneyCategoryMappingComponent {
   // Un formulario por categoría; se conserva entre recargas para no perder la suscripción
   private forms = new Map<number, MappingRow>();
 
-  protected readonly maxSize = MAX_EXPORT_SIZE;
   protected readonly Kind = MyMoneyCategoryKind;
 
   protected mappings = this.importsStore.categoryMappings;
   protected isLoading = this.importsStore.isCategoryMappingsLoading;
   protected hasError = computed(() => !!this.importsStore.categoryMappingsError());
-  protected sync = this.importsStore.categorySync;
-  protected isSyncing = this.importsStore.isCategorySyncLoading;
   protected rules = this.importsStore.descriptionRules;
   protected isRuleSaving = this.importsStore.isDescriptionRuleSaving;
 
@@ -157,11 +149,9 @@ export class MyMoneyCategoryMappingComponent {
   });
 
   constructor() {
-    this.importsStore.loadMappings();
     this.accountsStore.loadAccounts();
     this.savingsStore.loadGoals();
     this.loansStore.reloadLoans();
-    this.destroyRef.onDestroy(() => this.importsStore.clearCategorySync());
 
     // La fila que se está guardando queda deshabilitada hasta que responde la api
     effect(() => {
@@ -183,14 +173,6 @@ export class MyMoneyCategoryMappingComponent {
   protected targetLabel = (target: MyMoneyLinkTargetApiModel): string => {
     const value = this.targetValue(target);
     return this.targetOptions().find(option => option.key === value)?.value ?? '—';
-  };
-
-  protected onFileSelected = (file: File | undefined): void => {
-    if (file) {
-      this.importsStore.syncCategoryMappings(file);
-    } else {
-      this.importsStore.clearCategorySync();
-    }
   };
 
   protected toggleOnlyPending = (): void => this.onlyPending.update(value => !value);

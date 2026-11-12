@@ -22,6 +22,9 @@ const SEGMENT_LABELS: Record<string, string> = {
   accounts: 'common.accounts',
   maturities: 'maturities.title',
   debts: 'debts.title',
+  mymoney: 'myMoney.title',
+  'mymoney/import': 'myMoney.tabImport',
+  'mymoney/categories': 'myMoney.tabCategories',
   // Mismo segmento con distinto significado según el módulo
   'accounts/balances': 'accountBalances.title',
   balances: 'dashboard.balances',

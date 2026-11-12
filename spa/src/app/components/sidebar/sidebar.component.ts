@@ -35,8 +35,7 @@ export class SidebarComponent {
     { route: '/savings', label: 'common.savingsGoals', icon: 'fa-piggy-bank', exact: false },
     { route: '/loans', label: 'common.loans', icon: 'fa-hand-holding-dollar', exact: false },
     { route: '/travels', label: 'common.travels', icon: 'fa-suitcase-rolling', exact: false },
-    { route: '/imports/mymoney', label: 'myMoneyImport.menu', icon: 'fa-file-import', exact: true },
-    { route: '/imports/mymoney/categories', label: 'myMoneyMapping.menu', icon: 'fa-tags', exact: true },
+    { route: '/mymoney', label: 'myMoney.menu', icon: 'fa-file-import', exact: false },
   ];
 
   constructor() {

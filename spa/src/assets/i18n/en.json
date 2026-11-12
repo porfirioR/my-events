@@ -1011,7 +1011,12 @@
     "Monthly Balances": "Monthly Balances",
     "Edit Account": "Edit Account",
     "Maturities": "Upcoming maturities",
-    "Debts": "Debts and loans"
+    "Debts": "Debts and loans",
+    "Financial Settings": "Financial settings",
+    "My Money": "My Money",
+    "My Money Import": "My Money · Import",
+    "My Money Categories": "My Money · Categories",
+    "Collaborator Statistics": "Collaborator statistics"
   },
   "travels": {
     "title": "Travels",
@@ -1476,7 +1481,7 @@
   },
   "financialSettings": {
     "title": "Financial settings",
-    "subtitle": "Used for the financial health indicators on the dashboard. Later on, income and expenses will come from MyMoney.",
+    "subtitle": "Used for the financial health indicators on the dashboard. Later on, income and expenses will come from My Money.",
     "monthlySection": "Monthly income and expenses",
     "monthlyNetIncome": "Monthly net income",
     "monthlyNetIncomeHint": "What you get paid per month after deductions (social security, taxes)",
@@ -1495,6 +1500,21 @@
     "loadError": "The settings could not be loaded.",
     "savedSuccess": "Settings saved",
     "savedError": "The settings could not be saved."
+  },
+  "myMoney": {
+    "menu": "My Money",
+    "title": "My Money",
+    "subtitle": "Bring your My Money income and expenses without counting twice the money that only moves around (savings, loans).",
+    "stepsLabel": "Monthly steps",
+    "stepExport": "Export in My Money",
+    "stepUpload": "Upload the file",
+    "stepReview": "Review the categories",
+    "stepImport": "Import",
+    "tabImport": "Import",
+    "tabCategories": "Categories",
+    "pendingBadge": "{{count}} categories to review",
+    "pendingAlert": "{{count}} categories are not reviewed yet: they use the default classification until you confirm them.",
+    "reviewCategories": "Review categories"
   },
   "myMoneyImport": {
     "categoryNames": {
@@ -1542,15 +1562,12 @@
       "Sale": "Sale",
       "Teaching": "Teaching"
     },
-    "menu": "MyMoney import",
-    "title": "Import from MyMoney",
-    "subtitle": "Upload the file created by \"Export for my-events\" in MyMoney to review its movements before importing them.",
-    "fileLabel": "MyMoney file",
+    "fileLabel": "My Money file",
     "dragDropFile": "Drag the .json file here or",
-    "supportedFormats": "JSON exported from MyMoney, up to 10 MB",
+    "supportedFormats": "JSON exported from My Money, up to 10 MB",
     "invalidFileType": "Invalid file type. Only .json files are allowed.",
     "fileTooLarge": "File is too large. Maximum size is 10 MB.",
-    "readOnlyNote": "For now the file is only read and summarized: nothing is saved.",
+    "readOnlyNote": "Uploading the file adds new categories to the mapping. Movements are not saved yet: for now only the summary is shown.",
     "loadError": "The file could not be read. Please try again.",
     "rejectedTitle": "The file cannot be imported",
     "rejectedDescription": "These problems were found in {{file}}:",
@@ -1567,7 +1584,7 @@
     "categoriesAndGroups": "{{categories}} categories · {{groups}} groups",
     "warningsTitle": "{{count}} warnings (they do not block the import)",
     "monthsTitle": "Monthly summary",
-    "monthsHint": "Each year's totals must match the MyMoney yearly report.",
+    "monthsHint": "Each year's totals must match the My Money yearly report.",
     "month": "Month",
     "yearTotal": "{{year}} total",
     "categoriesTitle": "By category",
@@ -1576,7 +1593,7 @@
     "issues": {
       "invalidJson": "The file is not valid JSON.",
       "notAnObject": "An object was expected.",
-      "invalidFormat": "Not a MyMoney export: the format is {{value}} and \"{{expected}}\" was expected.",
+      "invalidFormat": "Not a My Money export: the format is {{value}} and \"{{expected}}\" was expected.",
       "unsupportedVersion": "Version {{value}} is not supported: my-events reads version {{expected}}.",
       "invalidCurrency": "Currency {{value}} is not supported: {{expected}} was expected.",
       "required": "This field is missing or empty.",
@@ -1596,19 +1613,12 @@
     }
   },
   "myMoneyMapping": {
-    "menu": "MyMoney categories",
-    "title": "MyMoney categories",
-    "subtitle": "Classify each category so money that only moves around (savings, loans) is not counted twice.",
-    "goToImport": "Import",
-    "fileLabel": "Load categories from an export",
-    "syncing": "Reading categories...",
     "syncResult": "Done: {{created}} new categories, {{renamed}} renamed.",
-    "syncInvalid": "\"{{file}}\" could not be used: it is not a valid MyMoney export. Check it on the import screen.",
-    "loadError": "The MyMoney mapping could not be loaded.",
+    "loadError": "The My Money mapping could not be loaded.",
     "categoriesTitle": "Categories",
     "categoriesHint": "Every change is saved right away. New categories use the default classification and are marked \"To review\".",
     "onlyPending": "Only to review ({{count}})",
-    "empty": "There are no categories yet: upload a MyMoney export to load them.",
+    "empty": "There are no categories yet: upload a My Money export in the Import tab to load them.",
     "noPending": "No categories to review.",
     "expenseCategories": "Expenses",
     "expenseHint": "Transfer: money that goes to a savings goal, an investment or a loan payment. It is not consumption.",

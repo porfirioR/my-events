@@ -1,0 +1,40 @@
+<section aria-labelledby="mymoney-heading" class="space-y-6">
+  <article class="transition-all duration-300">
+    <header class="pb-4 border-b border-base-300 dark:border-base-100">
+      <h2 id="mymoney-heading" class="text-xl font-semibold text-base-content">
+        <i class="fas fa-file-import mr-2 text-violet-500" aria-hidden="true"></i>
+        {{ 'myMoney.title' | translate }}
+      </h2>
+      <p class="text-sm text-base-content/60 mt-1">{{ 'myMoney.subtitle' | translate }}</p>
+
+      <!-- Flujo mensual -->
+      <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3 text-xs text-base-content/70" [attr.aria-label]="'myMoney.stepsLabel' | translate">
+        @for (step of steps; track step; let i = $index; let last = $last) {
+          <li class="flex items-center gap-2">
+            <span class="w-5 h-5 shrink-0 rounded-full bg-primary/15 text-primary grid place-items-center font-semibold">{{ i + 1 }}</span>
+            <span>{{ step | translate }}</span>
+            @if (!last) {
+              <i class="fas fa-chevron-right text-[10px] text-base-content/30" aria-hidden="true"></i>
+            }
+          </li>
+        }
+      </ol>
+    </header>
+
+    <nav role="tablist" class="tabs tabs-border mt-2" [attr.aria-label]="'myMoney.title' | translate">
+      <a role="tab" class="tab" routerLink="import" routerLinkActive="tab-active" #importTab="routerLinkActive"
+        [attr.aria-selected]="importTab.isActive">
+        <i class="fas fa-upload mr-2" aria-hidden="true"></i>{{ 'myMoney.tabImport' | translate }}
+      </a>
+      <a role="tab" class="tab gap-2" routerLink="categories" routerLinkActive="tab-active" #categoriesTab="routerLinkActive"
+        [attr.aria-selected]="categoriesTab.isActive">
+        <i class="fas fa-tags" aria-hidden="true"></i>{{ 'myMoney.tabCategories' | translate }}
+        @if (pendingCount() > 0) {
+          <span class="badge badge-warning badge-sm" [attr.aria-label]="'myMoney.pendingBadge' | translate: { count: pendingCount() }">{{ pendingCount() }}</span>
+        }
+      </a>
+    </nav>
+  </article>
+
+  <router-outlet />
+</section>
