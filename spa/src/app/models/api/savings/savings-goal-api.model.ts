@@ -24,4 +24,6 @@ export interface SavingsGoalApiModel {
   payoutAmount: number | null;
   plannedDestination: string | null;
   paidInstallmentsCount: number;
+  // Cuenta donde se acreditó el cobro (null si no se eligió)
+  payoutAccountId: number | null;
 }

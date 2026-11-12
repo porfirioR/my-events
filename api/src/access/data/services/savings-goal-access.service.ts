@@ -155,6 +155,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
     userId: number,
     payoutAmount: number | null,
     payoutDate: Date,
+    payoutAccountId: number | null,
   ): Promise<SavingsGoalAccessModel> => {
     const { data, error } = await this.dbContext
       .from(TableEnum.SavingsGoals)
@@ -162,6 +163,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
         statusid: 5, // 5 = Withdrawn
         payoutamount: payoutAmount,
         payoutdate: payoutDate.toISOString().split('T')[0],
+        payoutaccountid: payoutAccountId,
         dateupdated: new Date().toISOString(),
       })
       .eq(DatabaseColumns.EntityId, id)
@@ -268,6 +270,7 @@ export class SavingsGoalAccessService extends BaseAccessService implements ISavi
       entity.payoutamount ?? null,
       entity.planneddestination ?? null,
       paidInstallmentsCount,
+      entity.payoutaccountid ?? null,
     );
   };
 

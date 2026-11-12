@@ -1478,3 +1478,11 @@ CREATE TABLE IF NOT EXISTS mymoneydescriptionrules (
 CREATE UNIQUE INDEX IF NOT EXISTS ux_mymoneydescriptionrules_user_pattern ON mymoneydescriptionrules(userid, lower(pattern));
 
 ALTER TABLE mymoneydescriptionrules DISABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PARTE 32: CUENTA DONDE SE ACREDITÓ EL COBRO DE UN AHORRO
+-- =====================================================
+-- Al registrar el cobro de un ahorro se puede elegir la cuenta donde entró la plata (#268), pero solo
+-- se ajustaba su saldo. Ahora también queda guardada para mostrar "Acreditado en …" en el ahorro.
+-- NULL = el cobro no tocó ninguna cuenta.
+ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS payoutaccountid INT NULL REFERENCES accounts(id) ON DELETE SET NULL;

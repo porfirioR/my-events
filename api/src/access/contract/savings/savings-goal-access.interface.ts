@@ -67,7 +67,7 @@ export interface ISavingsGoalAccessService {
    */
   markAsCompleted(id: number, userId: number): Promise<SavingsGoalAccessModel>;
 
-  markAsWithdrawn(id: number, userId: number, payoutAmount: number | null, payoutDate: Date): Promise<SavingsGoalAccessModel>;
+  markAsWithdrawn(id: number, userId: number, payoutAmount: number | null, payoutDate: Date, payoutAccountId: number | null): Promise<SavingsGoalAccessModel>;
 
   /**
    * Elimina un objetivo de ahorro

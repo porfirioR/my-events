@@ -765,6 +765,7 @@
     "fixedDepositTotalAtMaturity": "Total al vencimiento",
     "maturityDate": "Fecha de vencimiento",
     "realGain": "Ganancia real",
+    "creditedTo": "Acreditado en {{account}}",
     "totalCollected": "Total cobrado",
     "plannedDestination": "Destino planeado"
   },

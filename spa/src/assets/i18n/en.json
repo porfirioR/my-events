@@ -765,6 +765,7 @@
     "fixedDepositTotalAtMaturity": "Total at maturity",
     "maturityDate": "Maturity date",
     "realGain": "Actual gain",
+    "creditedTo": "Credited to {{account}}",
     "totalCollected": "Total collected",
     "plannedDestination": "Planned destination"
   },

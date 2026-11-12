@@ -81,6 +81,9 @@
             <span [ngClass]="payout.gain > 0 ? 'text-success' : 'text-error'">({{ payout.gain > 0 ? '+' : '-' }}{{ formatCurrency(payout.gainAbs, g.currencyId) }})</span>
           }
         }
+        @if (payoutAccountName(); as accountName) {
+          · {{ 'savingsGoalDetail.creditedTo' | translate: { account: accountName } }}
+        }
       </span>
     </div>
   }
