@@ -140,7 +140,9 @@ export class MyMoneyReconciliationComponent {
     });
   };
 
-  private load = (): void => this.importsStore.loadReconciliation(this.month());
+  private load = (): void => {
+    this.importsStore.loadReconciliation(this.month());
+  };
 
   private toMonth(date: Date): string {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
