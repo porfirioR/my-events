@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,8 +25,8 @@ interface YearView {
   totals: MyMoneyTotalsApiModel;
 }
 
-// Lee el export de MyMoney y muestra el resumen por mes, sin guardar nada (#230).
-// El mapeo de categorías (#231) y la importación (#232) se agregan sobre esta pantalla.
+// Lee el export de MyMoney y muestra el resumen por mes (#230); al subirlo suma las categorías nuevas
+// al mapeo (#231) y, después de revisarlo, "Importar" guarda los movimientos sin duplicar (#232).
 @Component({
   selector: 'app-mymoney-import',
   templateUrl: './mymoney-import.component.html',
@@ -46,6 +46,23 @@ export class MyMoneyImportComponent {
   protected pendingCount = computed(() => this.importsStore.categoryMappings().filter(mapping => mapping.needsReview).length);
   protected hasError = computed(() => !!this.importsStore.myMoneyPreviewError());
   protected summary = computed(() => this.preview()?.summary ?? null);
+  private selectedFile = signal<File | null>(null);
+  protected importResult = this.importsStore.myMoneyImport;
+  protected isImporting = this.importsStore.isMyMoneyImporting;
+  protected hasImportError = computed(() => !!this.importsStore.myMoneyImportError());
+  protected importErrors = computed(() => this.toIssueViews(this.importResult()?.errors ?? []));
+  // Grupos del resumen del import en el orden en que se muestran
+  protected importGroups = computed(() => {
+    const classification = this.importResult()?.classification;
+    if (!classification) return [];
+    return [
+      { label: 'myMoneyImport.result.consumption', total: classification.consumption, tone: '' },
+      { label: 'myMoneyImport.result.transfer', total: classification.transfer, tone: '' },
+      { label: 'myMoneyImport.result.income', total: classification.income, tone: '' },
+      { label: 'myMoneyImport.result.refund', total: classification.refund, tone: '' },
+      { label: 'myMoneyImport.result.unclassified', total: classification.unclassified, tone: classification.unclassified.count > 0 ? 'text-warning' : '' },
+    ];
+  });
 
   private language = toSignal(
     this.translate.onLangChange.pipe(map(event => event.lang), startWith(this.translate.getCurrentLang())),
@@ -98,12 +115,22 @@ export class MyMoneyImportComponent {
   // El mismo archivo sirve para revisar los movimientos y para sumar las categorías nuevas al mapeo
   // (un archivo inválido no guarda nada)
   protected onFileSelected = (file: File | undefined): void => {
+    this.selectedFile.set(file ?? null);
     if (file) {
+      this.importsStore.clearMyMoneyPreview();
       this.importsStore.previewMyMoney(file);
       this.importsStore.syncCategoryMappings(file);
     } else {
       this.importsStore.clearMyMoneyPreview();
       this.importsStore.clearCategorySync();
+    }
+  };
+
+  // Guarda los movimientos del archivo ya revisado; reimportarlo no duplica (#232)
+  protected importMovements = (): void => {
+    const file = this.selectedFile();
+    if (file && this.preview()?.valid && !this.isImporting()) {
+      this.importsStore.importMyMoney(file);
     }
   };
 

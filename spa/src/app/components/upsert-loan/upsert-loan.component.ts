@@ -391,12 +391,21 @@ export class UpsertLoanComponent implements OnInit {
     this.formGroup.controls.numberOfInstallments.disable();
     this.formGroup.controls.amortizationType.disable();
     this.formGroup.controls.totalRatePercentage.disable();
+    // The update request does not carry the start date (the schedule is built from it), so it is locked too
+    this.formGroup.controls.startDate.disable({ emitEvent: false });
     this.formGroup.controls.direction.disable({ emitEvent: false });
     this.formGroup.controls.loanEntityId.disable({ emitEvent: false });
     this.recalculate();
     this.formGroup.controls.actualInstallmentAmount.setValue(loan.actualInstallmentAmount, { emitEvent: false });
     this.formGroup.controls.actualTotalAmount.setValue(loan.actualTotalAmount, { emitEvent: false });
   }
+
+  private lockNonEditableFields = (): void => {
+    const controls = this.formGroup.controls;
+    [controls.principalAmount, controls.annualRatePercentage, controls.numberOfInstallments, controls.amortizationType,
+      controls.totalRatePercentage, controls.startDate, controls.direction, controls.loanEntityId]
+      .forEach(control => control.disable({ emitEvent: false }));
+  };
 
   protected save = (event?: Event): void => {
     event?.preventDefault();
@@ -422,6 +431,8 @@ export class UpsertLoanComponent implements OnInit {
         },
         error: (e) => {
           this.formGroup.enable({ emitEvent: false });
+          // enable() also unlocked the fields the update cannot change
+          this.lockNonEditableFields();
           this.saving.set(false);
           this.alertService.showError(this.translate.instant('upsertLoan.updatedError'));
           throw e;

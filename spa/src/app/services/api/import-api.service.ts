@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MyMoneyPreviewApiModel } from '../../models/api/imports/mymoney-preview-api.model';
+import { MyMoneyImportResultApiModel } from '../../models/api/imports/mymoney-import-api.model';
 import {
   MyMoneyCategoryMappingApiModel,
   MyMoneyCategorySyncApiModel,
@@ -19,6 +20,10 @@ export class ImportApiService {
   // Sube el export de MyMoney y devuelve el resumen; no guarda nada (#230)
   previewMyMoney = (file: File): Observable<MyMoneyPreviewApiModel> =>
     this.httpClient.post<MyMoneyPreviewApiModel>(`${this.section}/mymoney/preview`, this.toFormData(file));
+
+  // Guarda los movimientos del rango del archivo sin duplicar (#232)
+  importMyMoney = (file: File): Observable<MyMoneyImportResultApiModel> =>
+    this.httpClient.post<MyMoneyImportResultApiModel>(`${this.section}/mymoney`, this.toFormData(file));
 
   // ==================== MAPEO (#231) ====================
 

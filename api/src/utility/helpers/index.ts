@@ -8,3 +8,4 @@ export { SavingsMovementHelper } from './savings-movement.helper';
 export { FinancialHealthHelper } from './financial-health.helper';
 export { MyMoneyExportHelper } from './mymoney-export.helper';
 export { MyMoneyCategoryMappingHelper } from './mymoney-category-mapping.helper';
+export { MyMoneyImportHelper } from './mymoney-import.helper';

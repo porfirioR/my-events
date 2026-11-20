@@ -130,6 +130,21 @@ export class MyMoneyCategoryMappingHelper {
     return next === '' || !/[\p{L}\p{N}]/u.test(next);
   }
 
+  // Regla que aplica a un memorándum: si varias coinciden gana el patrón más largo (el más específico),
+  // así "Mbarete Porã ju 3/15" va a "Mbarete Porã ju" y no a "Mbarete Porã".
+  static findDescriptionRule<T extends { pattern: string }>(rules: T[], memorandum: string): T | null {
+    let best: T | null = null;
+    let bestLength = 0;
+    rules.forEach(rule => {
+      const length = this.normalizeText(rule.pattern).length;
+      if (length > bestLength && this.matchesDescription(rule.pattern, memorandum)) {
+        best = rule;
+        bestLength = length;
+      }
+    });
+    return best;
+  }
+
   private static normalizeText(text: string): string {
     return text.trim().replace(/\s+/g, ' ').toLocaleLowerCase('es');
   }

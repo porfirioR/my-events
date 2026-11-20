@@ -1,8 +1,9 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, concatMap, mergeMap, of, pipe, switchMap, tap } from 'rxjs';
+import { catchError, concatMap, exhaustMap, mergeMap, of, pipe, switchMap, tap } from 'rxjs';
 import { MyMoneyPreviewApiModel } from '../models/api/imports/mymoney-preview-api.model';
+import { MyMoneyImportResultApiModel } from '../models/api/imports/mymoney-import-api.model';
 import {
   MyMoneyCategoryMappingApiModel,
   MyMoneyCategorySyncApiModel,
@@ -19,6 +20,11 @@ export interface ImportsState {
   // Error de red o del servidor (un archivo inválido no es error: viene con valid = false)
   myMoneyPreviewError: string | null;
 
+  // Resultado de guardar los movimientos del archivo (#232)
+  myMoneyImport: MyMoneyImportResultApiModel | null;
+  isMyMoneyImporting: boolean;
+  myMoneyImportError: string | null;
+
   // Mapeo de categorías y descripciones (#231)
   categoryMappings: MyMoneyCategoryMappingApiModel[];
   isCategoryMappingsLoading: boolean;
@@ -32,10 +38,14 @@ export interface ImportsState {
   isDescriptionRuleSaving: boolean;
 }
 
+// Al cambiar o quitar el archivo se limpia también el resultado de la importación anterior
 const initialPreviewState = {
   myMoneyPreview: null,
   isMyMoneyPreviewLoading: false,
   myMoneyPreviewError: null,
+  myMoneyImport: null,
+  isMyMoneyImporting: false,
+  myMoneyImportError: null,
 };
 
 const initialState: ImportsState = {
@@ -76,6 +86,24 @@ export const ImportsStore = signalStore(
     ),
 
     clearMyMoneyPreview: () => patchState(store, initialPreviewState),
+
+    // ==================== IMPORTACIÓN (#232) ====================
+
+    // exhaustMap: un segundo clic mientras se guarda no vuelve a importar
+    importMyMoney: rxMethod<File>(
+      pipe(
+        tap(() => patchState(store, { isMyMoneyImporting: true, myMoneyImportError: null, myMoneyImport: null })),
+        exhaustMap(file =>
+          importApiService.importMyMoney(file).pipe(
+            tap(myMoneyImport => patchState(store, { myMoneyImport, isMyMoneyImporting: false })),
+            catchError(() => {
+              patchState(store, { myMoneyImportError: 'Failed to import MyMoney export', isMyMoneyImporting: false });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
 
     // ==================== CATEGORÍAS ====================
 
