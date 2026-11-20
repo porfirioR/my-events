@@ -81,8 +81,11 @@ export interface ReconciliationReport {
 }
 
 export interface ReconciliationInput {
+  // Período del reporte ('YYYY-MM-DD', inclusive)
   from: string;
   to: string;
+  // Movimientos del período y también de los meses vecinos: las cuotas que pagan esos se descuentan
+  // de las diferencias (una cuota que vence el 9/9 puede estar pagada por el movimiento del 3/8)
   movements: ReconciliationMovement[];
   // Todos los ahorros y préstamos a los que apunta algún patrón o categoría
   targets: ReconciliationTarget[];
@@ -189,7 +192,8 @@ export class MyMoneyReconciliationHelper {
     const ownInstallments = input.installments.filter(i => targetKeys.has(installmentKey(i.targetKind, i.targetId)));
 
     return {
-      rows: [...rows.values()].sort((a, b) => a.movement.date.localeCompare(b.movement.date) || a.movement.id - b.movement.id),
+      // Los movimientos de los meses vecinos solo sirven para no contar sus cuotas como diferencias
+      rows: [...rows.values()].filter(r => inPeriod(r.movement.date)).sort((a, b) => a.movement.date.localeCompare(b.movement.date) || a.movement.id - b.movement.id),
       // Por vencimiento (si tiene): una cuota marcada pagada tarde o de a varias juntas pertenece al mes
       // en que vence, que es donde está su movimiento de MyMoney
       paidOnlyInMyEvents: ownInstallments

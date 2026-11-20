@@ -35,6 +35,7 @@ import { LoanManagerService } from './loan-manager.service';
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 const PENDING = 1;
+const NEIGHBOR_DAYS = 31;
 
 interface LoadedReconciliation {
   report: ReconciliationReport;
@@ -172,7 +173,8 @@ export class MyMoneyReconciliationManagerService {
       this.categoryMappingAccessService.getAll(userId),
       this.savingsGoalAccessService.getAll(userId),
       this.loanAccessService.getAll(userId),
-      this.importedMovementAccessService.getBetween(userId, from, to),
+      // Con el mes anterior y el siguiente, para no marcar como diferencia lo que pagan ellos
+      this.importedMovementAccessService.getBetween(userId, this.shiftDays(from, -NEIGHBOR_DAYS), this.shiftDays(to, NEIGHBOR_DAYS)),
       this.linkAccessService.getAll(userId),
     ]);
 
@@ -313,6 +315,11 @@ export class MyMoneyReconciliationManagerService {
       paidOnlyInMyEvents: loaded.report.paidOnlyInMyEvents.map(toInstallment),
       pendingInBoth: loaded.report.pendingInBoth.map(toInstallment),
     };
+  };
+
+  private shiftDays = (date: string, days: number): string => {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
   };
 
   // Las fechas de la base llegan como Date (medianoche UTC para DATE) o como texto; se pasan a 'YYYY-MM-DD'

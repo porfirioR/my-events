@@ -115,16 +115,16 @@ describe('MyMoneyReconciliationHelper', () => {
 
     it('prefers installments already paid on that date over pending ones with the same total', () => {
       const report = reconcile(
-        [movement(1, '2026-11-01', 150000, 'Ña 10 noviembre', na10)],
+        [movement(1, '2026-09-01', 150000, 'Ña 10 septiembre', na10)],
         [na10],
         [
           installment(39, na10, 39, null, 42000),
           installment(40, na10, 40, null, 39000),
-          installment(41, na10, 41, null, 36000, 2, '2026-11-01'),
-          installment(42, na10, 42, null, 33000, 2, '2026-11-01'),
-          installment(43, na10, 43, null, 30000, 2, '2026-11-01'),
-          installment(44, na10, 44, null, 27000, 2, '2026-11-01'),
-          installment(45, na10, 45, null, 24000, 2, '2026-11-01'),
+          installment(41, na10, 41, null, 36000, 2, '2026-09-01'),
+          installment(42, na10, 42, null, 33000, 2, '2026-09-01'),
+          installment(43, na10, 43, null, 30000, 2, '2026-09-01'),
+          installment(44, na10, 44, null, 27000, 2, '2026-09-01'),
+          installment(45, na10, 45, null, 24000, 2, '2026-09-01'),
         ],
       );
       expect(report.rows[0].installments.map(i => i.id)).toEqual([41, 42, 43, 44, 45]);
@@ -133,6 +133,16 @@ describe('MyMoneyReconciliationHelper', () => {
 
     it('uses the due date to decide the month of an installment paid only in my-events', () => {
       const report = reconcile([], [aho3], [installment(11, aho3, 4, '2026-08-09', 350000, 2, '2026-09-20')]);
+      expect(report.paidOnlyInMyEvents).toEqual([]);
+    });
+
+    it('does not report installments paid by a movement of a neighbor month, nor list that movement', () => {
+      const report = reconcile(
+        [movement(1, '2026-08-03', 350000, 'Aho3 3/12', aho3)],
+        [aho3],
+        [installment(10, aho3, 3, '2026-09-09', 350000, 2, '2026-08-04')],
+      );
+      expect(report.rows).toEqual([]);
       expect(report.paidOnlyInMyEvents).toEqual([]);
     });
 

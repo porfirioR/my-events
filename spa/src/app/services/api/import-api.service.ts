@@ -4,6 +4,11 @@ import { Observable } from 'rxjs';
 import { MyMoneyPreviewApiModel } from '../../models/api/imports/mymoney-preview-api.model';
 import { MyMoneyImportResultApiModel } from '../../models/api/imports/mymoney-import-api.model';
 import {
+  ApplyMyMoneyReconciliationApiRequest,
+  MyMoneyReconciliationApiModel,
+  MyMoneyReconciliationApplyResultApiModel,
+} from '../../models/api/imports/mymoney-reconciliation-api.model';
+import {
   MyMoneyCategoryMappingApiModel,
   MyMoneyCategorySyncApiModel,
   MyMoneyDescriptionRuleApiModel,
@@ -24,6 +29,17 @@ export class ImportApiService {
   // Guarda los movimientos del rango del archivo sin duplicar (#232)
   importMyMoney = (file: File): Observable<MyMoneyImportResultApiModel> =>
     this.httpClient.post<MyMoneyImportResultApiModel>(`${this.section}/mymoney`, this.toFormData(file));
+
+  // ==================== CONCILIACIÓN (#233) ====================
+
+  getReconciliation = (month: string): Observable<MyMoneyReconciliationApiModel> =>
+    this.httpClient.get<MyMoneyReconciliationApiModel>(`${this.section}/mymoney/reconciliation`, { params: { month } });
+
+  applyReconciliation = (request: ApplyMyMoneyReconciliationApiRequest): Observable<MyMoneyReconciliationApplyResultApiModel> =>
+    this.httpClient.post<MyMoneyReconciliationApplyResultApiModel>(`${this.section}/mymoney/reconciliation`, request);
+
+  unreconcile = (importedMovementId: number): Observable<unknown> =>
+    this.httpClient.delete(`${this.section}/mymoney/reconciliation/${importedMovementId}`);
 
   // ==================== MAPEO (#231) ====================
 
