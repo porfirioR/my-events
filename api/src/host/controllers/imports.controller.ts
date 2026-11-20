@@ -22,6 +22,7 @@ import {
   MyMoneyCategoryMappingModel,
   MyMoneyCategorySyncModel,
   MyMoneyDescriptionRuleModel,
+  MyMoneyImportResultModel,
   MyMoneyPreviewModel,
   UpdateMyMoneyCategoryMappingRequest,
   UpsertMyMoneyDescriptionRuleRequest,
@@ -50,6 +51,17 @@ export class ImportsController {
   previewMyMoney(@UploadedFile() file?: Express.Multer.File): MyMoneyPreviewModel {
     const upload = this.requireFile(file);
     return this.importManagerService.previewMyMoney(upload.originalname, upload.buffer);
+  }
+
+  // Guarda los movimientos del rango del archivo sin duplicar (#232). Igual que preview, un archivo
+  // inválido responde 200 con valid = false y no guarda nada.
+  @Post('mymoney')
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_EXPORT_SIZE } }))
+  async importMyMoney(@UploadedFile() file?: Express.Multer.File): Promise<MyMoneyImportResultModel> {
+    const upload = this.requireFile(file);
+    const userId = await this.currentUserService.getCurrentUserId();
+    return this.importManagerService.importMyMoney(userId, upload.originalname, upload.buffer);
   }
 
   // ==================== MAPEO DE CATEGORÍAS (#231) ====================

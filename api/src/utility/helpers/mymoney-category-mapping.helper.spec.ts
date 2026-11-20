@@ -123,4 +123,24 @@ describe('MyMoneyCategoryMappingHelper', () => {
       expect(MyMoneyCategoryMappingHelper.matchesDescription('', 'Rueda')).toBe(false);
     });
   });
+
+  describe('findDescriptionRule', () => {
+    const rules = [
+      { pattern: 'Mbarete Porã', loanId: 23 },
+      { pattern: 'Mbarete Porã ju', loanId: 24 },
+      { pattern: 'Mbarete 3', loanId: 20 },
+    ];
+
+    it('picks the longest matching pattern, whatever the order of the rules', () => {
+      expect(MyMoneyCategoryMappingHelper.findDescriptionRule(rules, 'Mbarete Porã ju 3/15')?.loanId).toBe(24);
+      expect(MyMoneyCategoryMappingHelper.findDescriptionRule([...rules].reverse(), 'Mbarete Porã ju 3/15')?.loanId).toBe(24);
+      expect(MyMoneyCategoryMappingHelper.findDescriptionRule(rules, 'Mbarete Porã 7/15')?.loanId).toBe(23);
+      expect(MyMoneyCategoryMappingHelper.findDescriptionRule(rules, 'Mbarete 3 ju 4/15')?.loanId).toBe(20);
+    });
+
+    it('returns null when no pattern matches', () => {
+      expect(MyMoneyCategoryMappingHelper.findDescriptionRule(rules, 'Ueno 6M 1/12')).toBeNull();
+      expect(MyMoneyCategoryMappingHelper.findDescriptionRule([], 'Mbarete Porã')).toBeNull();
+    });
+  });
 });

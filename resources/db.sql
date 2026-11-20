@@ -1486,3 +1486,33 @@ ALTER TABLE mymoneydescriptionrules DISABLE ROW LEVEL SECURITY;
 -- se ajustaba su saldo. Ahora también queda guardada para mostrar "Acreditado en …" en el ahorro.
 -- NULL = el cobro no tocó ninguna cuenta.
 ALTER TABLE savingsgoals ADD COLUMN IF NOT EXISTS payoutaccountid INT NULL REFERENCES accounts(id) ON DELETE SET NULL;
+
+-- =====================================================
+-- PARTE 33: MOVIMIENTOS IMPORTADOS DESDE MYMONEY (#232)
+-- =====================================================
+-- Copia de cada movimiento del export de MyMoney, identificado por su id de Firestore (externalid):
+-- reimportar el mismo archivo no duplica (upsert por externalid) y actualiza lo editado en MyMoney.
+-- Lo que estaba importado dentro del rango (from–to) del archivo y ya no viene, se borró en MyMoney
+-- y se borra acá. La clasificación no se copia: sale de mymoneycategorymappings por categoryexternalid,
+-- así un cambio en el mapeo vale también para lo ya importado.
+--   movementtype: 1 Expense (gasto), 2 Income (ingreso)
+CREATE TABLE IF NOT EXISTS importedmovements (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    externalid VARCHAR(64) NOT NULL,
+    categoryexternalid VARCHAR(64) NOT NULL,
+    movementdate DATE NOT NULL,
+    movementtype SMALLINT NOT NULL CHECK (movementtype IN (1, 2)),
+    amount NUMERIC(15, 2) NOT NULL CHECK (amount > 0),
+    note VARCHAR(500) NOT NULL DEFAULT '',
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dateupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT ux_importedmovements_user_external UNIQUE (userid, externalid)
+);
+
+CREATE INDEX IF NOT EXISTS ix_importedmovements_user_date ON importedmovements(userid, movementdate);
+
+ALTER TABLE importedmovements DISABLE ROW LEVEL SECURITY;

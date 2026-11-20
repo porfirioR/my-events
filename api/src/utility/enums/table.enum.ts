@@ -48,4 +48,5 @@ export enum TableEnum {
   // ===== MYMONEY IMPORT TABLES =====
   MyMoneyCategoryMappings = 'mymoneycategorymappings',
   MyMoneyDescriptionRules = 'mymoneydescriptionrules',
+  ImportedMovements = 'importedmovements',
 }

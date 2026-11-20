@@ -1,16 +1,19 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { MyMoneyExportHelper } from '../../utility/helpers/mymoney-export.helper';
-import { MyMoneyCategoryMappingHelper } from '../../utility/helpers/mymoney-category-mapping.helper';
+import { MyMoneyCategory, MyMoneyExportHelper } from '../../utility/helpers/mymoney-export.helper';
+import { MyMoneyCategoryMappingHelper, MyMoneySyncPlan } from '../../utility/helpers/mymoney-category-mapping.helper';
+import { MyMoneyImportHelper } from '../../utility/helpers/mymoney-import.helper';
 import { ACCOUNT_TOKENS, IMPORT_TOKENS, LOAN_TOKENS, SAVINGS_TOKENS } from '../../utility/constants/injection-tokens.const';
 import { MyMoneyCategoryKind, MyMoneyMovementTypeEnum } from '../../utility/enums';
 import {
   CreateMyMoneyCategoryMappingAccessRequest,
+  IImportedMovementAccessService,
   IMyMoneyCategoryMappingAccessService,
   IMyMoneyDescriptionRuleAccessService,
   MyMoneyCategoryMappingAccessModel,
   MyMoneyDescriptionRuleAccessModel,
   MyMoneyLinkTarget,
   UpdateMyMoneyCategoryMappingAccessRequest,
+  UpsertImportedMovementAccessRequest,
   UpsertMyMoneyDescriptionRuleAccessRequest,
 } from '../../access/contract/mymoney';
 import { IAccountAccessService } from '../../access/contract/accounts';
@@ -20,13 +23,14 @@ import {
   MyMoneyCategoryMappingModel,
   MyMoneyCategorySyncModel,
   MyMoneyDescriptionRuleModel,
+  MyMoneyImportResultModel,
   MyMoneyPreviewModel,
   UpdateMyMoneyCategoryMappingRequest,
   UpsertMyMoneyDescriptionRuleRequest,
 } from '../models/imports';
 
-// Importación de movimientos desde MyMoney (epic #213): lectura del archivo (#230) y mapeo de
-// categorías y descripciones (#231). El guardado idempotente de movimientos llega en #232.
+// Importación de movimientos desde MyMoney (epic #213): lectura del archivo (#230), mapeo de
+// categorías y descripciones (#231) y guardado idempotente de movimientos (#232).
 @Injectable()
 export class ImportManagerService {
   constructor(
@@ -34,6 +38,8 @@ export class ImportManagerService {
     private readonly categoryMappingAccessService: IMyMoneyCategoryMappingAccessService,
     @Inject(IMPORT_TOKENS.DESCRIPTION_RULE_ACCESS_SERVICE)
     private readonly descriptionRuleAccessService: IMyMoneyDescriptionRuleAccessService,
+    @Inject(IMPORT_TOKENS.IMPORTED_MOVEMENT_ACCESS_SERVICE)
+    private readonly importedMovementAccessService: IImportedMovementAccessService,
     @Inject(ACCOUNT_TOKENS.ACCOUNT_ACCESS_SERVICE)
     private readonly accountAccessService: IAccountAccessService,
     @Inject(SAVINGS_TOKENS.GOAL_ACCESS_SERVICE)
@@ -68,8 +74,78 @@ export class ImportManagerService {
       return new MyMoneyCategorySyncModel(fileName, false, result.errors, 0, 0, await this.getCategoryMappings(userId));
     }
 
+    const plan = await this.applyCategorySync(userId, result.data.categories);
+
+    return new MyMoneyCategorySyncModel(
+      fileName,
+      true,
+      [],
+      plan.toCreate.length,
+      plan.toRename.length,
+      await this.getCategoryMappings(userId),
+    );
+  };
+
+  // ==================== MOVIMIENTOS (#232) ====================
+
+  // Guarda los movimientos del rango del archivo sin duplicar: crea los nuevos, actualiza lo editado
+  // en MyMoney y borra lo importado dentro del rango que ya no viene. Antes suma las categorías nuevas
+  // al mapeo (quedan "a revisar"). Un archivo inválido no guarda nada.
+  // Supabase no da transacciones desde el cliente: si algo falla a mitad, reimportar el mismo archivo
+  // termina de dejarlo igual (todo es upsert/borrado por id de MyMoney).
+  public importMyMoney = async (userId: number, fileName: string, content: Buffer): Promise<MyMoneyImportResultModel> => {
+    const result = MyMoneyExportHelper.parseText(content.toString('utf8'));
+    if (!result.valid) {
+      return new MyMoneyImportResultModel(fileName, false, result.errors, null, null, 0, 0, 0, 0, 0, null);
+    }
+
+    const data = result.data;
+    const categoryPlan = await this.applyCategorySync(userId, data.categories);
+
+    const existing = await this.importedMovementAccessService.getAll(userId);
+    const plan = MyMoneyImportHelper.plan(
+      existing.map(movement => ({ ...movement, movementType: movement.movementType as MyMoneyMovementTypeEnum })),
+      data,
+    );
+
+    await this.importedMovementAccessService.upsertMany([...plan.toCreate, ...plan.toUpdate].map(values =>
+      new UpsertImportedMovementAccessRequest(
+        userId,
+        values.externalId,
+        values.categoryExternalId,
+        values.date,
+        values.movementType,
+        values.amount,
+        values.note,
+      )));
+    await this.importedMovementAccessService.deleteMany(plan.toDelete, userId);
+
+    const mappings = await this.categoryMappingAccessService.getAll(userId);
+    const classification = MyMoneyImportHelper.classify(data.movements, mappings.map(mapping => ({
+      categoryExternalId: mapping.categoryExternalId,
+      kind: mapping.kind as MyMoneyCategoryKind,
+      needsReview: mapping.needsReview,
+    })));
+
+    return new MyMoneyImportResultModel(
+      fileName,
+      true,
+      [],
+      data.from,
+      data.to,
+      plan.toCreate.length,
+      plan.toUpdate.length,
+      plan.toDelete.length,
+      plan.unchanged,
+      categoryPlan.toCreate.length,
+      classification,
+    );
+  };
+
+  // Agrega las categorías nuevas (con su clasificación por defecto) y actualiza los nombres
+  private applyCategorySync = async (userId: number, categories: MyMoneyCategory[]): Promise<MyMoneySyncPlan> => {
     const existing = await this.categoryMappingAccessService.getAll(userId);
-    const plan = MyMoneyCategoryMappingHelper.planSync(existing, result.data.categories);
+    const plan = MyMoneyCategoryMappingHelper.planSync(existing, categories);
 
     await this.categoryMappingAccessService.createMany(plan.toCreate.map(mapping =>
       new CreateMyMoneyCategoryMappingAccessRequest(
@@ -84,15 +160,7 @@ export class ImportManagerService {
       )));
     await Promise.all(plan.toRename.map(rename =>
       this.categoryMappingAccessService.rename(rename.id, userId, rename.categoryName)));
-
-    return new MyMoneyCategorySyncModel(
-      fileName,
-      true,
-      [],
-      plan.toCreate.length,
-      plan.toRename.length,
-      await this.getCategoryMappings(userId),
-    );
+    return plan;
   };
 
   // Guardar la clasificación la saca de "a revisar". El destino (cuenta, ahorro o préstamo) solo se

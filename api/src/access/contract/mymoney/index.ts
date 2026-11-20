@@ -6,3 +6,6 @@ export { IMyMoneyCategoryMappingAccessService } from './mymoney-category-mapping
 export { MyMoneyDescriptionRuleAccessModel } from './mymoney-description-rule-access.model';
 export { UpsertMyMoneyDescriptionRuleAccessRequest } from './upsert-mymoney-description-rule-access-request';
 export { IMyMoneyDescriptionRuleAccessService } from './mymoney-description-rule-access.interface';
+export { ImportedMovementAccessModel } from './imported-movement-access.model';
+export { UpsertImportedMovementAccessRequest } from './upsert-imported-movement-access-request';
+export { IImportedMovementAccessService } from './imported-movement-access.interface';

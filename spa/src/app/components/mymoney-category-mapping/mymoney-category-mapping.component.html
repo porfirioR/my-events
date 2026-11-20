@@ -128,15 +128,16 @@
             [list]="targetOptions()"
           />
         </div>
-        <div class="md:col-span-3 flex gap-2 pb-6 md:pt-7">
-          <button type="submit" class="btn btn-primary btn-sm" [disabled]="isRuleSaving()">
+        <!-- pt-7 = altura del label de los inputs: el botón (misma altura que el input) queda alineado con ellos -->
+        <div class="md:col-span-3 flex items-start gap-2 pb-6 md:pt-7">
+          <button type="submit" class="btn btn-primary h-10 min-h-10" [disabled]="isRuleSaving()">
             @if (isRuleSaving()) {
               <span class="loading loading-spinner loading-xs"></span>
             }
             {{ (editingRuleId() === null ? 'common.add' : 'common.save') | translate }}
           </button>
           @if (editingRuleId() !== null) {
-            <button type="button" class="btn btn-ghost btn-sm" (click)="resetRuleForm()">{{ 'common.cancel' | translate }}</button>
+            <button type="button" class="btn btn-ghost h-10 min-h-10" (click)="resetRuleForm()">{{ 'common.cancel' | translate }}</button>
           }
         </div>
       </form>
