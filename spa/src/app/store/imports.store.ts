@@ -5,6 +5,11 @@ import { catchError, concatMap, exhaustMap, mergeMap, of, pipe, switchMap, tap }
 import { MyMoneyPreviewApiModel } from '../models/api/imports/mymoney-preview-api.model';
 import { MyMoneyImportResultApiModel } from '../models/api/imports/mymoney-import-api.model';
 import {
+  ApplyMyMoneyReconciliationApiRequest,
+  MyMoneyReconciliationApiModel,
+  MyMoneyReconciliationApplyResultApiModel,
+} from '../models/api/imports/mymoney-reconciliation-api.model';
+import {
   MyMoneyCategoryMappingApiModel,
   MyMoneyCategorySyncApiModel,
   MyMoneyDescriptionRuleApiModel,
@@ -36,6 +41,14 @@ export interface ImportsState {
   savingMappingIds: number[];
   descriptionRules: MyMoneyDescriptionRuleApiModel[];
   isDescriptionRuleSaving: boolean;
+
+  // Conciliación del mes elegido (#233)
+  reconciliation: MyMoneyReconciliationApiModel | null;
+  isReconciliationLoading: boolean;
+  reconciliationError: string | null;
+  isReconciliationApplying: boolean;
+  // Resultado del último "Conciliar" (cuántas, cuántas se pagaron y las que fallaron)
+  reconciliationApplyResult: Omit<MyMoneyReconciliationApplyResultApiModel, 'reconciliation'> | null;
 }
 
 // Al cambiar o quitar el archivo se limpia también el resultado de la importación anterior
@@ -58,6 +71,11 @@ const initialState: ImportsState = {
   savingMappingIds: [],
   descriptionRules: [],
   isDescriptionRuleSaving: false,
+  reconciliation: null,
+  isReconciliationLoading: false,
+  reconciliationError: null,
+  isReconciliationApplying: false,
+  reconciliationApplyResult: null,
 };
 
 export interface SaveDescriptionRuleParams {
@@ -86,6 +104,59 @@ export const ImportsStore = signalStore(
     ),
 
     clearMyMoneyPreview: () => patchState(store, initialPreviewState),
+
+    // ==================== CONCILIACIÓN (#233) ====================
+
+    loadReconciliation: rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, { isReconciliationLoading: true, reconciliationError: null, reconciliationApplyResult: null })),
+        switchMap(month =>
+          importApiService.getReconciliation(month).pipe(
+            tap(reconciliation => patchState(store, { reconciliation, isReconciliationLoading: false })),
+            catchError(() => {
+              patchState(store, { reconciliation: null, reconciliationError: 'Failed to load reconciliation', isReconciliationLoading: false });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    // La respuesta trae la conciliación del mes ya actualizada
+    applyReconciliation: rxMethod<ApplyMyMoneyReconciliationApiRequest>(
+      pipe(
+        tap(() => patchState(store, { isReconciliationApplying: true, reconciliationApplyResult: null })),
+        exhaustMap(request =>
+          importApiService.applyReconciliation(request).pipe(
+            tap(({ reconciliation, ...result }) => patchState(store, {
+              reconciliation,
+              reconciliationApplyResult: result,
+              isReconciliationApplying: false,
+            })),
+            catchError(() => {
+              patchState(store, { isReconciliationApplying: false });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    unreconcile: rxMethod<{ month: string; importedMovementId: number }>(
+      pipe(
+        tap(() => patchState(store, { isReconciliationApplying: true, reconciliationApplyResult: null })),
+        concatMap(({ month, importedMovementId }) =>
+          importApiService.unreconcile(importedMovementId).pipe(
+            switchMap(() => importApiService.getReconciliation(month)),
+            tap(reconciliation => patchState(store, { reconciliation, isReconciliationApplying: false })),
+            catchError(() => {
+              patchState(store, { isReconciliationApplying: false });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
 
     // ==================== IMPORTACIÓN (#232) ====================
 

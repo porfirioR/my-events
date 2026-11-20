@@ -4,7 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { useImportsStore } from '../../store';
 
 // Módulo MyMoney (epic #213): un solo lugar para traer los movimientos de MyMoney.
-// Cada paso del flujo mensual es una pestaña con su propia ruta (importar, categorías y, con #233, conciliación).
+// Cada paso del flujo mensual es una pestaña con su propia ruta (importar, categorías y conciliación #233).
 @Component({
   selector: 'app-mymoney',
   templateUrl: './mymoney.component.html',
@@ -14,7 +14,7 @@ import { useImportsStore } from '../../store';
 export class MyMoneyComponent {
   private importsStore = useImportsStore();
 
-  protected steps = ['myMoney.stepExport', 'myMoney.stepUpload', 'myMoney.stepReview', 'myMoney.stepImport'];
+  protected steps = ['myMoney.stepExport', 'myMoney.stepUpload', 'myMoney.stepReview', 'myMoney.stepImport', 'myMoney.stepReconcile'];
   protected pendingCount = computed(() => this.importsStore.categoryMappings().filter(mapping => mapping.needsReview).length);
 
   constructor() {
