@@ -19,22 +19,10 @@ export class ImportedMovementAccessService extends BaseAccessService implements 
     super(dbContextService);
   }
 
-  public getAll = async (userId: number): Promise<ImportedMovementAccessModel[]> => {
-    const result: ImportedMovementAccessModel[] = [];
-    for (let from = 0; ; from += PAGE_SIZE) {
-      const { data, error } = await this.dbContext
-        .from(TableEnum.ImportedMovements)
-        .select('id, externalid, categoryexternalid, movementdate, movementtype, amount, note')
-        .eq(DatabaseColumns.UserId, userId)
-        .order(DatabaseColumns.EntityId, { ascending: true })
-        .range(from, from + PAGE_SIZE - 1);
+  public getAll = async (userId: number): Promise<ImportedMovementAccessModel[]> => this.getPaged(userId);
 
-      if (error) throw new InternalServerErrorException(error.message);
-      const rows = (data ?? []) as ImportedMovementEntity[];
-      result.push(...rows.map(this.mapEntityToModel));
-      if (rows.length < PAGE_SIZE) return result;
-    }
-  };
+  public getBetween = async (userId: number, from: string, to: string): Promise<ImportedMovementAccessModel[]> =>
+    this.getPaged(userId, from, to);
 
   public upsertMany = async (requests: UpsertImportedMovementAccessRequest[]): Promise<void> => {
     const now = new Date().toISOString();
@@ -68,6 +56,27 @@ export class ImportedMovementAccessService extends BaseAccessService implements 
         .eq(DatabaseColumns.UserId, userId);
 
       if (error) throw new InternalServerErrorException(error.message);
+    }
+  };
+
+  private getPaged = async (userId: number, from?: string, to?: string): Promise<ImportedMovementAccessModel[]> => {
+    const result: ImportedMovementAccessModel[] = [];
+    for (let offset = 0; ; offset += PAGE_SIZE) {
+      let query = this.dbContext
+        .from(TableEnum.ImportedMovements)
+        .select('id, externalid, categoryexternalid, movementdate, movementtype, amount, note')
+        .eq(DatabaseColumns.UserId, userId);
+      if (from) query = query.gte('movementdate', from);
+      if (to) query = query.lte('movementdate', to);
+
+      const { data, error } = await query
+        .order(DatabaseColumns.EntityId, { ascending: true })
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      if (error) throw new InternalServerErrorException(error.message);
+      const rows = (data ?? []) as ImportedMovementEntity[];
+      result.push(...rows.map(this.mapEntityToModel));
+      if (rows.length < PAGE_SIZE) return result;
     }
   };
 

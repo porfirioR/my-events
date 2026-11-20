@@ -1516,3 +1516,36 @@ CREATE TABLE IF NOT EXISTS importedmovements (
 CREATE INDEX IF NOT EXISTS ix_importedmovements_user_date ON importedmovements(userid, movementdate);
 
 ALTER TABLE importedmovements DISABLE ROW LEVEL SECURITY;
+
+
+-- =====================================================
+-- PARTE 34: CONCILIACIÓN DE TRANSFERENCIAS CON CUOTAS (#233)
+-- =====================================================
+-- Un movimiento importado de MyMoney (aporte a un ahorro o cuota de un préstamo) se concilia con la(s)
+-- cuota(s) de my-events que paga. Casi siempre es una, pero un aporte mensual puede pagar varias
+-- (Ña 10 septiembre = cuotas 8 a 11). Cada cuota se concilia con un solo movimiento.
+-- Reimportar no borra el vínculo (el movimiento se actualiza, no se recrea); si el movimiento se borró
+-- en MyMoney o se borra la cuota, el vínculo se va con él, pero el pago queda.
+CREATE TABLE IF NOT EXISTS importedmovementlinks (
+    id SERIAL PRIMARY KEY,
+    userid INT NOT NULL,
+    importedmovementid INT NOT NULL,
+    savingsinstallmentid INT NULL,
+    loaninstallmentid INT NULL,
+
+    datecreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (importedmovementid) REFERENCES importedmovements(id) ON DELETE CASCADE,
+    FOREIGN KEY (savingsinstallmentid) REFERENCES savingsinstallments(id) ON DELETE CASCADE,
+    FOREIGN KEY (loaninstallmentid) REFERENCES loaninstallments(id) ON DELETE CASCADE,
+    CONSTRAINT check_importedmovementlinks_single_installment CHECK (
+        num_nonnulls(savingsinstallmentid, loaninstallmentid) = 1
+    )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_importedmovementlinks_savingsinstallment ON importedmovementlinks(savingsinstallmentid) WHERE savingsinstallmentid IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_importedmovementlinks_loaninstallment ON importedmovementlinks(loaninstallmentid) WHERE loaninstallmentid IS NOT NULL;
+CREATE INDEX IF NOT EXISTS ix_importedmovementlinks_user_movement ON importedmovementlinks(userid, importedmovementid);
+
+ALTER TABLE importedmovementlinks DISABLE ROW LEVEL SECURITY;

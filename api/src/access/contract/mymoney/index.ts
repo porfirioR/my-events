@@ -9,3 +9,5 @@ export { IMyMoneyDescriptionRuleAccessService } from './mymoney-description-rule
 export { ImportedMovementAccessModel } from './imported-movement-access.model';
 export { UpsertImportedMovementAccessRequest } from './upsert-imported-movement-access-request';
 export { IImportedMovementAccessService } from './imported-movement-access.interface';
+export { ImportedMovementLinkAccessModel } from './imported-movement-link-access.model';
+export { IImportedMovementLinkAccessService, InstallmentLinkRequest } from './imported-movement-link-access.interface';

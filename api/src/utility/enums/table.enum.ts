@@ -49,4 +49,5 @@ export enum TableEnum {
   MyMoneyCategoryMappings = 'mymoneycategorymappings',
   MyMoneyDescriptionRules = 'mymoneydescriptionrules',
   ImportedMovements = 'importedmovements',
+  ImportedMovementLinks = 'importedmovementlinks',
 }

@@ -25,6 +25,7 @@ import { AccountBalanceSnapshotAccessService } from './services/account-balance-
 import { MyMoneyCategoryMappingAccessService } from './services/mymoney-category-mapping-access.service';
 import { MyMoneyDescriptionRuleAccessService } from './services/mymoney-description-rule-access.service';
 import { ImportedMovementAccessService } from './services/imported-movement-access.service';
+import { ImportedMovementLinkAccessService } from './services/imported-movement-link-access.service';
 
 @Module({
   imports: [
@@ -97,6 +98,11 @@ import { ImportedMovementAccessService } from './services/imported-movement-acce
     {
       provide: IMPORT_TOKENS.IMPORTED_MOVEMENT_ACCESS_SERVICE,
       useExisting: ImportedMovementAccessService,
+    },
+    ImportedMovementLinkAccessService,
+    {
+      provide: IMPORT_TOKENS.IMPORTED_MOVEMENT_LINK_ACCESS_SERVICE,
+      useExisting: ImportedMovementLinkAccessService,
     },
     UserFinancialSettingsAccessService,
     {
@@ -234,6 +240,7 @@ import { ImportedMovementAccessService } from './services/imported-movement-acce
     IMPORT_TOKENS.CATEGORY_MAPPING_ACCESS_SERVICE,
     IMPORT_TOKENS.DESCRIPTION_RULE_ACCESS_SERVICE,
     IMPORT_TOKENS.IMPORTED_MOVEMENT_ACCESS_SERVICE,
+    IMPORT_TOKENS.IMPORTED_MOVEMENT_LINK_ACCESS_SERVICE,
   ],
 })
 export class DataModule {}

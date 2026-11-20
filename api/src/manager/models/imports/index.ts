@@ -5,3 +5,4 @@ export { MyMoneyCategorySyncModel } from './mymoney-category-sync.model';
 export { UpdateMyMoneyCategoryMappingRequest } from './update-mymoney-category-mapping-request';
 export { UpsertMyMoneyDescriptionRuleRequest } from './upsert-mymoney-description-rule-request';
 export { MyMoneyImportResultModel } from './mymoney-import-result.model';
+export * from './mymoney-reconciliation.model';
