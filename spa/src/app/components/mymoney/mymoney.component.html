@@ -33,6 +33,10 @@
           <span class="badge badge-warning badge-sm" [attr.aria-label]="'myMoney.pendingBadge' | translate: { count: pendingCount() }">{{ pendingCount() }}</span>
         }
       </a>
+      <a role="tab" class="tab" routerLink="reconciliation" routerLinkActive="tab-active" #reconciliationTab="routerLinkActive"
+        [attr.aria-selected]="reconciliationTab.isActive">
+        <i class="fas fa-scale-balanced mr-2" aria-hidden="true"></i>{{ 'myMoney.tabReconciliation' | translate }}
+      </a>
     </nav>
   </article>
 

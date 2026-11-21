@@ -50,3 +50,4 @@ export { UserFinancialSettingsAccessService } from './user-financial-settings-ac
 export { MyMoneyCategoryMappingAccessService } from './mymoney-category-mapping-access.service';
 export { MyMoneyDescriptionRuleAccessService } from './mymoney-description-rule-access.service';
 export { ImportedMovementAccessService } from './imported-movement-access.service';
+export { ImportedMovementLinkAccessService } from './imported-movement-link-access.service';

@@ -53,9 +53,11 @@ export const FINANCIAL_INSTITUTION_TOKENS = {
 } as const;
 export const IMPORT_TOKENS = {
   MANAGER_SERVICE: Symbol('IImportManagerService'),
+  RECONCILIATION_MANAGER_SERVICE: Symbol('IMyMoneyReconciliationManagerService'),
   CATEGORY_MAPPING_ACCESS_SERVICE: Symbol('IMyMoneyCategoryMappingAccessService'),
   DESCRIPTION_RULE_ACCESS_SERVICE: Symbol('IMyMoneyDescriptionRuleAccessService'),
   IMPORTED_MOVEMENT_ACCESS_SERVICE: Symbol('IImportedMovementAccessService'),
+  IMPORTED_MOVEMENT_LINK_ACCESS_SERVICE: Symbol('IImportedMovementLinkAccessService'),
 } as const;
 export const ACCOUNT_TOKENS = {
   ACCOUNT_ACCESS_SERVICE: Symbol('IAccountAccessService'),

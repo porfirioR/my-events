@@ -459,10 +459,11 @@ export class SavingsManagerService {
     }
 
     // 3. Create deposit
+    const paymentDate = request.paymentDate ?? new Date();
     const depositAccessRequest = new CreateSavingsDepositAccessRequest(
       request.savingsGoalId,
       request.amount,
-      new Date(),
+      paymentDate,
       request.installmentId,
       request.description,
       MovementType.Deposit,
@@ -473,7 +474,7 @@ export class SavingsManagerService {
 
     // 4. Mark installment as paid (only if full amount was paid)
     if (Math.abs(request.amount - installment.amount) < 0.01) {
-      await this.savingsInstallmentAccessService.markAsPaid(request.installmentId, new Date());
+      await this.savingsInstallmentAccessService.markAsPaid(request.installmentId, paymentDate);
     }
 
     // 5. Update currentAmount

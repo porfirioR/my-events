@@ -92,7 +92,7 @@
         <!-- Importar: guarda los movimientos del rango; reimportar el mismo archivo no duplica (#232) -->
         <div class="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
           <p class="text-xs text-base-content/60 flex-1">{{ 'myMoneyImport.importHint' | translate }}</p>
-          <button type="button" class="btn btn-primary h-10 min-h-10" (click)="importMovements()" [disabled]="isImporting()">
+          <button type="button" class="btn btn-primary h-10 min-h-10" (click)="importMovements()" [disabled]="isImporting() || !canImport()">
             @if (isImporting()) {
               <span class="loading loading-spinner loading-xs"></span>
             } @else {

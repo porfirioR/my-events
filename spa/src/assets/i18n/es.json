@@ -1016,7 +1016,8 @@
     "My Money": "My Money",
     "My Money Import": "My Money · Importar",
     "My Money Categories": "My Money · Categorías",
-    "Collaborator Statistics": "Estadísticas del colaborador"
+    "Collaborator Statistics": "Estadísticas del colaborador",
+    "My Money Reconciliation": "My Money · Conciliación"
   },
   "travels": {
     "title": "Viajes",
@@ -1510,11 +1511,44 @@
     "stepUpload": "Subí el archivo",
     "stepReview": "Revisá las categorías",
     "stepImport": "Importá",
+    "stepReconcile": "Conciliá las cuotas",
     "tabImport": "Importar",
     "tabCategories": "Categorías",
+    "tabReconciliation": "Conciliación",
     "pendingBadge": "{{count}} categorías a revisar",
     "pendingAlert": "Hay {{count}} categorías sin revisar: usan la clasificación por defecto hasta que las confirmes.",
     "reviewCategories": "Revisar categorías"
+  },
+  "myMoneyReconciliation": {
+    "previousMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "markAsPaid": "Marcar como pagadas en my-events las cuotas pagadas solo en My Money",
+    "reconcileAll": "Conciliar todo ({{count}})",
+    "reconcile": "Conciliar",
+    "undo": "Deshacer",
+    "hint": "Cada transferencia de My Money a un ahorro o préstamo se cruza con su cuota: por el número de la descripción (\"Aho3 4/12\" → cuota 4) o, sin número, por fecha y monto. Deshacer una conciliación no borra el pago.",
+    "applyResult": "{{reconciled}} conciliadas, {{paid}} cuotas marcadas como pagadas.",
+    "applyFailed": "{{count}} no se pudieron conciliar:",
+    "loadError": "No se pudo cargar la conciliación.",
+    "rowsTitle": "Transferencias de My Money del mes",
+    "noRows": "No hay transferencias a ahorros o préstamos este mes. ¿Importaste este mes?",
+    "installment": "Cuota {{number}}",
+    "installments": "Cuotas {{from}}–{{to}}",
+    "due": "vence {{date}}",
+    "amountDiffers": "El monto no coincide con la cuota ({{installment}}).",
+    "dateDiffers": "La cuota con ese número vence lejos de esta fecha: la numeración de My Money y la de my-events no coinciden.",
+    "paidOnlyInMyEvents": "Pagadas solo en my-events",
+    "paidOnlyInMyEventsHint": "Cuotas que vencen este mes, pagadas en my-events, sin transferencia de My Money.",
+    "pendingInBoth": "Pendientes en los dos",
+    "pendingInBothHint": "Cuotas que vencen este mes y no están pagadas en ningún lado.",
+    "noDifferences": "Sin diferencias.",
+    "status": {
+      "reconciled": "Conciliado",
+      "matched": "Para conciliar",
+      "paidOnlyInMyMoney": "Pagado solo en My Money",
+      "unmatched": "Sin cuota",
+      "noInstallments": "Sin cuotas (aporte libre)"
+    }
   },
   "myMoneyImport": {
     "categoryNames": {

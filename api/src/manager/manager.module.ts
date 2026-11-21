@@ -10,6 +10,7 @@ import { FinancialInstitutionManagerService } from './services/financial-institu
 import { AccountManagerService } from './services/account-manager.service';
 import { TravelManagerService } from './services/travel-manager.service';
 import { LoanManagerService } from './services/loan-manager.service';
+import { MyMoneyReconciliationManagerService } from './services/mymoney-reconciliation-manager.service';
 import { DashboardManagerService } from './services/dashboard-manager.service';
 import { ImportManagerService } from './services/import-manager.service';
 import { BlobModule } from '../access/blob/blob.module';
@@ -49,6 +50,11 @@ import { BlobModule } from '../access/blob/blob.module';
       provide: IMPORT_TOKENS.MANAGER_SERVICE,
       useExisting: ImportManagerService,
     },
+    MyMoneyReconciliationManagerService,
+    {
+      provide: IMPORT_TOKENS.RECONCILIATION_MANAGER_SERVICE,
+      useExisting: MyMoneyReconciliationManagerService,
+    },
     {
       provide: DASHBOARD_TOKENS.MANAGER_SERVICE,
       useExisting: DashboardManagerService,
@@ -85,6 +91,7 @@ import { BlobModule } from '../access/blob/blob.module';
     FINANCIAL_INSTITUTION_TOKENS.MANAGER_SERVICE,
     ACCOUNT_TOKENS.MANAGER_SERVICE,
     IMPORT_TOKENS.MANAGER_SERVICE,
+    IMPORT_TOKENS.RECONCILIATION_MANAGER_SERVICE,
   ]
 })
 export class ManagerModule {}

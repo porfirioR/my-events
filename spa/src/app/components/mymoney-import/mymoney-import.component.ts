@@ -47,6 +47,8 @@ export class MyMoneyImportComponent {
   protected hasError = computed(() => !!this.importsStore.myMoneyPreviewError());
   protected summary = computed(() => this.preview()?.summary ?? null);
   private selectedFile = signal<File | null>(null);
+  // Sin el archivo en memoria (p. ej. al volver a la pantalla con el resumen anterior) no hay qué importar
+  protected canImport = computed(() => !!this.selectedFile() && !!this.preview()?.valid);
   protected importResult = this.importsStore.myMoneyImport;
   protected isImporting = this.importsStore.isMyMoneyImporting;
   protected hasImportError = computed(() => !!this.importsStore.myMoneyImportError());
@@ -129,7 +131,7 @@ export class MyMoneyImportComponent {
   // Guarda los movimientos del archivo ya revisado; reimportarlo no duplica (#232)
   protected importMovements = (): void => {
     const file = this.selectedFile();
-    if (file && this.preview()?.valid && !this.isImporting()) {
+    if (file && this.canImport() && !this.isImporting()) {
       this.importsStore.importMyMoney(file);
     }
   };

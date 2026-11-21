@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,7 +19,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { PrivateEndpointGuard } from '../guards/private-endpoint.guard';
 import { CurrentUserService } from '../services/current-user.service';
 import { ImportManagerService } from '../../manager/services/import-manager.service';
+import { MyMoneyReconciliationManagerService } from '../../manager/services/mymoney-reconciliation-manager.service';
 import {
+  MyMoneyReconciliationApplyResultModel,
+  MyMoneyReconciliationModel,
   MyMoneyCategoryMappingModel,
   MyMoneyCategorySyncModel,
   MyMoneyDescriptionRuleModel,
@@ -27,7 +31,11 @@ import {
   UpdateMyMoneyCategoryMappingRequest,
   UpsertMyMoneyDescriptionRuleRequest,
 } from '../../manager/models/imports';
-import { UpdateMyMoneyCategoryMappingApiRequest, UpsertMyMoneyDescriptionRuleApiRequest } from '../models/imports';
+import {
+  ApplyMyMoneyReconciliationApiRequest,
+  UpdateMyMoneyCategoryMappingApiRequest,
+  UpsertMyMoneyDescriptionRuleApiRequest,
+} from '../models/imports';
 import { MessageModel } from '../models/message.model';
 import { IMPORT_TOKENS } from '../../utility/constants/injection-tokens.const';
 
@@ -41,6 +49,8 @@ export class ImportsController {
     private readonly currentUserService: CurrentUserService,
     @Inject(IMPORT_TOKENS.MANAGER_SERVICE)
     private readonly importManagerService: ImportManagerService,
+    @Inject(IMPORT_TOKENS.RECONCILIATION_MANAGER_SERVICE)
+    private readonly reconciliationManagerService: MyMoneyReconciliationManagerService,
   ) {}
 
   // Lee el export de MyMoney y devuelve el resumen por mes, sin guardar nada (#230).
@@ -62,6 +72,33 @@ export class ImportsController {
     const upload = this.requireFile(file);
     const userId = await this.currentUserService.getCurrentUserId();
     return this.importManagerService.importMyMoney(userId, upload.originalname, upload.buffer);
+  }
+
+  // ==================== CONCILIACIÓN (#233) ====================
+
+  // Transferencias del mes a ahorros y préstamos con la cuota que pagan, y diferencias en los dos sentidos
+  @Get('mymoney/reconciliation')
+  async getReconciliation(@Query('month') month: string): Promise<MyMoneyReconciliationModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return this.reconciliationManagerService.getReconciliation(userId, month ?? '');
+  }
+
+  @Post('mymoney/reconciliation')
+  @HttpCode(200)
+  async applyReconciliation(@Body() apiRequest: ApplyMyMoneyReconciliationApiRequest): Promise<MyMoneyReconciliationApplyResultModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    return this.reconciliationManagerService.apply(userId, apiRequest.month, apiRequest.items.map(item => ({
+      importedMovementId: item.importedMovementId,
+      installmentIds: item.installmentIds,
+      markAsPaid: item.markAsPaid,
+    })));
+  }
+
+  @Delete('mymoney/reconciliation/:importedMovementId')
+  async unreconcile(@Param('importedMovementId', ParseIntPipe) importedMovementId: number): Promise<MessageModel> {
+    const userId = await this.currentUserService.getCurrentUserId();
+    await this.reconciliationManagerService.unreconcile(userId, importedMovementId);
+    return new MessageModel('Reconciliation removed successfully');
   }
 
   // ==================== MAPEO DE CATEGORÍAS (#231) ====================

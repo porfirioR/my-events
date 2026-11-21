@@ -103,6 +103,11 @@ export const routes: Routes = [
             title: 'My Money Categories',
             loadComponent: () => import('./components/mymoney-category-mapping/mymoney-category-mapping.component').then((x) => x.MyMoneyCategoryMappingComponent),
           },
+          {
+            path: 'reconciliation',
+            title: 'My Money Reconciliation',
+            loadComponent: () => import('./components/mymoney-reconciliation/mymoney-reconciliation.component').then((x) => x.MyMoneyReconciliationComponent),
+          },
         ],
       },
       // Rutas anteriores (#230, #231)
