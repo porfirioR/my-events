@@ -25,6 +25,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   mymoney: 'myMoney.title',
   'mymoney/import': 'myMoney.tabImport',
   'mymoney/categories': 'myMoney.tabCategories',
+  'mymoney/reconciliation': 'myMoney.tabReconciliation',
   // Mismo segmento con distinto significado según el módulo
   'accounts/balances': 'accountBalances.title',
   balances: 'dashboard.balances',
