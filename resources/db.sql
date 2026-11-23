@@ -1549,3 +1549,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_importedmovementlinks_loaninstallment ON im
 CREATE INDEX IF NOT EXISTS ix_importedmovementlinks_user_movement ON importedmovementlinks(userid, importedmovementid);
 
 ALTER TABLE importedmovementlinks DISABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PARTE 35: RESUMEN MENSUAL POR EMAIL (#263)
+-- =====================================================
+-- El día 1 un workflow de GitHub llama a POST /api/jobs/monthly-summary y cada usuario recibe un email
+-- con lo que vence en el mes, cuotas, cobros, patrimonio, indicadores y lo que falta hacer.
+-- Activado por defecto; el idioma es el de la app al guardar los parámetros financieros.
+-- Un usuario sin fila en userfinancialsettings también lo recibe (activado y en español).
+ALTER TABLE userfinancialsettings ADD COLUMN IF NOT EXISTS monthlysummaryemail BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE userfinancialsettings ADD COLUMN IF NOT EXISTS language VARCHAR(2) NOT NULL DEFAULT 'es';
+ALTER TABLE userfinancialsettings DROP CONSTRAINT IF EXISTS check_financialsettings_language;
+ALTER TABLE userfinancialsettings ADD CONSTRAINT check_financialsettings_language CHECK (language IN ('es', 'en'));

@@ -10,3 +10,4 @@ export { MyMoneyExportHelper } from './mymoney-export.helper';
 export { MyMoneyCategoryMappingHelper } from './mymoney-category-mapping.helper';
 export { MyMoneyImportHelper } from './mymoney-import.helper';
 export { MyMoneyCashflowHelper } from './mymoney-cashflow.helper';
+export { MonthlySummaryHelper } from './monthly-summary.helper';

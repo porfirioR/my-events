@@ -10,5 +10,8 @@ export class UpsertUserFinancialSettingsAccessRequest {
     public readonly savingsYellowPercentage: number,
     public readonly debtGreenPercentage: number,
     public readonly debtYellowPercentage: number,
+    // Resumen mensual por email (#263) y su idioma
+    public readonly monthlySummaryEmail: boolean,
+    public readonly language: string,
   ) {}
 }

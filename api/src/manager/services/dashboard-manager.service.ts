@@ -43,6 +43,8 @@ const DEFAULT_THRESHOLDS = new HealthThresholdsModel(6, 3, 20, 10, 30, 40);
 const SAVINGS_STATUSES_CLOSED = [4, 5];
 // Meses completos que se promedian con los datos de MyMoney (#234)
 const HEALTH_IMPORTED_MONTHS = 6;
+// Idiomas del resumen mensual por email (#263)
+const SUMMARY_LANGUAGES = ['es', 'en'];
 
 @Injectable()
 export class DashboardManagerService {
@@ -281,6 +283,7 @@ export class DashboardManagerService {
     if (t.cushionGreenMonths < t.cushionYellowMonths) throw new BadRequestException('Cushion green must be at least the yellow threshold');
     if (t.savingsGreenPercentage < t.savingsYellowPercentage) throw new BadRequestException('Savings green must be at least the yellow threshold');
     if (t.debtGreenPercentage > t.debtYellowPercentage) throw new BadRequestException('Debt green must be at most the yellow threshold');
+    if (!SUMMARY_LANGUAGES.includes(request.language)) throw new BadRequestException('Invalid language');
 
     const saved = await this.financialSettingsAccessService.upsert(new UpsertUserFinancialSettingsAccessRequest(
       request.userId,
@@ -290,6 +293,8 @@ export class DashboardManagerService {
       t.cushionGreenMonths, t.cushionYellowMonths,
       t.savingsGreenPercentage, t.savingsYellowPercentage,
       t.debtGreenPercentage, t.debtYellowPercentage,
+      request.monthlySummaryEmail,
+      request.language,
     ));
     return this.toSettingsModel(saved);
   };
@@ -382,7 +387,7 @@ export class DashboardManagerService {
 
   private toSettingsModel = (s: UserFinancialSettingsAccessModel | null): FinancialSettingsModel =>
     s === null
-      ? new FinancialSettingsModel(HEALTH_CURRENCY_ID, null, null, DEFAULT_THRESHOLDS)
+      ? new FinancialSettingsModel(HEALTH_CURRENCY_ID, null, null, DEFAULT_THRESHOLDS, true, 'es')
       : new FinancialSettingsModel(
         s.currencyId,
         s.monthlyNetIncome,
@@ -392,6 +397,8 @@ export class DashboardManagerService {
           s.savingsGreenPercentage, s.savingsYellowPercentage,
           s.debtGreenPercentage, s.debtYellowPercentage,
         ),
+        s.monthlySummaryEmail,
+        s.language,
       );
 
   // Solo de préstamos en curso: los saldados o cancelados no tienen cuotas que mirar

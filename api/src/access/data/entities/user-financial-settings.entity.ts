@@ -9,6 +9,8 @@ export interface UserFinancialSettingsEntity {
   savingsyellowpercentage: number;
   debtgreenpercentage: number;
   debtyellowpercentage: number;
+  monthlysummaryemail: boolean;
+  language: string;
   datecreated: string;
   dateupdated: string;
 }

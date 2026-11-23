@@ -18,6 +18,9 @@ export class FinancialSettingsModel {
     public readonly monthlyNetIncome: number | null,
     public readonly monthlyEssentialExpense: number | null,
     public readonly thresholds: HealthThresholdsModel,
+    // Resumen mensual por email (#263): activado por defecto, en el idioma de la app ('es' | 'en')
+    public readonly monthlySummaryEmail: boolean,
+    public readonly language: string,
   ) {}
 }
 

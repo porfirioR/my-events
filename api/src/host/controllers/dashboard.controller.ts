@@ -72,6 +72,8 @@ export class DashboardController {
       +apiRequest.savingsYellowPercentage,
       +apiRequest.debtGreenPercentage,
       +apiRequest.debtYellowPercentage,
+      apiRequest.monthlySummaryEmail !== false && apiRequest.monthlySummaryEmail !== 'false',
+      apiRequest.language ?? 'es',
     );
     return this.dashboardManagerService.upsertFinancialSettings(request);
   }

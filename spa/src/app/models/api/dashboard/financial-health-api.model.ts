@@ -17,6 +17,9 @@ export interface FinancialSettingsApiModel {
   monthlyNetIncome: number | null;
   monthlyEssentialExpense: number | null;
   thresholds: HealthThresholdsApiModel;
+  // Resumen mensual por email (#263) y su idioma
+  monthlySummaryEmail: boolean;
+  language: string;
 }
 
 export interface HealthIndicatorApiModel {
@@ -56,5 +59,8 @@ export class UpsertFinancialSettingsApiRequest {
     public savingsYellowPercentage: number,
     public debtGreenPercentage: number,
     public debtYellowPercentage: number,
+    public monthlySummaryEmail: boolean,
+    // El del resumen por email: se guarda el idioma actual de la app
+    public language: string,
   ) {}
 }

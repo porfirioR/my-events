@@ -68,4 +68,11 @@ export class MailAccessService {
       `,
     });
   };
+
+  /**
+   * Envía un email ya armado (ej. el resumen mensual, #263)
+   */
+  public sendHtmlEmail = async (email: string, subject: string, html: string): Promise<void> => {
+    await this.mailerService.sendMail({ to: email, subject, html });
+  };
 }

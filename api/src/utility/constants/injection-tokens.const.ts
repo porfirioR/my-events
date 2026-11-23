@@ -64,3 +64,8 @@ export const ACCOUNT_TOKENS = {
   BALANCE_SNAPSHOT_ACCESS_SERVICE: Symbol('IAccountBalanceSnapshotAccessService'),
   MANAGER_SERVICE: Symbol('IAccountManagerService'),
 } as const;
+
+// Tareas programadas que dispara el workflow de GitHub (#263)
+export const JOBS_TOKENS = {
+  MONTHLY_SUMMARY_MANAGER_SERVICE: Symbol('IMonthlySummaryManagerService'),
+};

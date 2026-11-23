@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { preventUnsavedUnload } from '../../guards/prevent-unsaved-unload';
 import { TextComponent } from '../inputs/text/text.component';
+import { CheckBoxInputComponent } from '../inputs/check-box-input/check-box-input.component';
 import { AlertService } from '../../services';
 import { useDashboardStore } from '../../store';
 import { UpsertFinancialSettingsApiRequest } from '../../models/api/dashboard/financial-health-api.model';
@@ -19,6 +20,7 @@ interface FinancialSettingsFormGroup {
   savingsYellowPercentage: FormControl<number | null>;
   debtGreenPercentage: FormControl<number | null>;
   debtYellowPercentage: FormControl<number | null>;
+  monthlySummaryEmail: FormControl<boolean>;
 }
 
 // El verde tiene que ser más exigente que el amarillo (en cuotas, más bajo es mejor)
@@ -36,7 +38,7 @@ const thresholdOrder = (green: keyof FinancialSettingsFormGroup, yellow: keyof F
   selector: 'app-financial-settings',
   templateUrl: './financial-settings.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, TranslateModule, TextComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, TranslateModule, TextComponent, CheckBoxInputComponent],
 })
 export class FinancialSettingsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
@@ -57,6 +59,7 @@ export class FinancialSettingsComponent implements OnInit {
     savingsYellowPercentage: new FormControl(10, [Validators.required, Validators.min(0), Validators.max(999)]),
     debtGreenPercentage: new FormControl(30, [Validators.required, Validators.min(0), Validators.max(999)]),
     debtYellowPercentage: new FormControl(40, [Validators.required, Validators.min(0), Validators.max(999)]),
+    monthlySummaryEmail: new FormControl(true, { nonNullable: true }),
   }, {
     validators: [
       thresholdOrder('cushionGreenMonths', 'cushionYellowMonths', false, 'cushionOrder'),
@@ -82,6 +85,7 @@ export class FinancialSettingsComponent implements OnInit {
           savingsYellowPercentage: t.savingsYellowPercentage,
           debtGreenPercentage: t.debtGreenPercentage,
           debtYellowPercentage: t.debtYellowPercentage,
+          monthlySummaryEmail: settings.monthlySummaryEmail,
         });
       },
       error: (e) => {
@@ -106,6 +110,8 @@ export class FinancialSettingsComponent implements OnInit {
       +v.cushionGreenMonths!, +v.cushionYellowMonths!,
       +v.savingsGreenPercentage!, +v.savingsYellowPercentage!,
       +v.debtGreenPercentage!, +v.debtYellowPercentage!,
+      v.monthlySummaryEmail,
+      this.translate.getCurrentLang() === 'en' ? 'en' : 'es',
     );
 
     this.dashboardStore.saveFinancialSettings(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

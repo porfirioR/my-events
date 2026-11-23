@@ -39,6 +39,8 @@ export class UserFinancialSettingsAccessService extends BaseAccessService implem
         savingsyellowpercentage: request.savingsYellowPercentage,
         debtgreenpercentage: request.debtGreenPercentage,
         debtyellowpercentage: request.debtYellowPercentage,
+        monthlysummaryemail: request.monthlySummaryEmail,
+        language: request.language,
         dateupdated: new Date().toISOString(),
       }, { onConflict: 'userid' })
       .select()
@@ -61,5 +63,7 @@ export class UserFinancialSettingsAccessService extends BaseAccessService implem
       Number(entity.savingsyellowpercentage),
       Number(entity.debtgreenpercentage),
       Number(entity.debtyellowpercentage),
+      entity.monthlysummaryemail ?? true,
+      entity.language ?? 'es',
     );
 }
