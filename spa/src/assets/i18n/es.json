@@ -1452,6 +1452,9 @@
   "financialHealth": {
     "title": "Salud financiera",
     "subtitle": "Indicadores de este mes, en guaraníes",
+    "sourceImported": "Ingreso, gasto esencial y aportes: promedio de My Money, {{from}} – {{to}}.",
+    "sourceManual": "Ingreso y gasto: parámetros manuales.",
+    "sourceManualMissing": "Faltan datos de My Money ({{months}}): se usan los parámetros manuales.",
     "configure": "Configurar",
     "loadError": "No se pudieron cargar los indicadores.",
     "emptyTitle": "Cargá tu ingreso y tu gasto",
@@ -1473,7 +1476,8 @@
     },
     "savings": {
       "title": "% de ahorro",
-      "description": "Cuotas de ahorro del mes ÷ ingreso neto"
+      "description": "Cuotas de ahorro del mes ÷ ingreso neto",
+      "descriptionImported": "Aportes a ahorros por mes (promedio) ÷ ingreso neto"
     },
     "debt": {
       "title": "% de cuotas",
@@ -1482,7 +1486,7 @@
   },
   "financialSettings": {
     "title": "Parámetros financieros",
-    "subtitle": "Se usan para los indicadores de salud financiera del tablero. Más adelante el ingreso y el gasto se van a tomar de My Money.",
+    "subtitle": "Se usan para los indicadores de salud financiera del tablero cuando no hay 6 meses completos importados de My Money.",
     "monthlySection": "Ingreso y gasto mensual",
     "monthlyNetIncome": "Ingreso neto mensual",
     "monthlyNetIncomeHint": "Lo que cobrás por mes después de descuentos (IPS, impuestos)",

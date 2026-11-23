@@ -11,6 +11,8 @@ import { HealthIndicatorApiModel, HealthStatus } from '../../models/api/dashboar
 
 interface HealthIndicatorView {
   key: 'cushion' | 'savings' | 'debt';
+  // Qué mide (cambia según de dónde salen los datos)
+  descriptionKey: string;
   icon: string;
   indicator: HealthIndicatorApiModel;
   // Valor formateado ("4,2 meses", "15 %") o null si falta el parámetro
@@ -57,15 +59,42 @@ export class FinancialHealthComponent {
     { initialValue: this.translate.getCurrentLang() },
   );
 
+  // De dónde salen ingreso, gasto esencial y aportes: My Money (últimos meses completos) o el perfil
+  protected sourceNote = computed<{ imported: boolean; text: string } | null>(() => {
+    const h = this.health();
+    if (!h) return null;
+    this.language();
+    const months = h.importedMonths;
+    if (h.source === 'imported') {
+      return {
+        imported: true,
+        text: this.translate.instant('financialHealth.sourceImported', {
+          from: this.formatMonth(months[0]),
+          to: this.formatMonth(months[months.length - 1]),
+        }),
+      };
+    }
+    // Con algún mes importado pero no todos, se avisa cuáles faltan
+    const someImported = h.missingImportedMonths.length < months.length;
+    return {
+      imported: false,
+      text: someImported
+        ? this.translate.instant('financialHealth.sourceManualMissing', { months: h.missingImportedMonths.map(this.formatMonth).join(', ') })
+        : this.translate.instant('financialHealth.sourceManual'),
+    };
+  });
+
   protected indicators = computed<HealthIndicatorView[]>(() => {
     const h = this.health();
     if (!h) return [];
     this.language(); // recalcular textos al cambiar de idioma
     const money = (amount: number) => this.formatterService.formatCurrency(amount, h.currencyId);
     const t = h.thresholds;
+    const imported = h.source === 'imported';
     return [
       {
         key: 'cushion',
+        descriptionKey: 'financialHealth.cushion.description',
         icon: 'fa-umbrella',
         indicator: h.cushionMonths,
         display: h.cushionMonths.value === null ? null : this.translate.instant('financialHealth.months', { value: this.formatNumber(h.cushionMonths.value) }),
@@ -75,6 +104,7 @@ export class FinancialHealthComponent {
       },
       {
         key: 'savings',
+        descriptionKey: imported ? 'financialHealth.savings.descriptionImported' : 'financialHealth.savings.description',
         icon: 'fa-piggy-bank',
         indicator: h.savingsRate,
         display: this.formatPercentage(h.savingsRate.value),
@@ -84,6 +114,7 @@ export class FinancialHealthComponent {
       },
       {
         key: 'debt',
+        descriptionKey: 'financialHealth.debt.description',
         icon: 'fa-file-invoice-dollar',
         indicator: h.debtRate,
         display: this.formatPercentage(h.debtRate.value),
@@ -106,6 +137,13 @@ export class FinancialHealthComponent {
   private formatNumber = (value: number): string => {
     const locale = LanguageLocales[this.language() ?? 'en'] ?? 'en-US';
     return value.toLocaleString(locale, { maximumFractionDigits: 1 });
+  };
+
+  // 'YYYY-MM' → "may 2026"
+  private formatMonth = (month: string): string => {
+    const [year, monthNumber] = month.split('-').map(Number);
+    const locale = LanguageLocales[this.language() ?? 'en'] ?? 'en-US';
+    return new Date(year, monthNumber - 1, 1).toLocaleDateString(locale, { month: 'short', year: 'numeric' });
   };
 
   private formatPercentage = (value: number | null): string | null =>

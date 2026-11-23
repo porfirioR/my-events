@@ -25,6 +25,9 @@ export interface HealthIndicatorApiModel {
   status: HealthStatus | null;
 }
 
+// 'imported' = promedio de los movimientos de My Money (#234); 'manual' = parámetros del perfil y cuotas del mes
+export type HealthDataSource = 'imported' | 'manual';
+
 export interface FinancialHealthApiModel {
   currencyId: number;
   liquidImmediate: number;
@@ -36,6 +39,11 @@ export interface FinancialHealthApiModel {
   savingsRate: HealthIndicatorApiModel;
   debtRate: HealthIndicatorApiModel;
   thresholds: HealthThresholdsApiModel;
+  source: HealthDataSource;
+  // Meses promediados ('YYYY-MM') y los que no tienen datos importados
+  importedMonths: string[];
+  missingImportedMonths: string[];
+  monthlyNetConsumption: number | null;
 }
 
 export class UpsertFinancialSettingsApiRequest {

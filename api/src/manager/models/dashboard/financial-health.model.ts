@@ -29,6 +29,10 @@ export class HealthIndicatorModel {
   ) {}
 }
 
+// De dónde salen el ingreso neto, el gasto esencial y los aportes a ahorros:
+// 'imported' = promedio de los movimientos de MyMoney (#234); 'manual' = parámetros del perfil y cuotas del mes
+export type HealthDataSource = 'imported' | 'manual';
+
 export class FinancialHealthModel {
   constructor(
     public readonly currencyId: number,
@@ -42,5 +46,11 @@ export class FinancialHealthModel {
     public readonly savingsRate: HealthIndicatorModel,
     public readonly debtRate: HealthIndicatorModel,
     public readonly thresholds: HealthThresholdsModel,
+    public readonly source: HealthDataSource,
+    // Meses promediados ('YYYY-MM'); los que no tienen datos importados explican por qué se usa 'manual'
+    public readonly importedMonths: string[],
+    public readonly missingImportedMonths: string[],
+    // Consumo neto promedio (consumo − reintegros), solo informativo; null si no hay datos importados
+    public readonly monthlyNetConsumption: number | null,
   ) {}
 }
