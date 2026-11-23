@@ -11,6 +11,7 @@ import { ResetPasswordMiddleware } from './middleware/reset-password.middleware'
 import { PrivateEndpointGuard } from './guards/private-endpoint.guard';
 import { CurrentUserService } from './services/current-user.service';
 import { UsersController } from './controllers/users.controller';
+import { JobsController } from './controllers/jobs.controller';
 import { EventsController } from './controllers/events.controller';
 import { PaymentController } from './controllers/payments.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
@@ -27,6 +28,7 @@ import { CollaboratorInvitationsController, CollaboratorMatchesController, Colla
   ],
   controllers: [
     UsersController,
+    JobsController,
     EventsController,
     PaymentController,
     SavingsGoalsController,

@@ -9,5 +9,7 @@ export class UpsertFinancialSettingsRequest {
     public readonly savingsYellowPercentage: number,
     public readonly debtGreenPercentage: number,
     public readonly debtYellowPercentage: number,
+    public readonly monthlySummaryEmail: boolean,
+    public readonly language: string,
   ) {}
 }

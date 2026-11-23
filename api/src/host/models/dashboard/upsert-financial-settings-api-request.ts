@@ -8,4 +8,7 @@ export class UpsertFinancialSettingsApiRequest {
   savingsYellowPercentage: number | string;
   debtGreenPercentage: number | string;
   debtYellowPercentage: number | string;
+  // Resumen mensual por email (#263); si no viene, queda activado y en español
+  monthlySummaryEmail?: boolean | string;
+  language?: string;
 }

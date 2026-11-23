@@ -93,6 +93,13 @@
         </div>
       </fieldset>
 
+      <!-- Resumen mensual por email (#263) -->
+      <fieldset class="space-y-2">
+        <legend class="font-semibold text-base-content mb-2">{{ 'financialSettings.emailSection' | translate }}</legend>
+        <app-check-box-input formControlName="monthlySummaryEmail" id="monthlySummaryEmail" [label]="'financialSettings.monthlySummaryEmail' | translate" />
+        <p class="text-sm text-base-content/60">{{ 'financialSettings.monthlySummaryEmailHint' | translate }}</p>
+      </fieldset>
+
       <!-- Botones -->
       <div class="flex justify-end gap-3 pt-2">
         <button type="button" class="btn btn-ghost" (click)="exit()" [disabled]="saving()">

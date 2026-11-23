@@ -12,3 +12,6 @@ export const CLOUDINARY_CLOUD_NAME = 'CLOUDINARY_CLOUD_NAME'
 export const CLOUDINARY_API_KEY = 'CLOUDINARY_API_KEY'
 export const CLOUDINARY_API_SECRET = 'CLOUDINARY_API_SECRET'
 export const JWT_USER_TOKEN = 'jwtusertoken'
+// Secreto compartido con el workflow de GitHub que llama a /jobs (#263)
+export const JOBS_SECRET = 'JOBS_SECRET'
+export const JOBS_SECRET_HEADER = 'x-jobs-secret'

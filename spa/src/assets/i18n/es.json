@@ -1504,7 +1504,10 @@
     "lowerOrderError": "El verde tiene que ser menor o igual al amarillo.",
     "loadError": "No se pudieron cargar los parámetros.",
     "savedSuccess": "Parámetros guardados",
-    "savedError": "No se pudieron guardar los parámetros."
+    "savedError": "No se pudieron guardar los parámetros.",
+    "emailSection": "Resumen mensual por email",
+    "monthlySummaryEmail": "Recibir el resumen el día 1 de cada mes",
+    "monthlySummaryEmailHint": "Vencimientos y cuotas del mes, patrimonio, indicadores y lo que falta hacer. Llega en el idioma en que tengas la app al guardar."
   },
   "myMoney": {
     "menu": "My Money",

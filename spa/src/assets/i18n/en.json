@@ -1504,7 +1504,10 @@
     "lowerOrderError": "Green must be less than or equal to yellow.",
     "loadError": "The settings could not be loaded.",
     "savedSuccess": "Settings saved",
-    "savedError": "The settings could not be saved."
+    "savedError": "The settings could not be saved.",
+    "emailSection": "Monthly summary email",
+    "monthlySummaryEmail": "Get the summary on the 1st of every month",
+    "monthlySummaryEmailHint": "Maturities and installments of the month, net worth, indicators and what is left to do. It comes in the app language you have when saving."
   },
   "myMoney": {
     "menu": "My Money",

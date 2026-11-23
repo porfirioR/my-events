@@ -1,0 +1,42 @@
+# Resumen mensual por email (#263).
+# La API corre como funciones administradas de Azure Static Web Apps, que solo aceptan disparadores HTTP:
+# este workflow hace de reloj y llama al endpoint protegido con el secreto compartido.
+#
+# Secretos del repositorio:
+#   API_BASE_URL  URL de la app, sin barra final (ej. https://kind-coast-0bf3d7c10.azurestaticapps.net)
+#   JOBS_SECRET   el mismo valor configurado en la Static Web App (Configuration → Application settings)
+name: Monthly financial summary
+
+on:
+  schedule:
+    # Día 1 a las 12:00 UTC (09:00 en Paraguay). GitHub puede demorarlo unos minutos.
+    - cron: '0 12 1 * *'
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Armar los emails sin enviarlos'
+        type: boolean
+        default: true
+      today:
+        description: 'Fecha del resumen (YYYY-MM-DD); vacío = hoy en Paraguay'
+        type: string
+        required: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send monthly summary
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          JOBS_SECRET: ${{ secrets.JOBS_SECRET }}
+          # En la corrida programada no hay inputs: se envía de verdad
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dryRun || false }}
+          TODAY: ${{ github.event_name == 'workflow_dispatch' && inputs.today || '' }}
+        run: |
+          url="$API_BASE_URL/api/jobs/monthly-summary?dryRun=$DRY_RUN"
+          if [ -n "$TODAY" ]; then url="$url&today=$TODAY"; fi
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -X POST "$url" \
+            -H "x-jobs-secret: $JOBS_SECRET"
