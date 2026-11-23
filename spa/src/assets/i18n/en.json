@@ -1452,6 +1452,9 @@
   "financialHealth": {
     "title": "Financial health",
     "subtitle": "This month's indicators, in guaraníes",
+    "sourceImported": "Income, essential expense and contributions: My Money average, {{from}} – {{to}}.",
+    "sourceManual": "Income and expense: manual settings.",
+    "sourceManualMissing": "My Money data is missing ({{months}}): manual settings are used.",
     "configure": "Configure",
     "loadError": "The indicators could not be loaded.",
     "emptyTitle": "Add your income and expenses",
@@ -1473,7 +1476,8 @@
     },
     "savings": {
       "title": "Savings rate",
-      "description": "This month's savings installments ÷ net income"
+      "description": "This month's savings installments ÷ net income",
+      "descriptionImported": "Monthly savings contributions (average) ÷ net income"
     },
     "debt": {
       "title": "Debt rate",
@@ -1482,7 +1486,7 @@
   },
   "financialSettings": {
     "title": "Financial settings",
-    "subtitle": "Used for the financial health indicators on the dashboard. Later on, income and expenses will come from My Money.",
+    "subtitle": "Used for the dashboard financial health indicators when there are not 6 full months imported from My Money.",
     "monthlySection": "Monthly income and expenses",
     "monthlyNetIncome": "Monthly net income",
     "monthlyNetIncomeHint": "What you get paid per month after deductions (social security, taxes)",

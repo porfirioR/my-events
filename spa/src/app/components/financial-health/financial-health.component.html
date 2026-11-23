@@ -6,6 +6,12 @@
         {{ 'financialHealth.title' | translate }}
       </h2>
       <p class="text-xs text-base-content/60 mt-1">{{ 'financialHealth.subtitle' | translate }}</p>
+      @if (sourceNote(); as note) {
+        <p class="text-xs mt-1 flex items-center gap-1" [ngClass]="note.imported ? 'text-success' : 'text-base-content/60'">
+          <i class="fas" [ngClass]="note.imported ? 'fa-file-import' : 'fa-sliders'" aria-hidden="true"></i>
+          {{ note.text }}
+        </p>
+      }
     </div>
     <a class="btn btn-sm btn-outline btn-primary" routerLink="/financial-settings">
       <i class="fas fa-sliders mr-1" aria-hidden="true"></i>
@@ -67,7 +73,7 @@
           }
 
           <p class="text-xs text-base-content/50 mt-auto">
-            {{ 'financialHealth.' + item.key + '.description' | translate }} · {{ item.thresholds }}
+            {{ item.descriptionKey | translate }} · {{ item.thresholds }}
           </p>
         </li>
       }

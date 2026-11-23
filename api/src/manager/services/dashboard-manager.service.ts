@@ -3,6 +3,7 @@ import {
   ACCOUNT_TOKENS,
   DASHBOARD_TOKENS,
   FINANCIAL_INSTITUTION_TOKENS,
+  IMPORT_TOKENS,
   LOAN_TOKENS,
   SAVINGS_TOKENS,
 } from '../../utility/constants/injection-tokens.const';
@@ -12,7 +13,18 @@ import { ISavingsGoalAccessService, ISavingsInstallmentAccessService } from '../
 import { IUserFinancialSettingsAccessService, UpsertUserFinancialSettingsAccessRequest, UserFinancialSettingsAccessModel } from '../../access/contract/financial-settings';
 import { ILoanAccessService, ILoanInstallmentAccessService, LoanAccessModel } from '../../access/contract/loans';
 import { IFinancialInstitutionAccessService } from '../../access/contract/financial-institutions';
-import { DebtsOverviewHelper, FinancialHealthHelper, MaturityCalendarHelper, NetWorthCalculatorHelper } from '../../utility/helpers';
+import {
+  IImportedMovementAccessService,
+  IMyMoneyCategoryMappingAccessService,
+  IMyMoneyDescriptionRuleAccessService,
+} from '../../access/contract/mymoney';
+import {
+  DebtsOverviewHelper,
+  FinancialHealthHelper,
+  MaturityCalendarHelper,
+  MyMoneyCashflowHelper,
+  NetWorthCalculatorHelper,
+} from '../../utility/helpers';
 import { LoanDirection, NetWorthLiquidity } from '../../utility/enums';
 import { DashboardSummaryModel } from '../models/dashboard/dashboard-summary.model';
 import { NetWorthCurrencyModel, NetWorthInstitutionModel, NetWorthItemModel, NetWorthSummaryModel } from '../models/dashboard/net-worth-summary.model';
@@ -29,6 +41,8 @@ const HEALTH_CURRENCY_ID = 4;
 const DEFAULT_THRESHOLDS = new HealthThresholdsModel(6, 3, 20, 10, 30, 40);
 // Estados que no comprometen cuotas: ahorro cancelado (4) o ya cobrado (5)
 const SAVINGS_STATUSES_CLOSED = [4, 5];
+// Meses completos que se promedian con los datos de MyMoney (#234)
+const HEALTH_IMPORTED_MONTHS = 6;
 
 @Injectable()
 export class DashboardManagerService {
@@ -50,6 +64,15 @@ export class DashboardManagerService {
 
     @Inject(DASHBOARD_TOKENS.FINANCIAL_SETTINGS_ACCESS_SERVICE)
     private readonly financialSettingsAccessService: IUserFinancialSettingsAccessService,
+
+    @Inject(IMPORT_TOKENS.IMPORTED_MOVEMENT_ACCESS_SERVICE)
+    private readonly importedMovementAccessService: IImportedMovementAccessService,
+
+    @Inject(IMPORT_TOKENS.CATEGORY_MAPPING_ACCESS_SERVICE)
+    private readonly categoryMappingAccessService: IMyMoneyCategoryMappingAccessService,
+
+    @Inject(IMPORT_TOKENS.DESCRIPTION_RULE_ACCESS_SERVICE)
+    private readonly descriptionRuleAccessService: IMyMoneyDescriptionRuleAccessService,
 
     @Inject(LOAN_TOKENS.LOAN_ACCESS_SERVICE)
     private readonly loanAccessService: ILoanAccessService,
@@ -274,16 +297,23 @@ export class DashboardManagerService {
   /**
    * Meses de colchón, % de ahorro y % de cuotas del mes de today ('YYYY-MM-DD').
    * - Líquido inmediato: el mismo del patrimonio (cuentas + ahorros de retiro inmediato)
-   * - Aportes fijos: cuotas de ahorros que vencen en el mes, pagadas o no
+   * - Ingreso neto, gasto esencial y aportes a ahorros: promedio de los últimos 6 meses completos de
+   *   MyMoney (#234); si falta algún mes, los parámetros manuales y las cuotas de ahorro del mes
    * - Cuotas: de préstamos recibidos que vencen en el mes, pagadas o no
    */
   public getFinancialHealth = async (userId: number, today: string): Promise<FinancialHealthModel> => {
     const { from, to } = FinancialHealthHelper.monthRange(today);
-    const [netWorth, settings, savingsGoals, loans] = await Promise.all([
+    const importedMonths = MyMoneyCashflowHelper.lastCompleteMonths(today, HEALTH_IMPORTED_MONTHS);
+    // Con una semana de margen, para relacionar aportes con la transferencia que los pagó (ver el helper)
+    const importedRange = MyMoneyCashflowHelper.range(importedMonths, 7);
+    const [netWorth, settings, savingsGoals, loans, movements, mappings, rules] = await Promise.all([
       this.getNetWorth(userId),
       this.getFinancialSettings(userId),
       this.savingsGoalAccessService.getAll(userId),
       this.loanAccessService.getAll(userId),
+      this.importedMovementAccessService.getBetween(userId, importedRange.from, importedRange.to),
+      this.categoryMappingAccessService.getAll(userId),
+      this.descriptionRuleAccessService.getAll(userId),
     ]);
 
     const liquidImmediate = Number(netWorth.currencies
@@ -300,15 +330,35 @@ export class DashboardManagerService {
       this.savingsInstallmentAccessService.getDueBetweenByGoalIds(goalIds, from, to),
       this.loanInstallmentAccessService.getDueBetweenByLoanIds(borrowedLoanIds, from, to),
     ]);
-    const monthlySavingsContributions = savingsInstallments.reduce((sum, i) => sum + Number(i.amount), 0);
     const monthlyLoanInstallments = loanInstallments.reduce((sum, i) => sum + Number(i.totalAmount), 0);
+
+    // Con MyMoney importado en todos los meses, ingreso, gasto esencial y aportes salen de ahí;
+    // si falta algún mes se usan los parámetros manuales y las cuotas de ahorro del mes (#228)
+    const cashflow = MyMoneyCashflowHelper.summarize(
+      movements.map(m => ({ date: m.date, movementType: m.movementType, amount: m.amount, categoryExternalId: m.categoryExternalId, note: m.note })),
+      mappings.map(m => ({
+        categoryExternalId: m.categoryExternalId,
+        kind: m.kind,
+        isEssential: m.isEssential,
+        isExtraordinary: m.isExtraordinary,
+        savingsGoalId: m.target.savingsGoalId,
+      })),
+      rules.map(r => ({ pattern: r.pattern, savingsGoalId: r.target.savingsGoalId })),
+      importedMonths,
+    );
+    const useImported = cashflow.complete;
+    const monthlyNetIncome = useImported ? cashflow.monthlyNetIncome : settings.monthlyNetIncome;
+    const monthlyEssentialExpense = useImported ? cashflow.monthlyEssentialExpense : settings.monthlyEssentialExpense;
+    const monthlySavingsContributions = useImported
+      ? cashflow.monthlySavingsContributions
+      : savingsInstallments.reduce((sum, i) => sum + Number(i.amount), 0);
 
     const health = FinancialHealthHelper.calculate({
       liquidImmediate,
       monthlySavingsContributions,
       monthlyLoanInstallments,
-      monthlyNetIncome: settings.monthlyNetIncome,
-      monthlyEssentialExpense: settings.monthlyEssentialExpense,
+      monthlyNetIncome,
+      monthlyEssentialExpense,
       thresholds: settings.thresholds,
     });
 
@@ -317,12 +367,16 @@ export class DashboardManagerService {
       liquidImmediate,
       monthlySavingsContributions,
       monthlyLoanInstallments,
-      settings.monthlyNetIncome,
-      settings.monthlyEssentialExpense,
+      monthlyNetIncome,
+      monthlyEssentialExpense,
       new HealthIndicatorModel(health.cushionMonths.value, health.cushionMonths.status),
       new HealthIndicatorModel(health.savingsRate.value, health.savingsRate.status),
       new HealthIndicatorModel(health.debtRate.value, health.debtRate.status),
       settings.thresholds,
+      useImported ? 'imported' : 'manual',
+      importedMonths,
+      cashflow.months.filter(m => m.movementCount === 0).map(m => m.month),
+      movements.length > 0 ? cashflow.monthlyNetConsumption : null,
     );
   };
 
