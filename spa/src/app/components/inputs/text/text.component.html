@@ -31,7 +31,7 @@
         [placeholder]="placeholder || label"
         [type]="type === 'password' ? passwordFieldType : type"
         [title]="description"
-        [autocomplete]="autocomplete || type === 'password' ? 'on': 'off'"
+        [autocomplete]="autocomplete === 'off' && type === 'password' ? 'on' : autocomplete"
         [formControl]="$any(ngControl).control"
         [disabled]="disabled"
         [class]="inputClasses"

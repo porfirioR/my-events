@@ -62,7 +62,7 @@ export class MonthlySummaryManagerService {
           continue;
         }
         const email = MonthlySummaryHelper.render(input);
-        if (!dryRun) await this.mailAccessService.sendHtmlEmail(user.email, email.subject, email.html);
+        if (!dryRun) await this.mailAccessService.sendHtmlEmail(user.email, email.subject, email.html, input.language);
         results.push(new MonthlySummaryResultModel(user.id, dryRun ? 'dryRun' : 'sent'));
       } catch (error) {
         this.logger.error(`Monthly summary failed for user ${user.id}: ${error instanceof Error ? error.message : error}`);

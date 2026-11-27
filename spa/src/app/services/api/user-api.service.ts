@@ -6,6 +6,7 @@ import {
   LoginUserApiRequest,
 } from '../../models/api';
 import { LocalService } from '../local.service';
+import { TranslationService } from '../translation.service';
 import { ResendVerificationEmailApiRequest, ResetPasswordApiRequest, SignApiModel, VerifyEmailApiRequest } from '../../models/api/auth';
 
 @Injectable({
@@ -16,7 +17,8 @@ export class UserApiService {
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly localService: LocalService
+    private readonly localService: LocalService,
+    private readonly translationService: TranslationService
   ) {}
 
   /**
@@ -41,7 +43,7 @@ export class UserApiService {
    */
   public signUpUser = (request: LoginUserApiRequest): Observable<SignApiModel> =>
     this.httpClient
-      .post<SignApiModel>(`${this.section}/sign-up`, request)
+      .post<SignApiModel>(`${this.section}/sign-up`, this.withLanguage(request))
       .pipe(tap(this.setInLocaleStorage));
 
   /**
@@ -60,7 +62,7 @@ export class UserApiService {
   ): Observable<{ message: string }> =>
     this.httpClient.post<{ message: string }>(
       `${this.section}/resend-verification`,
-      request
+      this.withLanguage(request)
     );
 
   /**
@@ -69,7 +71,7 @@ export class UserApiService {
   public forgotPassword = (request: ForgotPasswordApiRequest): Observable<{ message: string }> =>
     this.httpClient.post<{ message: string }>(
       `${this.section}/forgot-password`,
-      request
+      this.withLanguage(request)
     );
 
   /**
@@ -92,4 +94,8 @@ export class UserApiService {
     this.localService.setEmailVerified(user.isEmailVerified);
     this.localService.setCollaboratorId(user.userCollaboratorId);
   };
+
+  // Los emails (verificación, reset) salen en el idioma elegido en el selector
+  private withLanguage = <T extends object>(request: T): T & { language: string } =>
+    ({ ...request, language: this.translationService.getCurrentLanguage() });
 }

@@ -104,7 +104,8 @@
     "invalidVerificationLink": "Invalid verification link. No token provided.",
     "invalidOrExpiredToken": "Invalid or expired verification token. Please request a new one.",
     "emailVerifiedSuccessMessage": "Email verified successfully!",
-    "sessionExpired": "Your session has expired. Please login again."
+    "sessionExpiredTitle": "Session expired",
+    "sessionExpired": "For your security, your session was closed. Please sign in again to continue."
   },
   "transactions": {
     "title": "Transactions",
@@ -1506,7 +1507,7 @@
     "savedSuccess": "Settings saved",
     "savedError": "The settings could not be saved.",
     "emailSection": "Monthly summary email",
-    "monthlySummaryEmail": "Get the summary on the 1st of every month",
+    "monthlySummaryEmail": "Get an email on the 1st with what is coming up in the month",
     "monthlySummaryEmailHint": "Maturities and installments of the month, net worth, indicators and what is left to do. It comes in the app language you have when saving."
   },
   "myMoney": {
@@ -1732,5 +1733,10 @@
     "savedError": "Could not save the balances",
     "nothingToSave": "Enter at least one balance",
     "alreadyLoaded": "This month already has balances; saving updates them."
+  },
+  "alerts": {
+    "errorTitle": "Something went wrong",
+    "infoTitle": "Information",
+    "accept": "Close"
   }
 }

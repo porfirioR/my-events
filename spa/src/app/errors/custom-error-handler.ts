@@ -35,7 +35,10 @@ export class CustomErrorHandler implements ErrorHandler {
     this.localService.cleanCredentials();
     this.authStore.logout();
     localStorage.setItem('theme', 'light');
-    this.alertService.showError(this.translate.instant('auth.sessionExpired'));
+    this.alertService.showWarning(
+      this.translate.instant('auth.sessionExpiredTitle'),
+      this.translate.instant('auth.sessionExpired')
+    );
     this.router.navigate(['/login']).then(() => {
       this.handlingSessionExpiry = false;
     });

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailAccessService } from '.';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { MAIL_HOST, MAIL_PASSWORD, MAIL_USER } from '../../utility/constants';
+import { MAIL_FROM, MAIL_HOST, MAIL_PASSWORD, MAIL_USER } from '../../utility/constants';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
@@ -14,7 +14,7 @@ import { AuthModule } from '../auth/auth.module';
         transport: {
           host: configService.get<string>(MAIL_HOST),
           port: 587,
-          ignoreTLS: true,
+          requireTLS: true,
           secure: false,
           auth: {
             user: configService.get<string>(MAIL_USER),
@@ -22,7 +22,9 @@ import { AuthModule } from '../auth/auth.module';
           },
         },
         defaults: {
-          from: '"My Events" noreply@my-events.com',
+          // Debe ser un remitente verificado en Brevo (o de un dominio autenticado con SPF/DKIM),
+          // si no Gmail/Hotmail lo rechazan o lo mandan a spam.
+          from: `"My Events" <${configService.get<string>(MAIL_FROM) ?? 'noreply@my-events.com'}>`,
         },
       }),
       inject: [ConfigService],

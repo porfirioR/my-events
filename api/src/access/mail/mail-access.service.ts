@@ -1,40 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
+import { EmailLanguage, EmailTemplateHelper } from '../../utility/helpers/email-template.helper';
+import { MAIL_FROM } from '../../utility/constants';
 
 @Injectable()
 export class MailAccessService {
-  constructor(private mailerService: MailerService) {}
+  constructor(
+    private mailerService: MailerService,
+    private configService: ConfigService
+  ) {}
 
   /**
    * Envía email de verificación
    */
   public sendVerificationEmail = async (
     email: string,
-    verificationLink: string
+    verificationLink: string,
+    language: EmailLanguage
   ): Promise<void> => {
-    await this.mailerService.sendMail({
-      to: email,
-      subject: 'Verify your email address',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Welcome! Verify Your Email</h2>
-          <p>Thank you for signing up. Please verify your email address by clicking the button below:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationLink}" 
-                style="background-color: #432dd7; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block;">
-              Verify Email
-            </a>
-          </div>
-          <p style="color: #666; font-size: 14px;">
-            This link will expire in 7 days. If you didn't create an account, please ignore this email.
-          </p>
-          <p style="color: #666; font-size: 12px;">
-            Or copy and paste this link in your browser:<br>
-            <a href="${verificationLink}">${verificationLink}</a>
-          </p>
-        </div>
-      `,
-    });
+    const { subject, html, text } = EmailTemplateHelper.verification(verificationLink, language);
+    await this.mailerService.sendMail({ from: this.from(language), to: email, subject, html, text });
   };
 
   /**
@@ -42,37 +28,21 @@ export class MailAccessService {
    */
   public sendForgotPasswordEmail = async (
     email: string,
-    resetLink: string
+    resetLink: string,
+    language: EmailLanguage
   ): Promise<void> => {
-    await this.mailerService.sendMail({
-      to: email,
-      subject: 'Reset your password',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Reset Your Password</h2>
-          <p>We received a request to reset your password. Click the button below to create a new password:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" 
-              style="background-color: #432dd7; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block;">
-              Reset Password
-            </a>
-          </div>
-          <p style="color: #666; font-size: 14px;">
-            This link will expire in 2 hours. If you didn't request a password reset, please ignore this email.
-          </p>
-          <p style="color: #666; font-size: 12px;">
-            Or copy and paste this link in your browser:<br>
-            <a href="${resetLink}">${resetLink}</a>
-          </p>
-        </div>
-      `,
-    });
+    const { subject, html, text } = EmailTemplateHelper.resetPassword(resetLink, language);
+    await this.mailerService.sendMail({ from: this.from(language), to: email, subject, html, text });
   };
 
   /**
-   * Envía un email ya armado (ej. el resumen mensual, #263)
+   * Envía un email ya armado (ej. el resumen del día 1, #263)
    */
-  public sendHtmlEmail = async (email: string, subject: string, html: string): Promise<void> => {
-    await this.mailerService.sendMail({ to: email, subject, html });
+  public sendHtmlEmail = async (email: string, subject: string, html: string, language: EmailLanguage): Promise<void> => {
+    await this.mailerService.sendMail({ from: this.from(language), to: email, subject, html, text: EmailTemplateHelper.toText(html) });
   };
+
+  // El nombre del remitente va en el idioma del email: "Mis Eventos" / "My Events"
+  private from = (language: EmailLanguage): string =>
+    `"${EmailTemplateHelper.appName(language)}" <${this.configService.get<string>(MAIL_FROM) ?? 'noreply@my-events.com'}>`;
 }
