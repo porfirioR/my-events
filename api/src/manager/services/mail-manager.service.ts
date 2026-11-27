@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailAccessService } from '../../access/mail';
 import { SPA_URL } from '../../utility/constants';
+import { EmailTemplateHelper } from '../../utility/helpers/email-template.helper';
 
 @Injectable()
 export class MailManagerService {
@@ -15,14 +16,16 @@ export class MailManagerService {
    */
   public sendVerificationEmail = async (
     email: string,
-    verificationToken: string
+    verificationToken: string,
+    language?: string
   ): Promise<boolean> => {
     const baseUrl = this.configService.get<string>(SPA_URL);
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
 
     await this.mailAccessService.sendVerificationEmail(
       email,
-      verificationLink
+      verificationLink,
+      EmailTemplateHelper.toLanguage(language)
     );
 
     return true;
@@ -33,12 +36,13 @@ export class MailManagerService {
    */
   public sendForgotPasswordEmail = async (
     email: string,
-    resetToken: string
+    resetToken: string,
+    language?: string
   ): Promise<boolean> => {
     const baseUrl = this.configService.get<string>(SPA_URL);
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
-    await this.mailAccessService.sendForgotPasswordEmail(email, resetLink);
+    await this.mailAccessService.sendForgotPasswordEmail(email, resetLink, EmailTemplateHelper.toLanguage(language));
 
     return true;
   };

@@ -2,6 +2,10 @@ import { inject, Injectable } from '@angular/core'
 import { TranslateService } from '@ngx-translate/core';
 import { SweetAlertIcon, SweetAlertResult } from 'sweetalert2'
 
+// Mismos botones que el resto de la app: principal relleno y secundario con borde, ancho mínimo
+const CONFIRM_BUTTON = 'btn btn-primary min-w-32 mx-1';
+const CANCEL_BUTTON = 'btn btn-outline btn-primary min-w-32 mx-1';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -33,8 +37,8 @@ export class AlertService {
       reverseButtons: true,
       focusCancel: true,
       customClass: {
-        cancelButton: 'btn btn-outline btn-primary mx-1',
-        confirmButton: 'btn btn-outline btn-primary',
+        cancelButton: CANCEL_BUTTON,
+        confirmButton: CONFIRM_BUTTON,
         icon: icon == 'question' ? 'swal2-icon-question-custom': undefined,
       },
       buttonsStyling: false,
@@ -64,29 +68,28 @@ export class AlertService {
   }
 
   public showError = (text: string = ''): void => {
-    const translateTitle = this.translate.instant('Unsuccessful operation');
-    this.getSwal().then(x => x.fire({
-      title: translateTitle,
-      text: this.translate.instant(text),
-      icon: 'error',
-      confirmButtonText: 'Ok',
-      customClass: {
-        confirmButton: 'btn btn-outline btn-primary',
-      },
-      buttonsStyling: false,
-    }))
+    this.showDialog('error', this.translate.instant('alerts.errorTitle'), this.translate.instant(text));
+  }
+
+  // Avisos que no son un error de la operación (ej. sesión expirada)
+  public showWarning = (title: string, text: string = ''): void => {
+    this.showDialog('warning', title, text);
   }
 
   public showInfo = (text: string = ''): void => {
+    this.showDialog('info', this.translate.instant('alerts.infoTitle'), text);
+  }
+
+  private showDialog = (icon: SweetAlertIcon, title: string, text: string): void => {
     this.getSwal().then(x => x.fire({
-      title: 'Information',
+      title,
       text,
-      icon: 'info',
-      confirmButtonText: 'Ok',
+      icon,
+      confirmButtonText: this.translate.instant('alerts.accept'),
       customClass: {
-        confirmButton: 'btn btn-outline btn-primary',
+        confirmButton: CONFIRM_BUTTON,
       },
-      buttonsStyling: false
+      buttonsStyling: false,
     }))
   }
 }

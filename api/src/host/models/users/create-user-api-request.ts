@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 
 export class CreateUserApiRequest {
   @IsEmail()
@@ -16,4 +16,9 @@ export class CreateUserApiRequest {
   @MaxLength(25)
   @MinLength(2, { message: 'Surname must be at least 2 characters long' })
   surname: string;
+
+  // Idioma del selector del SPA para el email de verificación ('es' | 'en')
+  @IsOptional()
+  @IsIn(['es', 'en'])
+  language?: string;
 }

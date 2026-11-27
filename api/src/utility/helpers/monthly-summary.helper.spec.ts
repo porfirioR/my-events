@@ -65,7 +65,7 @@ describe('MonthlySummaryHelper', () => {
 
   it('renders every section with data, in Spanish', () => {
     const { subject, html } = render(full());
-    expect(subject).toBe('Tu resumen de diciembre de 2026');
+    expect(subject).toBe('Lo que viene en diciembre de 2026');
     expect(html).toContain('Diciembre de 2026');
     expect(html).toContain('Vencimientos y cobros de ahorros');
     expect(html).toContain('Gs. 1.859.358');
@@ -92,7 +92,7 @@ describe('MonthlySummaryHelper', () => {
 
   it('renders in English with the language of the user', () => {
     const { subject, html } = render({ ...full(), language: 'en' });
-    expect(subject).toBe('Your summary for December 2026');
+    expect(subject).toBe('Coming up in December 2026');
     expect(html).toContain('Installments to pay');
     expect(html).toContain('PYG 646,071');
     expect(html).toContain('6.6 months');

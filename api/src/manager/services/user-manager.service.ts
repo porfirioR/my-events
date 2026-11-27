@@ -95,7 +95,7 @@ export class UserManagerService {
     const jwtToken = await this.authService.getToken(authModel);
 
     return {
-      user: this.getSignModel(accessModel, jwtToken, false, internalCollaborator.id),
+      user: this.getSignModel(accessModel, jwtToken, false, internalCollaborator?.id ?? null),
       verificationToken, // Para que MailManager envíe el email
     };
   };

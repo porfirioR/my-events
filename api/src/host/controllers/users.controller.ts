@@ -83,11 +83,17 @@ export class UsersController {
       request
     );
 
-    // Enviar email de verificación
-    await this.mailManagerService.sendVerificationEmail(
-      user.email,
-      verificationToken
-    );
+    // Enviar email de verificación. El usuario ya quedó creado: si el envío falla
+    // no se rompe el registro, puede reenviarlo desde /verify-email-pending.
+    try {
+      await this.mailManagerService.sendVerificationEmail(
+        user.email,
+        verificationToken,
+        apiRequest.language
+      );
+    } catch (error) {
+      this.logger.error(`UsersController: registerUser - verification email failed for user ${user.id}`, error);
+    }
 
     return user;
   }
@@ -122,7 +128,8 @@ export class UsersController {
     // Enviar email de verificación
     await this.mailManagerService.sendVerificationEmail(
       apiRequest.email,
-      verificationToken
+      verificationToken,
+      apiRequest.language
     );
 
     return {
@@ -163,7 +170,8 @@ export class UsersController {
       // Enviar email
       await this.mailManagerService.sendForgotPasswordEmail(
         apiRequest.email,
-        resetToken
+        resetToken,
+        apiRequest.language
       );
     } catch (error) {
       // IMPORTANTE: Siempre responder lo mismo para prevenir enumeración de emails

@@ -1,4 +1,5 @@
 import { MaturityEventType } from '../enums';
+import { EMAIL_COLORS, EmailTemplateHelper } from './email-template.helper';
 
 // Resumen mensual por email (#263): arma el contenido y el HTML sin base de datos ni envío, para
 // poder probarlo. El manager junta los datos (los mismos que muestran las pantallas) y lo envía.
@@ -82,7 +83,7 @@ export interface MonthlySummaryEmail {
 
 const TEXTS: Record<SummaryLanguage, Record<string, string>> = {
   es: {
-    subject: 'Tu resumen de {month}',
+    subject: 'Lo que viene en {month}',
     greeting: 'Hola {name}, esto es lo que viene en {month}.',
     maturitiesTitle: 'Vencimientos y cobros de ahorros',
     overdueMaturitiesTitle: 'Vencidos sin cobrar',
@@ -112,7 +113,7 @@ const TEXTS: Record<SummaryLanguage, Record<string, string>> = {
     updateBalances: 'Cargar los saldos de las cuentas de {month}.',
     importMyMoney: 'Exportar de My Money e importarlo hasta el final de {month}.',
     reconcile: 'Conciliar {count} transferencias de {month}.',
-    open: 'Abrir My Events',
+    open: 'Abrir Mis Eventos',
     footer: 'Recibís este email el día 1 de cada mes. Podés desactivarlo en Parámetros financieros.',
     savingsMaturity: 'Vence ahorro',
     rotatingPayout: 'Cobro de rueda (estimado)',
@@ -120,7 +121,7 @@ const TEXTS: Record<SummaryLanguage, Record<string, string>> = {
     loanEnd: 'Termina préstamo',
   },
   en: {
-    subject: 'Your summary for {month}',
+    subject: 'Coming up in {month}',
     greeting: 'Hi {name}, this is what is coming up in {month}.',
     maturitiesTitle: 'Savings maturities and payouts',
     overdueMaturitiesTitle: 'Overdue, not collected',
@@ -169,7 +170,7 @@ const MATURITY_TYPE_KEYS: Record<MaturityEventType, string> = {
 };
 
 const STATUS_COLORS: Record<SummaryHealthStatus, string> = { good: '#16a34a', warning: '#d97706', bad: '#dc2626' };
-const PRIMARY = '#432dd7';
+const PRIMARY = EMAIL_COLORS.primary;
 
 export class MonthlySummaryHelper {
   // Sin nada para contar ni nada pendiente no se manda el email
@@ -244,18 +245,15 @@ export class MonthlySummaryHelper {
       sections.push(section(t.checklistTitle, items.map(item => `<tr><td colspan="2" style="padding:4px 0;">☐ ${item}</td></tr>`)));
     }
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <h2 style="color: ${PRIMARY}; margin-bottom: 4px;">${escape(capitalize(month))}</h2>
+    const subject = format(t.subject, { month });
+    const body = `
+        <h2 style="color: ${PRIMARY}; margin: 0 0 4px; font-size: 22px;">${escape(capitalize(month))}</h2>
         <p style="margin-top: 0;">${format(t.greeting, { name: escape(input.userName), month })}</p>
         ${sections.join('\n')}
-        <div style="text-align: center; margin: 28px 0;">
-          <a href="${escape(input.appUrl)}" style="background-color: ${PRIMARY}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">${t.open}</a>
-        </div>
-        <p style="color: #888; font-size: 12px;">${t.footer}</p>
-      </div>`;
+        ${EmailTemplateHelper.button(input.appUrl, t.open)}`;
+    const html = EmailTemplateHelper.layout(input.language, subject, body, t.footer);
 
-    return { subject: format(t.subject, { month }), html };
+    return { subject, html };
   }
 
   // Cuota del mes más lo atrasado de cada préstamo
